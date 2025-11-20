@@ -8,6 +8,7 @@ part 'budget.g.dart';
 class Budget with _$Budget {
   const factory Budget({
     required String id,
+    String? name, // Tên hũ chi tiêu
     required String categoryId,
     required PeriodType periodType,
     required DateTime periodStart,

@@ -25,8 +25,7 @@ mixin _$Transaction {
   int get amountCents => throw _privateConstructorUsedError;
   String get currency => throw _privateConstructorUsedError;
   DateTime get dateTime => throw _privateConstructorUsedError;
-  String get categoryId => throw _privateConstructorUsedError;
-  String get accountId => throw _privateConstructorUsedError;
+  String? get categoryId => throw _privateConstructorUsedError;
   TransactionType get type => throw _privateConstructorUsedError;
   String? get note => throw _privateConstructorUsedError;
   String? get receiptPath => throw _privateConstructorUsedError;
@@ -55,8 +54,7 @@ abstract class $TransactionCopyWith<$Res> {
     int amountCents,
     String currency,
     DateTime dateTime,
-    String categoryId,
-    String accountId,
+    String? categoryId,
     TransactionType type,
     String? note,
     String? receiptPath,
@@ -84,8 +82,7 @@ class _$TransactionCopyWithImpl<$Res, $Val extends Transaction>
     Object? amountCents = null,
     Object? currency = null,
     Object? dateTime = null,
-    Object? categoryId = null,
-    Object? accountId = null,
+    Object? categoryId = freezed,
     Object? type = null,
     Object? note = freezed,
     Object? receiptPath = freezed,
@@ -110,14 +107,10 @@ class _$TransactionCopyWithImpl<$Res, $Val extends Transaction>
                 ? _value.dateTime
                 : dateTime // ignore: cast_nullable_to_non_nullable
                       as DateTime,
-            categoryId: null == categoryId
+            categoryId: freezed == categoryId
                 ? _value.categoryId
                 : categoryId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            accountId: null == accountId
-                ? _value.accountId
-                : accountId // ignore: cast_nullable_to_non_nullable
-                      as String,
+                      as String?,
             type: null == type
                 ? _value.type
                 : type // ignore: cast_nullable_to_non_nullable
@@ -158,8 +151,7 @@ abstract class _$$TransactionImplCopyWith<$Res>
     int amountCents,
     String currency,
     DateTime dateTime,
-    String categoryId,
-    String accountId,
+    String? categoryId,
     TransactionType type,
     String? note,
     String? receiptPath,
@@ -186,8 +178,7 @@ class __$$TransactionImplCopyWithImpl<$Res>
     Object? amountCents = null,
     Object? currency = null,
     Object? dateTime = null,
-    Object? categoryId = null,
-    Object? accountId = null,
+    Object? categoryId = freezed,
     Object? type = null,
     Object? note = freezed,
     Object? receiptPath = freezed,
@@ -212,14 +203,10 @@ class __$$TransactionImplCopyWithImpl<$Res>
             ? _value.dateTime
             : dateTime // ignore: cast_nullable_to_non_nullable
                   as DateTime,
-        categoryId: null == categoryId
+        categoryId: freezed == categoryId
             ? _value.categoryId
             : categoryId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        accountId: null == accountId
-            ? _value.accountId
-            : accountId // ignore: cast_nullable_to_non_nullable
-                  as String,
+                  as String?,
         type: null == type
             ? _value.type
             : type // ignore: cast_nullable_to_non_nullable
@@ -253,8 +240,7 @@ class _$TransactionImpl implements _Transaction {
     required this.amountCents,
     required this.currency,
     required this.dateTime,
-    required this.categoryId,
-    required this.accountId,
+    this.categoryId,
     required this.type,
     this.note,
     this.receiptPath,
@@ -274,9 +260,7 @@ class _$TransactionImpl implements _Transaction {
   @override
   final DateTime dateTime;
   @override
-  final String categoryId;
-  @override
-  final String accountId;
+  final String? categoryId;
   @override
   final TransactionType type;
   @override
@@ -290,7 +274,7 @@ class _$TransactionImpl implements _Transaction {
 
   @override
   String toString() {
-    return 'Transaction(id: $id, amountCents: $amountCents, currency: $currency, dateTime: $dateTime, categoryId: $categoryId, accountId: $accountId, type: $type, note: $note, receiptPath: $receiptPath, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Transaction(id: $id, amountCents: $amountCents, currency: $currency, dateTime: $dateTime, categoryId: $categoryId, type: $type, note: $note, receiptPath: $receiptPath, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -307,8 +291,6 @@ class _$TransactionImpl implements _Transaction {
                 other.dateTime == dateTime) &&
             (identical(other.categoryId, categoryId) ||
                 other.categoryId == categoryId) &&
-            (identical(other.accountId, accountId) ||
-                other.accountId == accountId) &&
             (identical(other.type, type) || other.type == type) &&
             (identical(other.note, note) || other.note == note) &&
             (identical(other.receiptPath, receiptPath) ||
@@ -328,7 +310,6 @@ class _$TransactionImpl implements _Transaction {
     currency,
     dateTime,
     categoryId,
-    accountId,
     type,
     note,
     receiptPath,
@@ -356,8 +337,7 @@ abstract class _Transaction implements Transaction {
     required final int amountCents,
     required final String currency,
     required final DateTime dateTime,
-    required final String categoryId,
-    required final String accountId,
+    final String? categoryId,
     required final TransactionType type,
     final String? note,
     final String? receiptPath,
@@ -377,9 +357,7 @@ abstract class _Transaction implements Transaction {
   @override
   DateTime get dateTime;
   @override
-  String get categoryId;
-  @override
-  String get accountId;
+  String? get categoryId;
   @override
   TransactionType get type;
   @override

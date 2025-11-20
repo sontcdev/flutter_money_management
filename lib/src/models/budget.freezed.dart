@@ -22,6 +22,7 @@ Budget _$BudgetFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$Budget {
   String get id => throw _privateConstructorUsedError;
+  String? get name => throw _privateConstructorUsedError; // Tên hũ chi tiêu
   String get categoryId => throw _privateConstructorUsedError;
   PeriodType get periodType => throw _privateConstructorUsedError;
   DateTime get periodStart => throw _privateConstructorUsedError;
@@ -49,6 +50,7 @@ abstract class $BudgetCopyWith<$Res> {
   @useResult
   $Res call({
     String id,
+    String? name,
     String categoryId,
     PeriodType periodType,
     DateTime periodStart,
@@ -78,6 +80,7 @@ class _$BudgetCopyWithImpl<$Res, $Val extends Budget>
   @override
   $Res call({
     Object? id = null,
+    Object? name = freezed,
     Object? categoryId = null,
     Object? periodType = null,
     Object? periodStart = null,
@@ -95,6 +98,10 @@ class _$BudgetCopyWithImpl<$Res, $Val extends Budget>
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
                       as String,
+            name: freezed == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                      as String?,
             categoryId: null == categoryId
                 ? _value.categoryId
                 : categoryId // ignore: cast_nullable_to_non_nullable
@@ -151,6 +158,7 @@ abstract class _$$BudgetImplCopyWith<$Res> implements $BudgetCopyWith<$Res> {
   @useResult
   $Res call({
     String id,
+    String? name,
     String categoryId,
     PeriodType periodType,
     DateTime periodStart,
@@ -179,6 +187,7 @@ class __$$BudgetImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? id = null,
+    Object? name = freezed,
     Object? categoryId = null,
     Object? periodType = null,
     Object? periodStart = null,
@@ -196,6 +205,10 @@ class __$$BudgetImplCopyWithImpl<$Res>
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
                   as String,
+        name: freezed == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String?,
         categoryId: null == categoryId
             ? _value.categoryId
             : categoryId // ignore: cast_nullable_to_non_nullable
@@ -246,6 +259,7 @@ class __$$BudgetImplCopyWithImpl<$Res>
 class _$BudgetImpl implements _Budget {
   const _$BudgetImpl({
     required this.id,
+    this.name,
     required this.categoryId,
     required this.periodType,
     required this.periodStart,
@@ -263,6 +277,9 @@ class _$BudgetImpl implements _Budget {
 
   @override
   final String id;
+  @override
+  final String? name;
+  // Tên hũ chi tiêu
   @override
   final String categoryId;
   @override
@@ -286,7 +303,7 @@ class _$BudgetImpl implements _Budget {
 
   @override
   String toString() {
-    return 'Budget(id: $id, categoryId: $categoryId, periodType: $periodType, periodStart: $periodStart, periodEnd: $periodEnd, limitCents: $limitCents, consumedCents: $consumedCents, allowOverdraft: $allowOverdraft, overdraftCents: $overdraftCents, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Budget(id: $id, name: $name, categoryId: $categoryId, periodType: $periodType, periodStart: $periodStart, periodEnd: $periodEnd, limitCents: $limitCents, consumedCents: $consumedCents, allowOverdraft: $allowOverdraft, overdraftCents: $overdraftCents, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -295,6 +312,7 @@ class _$BudgetImpl implements _Budget {
         (other.runtimeType == runtimeType &&
             other is _$BudgetImpl &&
             (identical(other.id, id) || other.id == id) &&
+            (identical(other.name, name) || other.name == name) &&
             (identical(other.categoryId, categoryId) ||
                 other.categoryId == categoryId) &&
             (identical(other.periodType, periodType) ||
@@ -322,6 +340,7 @@ class _$BudgetImpl implements _Budget {
   int get hashCode => Object.hash(
     runtimeType,
     id,
+    name,
     categoryId,
     periodType,
     periodStart,
@@ -351,6 +370,7 @@ class _$BudgetImpl implements _Budget {
 abstract class _Budget implements Budget {
   const factory _Budget({
     required final String id,
+    final String? name,
     required final String categoryId,
     required final PeriodType periodType,
     required final DateTime periodStart,
@@ -367,6 +387,8 @@ abstract class _Budget implements Budget {
 
   @override
   String get id;
+  @override
+  String? get name; // Tên hũ chi tiêu
   @override
   String get categoryId;
   @override

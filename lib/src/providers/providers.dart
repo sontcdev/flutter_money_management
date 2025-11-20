@@ -6,7 +6,6 @@ import '../services/budget_service.dart';
 import '../services/report_service.dart';
 import '../data/repositories/transaction_repository.dart';
 import '../data/repositories/category_repository.dart';
-import '../data/repositories/account_repository.dart';
 import '../data/repositories/budget_repository.dart';
 import '../i18n/locale_provider.dart';
 
@@ -21,31 +20,26 @@ final databaseProvider = Provider<AppDatabase>((ref) {
 
 final budgetServiceProvider = Provider<BudgetService>((ref) {
   final db = ref.watch(databaseProvider);
-  return BudgetService(db);
+  return BudgetService(db.budgetDao);
 });
 
 final categoryRepositoryProvider = Provider<CategoryRepository>((ref) {
   final db = ref.watch(databaseProvider);
-  return CategoryRepository(db);
-});
-
-final accountRepositoryProvider = Provider<AccountRepository>((ref) {
-  final db = ref.watch(databaseProvider);
-  return AccountRepository(db);
+  return CategoryRepository(db.categoryDao);
 });
 
 final budgetRepositoryProvider = Provider<BudgetRepository>((ref) {
   final db = ref.watch(databaseProvider);
   final budgetService = ref.watch(budgetServiceProvider);
-  return BudgetRepository(db, budgetService);
+  final categoryRepository = ref.watch(categoryRepositoryProvider);
+  return BudgetRepository(db, budgetService, categoryRepository);
 });
 
 final transactionRepositoryProvider = Provider<TransactionRepository>((ref) {
   final db = ref.watch(databaseProvider);
   final budgetService = ref.watch(budgetServiceProvider);
   final categoryRepo = ref.watch(categoryRepositoryProvider);
-  final accountRepo = ref.watch(accountRepositoryProvider);
-  return TransactionRepository(db, budgetService, categoryRepo, accountRepo);
+  return TransactionRepository(db, budgetService, categoryRepo);
 });
 
 final reportServiceProvider = Provider<ReportService>((ref) {
@@ -57,11 +51,6 @@ final reportServiceProvider = Provider<ReportService>((ref) {
 final categoriesProvider = FutureProvider((ref) async {
   final repo = ref.watch(categoryRepositoryProvider);
   return await repo.getAllCategories();
-});
-
-final accountsProvider = FutureProvider((ref) async {
-  final repo = ref.watch(accountRepositoryProvider);
-  return await repo.getAllAccounts();
 });
 
 final budgetsProvider = FutureProvider((ref) async {

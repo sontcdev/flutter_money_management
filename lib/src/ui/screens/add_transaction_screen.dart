@@ -8,7 +8,6 @@ import 'dart:io';
 import '../../providers/providers.dart';
 import '../../models/transaction.dart';
 import '../../models/category.dart';
-import '../../models/account.dart';
 import '../widgets/app_input.dart';
 import '../widgets/app_button.dart';
 import '../../services/budget_service.dart';
@@ -34,7 +33,6 @@ class _AddTransactionScreenState
   DateTime _selectedDate = DateTime.now();
   TransactionType _selectedType = TransactionType.expense;
   Category? _selectedCategory;
-  Account? _selectedAccount;
   String? _receiptPath;
   bool _isLoading = false;
 
@@ -59,16 +57,11 @@ class _AddTransactionScreenState
       });
 
       final categories = await ref.read(categoryRepositoryProvider).getAllCategories();
-      final accounts = await ref.read(accountRepositoryProvider).getAllAccounts();
       
       setState(() {
         _selectedCategory = categories.firstWhere(
           (c) => c.id == transaction.categoryId,
           orElse: () => categories.first,
-        );
-        _selectedAccount = accounts.firstWhere(
-          (a) => a.id == transaction.accountId,
-          orElse: () => accounts.first,
         );
       });
     }
@@ -94,12 +87,12 @@ class _AddTransactionScreenState
     }
   }
 
-  Future<void> _save() async {
+  Future<void> _save({bool allowOverdraft = false}) async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    if (_selectedCategory == null || _selectedAccount == null) {
+    if (_selectedCategory == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(AppLocalizations.of(context)!.required)),
       );
@@ -118,7 +111,6 @@ class _AddTransactionScreenState
         currency: 'VND',
         dateTime: _selectedDate,
         categoryId: _selectedCategory!.id,
-        accountId: _selectedAccount!.id,
         type: _selectedType,
         note: _noteController.text.isEmpty ? null : _noteController.text,
         receiptPath: _receiptPath,
@@ -133,24 +125,44 @@ class _AddTransactionScreenState
       if (widget.transactionId != null) {
         await repo.updateTransaction(transaction);
       } else {
-        await repo.createTransaction(transaction, allowOverdraft: false);
+        await repo.createTransaction(transaction, allowOverdraft: allowOverdraft);
       }
 
       if (mounted) {
         ref.invalidate(transactionsProvider);
+        ref.invalidate(budgetsProvider); // Refresh budgets to show updated consumed amounts
         Navigator.of(context).pop();
       }
     } on BudgetExceededException catch (e) {
       if (mounted) {
+        setState(() => _isLoading = false);
         final l10n = AppLocalizations.of(context)!;
-        final format = NumberFormat.currency(symbol: '');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.budgetExceededMessage(
-              format.format(e.remainingCents / 100),
-            )),
+        final format = NumberFormat.currency(symbol: '₫', decimalDigits: 0);
+        final remaining = format.format(e.remainingCents / 100);
+
+        // Show dialog with option to allow overdraft
+        final allowOverdraftAction = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(l10n.budgetExceeded),
+            content: Text('${l10n.budgetExceededMessage(remaining)}\n\nDo you want to allow overdraft and proceed with this transaction?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Allow Overdraft'),
+              ),
+            ],
           ),
         );
+
+        if (allowOverdraftAction == true) {
+          // Retry with allowOverdraft=true
+          await _save(allowOverdraft: true);
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -176,7 +188,6 @@ class _AddTransactionScreenState
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final categories = ref.watch(categoriesProvider);
-    final accounts = ref.watch(accountsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -236,6 +247,31 @@ class _AddTransactionScreenState
               const SizedBox(height: 16),
               categories.when(
                 data: (categoriesList) {
+                  // Auto-select first category if none selected
+                  if (_selectedCategory == null && categoriesList.isNotEmpty) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      setState(() => _selectedCategory = categoriesList.first);
+                    });
+                  }
+                  
+                  if (categoriesList.isEmpty) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          'No categories available. Please add a category first.',
+                          style: TextStyle(color: Theme.of(context).colorScheme.error),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton.icon(
+                          onPressed: () => Navigator.pushNamed(context, '/add-category'),
+                          icon: const Icon(Icons.add),
+                          label: const Text('Add Category'),
+                        ),
+                      ],
+                    );
+                  }
+                  
                   return DropdownButtonFormField<Category>(
                     value: _selectedCategory,
                     decoration: InputDecoration(labelText: l10n.category),
@@ -251,27 +287,14 @@ class _AddTransactionScreenState
                   );
                 },
                 loading: () => const CircularProgressIndicator(),
-                error: (_, __) => const SizedBox(),
-              ),
-              const SizedBox(height: 16),
-              accounts.when(
-                data: (accountsList) {
-                  return DropdownButtonFormField<Account>(
-                    value: _selectedAccount,
-                    decoration: InputDecoration(labelText: l10n.account),
-                    items: accountsList.map((account) {
-                      return DropdownMenuItem<Account>(
-                        value: account,
-                        child: Text(account.name),
-                      );
-                    }).toList(),
-                    onChanged: (account) {
-                      setState(() => _selectedAccount = account);
-                    },
+                error: (error, stackTrace) {
+                  debugPrint('Error loading categories: $error');
+                  debugPrint('Stack trace: $stackTrace');
+                  return Text(
+                    'Error loading categories: $error',
+                    style: TextStyle(color: Theme.of(context).colorScheme.error),
                   );
                 },
-                loading: () => const CircularProgressIndicator(),
-                error: (_, __) => const SizedBox(),
               ),
               const SizedBox(height: 16),
               AppInput(

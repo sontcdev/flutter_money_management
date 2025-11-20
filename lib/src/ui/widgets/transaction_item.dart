@@ -8,14 +8,12 @@ import 'package:test3_cursor/l10n/app_localizations.dart';
 class TransactionItem extends StatelessWidget {
   final Transaction transaction;
   final String? categoryName;
-  final String? accountName;
   final VoidCallback? onTap;
 
   const TransactionItem({
     super.key,
     required this.transaction,
     this.categoryName,
-    this.accountName,
     this.onTap,
   });
 
@@ -23,7 +21,7 @@ class TransactionItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final format = NumberFormat.currency(symbol: '');
-    final dateFormat = DateFormat('MMM dd, yyyy');
+    final dateFormat = DateFormat('HH:mm dd/MM/yyyy');
 
     final isExpense = transaction.type == TransactionType.expense;
     final amountColor = isExpense ? AppColors.expense : AppColors.income;
@@ -42,7 +40,7 @@ class TransactionItem extends StatelessWidget {
         style: Theme.of(context).textTheme.titleMedium,
       ),
       subtitle: Text(
-        '${dateFormat.format(transaction.dateTime)} • ${accountName ?? l10n.account}',
+        dateFormat.format(transaction.dateTime),
         style: Theme.of(context).textTheme.bodySmall,
       ),
       trailing: Column(

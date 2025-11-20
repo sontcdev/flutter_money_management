@@ -23,8 +23,9 @@ Category _$CategoryFromJson(Map<String, dynamic> json) {
 mixin _$Category {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
-  String get icon => throw _privateConstructorUsedError;
-  String get color => throw _privateConstructorUsedError;
+  CategoryType get type => throw _privateConstructorUsedError;
+  String? get colorHex => throw _privateConstructorUsedError;
+  String? get iconName => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
@@ -46,8 +47,9 @@ abstract class $CategoryCopyWith<$Res> {
   $Res call({
     String id,
     String name,
-    String icon,
-    String color,
+    CategoryType type,
+    String? colorHex,
+    String? iconName,
     DateTime createdAt,
     DateTime updatedAt,
   });
@@ -70,8 +72,9 @@ class _$CategoryCopyWithImpl<$Res, $Val extends Category>
   $Res call({
     Object? id = null,
     Object? name = null,
-    Object? icon = null,
-    Object? color = null,
+    Object? type = null,
+    Object? colorHex = freezed,
+    Object? iconName = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -85,14 +88,18 @@ class _$CategoryCopyWithImpl<$Res, $Val extends Category>
                 ? _value.name
                 : name // ignore: cast_nullable_to_non_nullable
                       as String,
-            icon: null == icon
-                ? _value.icon
-                : icon // ignore: cast_nullable_to_non_nullable
-                      as String,
-            color: null == color
-                ? _value.color
-                : color // ignore: cast_nullable_to_non_nullable
-                      as String,
+            type: null == type
+                ? _value.type
+                : type // ignore: cast_nullable_to_non_nullable
+                      as CategoryType,
+            colorHex: freezed == colorHex
+                ? _value.colorHex
+                : colorHex // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            iconName: freezed == iconName
+                ? _value.iconName
+                : iconName // ignore: cast_nullable_to_non_nullable
+                      as String?,
             createdAt: null == createdAt
                 ? _value.createdAt
                 : createdAt // ignore: cast_nullable_to_non_nullable
@@ -119,8 +126,9 @@ abstract class _$$CategoryImplCopyWith<$Res>
   $Res call({
     String id,
     String name,
-    String icon,
-    String color,
+    CategoryType type,
+    String? colorHex,
+    String? iconName,
     DateTime createdAt,
     DateTime updatedAt,
   });
@@ -142,8 +150,9 @@ class __$$CategoryImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? name = null,
-    Object? icon = null,
-    Object? color = null,
+    Object? type = null,
+    Object? colorHex = freezed,
+    Object? iconName = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -157,14 +166,18 @@ class __$$CategoryImplCopyWithImpl<$Res>
             ? _value.name
             : name // ignore: cast_nullable_to_non_nullable
                   as String,
-        icon: null == icon
-            ? _value.icon
-            : icon // ignore: cast_nullable_to_non_nullable
-                  as String,
-        color: null == color
-            ? _value.color
-            : color // ignore: cast_nullable_to_non_nullable
-                  as String,
+        type: null == type
+            ? _value.type
+            : type // ignore: cast_nullable_to_non_nullable
+                  as CategoryType,
+        colorHex: freezed == colorHex
+            ? _value.colorHex
+            : colorHex // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        iconName: freezed == iconName
+            ? _value.iconName
+            : iconName // ignore: cast_nullable_to_non_nullable
+                  as String?,
         createdAt: null == createdAt
             ? _value.createdAt
             : createdAt // ignore: cast_nullable_to_non_nullable
@@ -184,8 +197,9 @@ class _$CategoryImpl implements _Category {
   const _$CategoryImpl({
     required this.id,
     required this.name,
-    required this.icon,
-    required this.color,
+    required this.type,
+    this.colorHex,
+    this.iconName,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -198,9 +212,11 @@ class _$CategoryImpl implements _Category {
   @override
   final String name;
   @override
-  final String icon;
+  final CategoryType type;
   @override
-  final String color;
+  final String? colorHex;
+  @override
+  final String? iconName;
   @override
   final DateTime createdAt;
   @override
@@ -208,7 +224,7 @@ class _$CategoryImpl implements _Category {
 
   @override
   String toString() {
-    return 'Category(id: $id, name: $name, icon: $icon, color: $color, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Category(id: $id, name: $name, type: $type, colorHex: $colorHex, iconName: $iconName, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -218,8 +234,11 @@ class _$CategoryImpl implements _Category {
             other is _$CategoryImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
-            (identical(other.icon, icon) || other.icon == icon) &&
-            (identical(other.color, color) || other.color == color) &&
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.colorHex, colorHex) ||
+                other.colorHex == colorHex) &&
+            (identical(other.iconName, iconName) ||
+                other.iconName == iconName) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -228,8 +247,16 @@ class _$CategoryImpl implements _Category {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, name, icon, color, createdAt, updatedAt);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    name,
+    type,
+    colorHex,
+    iconName,
+    createdAt,
+    updatedAt,
+  );
 
   /// Create a copy of Category
   /// with the given fields replaced by the non-null parameter values.
@@ -249,8 +276,9 @@ abstract class _Category implements Category {
   const factory _Category({
     required final String id,
     required final String name,
-    required final String icon,
-    required final String color,
+    required final CategoryType type,
+    final String? colorHex,
+    final String? iconName,
     required final DateTime createdAt,
     required final DateTime updatedAt,
   }) = _$CategoryImpl;
@@ -263,9 +291,11 @@ abstract class _Category implements Category {
   @override
   String get name;
   @override
-  String get icon;
+  CategoryType get type;
   @override
-  String get color;
+  String? get colorHex;
+  @override
+  String? get iconName;
   @override
   DateTime get createdAt;
   @override

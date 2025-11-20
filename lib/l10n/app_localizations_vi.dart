@@ -78,9 +78,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get category => 'Danh mục';
 
   @override
-  String get account => 'Tài khoản';
-
-  @override
   String get type => 'Loại';
 
   @override
@@ -215,9 +212,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get selectCategory => 'Chọn danh mục';
 
   @override
-  String get selectAccount => 'Chọn tài khoản';
-
-  @override
   String get attachReceipt => 'Đính kèm hóa đơn';
 
   @override
@@ -237,7 +231,4 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get noBudgets => 'Không có hũ chi tiêu';
-
-  @override
-  String get noAccounts => 'Không có tài khoản';
 }

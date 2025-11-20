@@ -23,7 +23,6 @@
   "amount": "Số tiền",
   "date": "Ngày",
   "category": "Danh mục",
-  "account": "Tài khoản",
   "type": "Loại",
   "expense": "Chi tiêu",
   "income": "Thu nhập",
@@ -75,14 +74,12 @@
   "invalidAmount": "Số tiền không hợp lệ",
   "selectDate": "Chọn ngày",
   "selectCategory": "Chọn danh mục",
-  "selectAccount": "Chọn tài khoản",
   "attachReceipt": "Đính kèm hóa đơn",
   "viewReceipt": "Xem hóa đơn",
   "share": "Chia sẻ",
   "export": "Xuất",
   "noTransactions": "Không có giao dịch",
   "noCategories": "Không có danh mục",
-  "noBudgets": "Không có hũ chi tiêu",
-  "noAccounts": "Không có tài khoản"
+  "noBudgets": "Không có hũ chi tiêu"
 }
 

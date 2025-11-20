@@ -1,15 +1,26 @@
 // path: lib/src/data/repositories/budget_repository.dart
-import 'package:test3_cursor/src/models/budget.dart' as model;
-import 'package:test3_cursor/src/data/local/app_database.dart';
-import 'package:test3_cursor/src/services/budget_service.dart';
+import '../../models/budget.dart' as model;
+import '../local/app_database.dart';
+import '../../services/budget_service.dart';
+import 'category_repository.dart';
 
 class BudgetRepository {
   final AppDatabase _db;
   final BudgetService _budgetService;
+  final CategoryRepository _categoryRepository;
 
-  BudgetRepository(this._db, this._budgetService);
+  BudgetRepository(this._db, this._budgetService, this._categoryRepository) {
+    // Set category repository for budget service to get category names
+    _budgetService.setCategoryRepository(_categoryRepository);
+  }
 
   Future<List<model.Budget>> getAllBudgets() async {
+    final budgets = await _db.budgetDao.getAllBudgets();
+    // Recalculate consumedCents for all budgets to ensure accuracy
+    for (final budget in budgets) {
+      await _budgetService.recalculateConsumed(budget);
+    }
+    // Return updated budgets
     return await _db.budgetDao.getAllBudgets();
   }
 

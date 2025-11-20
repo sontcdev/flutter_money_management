@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:test3_cursor/l10n/app_localizations.dart';
 import '../../providers/providers.dart';
 import 'transactions_screen.dart';
+import 'categories_screen.dart';
 import 'budgets_screen.dart';
 import 'reports_screen.dart';
 import 'settings_screen.dart';
@@ -21,6 +22,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final List<Widget> _screens = [
     const _HomeTab(),
     const TransactionsScreen(),
+    const CategoriesScreen(),
     const BudgetsScreen(),
     const ReportsScreen(),
     const SettingsScreen(),
@@ -44,6 +46,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           BottomNavigationBarItem(
             icon: const Icon(Icons.receipt_long),
             label: l10n.transactions,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.category),
+            label: l10n.categories,
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.account_balance_wallet),
@@ -70,14 +76,12 @@ class _HomeTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final transactions = ref.watch(transactionsProvider);
-    final accounts = ref.watch(accountsProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.appTitle)),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(transactionsProvider);
-          ref.invalidate(accountsProvider);
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -85,36 +89,6 @@ class _HomeTab extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              accounts.when(
-                data: (accountsList) {
-                  final total = accountsList.fold<int>(
-                    0,
-                    (sum, account) => (sum + account.balanceCents).toInt(),
-                  );
-                  return Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.balance,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '${total / 100}',
-                            style: Theme.of(context).textTheme.displayMedium,
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-                loading: () => const CircularProgressIndicator(),
-                error: (_, __) => const SizedBox(),
-              ),
-              const SizedBox(height: 24),
               Text(
                 l10n.transactions,
                 style: Theme.of(context).textTheme.headlineMedium,

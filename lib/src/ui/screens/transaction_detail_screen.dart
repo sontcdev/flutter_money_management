@@ -35,6 +35,10 @@ class TransactionDetailScreen extends ConsumerWidget {
               );
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () => _showDeleteConfirmDialog(context, ref, transactionId),
+          ),
         ],
       ),
       body: FutureBuilder(
@@ -79,15 +83,11 @@ class TransactionDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 16),
                 _DetailRow(
                   label: l10n.date,
-                  value: DateFormat('yyyy-MM-dd HH:mm').format(transaction.dateTime),
+                  value: DateFormat('HH:mm dd/MM/yyyy').format(transaction.dateTime),
                 ),
                 _DetailRow(
                   label: l10n.category,
-                  value: transaction.categoryId,
-                ),
-                _DetailRow(
-                  label: l10n.account,
-                  value: transaction.accountId,
+                  value: transaction.categoryId ?? '-',
                 ),
                 if (transaction.note != null && transaction.note!.isNotEmpty)
                   _DetailRow(
@@ -133,6 +133,55 @@ class TransactionDetailScreen extends ConsumerWidget {
         },
       ),
     );
+  }
+
+  Future<void> _showDeleteConfirmDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String transactionId,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Xóa giao dịch'),
+        content: const Text('Bạn có chắc chắn muốn xóa giao dịch này?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Hủy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Xóa'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      try {
+        final repo = ref.read(transactionRepositoryProvider);
+        await repo.deleteTransaction(transactionId);
+        if (context.mounted) {
+          ref.invalidate(transactionsProvider);
+          ref.invalidate(budgetsProvider); // Refresh budgets to show updated consumed amounts
+          Navigator.of(context).pop(); // Quay lại màn hình danh sách
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Đã xóa giao dịch thành công')),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Lỗi khi xóa: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 }
 

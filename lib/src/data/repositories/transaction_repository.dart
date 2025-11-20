@@ -3,22 +3,19 @@ import 'package:test3_cursor/src/models/transaction.dart' as model;
 import 'package:test3_cursor/src/data/local/app_database.dart';
 import 'package:test3_cursor/src/services/budget_service.dart';
 import 'package:test3_cursor/src/data/repositories/category_repository.dart';
-import 'package:test3_cursor/src/data/repositories/account_repository.dart';
 
 class TransactionRepository {
   final AppDatabase _db;
   final BudgetService _budgetService;
   final CategoryRepository _categoryRepository;
-  final AccountRepository _accountRepository;
 
   TransactionRepository(
-      this._db, this._budgetService, this._categoryRepository, this._accountRepository);
+      this._db, this._budgetService, this._categoryRepository);
 
   Future<List<model.Transaction>> getTransactions({
     int? limit,
     int? offset,
     String? categoryId,
-    String? accountId,
     model.TransactionType? type,
     DateTime? startDate,
     DateTime? endDate,
@@ -27,7 +24,6 @@ class TransactionRepository {
       limit: limit,
       offset: offset,
       categoryId: categoryId,
-      accountId: accountId,
       type: type,
       startDate: startDate,
       endDate: endDate,
@@ -39,42 +35,26 @@ class TransactionRepository {
   }
 
   Future<model.Transaction> createTransaction(model.Transaction transaction,
-      {bool affectAccountBalance = true, bool allowOverdraft = false}) async {
-    // Verify category exists
-    final category = await _categoryRepository.getCategoryById(transaction.categoryId);
-    if (category == null) {
-      throw Exception('Category not found');
+      {bool allowOverdraft = false}) async {
+    // Verify category exists if categoryId is provided
+    if (transaction.categoryId != null) {
+      final category = await _categoryRepository.getCategoryById(transaction.categoryId!);
+      if (category == null) {
+        throw Exception('Category not found');
+      }
     }
 
-    // Verify account exists
-    final account = await _accountRepository.getAccountById(transaction.accountId);
-    if (account == null) {
-      throw Exception('Account not found');
-    }
-
-    // Atomic transaction: insert transaction + update budget + update account balance
+    // Atomic transaction: insert transaction + update budget
     await _db.transaction(() async {
       await _db.transactionDao.insertTransaction(transaction);
 
-      // Apply to budget
-      try {
-        await _budgetService.applyTransactionToBudgets(transaction,
-            allowOverdraft: allowOverdraft);
-      } catch (e) {
-        if (e is BudgetExceededException) {
-          rethrow;
-        }
-      }
-
-      // Update account balance
-      if (affectAccountBalance) {
-        int newBalance = account.balanceCents;
-        if (transaction.type == model.TransactionType.income) {
-          newBalance = (newBalance + transaction.amountCents).toInt();
-        } else {
-          newBalance = (newBalance - transaction.amountCents).toInt();
-        }
-        await _db.accountDao.updateBalance(transaction.accountId, newBalance);
+      // Apply to budget (only for expenses with category)
+      if (transaction.type == model.TransactionType.expense && transaction.categoryId != null) {
+        await _budgetService.applyTransactionToBudgets(
+          transaction,
+          allowOverdraft: allowOverdraft,
+          db: _db,
+        );
       }
     });
 
@@ -132,17 +112,6 @@ class TransactionRepository {
         }
       }
 
-      // Revert account balance
-      final account = await _accountRepository.getAccountById(transaction.accountId);
-      if (account != null) {
-        int newBalance = account.balanceCents;
-        if (transaction.type == model.TransactionType.income) {
-          newBalance = (newBalance - transaction.amountCents).toInt();
-        } else {
-          newBalance = (newBalance + transaction.amountCents).toInt();
-        }
-        await _db.accountDao.updateBalance(transaction.accountId, newBalance);
-      }
     });
   }
 

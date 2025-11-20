@@ -78,9 +78,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get category => 'Category';
 
   @override
-  String get account => 'Account';
-
-  @override
   String get type => 'Type';
 
   @override
@@ -215,9 +212,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectCategory => 'Select Category';
 
   @override
-  String get selectAccount => 'Select Account';
-
-  @override
   String get attachReceipt => 'Attach Receipt';
 
   @override
@@ -237,7 +231,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noBudgets => 'No budgets';
-
-  @override
-  String get noAccounts => 'No accounts';
 }

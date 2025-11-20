@@ -14,7 +14,7 @@ void main() {
 
   setUp(() {
     database = AppDatabase();
-    budgetService = BudgetService(database);
+    budgetService = BudgetService(database.budgetDao);
   });
 
   tearDown(() async {
@@ -47,13 +47,12 @@ void main() {
       currency: 'VND',
       dateTime: DateTime(2024, 1, 15),
       categoryId: 'cat1',
-      accountId: 'acc1',
       type: model_transaction.TransactionType.expense,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
 
-    await budgetService.applyTransactionToBudgets(transaction);
+    await budgetService.applyTransactionToBudgets(transaction, allowOverdraft: false);
 
     final updated = await database.budgetDao.getBudgetById('1');
     expect(updated?.consumedCents, 70000);
@@ -84,14 +83,13 @@ void main() {
       currency: 'VND',
       dateTime: DateTime(2024, 1, 15),
       categoryId: 'cat2',
-      accountId: 'acc1',
       type: model_transaction.TransactionType.expense,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
 
     expect(
-      () => budgetService.applyTransactionToBudgets(transaction),
+      () => budgetService.applyTransactionToBudgets(transaction, allowOverdraft: false),
       throwsA(isA<BudgetExceededException>()),
     );
   });
@@ -120,7 +118,6 @@ void main() {
       currency: 'VND',
       dateTime: DateTime(2024, 1, 15),
       categoryId: 'cat3',
-      accountId: 'acc1',
       type: model_transaction.TransactionType.expense,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),

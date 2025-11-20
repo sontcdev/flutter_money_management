@@ -1,83 +1,160 @@
 // path: lib/src/services/budget_service.dart
-import 'package:test3_cursor/src/models/transaction.dart' as model_transaction;
-import 'package:test3_cursor/src/models/budget.dart' as model;
-import 'package:test3_cursor/src/data/local/app_database.dart';
+import '../models/transaction.dart';
+import '../models/budget.dart';
+import '../data/local/app_database.dart';
+import '../data/local/daos/budget_dao.dart';
+import '../data/repositories/category_repository.dart';
+import 'package:drift/drift.dart' as drift;
 
 class BudgetExceededException implements Exception {
-  final String message;
   final int remainingCents;
-  BudgetExceededException(this.message, this.remainingCents);
+  final String message;
+
+  BudgetExceededException({
+    required this.remainingCents,
+    required this.message,
+  });
+
+  @override
+  String toString() => message;
 }
 
-class BudgetOverlapException implements Exception {
+class BudgetDuplicateException implements Exception {
+  final String categoryName;
+  final String budgetName;
   final String message;
-  BudgetOverlapException(this.message);
+
+  BudgetDuplicateException({
+    required this.categoryName,
+    required this.budgetName,
+    String? message,
+  }) : message = message ?? 
+      'Danh mục "$categoryName" đang được gắn với hũ chi tiêu "$budgetName". Vui lòng chọn hũ khác hoặc thay đổi chu kỳ.';
+
+  @override
+  String toString() => message;
 }
 
 class BudgetService {
-  final AppDatabase _db;
+  final BudgetDao _budgetDao;
+  CategoryRepository? _categoryRepository;
 
-  BudgetService(this._db);
+  BudgetService(this._budgetDao);
 
-  Future<void> applyTransactionToBudgets(model_transaction.Transaction transaction,
-      {bool allowOverdraft = false}) async {
-    final budgets = await _db.budgetDao
-        .getActiveBudgetsForCategory(transaction.categoryId, transaction.dateTime);
+  void setCategoryRepository(CategoryRepository repository) {
+    _categoryRepository = repository;
+  }
 
-    if (budgets.isEmpty) {
-      return; // No budget for this category/period
-    }
-
-    // Only one active budget should exist per category/period
-    if (budgets.length > 1) {
-      throw BudgetOverlapException(
-          'Multiple active budgets found for category ${transaction.categoryId}');
-    }
-
-    final budget = budgets.first;
-
-    // Only apply to expense transactions
-    if (transaction.type != model_transaction.TransactionType.expense) {
+  /// Apply transaction to budgets. Can be called within an existing transaction block
+  /// or standalone (will create its own transaction).
+  ///
+  /// When called from TransactionRepository, pass the AppDatabase instance
+  /// and this method will NOT create a new transaction (assumes caller manages transaction).
+  ///
+  /// When called standalone, will create its own transaction.
+  Future<void> applyTransactionToBudgets(
+    Transaction transaction, {
+    required bool allowOverdraft,
+    AppDatabase? db,
+  }) async {
+    if (transaction.categoryId == null) {
+      // No category means no budget tracking
       return;
     }
 
+    // If db is provided, we're inside a transaction already - don't create nested transaction
+    if (db != null) {
+      await _applyTransactionToBudgetsInternal(transaction, allowOverdraft);
+    } else {
+      // Create our own transaction
+      await _budgetDao.db.transaction(() async {
+        await _applyTransactionToBudgetsInternal(transaction, allowOverdraft);
+      });
+    }
+  }
+
+  Future<void> _applyTransactionToBudgetsInternal(
+    Transaction transaction,
+    bool allowOverdraft,
+  ) async {
+    // Find active budget for this category at transaction date
+    final budget = await _budgetDao.getActiveBudgetForCategoryAt(
+      transaction.categoryId!,
+      transaction.dateTime,
+    );
+
+    if (budget == null) {
+      // No budget for this category/period - nothing to update
+      return;
+    }
+
+    // Calculate new consumed amount
     final newConsumed = budget.consumedCents + transaction.amountCents;
-    final remaining = budget.limitCents - budget.consumedCents;
+    final newOverdraft = newConsumed > budget.limitCents ? newConsumed - budget.limitCents : 0;
 
-    if (newConsumed > budget.limitCents && !allowOverdraft) {
+    // Check if we're exceeding budget without allowOverdraft
+    if (newConsumed > budget.limitCents && !budget.allowOverdraft && !allowOverdraft) {
+      final remaining = budget.limitCents - budget.consumedCents;
       throw BudgetExceededException(
-          'Budget exceeded. Remaining: $remaining cents', remaining);
+        remainingCents: remaining,
+        message: 'Budget exceeded. Remaining: $remaining cents, attempted: ${transaction.amountCents} cents',
+      );
     }
 
-    int overdraftCents = 0;
-    if (newConsumed > budget.limitCents) {
-      overdraftCents = (newConsumed - budget.limitCents).toInt();
+    // Update budget consumed and overdraft
+    await _budgetDao.updateBudget(
+      budget.copyWith(
+        consumedCents: newConsumed,
+        overdraftCents: newOverdraft,
+        updatedAt: DateTime.now(),
+      ),
+    );
+  }
+
+  /// Recalculate consumed amount for a budget by summing all transactions
+  Future<void> recalculateBudgetConsumed(String budgetId) async {
+    await _budgetDao.recalculateConsumed(budgetId);
+  }
+
+  /// Recalculate consumed for a Budget model (overload for compatibility)
+  Future<void> recalculateConsumed(dynamic budget) async {
+    if (budget is String) {
+      await recalculateBudgetConsumed(budget);
+    } else {
+      await recalculateBudgetConsumed(budget.id);
     }
-
-    await _db.budgetDao.updateConsumed(
-        budget.id, newConsumed.toInt(), overdraftCents);
   }
 
-  Future<void> recalculateConsumed(model.Budget budget) async {
-    final consumed = await _db.budgetDao.computeConsumed(budget);
-    final overdraft = consumed > budget.limitCents
-        ? (consumed - budget.limitCents).toInt()
-        : 0;
-    await _db.budgetDao.updateConsumed(budget.id, consumed, overdraft);
-  }
-
-  Future<void> checkBudgetOverlap(String categoryId, DateTime periodStart,
-      DateTime periodEnd, String? excludeBudgetId) async {
-    final overlapping = await _db.budgetDao
-        .getOverlappingBudgets(categoryId, periodStart, periodEnd);
+  /// Check for budget overlap (prevent multiple budgets for same category/period)
+  /// Throws BudgetDuplicateException if a budget already exists
+  Future<void> checkBudgetOverlap(
+    String categoryId,
+    DateTime periodStart,
+    DateTime periodEnd,
+    String? excludeBudgetId,
+  ) async {
+    // Check if there's already a budget with the same categoryId and periodStart
+    final existingBudget = await _budgetDao.getBudgetByCategoryAndPeriodStart(
+      categoryId,
+      periodStart,
+      excludeBudgetId,
+    );
     
-    final filtered = excludeBudgetId != null
-        ? overlapping.where((b) => b.id != excludeBudgetId).toList()
-        : overlapping;
-
-    if (filtered.isNotEmpty) {
-      throw BudgetOverlapException(
-          'Budget overlaps with existing budget for category $categoryId');
+    if (existingBudget != null) {
+      // Get category name
+      String categoryName = 'Danh mục';
+      if (_categoryRepository != null) {
+        final category = await _categoryRepository!.getCategoryById(categoryId);
+        categoryName = category?.name ?? 'Danh mục';
+      }
+      
+      // Get budget name
+      final budgetName = existingBudget.name ?? 'Hũ chi tiêu';
+      
+      throw BudgetDuplicateException(
+        categoryName: categoryName,
+        budgetName: budgetName,
+      );
     }
   }
 }

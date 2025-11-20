@@ -233,12 +233,6 @@ abstract class AppLocalizations {
   /// **'Category'**
   String get category;
 
-  /// No description provided for @account.
-  ///
-  /// In en, this message translates to:
-  /// **'Account'**
-  String get account;
-
   /// No description provided for @type.
   ///
   /// In en, this message translates to:
@@ -503,12 +497,6 @@ abstract class AppLocalizations {
   /// **'Select Category'**
   String get selectCategory;
 
-  /// No description provided for @selectAccount.
-  ///
-  /// In en, this message translates to:
-  /// **'Select Account'**
-  String get selectAccount;
-
   /// No description provided for @attachReceipt.
   ///
   /// In en, this message translates to:
@@ -550,12 +538,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No budgets'**
   String get noBudgets;
-
-  /// No description provided for @noAccounts.
-  ///
-  /// In en, this message translates to:
-  /// **'No accounts'**
-  String get noAccounts;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

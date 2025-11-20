@@ -26,7 +26,6 @@
   "amount": "Amount",
   "date": "Date",
   "category": "Category",
-  "account": "Account",
   "type": "Type",
   "expense": "Expense",
   "income": "Income",
@@ -78,14 +77,12 @@
   "invalidAmount": "Invalid amount",
   "selectDate": "Select Date",
   "selectCategory": "Select Category",
-  "selectAccount": "Select Account",
   "attachReceipt": "Attach Receipt",
   "viewReceipt": "View Receipt",
   "share": "Share",
   "export": "Export",
   "noTransactions": "No transactions",
   "noCategories": "No categories",
-  "noBudgets": "No budgets",
-  "noAccounts": "No accounts"
+  "noBudgets": "No budgets"
 }
 
