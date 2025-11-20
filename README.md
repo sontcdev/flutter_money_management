@@ -1,0 +1,1 @@
+# flutter_money_management
