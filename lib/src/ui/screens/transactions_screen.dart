@@ -7,7 +7,7 @@ import '../../models/transaction.dart';
 import '../../models/category.dart';
 
 class TransactionsScreen extends ConsumerWidget {
-  const TransactionsScreen({Key? key}) : super(key: key);
+  const TransactionsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

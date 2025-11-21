@@ -3,6 +3,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'transaction.freezed.dart';
+part 'transaction.g.dart';
 
 enum TransactionType {
   expense,

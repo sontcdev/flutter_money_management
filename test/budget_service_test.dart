@@ -2,7 +2,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_money_management/src/data/local/app_database.dart';
 import 'package:flutter_money_management/src/services/budget_service.dart';
-import 'package:flutter_money_management/src/models/budget.dart';
 import 'package:flutter_money_management/src/models/transaction.dart';
 import 'package:drift/native.dart';
 
@@ -20,21 +19,20 @@ void main() {
   });
 
   group('BudgetService', () {
-    test('applyTransactionToBudgets updates budget consumed amount', () async {
+    test('applyTransactionToBudget updates budget consumed amount', () async {
       // Create a test category
-      final categoryId = await database.categoryDao.createCategory(
+      final categoryId = await database.categoryDao.insertCategory(
         CategoriesCompanion.insert(
           name: 'Food',
-          icon: '🍔',
-          color: '#FF0000',
-          type: 'expense',
+          iconName: '🍔',
+          colorValue: 0xFFFF0000,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         ),
       );
 
       // Create a test account
-      final accountId = await database.accountDao.createAccount(
+      final accountId = await database.accountDao.insertAccount(
         AccountsCompanion.insert(
           name: 'Cash',
           balanceCents: 100000,
@@ -47,7 +45,7 @@ void main() {
 
       // Create a budget
       final now = DateTime.now();
-      final budgetId = await database.budgetDao.createBudget(
+      final budgetId = await database.budgetDao.insertBudget(
         BudgetsCompanion.insert(
           categoryId: categoryId,
           periodType: 'monthly',
@@ -77,31 +75,30 @@ void main() {
 
       // Apply transaction to budget
       await database.transaction(() async {
-        await budgetService.applyTransactionToBudgets(transaction);
+        await budgetService.applyTransactionToBudget(transaction);
       });
 
       // Verify budget was updated
       final updatedBudget = await database.budgetDao.getBudgetById(budgetId);
       expect(updatedBudget, isNotNull);
-      expect(updatedBudget!.consumedCents, equals(10000));
+      expect(updatedBudget.consumedCents, equals(10000));
       expect(updatedBudget.overdraftCents, equals(0));
     });
 
-    test('applyTransactionToBudgets throws BudgetExceededException when budget is exceeded', () async {
+    test('applyTransactionToBudget throws BudgetExceededException when budget is exceeded', () async {
       // Create a test category
-      final categoryId = await database.categoryDao.createCategory(
+      final categoryId = await database.categoryDao.insertCategory(
         CategoriesCompanion.insert(
           name: 'Food',
-          icon: '🍔',
-          color: '#FF0000',
-          type: 'expense',
+          iconName: '🍔',
+          colorValue: 0xFFFF0000,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         ),
       );
 
       // Create a test account
-      final accountId = await database.accountDao.createAccount(
+      final accountId = await database.accountDao.insertAccount(
         AccountsCompanion.insert(
           name: 'Cash',
           balanceCents: 100000,
@@ -114,7 +111,7 @@ void main() {
 
       // Create a budget with low limit
       final now = DateTime.now();
-      await database.budgetDao.createBudget(
+      await database.budgetDao.insertBudget(
         BudgetsCompanion.insert(
           categoryId: categoryId,
           periodType: 'monthly',
@@ -145,27 +142,26 @@ void main() {
       // Expect exception
       await expectLater(
         database.transaction(() async {
-          await budgetService.applyTransactionToBudgets(transaction);
+          await budgetService.applyTransactionToBudget(transaction);
         }),
         throwsA(isA<BudgetExceededException>()),
       );
     });
 
-    test('applyTransactionToBudgets allows overdraft when enabled', () async {
+    test('applyTransactionToBudget allows overdraft when enabled', () async {
       // Create a test category
-      final categoryId = await database.categoryDao.createCategory(
+      final categoryId = await database.categoryDao.insertCategory(
         CategoriesCompanion.insert(
           name: 'Food',
-          icon: '🍔',
-          color: '#FF0000',
-          type: 'expense',
+          iconName: '🍔',
+          colorValue: 0xFFFF0000,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         ),
       );
 
       // Create a test account
-      final accountId = await database.accountDao.createAccount(
+      final accountId = await database.accountDao.insertAccount(
         AccountsCompanion.insert(
           name: 'Cash',
           balanceCents: 100000,
@@ -178,7 +174,7 @@ void main() {
 
       // Create a budget with overdraft allowed
       final now = DateTime.now();
-      final budgetId = await database.budgetDao.createBudget(
+      final budgetId = await database.budgetDao.insertBudget(
         BudgetsCompanion.insert(
           categoryId: categoryId,
           periodType: 'monthly',
@@ -208,24 +204,23 @@ void main() {
 
       // Apply transaction with overdraft
       await database.transaction(() async {
-        await budgetService.applyTransactionToBudgets(transaction, allowOverdraft: true);
+        await budgetService.applyTransactionToBudget(transaction, allowOverdraft: true);
       });
 
       // Verify budget was updated with overdraft
       final updatedBudget = await database.budgetDao.getBudgetById(budgetId);
       expect(updatedBudget, isNotNull);
-      expect(updatedBudget!.consumedCents, equals(10000));
+      expect(updatedBudget.consumedCents, equals(10000));
       expect(updatedBudget.overdraftCents, equals(5000));
     });
 
-    test('validateNoBudgetOverlap throws BudgetOverlapException when budgets overlap', () async {
+    test('hasOverlappingBudget detects overlapping budgets', () async {
       // Create a test category
-      final categoryId = await database.categoryDao.createCategory(
+      final categoryId = await database.categoryDao.insertCategory(
         CategoriesCompanion.insert(
           name: 'Food',
-          icon: '🍔',
-          color: '#FF0000',
-          type: 'expense',
+          iconName: '🍔',
+          colorValue: 0xFFFF0000,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         ),
@@ -233,7 +228,7 @@ void main() {
 
       // Create an existing budget
       final now = DateTime.now();
-      await database.budgetDao.createBudget(
+      await database.budgetDao.insertBudget(
         BudgetsCompanion.insert(
           categoryId: categoryId,
           periodType: 'monthly',
@@ -248,16 +243,14 @@ void main() {
         ),
       );
 
-      // Try to create overlapping budget
-      await expectLater(
-        budgetService.validateNoBudgetOverlap(
-          categoryId,
-          DateTime(now.year, now.month, 15),
-          DateTime(now.year, now.month + 1, 15),
-        ),
-        throwsA(isA<BudgetOverlapException>()),
+      // Check for overlapping budget
+      final hasOverlap = await database.budgetDao.hasOverlappingBudget(
+        categoryId,
+        DateTime(now.year, now.month, 15),
+        DateTime(now.year, now.month + 1, 15),
       );
+
+      expect(hasOverlap, isTrue);
     });
   });
 }
-code

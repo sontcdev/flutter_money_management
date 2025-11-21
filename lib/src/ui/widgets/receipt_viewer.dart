@@ -7,9 +7,9 @@ class ReceiptViewer extends StatelessWidget {
   final String? receiptPath;
 
   const ReceiptViewer({
-    Key? key,
+    super.key,
     this.receiptPath,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

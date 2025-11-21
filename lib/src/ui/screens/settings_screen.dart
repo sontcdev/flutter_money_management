@@ -2,12 +2,15 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/src/i18n/locale_provider.dart';
-import 'package:flutter_money_management/src/theme/app_theme.dart';
-import 'package:flutter_money_management/src/providers/providers.dart';
-import 'package:flutter_money_management/src/app_router.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_money_management/src/i18n/theme_provider.dart';
+import '../../../l10n/app_localizations.dart';
+
+// Temporary stub for isLoggedInProvider - should be in auth_service
+final isLoggedInProvider = StateProvider<bool>((ref) => true);
 
 class SettingsScreen extends ConsumerWidget {
+  const SettingsScreen({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
@@ -22,11 +25,11 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         children: [
           ListTile(
-            leading: Icon(Icons.language),
+            leading: const Icon(Icons.language),
             title: Text(l10n.language),
             trailing: DropdownButton<String>(
               value: locale.languageCode,
-              items: [
+              items: const [
                 DropdownMenuItem(value: 'en', child: Text('English')),
                 DropdownMenuItem(value: 'vi', child: Text('Tiếng Việt')),
               ],
@@ -38,7 +41,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           ListTile(
-            leading: Icon(Icons.brightness_6),
+            leading: const Icon(Icons.brightness_6),
             title: Text(l10n.theme),
             trailing: DropdownButton<ThemeMode>(
               value: themeMode,
@@ -53,32 +56,32 @@ class SettingsScreen extends ConsumerWidget {
               },
             ),
           ),
-          Divider(),
+          const Divider(),
           ListTile(
-            leading: Icon(Icons.category),
+            leading: const Icon(Icons.category),
             title: Text(l10n.categories),
-            trailing: Icon(Icons.chevron_right),
+            trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              Navigator.of(context).pushNamed(AppRouter.categories);
+              Navigator.pushNamed(context, '/categories');
             },
           ),
           ListTile(
-            leading: Icon(Icons.account_balance_wallet),
+            leading: const Icon(Icons.account_balance_wallet),
             title: Text(l10n.accounts),
-            trailing: Icon(Icons.chevron_right),
+            trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              // Navigate to accounts screen
+              Navigator.pushNamed(context, '/accounts');
             },
           ),
-          Divider(),
+          const Divider(),
           if (isLoggedIn)
             ListTile(
-              leading: Icon(Icons.logout, color: Colors.red),
-              title: Text(l10n.logout, style: TextStyle(color: Colors.red)),
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: Text(l10n.logout, style: const TextStyle(color: Colors.red)),
               onTap: () async {
-                await ref.read(isLoggedInProvider.notifier).logout();
+                ref.read(isLoggedInProvider.notifier).state = false;
                 if (context.mounted) {
-                  Navigator.of(context).pushReplacementNamed(AppRouter.login);
+                  Navigator.pushReplacementNamed(context, '/login');
                 }
               },
             ),
@@ -87,4 +90,3 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 }
-

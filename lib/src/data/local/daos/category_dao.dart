@@ -9,7 +9,7 @@ part 'category_dao.g.dart';
 @DriftAccessor(tables: [Categories])
 class CategoryDao extends DatabaseAccessor<AppDatabase>
     with _$CategoryDaoMixin {
-  CategoryDao(AppDatabase db) : super(db);
+  CategoryDao(super.db);
 
   Future<List<CategoryEntity>> getAllCategories() {
     return select(categories).get();

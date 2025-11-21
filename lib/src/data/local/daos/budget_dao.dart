@@ -8,7 +8,7 @@ part 'budget_dao.g.dart';
 
 @DriftAccessor(tables: [Budgets])
 class BudgetDao extends DatabaseAccessor<AppDatabase> with _$BudgetDaoMixin {
-  BudgetDao(AppDatabase db) : super(db);
+  BudgetDao(super.db);
 
   Future<List<BudgetEntity>> getAllBudgets() {
     return select(budgets).get();
@@ -77,8 +77,8 @@ class BudgetDao extends DatabaseAccessor<AppDatabase> with _$BudgetDaoMixin {
     final query = selectOnly(db.transactions)
       ..addColumns([db.transactions.amountCents.sum()])
       ..where(db.transactions.categoryId.equals(budget.categoryId) &
-          db.transactions.dateTime.isBiggerOrEqualValue(budget.periodStart) &
-          db.transactions.dateTime.isSmallerOrEqualValue(budget.periodEnd) &
+          db.transactions.transactionDate.isBiggerOrEqualValue(budget.periodStart) &
+          db.transactions.transactionDate.isSmallerOrEqualValue(budget.periodEnd) &
           db.transactions.type.equals('expense'));
 
     final result = await query.getSingle();

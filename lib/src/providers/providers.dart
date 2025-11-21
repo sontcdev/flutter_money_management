@@ -87,6 +87,11 @@ final categoriesProvider = FutureProvider<List<Category>>((ref) async {
   return repository.getAllCategories();
 });
 
+final categoryProvider = FutureProvider.family<Category?, int>((ref, categoryId) async {
+  final repository = ref.watch(categoryRepositoryProvider);
+  return repository.getCategoryById(categoryId);
+});
+
 final accountsProvider = FutureProvider<List<Account>>((ref) async {
   final repository = ref.watch(accountRepositoryProvider);
   return repository.getAllAccounts();

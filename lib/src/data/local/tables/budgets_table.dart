@@ -1,6 +1,7 @@
 // path: lib/src/data/local/tables/budgets_table.dart
 
 import 'package:drift/drift.dart';
+import 'categories_table.dart';
 
 @DataClassName('BudgetEntity')
 class Budgets extends Table {

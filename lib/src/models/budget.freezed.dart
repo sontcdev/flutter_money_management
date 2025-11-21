@@ -233,7 +233,7 @@ class __$$BudgetImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$BudgetImpl implements _Budget {
+class _$BudgetImpl extends _Budget {
   const _$BudgetImpl(
       {required this.id,
       required this.categoryId,
@@ -245,7 +245,8 @@ class _$BudgetImpl implements _Budget {
       required this.allowOverdraft,
       required this.overdraftCents,
       required this.createdAt,
-      required this.updatedAt});
+      required this.updatedAt})
+      : super._();
 
   factory _$BudgetImpl.fromJson(Map<String, dynamic> json) =>
       _$$BudgetImplFromJson(json);
@@ -338,7 +339,7 @@ class _$BudgetImpl implements _Budget {
   }
 }
 
-abstract class _Budget implements Budget {
+abstract class _Budget extends Budget {
   const factory _Budget(
       {required final int id,
       required final int categoryId,
@@ -351,6 +352,7 @@ abstract class _Budget implements Budget {
       required final int overdraftCents,
       required final DateTime createdAt,
       required final DateTime updatedAt}) = _$BudgetImpl;
+  const _Budget._() : super._();
 
   factory _Budget.fromJson(Map<String, dynamic> json) = _$BudgetImpl.fromJson;
 

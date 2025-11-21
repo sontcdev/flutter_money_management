@@ -10,7 +10,7 @@ import '../widgets/app_button.dart';
 import '../widgets/app_input.dart';
 
 class LoginScreen extends HookConsumerWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,7 +23,7 @@ class LoginScreen extends HookConsumerWidget {
     Future<void> handleLogin() async {
       if (pinController.text.length < 4) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('PIN must be at least 4 digits')),
+          const SnackBar(content: Text('PIN must be at least 4 digits')),
         );
         return;
       }
@@ -65,7 +65,7 @@ class LoginScreen extends HookConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
+              const Icon(
                 Icons.account_balance_wallet,
                 size: 100,
                 color: AppColors.primary,

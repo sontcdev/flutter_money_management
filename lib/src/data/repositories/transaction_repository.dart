@@ -127,7 +127,7 @@ class TransactionRepository {
       id: entity.id,
       amountCents: entity.amountCents,
       currency: entity.currency,
-      dateTime: entity.dateTime,
+      dateTime: entity.transactionDate,
       categoryId: entity.categoryId,
       accountId: entity.accountId,
       type: entity.type == 'expense'
@@ -145,7 +145,7 @@ class TransactionRepository {
       id: transaction.id > 0 ? Value(transaction.id) : const Value.absent(),
       amountCents: Value(transaction.amountCents),
       currency: Value(transaction.currency),
-      dateTime: Value(transaction.dateTime),
+      transactionDate: Value(transaction.dateTime),
       categoryId: Value(transaction.categoryId),
       accountId: Value(transaction.accountId),
       type: Value(transaction.type == model.TransactionType.expense

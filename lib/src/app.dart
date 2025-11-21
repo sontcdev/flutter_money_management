@@ -11,7 +11,7 @@ import 'i18n/theme_provider.dart';
 import 'providers/providers.dart';
 
 class MoneyManagementApp extends ConsumerWidget {
-  const MoneyManagementApp({Key? key}) : super(key: key);
+  const MoneyManagementApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

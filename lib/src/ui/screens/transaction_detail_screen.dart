@@ -3,14 +3,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
-import 'package:flutter_money_management/src/app_router.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../../l10n/app_localizations.dart';
 
 class TransactionDetailScreen extends ConsumerWidget {
   final int transactionId;
 
-  const TransactionDetailScreen({Key? key, required this.transactionId}) : super(key: key);
+  const TransactionDetailScreen({super.key, required this.transactionId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -23,7 +22,7 @@ class TransactionDetailScreen extends ConsumerWidget {
         if (!snapshot.hasData) {
           return Scaffold(
             appBar: AppBar(),
-            body: Center(child: CircularProgressIndicator()),
+            body: const Center(child: CircularProgressIndicator()),
           );
         }
 
@@ -35,16 +34,17 @@ class TransactionDetailScreen extends ConsumerWidget {
             title: Text(l10n.transactions),
             actions: [
               IconButton(
-                icon: Icon(Icons.edit),
+                icon: const Icon(Icons.edit),
                 onPressed: () {
-                  Navigator.of(context).pushNamed(
-                    AppRouter.editTransaction,
-                    arguments: transaction,
+                  Navigator.pushNamed(
+                    context,
+                    '/add-transaction',
+                    arguments: {'transactionId': transactionId},
                   );
                 },
               ),
               IconButton(
-                icon: Icon(Icons.delete, color: Colors.red),
+                icon: const Icon(Icons.delete, color: Colors.red),
                 onPressed: () async {
                   final confirm = await showDialog<bool>(
                     context: context,
@@ -63,7 +63,7 @@ class TransactionDetailScreen extends ConsumerWidget {
                     ),
                   );
                   if (confirm == true) {
-                    await transactionRepo.delete(transactionId);
+                    await transactionRepo.deleteTransaction(transactionId);
                     if (context.mounted) Navigator.pop(context);
                   }
                 },
@@ -71,20 +71,20 @@ class TransactionDetailScreen extends ConsumerWidget {
             ],
           ),
           body: ListView(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             children: [
               Card(
                 child: Padding(
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(l10n.amount, style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      Text(l10n.amount, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                       Text(
                         formatter.format(transaction.amountCents / 100),
-                        style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       _DetailRow(l10n.date, DateFormat('MMM d, yyyy HH:mm').format(transaction.dateTime)),
                       _DetailRow(l10n.category, 'Category ${transaction.categoryId}'),
                       _DetailRow(l10n.account, 'Account ${transaction.accountId}'),
@@ -95,7 +95,7 @@ class TransactionDetailScreen extends ConsumerWidget {
                 ),
               ),
               if (transaction.receiptPath != null) ...[
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Card(
                   child: Column(
                     children: [
@@ -121,12 +121,12 @@ class _DetailRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(color: Colors.grey)),
-          Text(value, style: TextStyle(fontWeight: FontWeight.w600)),
+          Text(label, style: const TextStyle(color: Colors.grey)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
         ],
       ),
     );

@@ -8,7 +8,7 @@ part 'account_dao.g.dart';
 
 @DriftAccessor(tables: [Accounts])
 class AccountDao extends DatabaseAccessor<AppDatabase> with _$AccountDaoMixin {
-  AccountDao(AppDatabase db) : super(db);
+  AccountDao(super.db);
 
   Future<List<AccountEntity>> getAllAccounts() {
     return select(accounts).get();

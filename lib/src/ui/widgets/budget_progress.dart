@@ -11,11 +11,11 @@ class BudgetProgress extends StatelessWidget {
   final String currency;
 
   const BudgetProgress({
-    Key? key,
+    super.key,
     required this.budget,
     required this.categoryName,
     required this.currency,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

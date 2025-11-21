@@ -3,24 +3,25 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/ui/widgets/category_item.dart';
-import 'package:flutter_money_management/src/data/repositories/category_repository.dart';
-import 'package:flutter_money_management/src/app_router.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_money_management/src/services/budget_service.dart';
+import '../../../l10n/app_localizations.dart';
 
 class CategoriesScreen extends ConsumerWidget {
+  const CategoriesScreen({super.key});
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final categoriesAsync = ref.watch(categoriesStreamProvider);
+    final categoriesAsync = ref.watch(categoriesProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.categories),
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: const Icon(Icons.add),
             onPressed: () {
-              Navigator.of(context).pushNamed(AppRouter.addCategory);
+              Navigator.pushNamed(context, '/category-edit');
             },
           ),
         ],
@@ -32,8 +33,8 @@ class CategoriesScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.category, size: 64, color: Colors.grey),
-                  SizedBox(height: 16),
+                  const Icon(Icons.category, size: 64, color: Colors.grey),
+                  const SizedBox(height: 16),
                   Text(l10n.noCategories),
                   Text(l10n.createFirst),
                 ],
@@ -48,8 +49,9 @@ class CategoriesScreen extends ConsumerWidget {
               return CategoryItem(
                 category: category,
                 onEdit: () {
-                  Navigator.of(context).pushNamed(
-                    AppRouter.editCategory,
+                  Navigator.pushNamed(
+                    context,
+                    '/category-edit',
                     arguments: category,
                   );
                 },
@@ -73,13 +75,13 @@ class CategoriesScreen extends ConsumerWidget {
 
                   if (confirm == true) {
                     try {
-                      await ref.read(categoryRepositoryProvider).delete(category.id);
+                      await ref.read(categoryRepositoryProvider).deleteCategory(category.id);
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(l10n.success)),
                         );
                       }
-                    } on CategoryInUseException catch (e) {
+                    } on CategoryInUseException {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(l10n.categoryInUse)),
@@ -92,7 +94,7 @@ class CategoriesScreen extends ConsumerWidget {
             },
           );
         },
-        loading: () => Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(child: Text('Error: $error')),
       ),
     );

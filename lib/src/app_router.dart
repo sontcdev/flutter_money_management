@@ -1,6 +1,7 @@
 // path: lib/src/app_router.dart
 
 import 'package:flutter/material.dart';
+import 'models/category.dart';
 import 'ui/screens/login_screen.dart';
 import 'ui/screens/home_screen.dart';
 import 'ui/screens/transactions_screen.dart';
@@ -47,9 +48,9 @@ class AppRouter {
       case '/categories':
         return MaterialPageRoute(builder: (_) => const CategoriesScreen());
       case '/category-edit':
-        final categoryId = settings.arguments as int?;
+        final category = settings.arguments as Category?;
         return MaterialPageRoute(
-          builder: (_) => CategoryEditScreen(categoryId: categoryId),
+          builder: (_) => CategoryEditScreen(category: category),
         );
       case '/accounts':
         return MaterialPageRoute(builder: (_) => const AccountsScreen());

@@ -2,7 +2,6 @@
 
 import '../data/local/app_database.dart';
 import '../models/transaction.dart' as model;
-import '../models/budget.dart' as model;
 
 class BudgetExceededException implements Exception {
   final String message;
@@ -73,7 +72,7 @@ class BudgetService {
       final remaining = budgetEntity.limitCents - budgetEntity.consumedCents;
       throw BudgetExceededException(
         message:
-            'Budget exceeded! Remaining: ${remaining} cents, Limit: ${budgetEntity.limitCents} cents',
+            'Budget exceeded! Remaining: $remaining cents, Limit: ${budgetEntity.limitCents} cents',
         remainingCents: remaining,
         limitCents: budgetEntity.limitCents,
       );

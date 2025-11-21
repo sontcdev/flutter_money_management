@@ -26,7 +26,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   // Test constructor
-  AppDatabase.withQueryExecutor(QueryExecutor executor) : super(executor);
+  AppDatabase.withQueryExecutor(super.executor);
 
   @override
   int get schemaVersion => 1;

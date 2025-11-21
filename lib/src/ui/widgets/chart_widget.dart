@@ -2,15 +2,16 @@
 
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../../theme/app_colors.dart';
 
 class PieChartWidget extends StatelessWidget {
   final List<ChartData> data;
+  final String? title;
 
   const PieChartWidget({
-    Key? key,
+    super.key,
     required this.data,
-  }) : super(key: key);
+    this.title,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -50,10 +51,10 @@ class BarChartWidget extends StatelessWidget {
   final String Function(double) labelFormatter;
 
   const BarChartWidget({
-    Key? key,
+    super.key,
     required this.data,
     required this.labelFormatter,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -139,8 +140,9 @@ class ChartData {
   ChartData({
     required this.label,
     required this.value,
-    required this.percentage,
-    required this.color,
-  });
+    double? percentage,
+    Color? color,
+  })  : percentage = percentage ?? value,
+        color = color ?? Colors.blue;
 }
 

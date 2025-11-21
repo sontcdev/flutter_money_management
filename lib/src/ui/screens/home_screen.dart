@@ -10,7 +10,7 @@ import '../widgets/app_card.dart';
 import '../widgets/transaction_item.dart';
 
 class HomeScreen extends ConsumerWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -90,7 +90,7 @@ class HomeScreen extends ConsumerWidget {
                       child: AppCard(
                         child: Column(
                           children: [
-                            Icon(Icons.arrow_downward, color: AppColors.income),
+                            const Icon(Icons.arrow_downward, color: AppColors.income),
                             const SizedBox(height: 8),
                             Text(l10n.income),
                             Text(
@@ -109,7 +109,7 @@ class HomeScreen extends ConsumerWidget {
                       child: AppCard(
                         child: Column(
                           children: [
-                            Icon(Icons.arrow_upward, color: AppColors.expense),
+                            const Icon(Icons.arrow_upward, color: AppColors.expense),
                             const SizedBox(height: 8),
                             Text(l10n.expense),
                             Text(

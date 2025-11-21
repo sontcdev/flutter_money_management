@@ -4,12 +4,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/src/ui/screens/add_transaction_screen.dart';
 import 'package:flutter_money_management/src/data/local/app_database.dart';
-import 'package:flutter_money_management/src/services/budget_service.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:drift/native.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_money_management/l10n/app_localizations.dart';
 
 void main() {
   late AppDatabase database;
@@ -32,7 +31,7 @@ void main() {
           databaseProvider.overrideWithValue(database),
           sharedPreferencesProvider.overrideWithValue(sharedPreferences),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: [
             AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
@@ -66,7 +65,7 @@ void main() {
           databaseProvider.overrideWithValue(database),
           sharedPreferencesProvider.overrideWithValue(sharedPreferences),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: [
             AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
@@ -98,23 +97,21 @@ void main() {
     final sharedPreferences = await SharedPreferences.getInstance();
 
     // Create test categories
-    await database.categoryDao.createCategory(
+    await database.categoryDao.insertCategory(
       CategoriesCompanion.insert(
         name: 'Food',
-        icon: '🍔',
-        color: '#FF0000',
-        type: 'expense',
+        iconName: '🍔',
+        colorValue: 0xFFFF0000,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
     );
 
-    await database.categoryDao.createCategory(
+    await database.categoryDao.insertCategory(
       CategoriesCompanion.insert(
         name: 'Salary',
-        icon: '💰',
-        color: '#00FF00',
-        type: 'income',
+        iconName: '💰',
+        colorValue: 0xFF00FF00,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
@@ -126,7 +123,7 @@ void main() {
           databaseProvider.overrideWithValue(database),
           sharedPreferencesProvider.overrideWithValue(sharedPreferences),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: [
             AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,

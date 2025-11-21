@@ -19,7 +19,7 @@ class AppInput extends StatelessWidget {
   final Function(String)? onChanged;
 
   const AppInput({
-    Key? key,
+    super.key,
     required this.label,
     this.hint,
     this.controller,
@@ -33,7 +33,7 @@ class AppInput extends StatelessWidget {
     this.readOnly = false,
     this.onTap,
     this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

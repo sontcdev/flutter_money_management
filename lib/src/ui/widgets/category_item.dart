@@ -10,12 +10,12 @@ class CategoryItem extends StatelessWidget {
   final VoidCallback? onDelete;
 
   const CategoryItem({
-    Key? key,
+    super.key,
     required this.category,
     this.onTap,
     this.onEdit,
     this.onDelete,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

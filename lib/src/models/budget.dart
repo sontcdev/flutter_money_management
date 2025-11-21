@@ -3,6 +3,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'budget.freezed.dart';
+part 'budget.g.dart';
 
 enum PeriodType {
   monthly,

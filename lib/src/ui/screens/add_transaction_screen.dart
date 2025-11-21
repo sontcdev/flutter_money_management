@@ -9,14 +9,13 @@ import '../../../l10n/app_localizations.dart';
 import '../../providers/providers.dart';
 import '../../models/transaction.dart' as model;
 import '../../services/budget_service.dart';
-import '../../theme/app_colors.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_input.dart';
 
 class AddTransactionScreen extends HookConsumerWidget {
   final int? transactionId;
 
-  const AddTransactionScreen({Key? key, this.transactionId}) : super(key: key);
+  const AddTransactionScreen({super.key, this.transactionId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -56,21 +55,21 @@ class AddTransactionScreen extends HookConsumerWidget {
       // Validation
       if (amountController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.error + ': Amount is required')),
+          SnackBar(content: Text('${l10n.error}: Amount is required')),
         );
         return;
       }
 
       if (selectedCategoryId.value == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.error + ': ${l10n.selectCategory}')),
+          SnackBar(content: Text('${l10n.error}: ${l10n.selectCategory}')),
         );
         return;
       }
 
       if (selectedAccountId.value == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.error + ': ${l10n.selectAccount}')),
+          SnackBar(content: Text('${l10n.error}: ${l10n.selectAccount}')),
         );
         return;
       }

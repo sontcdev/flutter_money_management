@@ -9,11 +9,11 @@ part 'transaction_dao.g.dart';
 @DriftAccessor(tables: [Transactions])
 class TransactionDao extends DatabaseAccessor<AppDatabase>
     with _$TransactionDaoMixin {
-  TransactionDao(AppDatabase db) : super(db);
+  TransactionDao(super.db);
 
   Future<List<TransactionEntity>> getAllTransactions() {
     return (select(transactions)
-          ..orderBy([(t) => OrderingTerm.desc(t.dateTime)]))
+          ..orderBy([(t) => OrderingTerm.desc(t.transactionDate)]))
         .get();
   }
 
@@ -21,9 +21,9 @@ class TransactionDao extends DatabaseAccessor<AppDatabase>
       DateTime start, DateTime end) {
     return (select(transactions)
           ..where((t) =>
-              t.dateTime.isBiggerOrEqualValue(start) &
-              t.dateTime.isSmallerOrEqualValue(end))
-          ..orderBy([(t) => OrderingTerm.desc(t.dateTime)]))
+              t.transactionDate.isBiggerOrEqualValue(start) &
+              t.transactionDate.isSmallerOrEqualValue(end))
+          ..orderBy([(t) => OrderingTerm.desc(t.transactionDate)]))
         .get();
   }
 
@@ -58,8 +58,8 @@ class TransactionDao extends DatabaseAccessor<AppDatabase>
     final query = selectOnly(transactions)
       ..addColumns([transactions.amountCents.sum()])
       ..where(transactions.categoryId.equals(categoryId) &
-          transactions.dateTime.isBiggerOrEqualValue(start) &
-          transactions.dateTime.isSmallerOrEqualValue(end));
+          transactions.transactionDate.isBiggerOrEqualValue(start) &
+          transactions.transactionDate.isSmallerOrEqualValue(end));
 
     final result = await query.getSingle();
     return result.read(transactions.amountCents.sum()) ?? 0;
@@ -68,8 +68,8 @@ class TransactionDao extends DatabaseAccessor<AppDatabase>
   Future<int> sumAmountByDateRange(DateTime start, DateTime end, {String? type}) async {
     final query = selectOnly(transactions)
       ..addColumns([transactions.amountCents.sum()])
-      ..where(transactions.dateTime.isBiggerOrEqualValue(start) &
-          transactions.dateTime.isSmallerOrEqualValue(end));
+      ..where(transactions.transactionDate.isBiggerOrEqualValue(start) &
+          transactions.transactionDate.isSmallerOrEqualValue(end));
 
     if (type != null) {
       query.where(transactions.type.equals(type));
@@ -83,8 +83,8 @@ class TransactionDao extends DatabaseAccessor<AppDatabase>
       DateTime start, DateTime end, String type) async {
     final query = selectOnly(transactions, distinct: false)
       ..addColumns([transactions.categoryId, transactions.amountCents.sum()])
-      ..where(transactions.dateTime.isBiggerOrEqualValue(start) &
-          transactions.dateTime.isSmallerOrEqualValue(end) &
+      ..where(transactions.transactionDate.isBiggerOrEqualValue(start) &
+          transactions.transactionDate.isSmallerOrEqualValue(end) &
           transactions.type.equals(type))
       ..groupBy([transactions.categoryId]);
 

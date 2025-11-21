@@ -6,32 +6,31 @@ import 'package:flutter_money_management/src/models/category.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '../../../l10n/app_localizations.dart';
 
 class CategoryEditScreen extends HookConsumerWidget {
   final Category? category;
 
-  const CategoryEditScreen({Key? key, this.category}) : super(key: key);
+  const CategoryEditScreen({super.key, this.category});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final nameController = useTextEditingController(text: category?.name ?? '');
-    final selectedIcon = useState(category?.icon ?? '🏷️');
-    final selectedColor = useState(category?.color ?? '#7F3DFF');
-    final selectedType = useState(category?.type ?? CategoryType.expense);
+    final selectedIcon = useState(category?.iconName ?? '🏷️');
+    final selectedColor = useState(category?.colorValue ?? 0xFF7F3DFF);
     final isLoading = useState(false);
 
     final icons = ['🏷️', '🍔', '🚗', '🏠', '💊', '🎓', '💰', '🎮', '✈️', '👕'];
     final colors = [
-      '#7F3DFF', '#FD3C4A', '#FD9B63', '#FCAC12',
-      '#00A86B', '#0077FF', '#FF7EB3', '#7F3D3D',
+      0xFF7F3DFF, 0xFFFD3C4A, 0xFFFD9B63, 0xFFFCAC12,
+      0xFF00A86B, 0xFF0077FF, 0xFFFF7EB3, 0xFF7F3D3D,
     ];
 
-    Future<void> _save() async {
+    Future<void> save() async {
       if (nameController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Please enter category name')),
+          const SnackBar(content: Text('Please enter category name')),
         );
         return;
       }
@@ -43,17 +42,16 @@ class CategoryEditScreen extends HookConsumerWidget {
         final newCategory = Category(
           id: category?.id ?? 0,
           name: nameController.text,
-          icon: selectedIcon.value,
-          color: selectedColor.value,
-          type: selectedType.value,
+          iconName: selectedIcon.value,
+          colorValue: selectedColor.value,
           createdAt: category?.createdAt ?? DateTime.now(),
           updatedAt: DateTime.now(),
         );
 
         if (category == null) {
-          await categoryRepo.create(newCategory);
+          await categoryRepo.createCategory(newCategory);
         } else {
-          await categoryRepo.update(newCategory);
+          await categoryRepo.updateCategory(newCategory);
         }
 
         if (context.mounted) {
@@ -78,16 +76,16 @@ class CategoryEditScreen extends HookConsumerWidget {
         title: Text(category == null ? l10n.addCategory : l10n.editCategory),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             AppInput(
               label: l10n.categoryName,
               controller: nameController,
             ),
-            SizedBox(height: 16),
-            Text(l10n.categoryIcon, style: TextStyle(fontWeight: FontWeight.w600)),
-            SizedBox(height: 8),
+            const SizedBox(height: 16),
+            Text(l10n.categoryIcon, style: const TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -102,14 +100,14 @@ class CategoryEditScreen extends HookConsumerWidget {
                       color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[200],
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Center(child: Text(icon, style: TextStyle(fontSize: 24))),
+                    child: Center(child: Text(icon, style: const TextStyle(fontSize: 24))),
                   ),
                 );
               }).toList(),
             ),
-            SizedBox(height: 16),
-            Text(l10n.categoryColor, style: TextStyle(fontWeight: FontWeight.w600)),
-            SizedBox(height: 8),
+            const SizedBox(height: 16),
+            Text(l10n.categoryColor, style: const TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -121,7 +119,7 @@ class CategoryEditScreen extends HookConsumerWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: Color(int.parse(color.replaceFirst('#', '0xFF'))),
+                      color: Color(color),
                       borderRadius: BorderRadius.circular(12),
                       border: isSelected ? Border.all(color: Colors.black, width: 3) : null,
                     ),
@@ -129,29 +127,12 @@ class CategoryEditScreen extends HookConsumerWidget {
                 );
               }).toList(),
             ),
-            SizedBox(height: 16),
-            SegmentedButton<CategoryType>(
-              segments: [
-                ButtonSegment(
-                  value: CategoryType.expense,
-                  label: Text(l10n.expense),
-                ),
-                ButtonSegment(
-                  value: CategoryType.income,
-                  label: Text(l10n.income),
-                ),
-              ],
-              selected: {selectedType.value},
-              onSelectionChanged: (Set<CategoryType> types) {
-                selectedType.value = types.first;
-              },
-            ),
-            SizedBox(height: 32),
+            const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               child: AppButton(
                 text: l10n.save,
-                onPressed: _save,
+                onPressed: save,
                 isLoading: isLoading.value,
               ),
             ),

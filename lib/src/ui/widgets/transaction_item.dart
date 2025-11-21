@@ -13,13 +13,13 @@ class TransactionItem extends StatelessWidget {
   final VoidCallback? onTap;
 
   const TransactionItem({
-    Key? key,
+    super.key,
     required this.transaction,
     required this.categoryName,
     this.categoryIcon,
     this.categoryColor,
     this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
