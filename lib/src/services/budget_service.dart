@@ -1,6 +1,5 @@
 // path: lib/src/services/budget_service.dart
 import '../models/transaction.dart';
-import '../models/budget.dart';
 import '../data/local/app_database.dart';
 import '../data/local/daos/budget_dao.dart';
 import '../data/repositories/category_repository.dart';

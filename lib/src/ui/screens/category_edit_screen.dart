@@ -209,7 +209,7 @@ class _CategoryEditScreenState extends ConsumerState<CategoryEditScreen> {
       }
 
       // Refresh categoriesProvider to update the list screen
-      await ref.refresh(categoriesProvider.future);
+      //await ref.refresh(categoriesProvider.future);
 
       if (mounted) {
         Navigator.of(context).pop();

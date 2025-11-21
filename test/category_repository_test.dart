@@ -1,6 +1,5 @@
 // path: test/category_repository_test.dart
 import 'package:flutter_test/flutter_test.dart';
-import 'package:drift/native.dart';
 import 'package:test3_cursor/src/data/local/app_database.dart';
 import 'package:test3_cursor/src/data/repositories/category_repository.dart';
 import 'package:test3_cursor/src/data/local/daos/category_dao.dart';
