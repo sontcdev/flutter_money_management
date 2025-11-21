@@ -2,10 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:intl/intl.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../providers/providers.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/currency_formatter.dart';
 import '../widgets/app_card.dart';
 import '../widgets/transaction_item.dart';
 
@@ -17,7 +17,6 @@ class HomeScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final transactionsAsync = ref.watch(transactionsProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
-    final accountsAsync = ref.watch(accountsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -34,36 +33,6 @@ class HomeScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Account Balance Summary
-            accountsAsync.when(
-              data: (accounts) {
-                final totalBalance = accounts.fold<int>(
-                  0,
-                  (sum, account) => sum + account.balanceCents,
-                );
-                return AppCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.balance,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _formatCurrency(totalBalance),
-                        style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, stack) => Text('Error: $err'),
-            ),
-            const SizedBox(height: 16),
 
             // Income/Expense Summary
             transactionsAsync.when(
@@ -135,11 +104,6 @@ class HomeScreen extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _QuickActionButton(
-                  icon: Icons.account_balance_wallet,
-                  label: l10n.accounts,
-                  onTap: () => Navigator.pushNamed(context, '/accounts'),
-                ),
                 _QuickActionButton(
                   icon: Icons.category,
                   label: l10n.categories,
@@ -228,7 +192,12 @@ class HomeScreen extends ConsumerWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.pushNamed(context, '/add-transaction'),
+        onPressed: () async {
+          final result = await Navigator.pushNamed(context, '/add-transaction');
+          if (result == true) {
+            ref.invalidate(transactionsProvider);
+          }
+        },
         icon: const Icon(Icons.add),
         label: Text(l10n.addTransaction),
       ),
@@ -236,8 +205,7 @@ class HomeScreen extends ConsumerWidget {
   }
 
   String _formatCurrency(int amountCents) {
-    final formatter = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
-    return formatter.format(amountCents / 100);
+    return CurrencyFormatter.formatVNDFromCents(amountCents);
   }
 }
 

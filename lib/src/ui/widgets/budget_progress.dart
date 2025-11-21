@@ -1,9 +1,9 @@
 // path: lib/src/ui/widgets/budget_progress.dart
 
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import '../../theme/app_colors.dart';
 import '../../models/budget.dart';
+import '../../utils/currency_formatter.dart';
 
 class BudgetProgress extends StatelessWidget {
   final Budget budget;
@@ -19,14 +19,10 @@ class BudgetProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final formatter = NumberFormat.currency(
-      symbol: _getCurrencySymbol(currency),
-      decimalDigits: 2,
-    );
+    final consumedFormatted = CurrencyFormatter.formatFromCents(budget.consumedCents, currency);
+    final limitFormatted = CurrencyFormatter.formatFromCents(budget.limitCents, currency);
+    final remainingFormatted = CurrencyFormatter.formatFromCents(budget.remainingCents.abs(), currency);
 
-    final consumed = budget.consumedCents / 100;
-    final limit = budget.limitCents / 100;
-    final remaining = budget.remainingCents / 100;
     final progress = budget.progressPercentage / 100;
 
     Color progressColor = AppColors.success;
@@ -49,7 +45,7 @@ class BudgetProgress extends StatelessWidget {
                   ),
             ),
             Text(
-              formatter.format(consumed),
+              consumedFormatted,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: progressColor,
                     fontWeight: FontWeight.w700,
@@ -76,9 +72,7 @@ class BudgetProgress extends StatelessWidget {
               style: Theme.of(context).textTheme.bodySmall,
             ),
             Text(
-              budget.isExceeded
-                  ? formatter.format(-remaining)
-                  : formatter.format(remaining),
+              remainingFormatted,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: progressColor,
                   ),
@@ -86,24 +80,11 @@ class BudgetProgress extends StatelessWidget {
           ],
         ),
         Text(
-          'Limit: ${formatter.format(limit)}',
+          'Limit: $limitFormatted',
           style: Theme.of(context).textTheme.bodySmall,
         ),
       ],
     );
-  }
-
-  String _getCurrencySymbol(String currency) {
-    switch (currency.toUpperCase()) {
-      case 'USD':
-        return '\$';
-      case 'VND':
-        return '₫';
-      case 'EUR':
-        return '€';
-      default:
-        return currency;
-    }
   }
 }
 

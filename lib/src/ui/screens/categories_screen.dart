@@ -20,8 +20,11 @@ class CategoriesScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () {
-              Navigator.pushNamed(context, '/category-edit');
+            onPressed: () async {
+              final result = await Navigator.pushNamed(context, '/category-edit');
+              if (result == true) {
+                ref.invalidate(categoriesProvider);
+              }
             },
           ),
         ],
@@ -48,12 +51,15 @@ class CategoriesScreen extends ConsumerWidget {
               final category = categories[index];
               return CategoryItem(
                 category: category,
-                onEdit: () {
-                  Navigator.pushNamed(
+                onEdit: () async {
+                  final result = await Navigator.pushNamed(
                     context,
                     '/category-edit',
                     arguments: category,
                   );
+                  if (result == true) {
+                    ref.invalidate(categoriesProvider);
+                  }
                 },
                 onDelete: () async {
                   final confirm = await showDialog<bool>(

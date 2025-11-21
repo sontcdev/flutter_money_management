@@ -6,14 +6,12 @@ import '../data/local/app_database.dart';
 import '../data/repositories/transaction_repository.dart';
 import '../data/repositories/budget_repository.dart';
 import '../data/repositories/category_repository.dart';
-import '../data/repositories/account_repository.dart';
 import '../services/budget_service.dart';
 import '../services/report_service.dart';
 import '../services/auth_service.dart';
 import '../models/transaction.dart';
 import '../models/budget.dart';
 import '../models/category.dart';
-import '../models/account.dart';
 
 // SharedPreferences provider
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
@@ -59,11 +57,6 @@ final categoryRepositoryProvider = Provider<CategoryRepository>((ref) {
   return CategoryRepository(db);
 });
 
-final accountRepositoryProvider = Provider<AccountRepository>((ref) {
-  final db = ref.watch(databaseProvider);
-  return AccountRepository(db);
-});
-
 // Data providers
 final transactionsProvider = FutureProvider<List<Transaction>>((ref) async {
   final repository = ref.watch(transactionRepositoryProvider);
@@ -90,11 +83,6 @@ final categoriesProvider = FutureProvider<List<Category>>((ref) async {
 final categoryProvider = FutureProvider.family<Category?, int>((ref, categoryId) async {
   final repository = ref.watch(categoryRepositoryProvider);
   return repository.getCategoryById(categoryId);
-});
-
-final accountsProvider = FutureProvider<List<Account>>((ref) async {
-  final repository = ref.watch(accountRepositoryProvider);
-  return repository.getAllAccounts();
 });
 
 // Helper classes

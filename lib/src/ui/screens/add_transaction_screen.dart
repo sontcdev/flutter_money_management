@@ -9,6 +9,8 @@ import '../../../l10n/app_localizations.dart';
 import '../../providers/providers.dart';
 import '../../models/transaction.dart' as model;
 import '../../services/budget_service.dart';
+import '../../utils/currency_formatter.dart';
+import '../../utils/vnd_input_formatter.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_input.dart';
 
@@ -22,14 +24,12 @@ class AddTransactionScreen extends HookConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final repository = ref.watch(transactionRepositoryProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
-    final accountsAsync = ref.watch(accountsProvider);
 
     final amountController = useTextEditingController();
     final noteController = useTextEditingController();
     final selectedDate = useState(DateTime.now());
     final selectedType = useState(model.TransactionType.expense);
     final selectedCategoryId = useState<int?>(null);
-    final selectedAccountId = useState<int?>(null);
     final receiptPath = useState<String?>(null);
     final isLoading = useState(false);
     final allowOverdraft = useState(false);
@@ -39,12 +39,13 @@ class AddTransactionScreen extends HookConsumerWidget {
       if (transactionId != null) {
         Future.microtask(() async {
           final transaction = await repository.getTransactionById(transactionId!);
-          amountController.text = (transaction.amountCents / 100).toString();
+          // Format amount as VND (without decimals)
+          final amount = (transaction.amountCents / 100).round();
+          amountController.text = CurrencyFormatter.formatInputVND(amount.toString());
           noteController.text = transaction.note ?? '';
           selectedDate.value = transaction.dateTime;
           selectedType.value = transaction.type;
           selectedCategoryId.value = transaction.categoryId;
-          selectedAccountId.value = transaction.accountId;
           receiptPath.value = transaction.receiptPath;
         });
       }
@@ -67,25 +68,22 @@ class AddTransactionScreen extends HookConsumerWidget {
         return;
       }
 
-      if (selectedAccountId.value == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.error}: ${l10n.selectAccount}')),
-        );
-        return;
-      }
-
       isLoading.value = true;
 
       try {
-        final amountCents = (double.parse(amountController.text) * 100).round();
+        // Parse VND formatted input (remove dots and parse)
+        final amount = CurrencyFormatter.parseVND(amountController.text);
+        if (amount == null) {
+          throw FormatException('Invalid amount format');
+        }
+        final amountCents = CurrencyFormatter.toCents(amount);
 
         final transaction = model.Transaction(
           id: transactionId ?? 0,
           amountCents: amountCents,
-          currency: 'USD',
+          currency: 'VND',
           dateTime: selectedDate.value,
           categoryId: selectedCategoryId.value!,
-          accountId: selectedAccountId.value!,
           type: selectedType.value,
           note: noteController.text.isEmpty ? null : noteController.text,
           receiptPath: receiptPath.value,
@@ -103,6 +101,9 @@ class AddTransactionScreen extends HookConsumerWidget {
           // Update existing transaction
           await repository.updateTransaction(transaction);
         }
+
+        // Invalidate budgets to refresh budget data
+        ref.invalidate(budgetsProvider);
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -189,13 +190,25 @@ class AddTransactionScreen extends HookConsumerWidget {
             // Amount Input
             AppInput(
               label: l10n.amount,
-              hint: '0.00',
+              hint: '0',
               controller: amountController,
               keyboardType: TextInputType.number,
               inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                FilteringTextInputFormatter.digitsOnly,
+                VNDInputFormatter(),
               ],
               prefixIcon: const Icon(Icons.attach_money),
+              suffixIcon: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                child: Text(
+                  '₫',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
             ),
             const SizedBox(height: 16),
 
@@ -240,44 +253,6 @@ class AddTransactionScreen extends HookConsumerWidget {
                       }).toList(),
                       onChanged: (value) {
                         selectedCategoryId.value = value;
-                      },
-                    ),
-                  ],
-                );
-              },
-              loading: () => const CircularProgressIndicator(),
-              error: (err, stack) => Text('Error: $err'),
-            ),
-            const SizedBox(height: 16),
-
-            // Account Selector
-            accountsAsync.when(
-              data: (accounts) {
-                if (accounts.isEmpty) {
-                  return Text(l10n.noAccounts);
-                }
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.account,
-                      style: Theme.of(context).textTheme.labelLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    DropdownButtonFormField<int>(
-                      value: selectedAccountId.value,
-                      decoration: const InputDecoration(
-                        hintText: 'Select account',
-                      ),
-                      items: accounts.map((account) {
-                        return DropdownMenuItem(
-                          value: account.id,
-                          child: Text(account.name),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        selectedAccountId.value = value;
                       },
                     ),
                   ],

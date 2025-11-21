@@ -25,7 +25,6 @@ mixin _$Transaction {
   String get currency => throw _privateConstructorUsedError;
   DateTime get dateTime => throw _privateConstructorUsedError;
   int get categoryId => throw _privateConstructorUsedError;
-  int get accountId => throw _privateConstructorUsedError;
   TransactionType get type => throw _privateConstructorUsedError;
   String? get note => throw _privateConstructorUsedError;
   String? get receiptPath => throw _privateConstructorUsedError;
@@ -54,7 +53,6 @@ abstract class $TransactionCopyWith<$Res> {
       String currency,
       DateTime dateTime,
       int categoryId,
-      int accountId,
       TransactionType type,
       String? note,
       String? receiptPath,
@@ -82,7 +80,6 @@ class _$TransactionCopyWithImpl<$Res, $Val extends Transaction>
     Object? currency = null,
     Object? dateTime = null,
     Object? categoryId = null,
-    Object? accountId = null,
     Object? type = null,
     Object? note = freezed,
     Object? receiptPath = freezed,
@@ -109,10 +106,6 @@ class _$TransactionCopyWithImpl<$Res, $Val extends Transaction>
       categoryId: null == categoryId
           ? _value.categoryId
           : categoryId // ignore: cast_nullable_to_non_nullable
-              as int,
-      accountId: null == accountId
-          ? _value.accountId
-          : accountId // ignore: cast_nullable_to_non_nullable
               as int,
       type: null == type
           ? _value.type
@@ -152,7 +145,6 @@ abstract class _$$TransactionImplCopyWith<$Res>
       String currency,
       DateTime dateTime,
       int categoryId,
-      int accountId,
       TransactionType type,
       String? note,
       String? receiptPath,
@@ -178,7 +170,6 @@ class __$$TransactionImplCopyWithImpl<$Res>
     Object? currency = null,
     Object? dateTime = null,
     Object? categoryId = null,
-    Object? accountId = null,
     Object? type = null,
     Object? note = freezed,
     Object? receiptPath = freezed,
@@ -205,10 +196,6 @@ class __$$TransactionImplCopyWithImpl<$Res>
       categoryId: null == categoryId
           ? _value.categoryId
           : categoryId // ignore: cast_nullable_to_non_nullable
-              as int,
-      accountId: null == accountId
-          ? _value.accountId
-          : accountId // ignore: cast_nullable_to_non_nullable
               as int,
       type: null == type
           ? _value.type
@@ -243,7 +230,6 @@ class _$TransactionImpl implements _Transaction {
       required this.currency,
       required this.dateTime,
       required this.categoryId,
-      required this.accountId,
       required this.type,
       this.note,
       this.receiptPath,
@@ -264,8 +250,6 @@ class _$TransactionImpl implements _Transaction {
   @override
   final int categoryId;
   @override
-  final int accountId;
-  @override
   final TransactionType type;
   @override
   final String? note;
@@ -278,7 +262,7 @@ class _$TransactionImpl implements _Transaction {
 
   @override
   String toString() {
-    return 'Transaction(id: $id, amountCents: $amountCents, currency: $currency, dateTime: $dateTime, categoryId: $categoryId, accountId: $accountId, type: $type, note: $note, receiptPath: $receiptPath, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Transaction(id: $id, amountCents: $amountCents, currency: $currency, dateTime: $dateTime, categoryId: $categoryId, type: $type, note: $note, receiptPath: $receiptPath, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -295,8 +279,6 @@ class _$TransactionImpl implements _Transaction {
                 other.dateTime == dateTime) &&
             (identical(other.categoryId, categoryId) ||
                 other.categoryId == categoryId) &&
-            (identical(other.accountId, accountId) ||
-                other.accountId == accountId) &&
             (identical(other.type, type) || other.type == type) &&
             (identical(other.note, note) || other.note == note) &&
             (identical(other.receiptPath, receiptPath) ||
@@ -309,19 +291,8 @@ class _$TransactionImpl implements _Transaction {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      amountCents,
-      currency,
-      dateTime,
-      categoryId,
-      accountId,
-      type,
-      note,
-      receiptPath,
-      createdAt,
-      updatedAt);
+  int get hashCode => Object.hash(runtimeType, id, amountCents, currency,
+      dateTime, categoryId, type, note, receiptPath, createdAt, updatedAt);
 
   /// Create a copy of Transaction
   /// with the given fields replaced by the non-null parameter values.
@@ -346,7 +317,6 @@ abstract class _Transaction implements Transaction {
       required final String currency,
       required final DateTime dateTime,
       required final int categoryId,
-      required final int accountId,
       required final TransactionType type,
       final String? note,
       final String? receiptPath,
@@ -366,8 +336,6 @@ abstract class _Transaction implements Transaction {
   DateTime get dateTime;
   @override
   int get categoryId;
-  @override
-  int get accountId;
   @override
   TransactionType get type;
   @override

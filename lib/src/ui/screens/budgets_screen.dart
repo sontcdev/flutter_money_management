@@ -6,6 +6,7 @@ import '../../providers/providers.dart';
 import '../../models/budget.dart';
 import '../widgets/budget_progress.dart';
 import '../../theme/app_colors.dart';
+import '../../utils/currency_formatter.dart';
 
 class BudgetsScreen extends ConsumerWidget {
   const BudgetsScreen({super.key});
@@ -21,8 +22,11 @@ class BudgetsScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
-            onPressed: () {
-              // Navigate to add budget screen
+            onPressed: () async {
+              final result = await Navigator.pushNamed(context, '/budget-edit');
+              if (result == true) {
+                ref.invalidate(budgetsProvider);
+              }
             },
           ),
         ],
@@ -81,8 +85,15 @@ class _BudgetCard extends ConsumerWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
-        onTap: () {
-          // Navigate to budget detail
+        onTap: () async {
+          final result = await Navigator.pushNamed(
+            context,
+            '/budget-edit',
+            arguments: budget,
+          );
+          if (result == true) {
+            ref.invalidate(budgetsProvider);
+          }
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -134,18 +145,26 @@ class _BudgetCard extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    '${(budget.consumedCents / 100).toStringAsFixed(2)} / ${(budget.limitCents / 100).toStringAsFixed(2)}',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                  Flexible(
+                    child: Text(
+                      '${CurrencyFormatter.formatVNDFromCents(budget.consumedCents)} / ${CurrencyFormatter.formatVNDFromCents(budget.limitCents)}',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  Text(
-                    'Remaining: ${((budget.limitCents - budget.consumedCents) / 100).toStringAsFixed(2)}',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: budget.consumedCents > budget.limitCents
-                              ? Colors.red
-                              : Colors.green,
-                          fontWeight: FontWeight.w600,
-                        ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      'Còn: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents - budget.consumedCents)}',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: budget.consumedCents > budget.limitCents
+                                ? Colors.red
+                                : Colors.green,
+                            fontWeight: FontWeight.w600,
+                          ),
+                      textAlign: TextAlign.right,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),

@@ -107,8 +107,11 @@ class TransactionsScreen extends ConsumerWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/add-transaction');
+        onPressed: () async {
+          final result = await Navigator.pushNamed(context, '/add-transaction');
+          if (result == true) {
+            ref.invalidate(transactionsProvider);
+          }
         },
         child: const Icon(Icons.add),
       ),

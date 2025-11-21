@@ -34,18 +34,6 @@ void main() {
         ),
       );
 
-      // Create a test account
-      final accountId = await database.accountDao.insertAccount(
-        AccountsCompanion.insert(
-          name: 'Cash',
-          balanceCents: 100000,
-          currency: 'USD',
-          type: 'cash',
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        ),
-      );
-
       // Create a budget with low limit
       final now = DateTime.now();
       final budgetId = await database.budgetDao.insertBudget(
@@ -67,10 +55,9 @@ void main() {
       final transaction = Transaction(
         id: 0,
         amountCents: 10000,
-        currency: 'USD',
+        currency: 'VND',
         dateTime: now,
         categoryId: categoryId,
-        accountId: accountId,
         type: TransactionType.expense,
         createdAt: now,
         updatedAt: now,
@@ -92,11 +79,6 @@ void main() {
       final budget = await database.budgetDao.getBudgetById(budgetId);
       expect(budget, isNotNull);
       expect(budget.consumedCents, equals(0));
-
-      // Verify account balance was not changed
-      final account = await database.accountDao.getAccountById(accountId);
-      expect(account, isNotNull);
-      expect(account.balanceCents, equals(100000));
     });
 
     test('creating transaction within budget succeeds atomically', () async {
@@ -106,18 +88,6 @@ void main() {
           name: 'Food',
           iconName: '🍔',
           colorValue: 0xFFFF0000,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        ),
-      );
-
-      // Create a test account
-      final accountId = await database.accountDao.insertAccount(
-        AccountsCompanion.insert(
-          name: 'Cash',
-          balanceCents: 100000,
-          currency: 'USD',
-          type: 'cash',
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         ),
@@ -144,10 +114,9 @@ void main() {
       final transaction = Transaction(
         id: 0,
         amountCents: 10000,
-        currency: 'USD',
+        currency: 'VND',
         dateTime: now,
         categoryId: categoryId,
-        accountId: accountId,
         type: TransactionType.expense,
         createdAt: now,
         updatedAt: now,
@@ -166,11 +135,6 @@ void main() {
       final budget = await database.budgetDao.getBudgetById(budgetId);
       expect(budget, isNotNull);
       expect(budget.consumedCents, equals(10000));
-
-      // Verify account balance was updated
-      final account = await database.accountDao.getAccountById(accountId);
-      expect(account, isNotNull);
-      expect(account.balanceCents, equals(90000));
     });
 
     test('creating income transaction does not affect budget', () async {
@@ -180,18 +144,6 @@ void main() {
           name: 'Salary',
           iconName: '💰',
           colorValue: 0xFF00FF00,
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        ),
-      );
-
-      // Create a test account
-      final accountId = await database.accountDao.insertAccount(
-        AccountsCompanion.insert(
-          name: 'Cash',
-          balanceCents: 100000,
-          currency: 'USD',
-          type: 'cash',
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         ),
@@ -218,10 +170,9 @@ void main() {
       final transaction = Transaction(
         id: 0,
         amountCents: 50000,
-        currency: 'USD',
+        currency: 'VND',
         dateTime: now,
         categoryId: categoryId,
-        accountId: accountId,
         type: TransactionType.income,
         createdAt: now,
         updatedAt: now,
@@ -234,11 +185,6 @@ void main() {
       final budget = await database.budgetDao.getBudgetById(budgetId);
       expect(budget, isNotNull);
       expect(budget.consumedCents, equals(0));
-
-      // Verify account balance was increased
-      final account = await database.accountDao.getAccountById(accountId);
-      expect(account, isNotNull);
-      expect(account.balanceCents, equals(150000));
     });
   });
 }

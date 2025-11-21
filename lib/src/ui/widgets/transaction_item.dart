@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../theme/app_colors.dart';
 import '../../models/transaction.dart';
+import '../../utils/currency_formatter.dart';
 
 class TransactionItem extends StatelessWidget {
   final Transaction transaction;
@@ -23,12 +24,11 @@ class TransactionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final formatter = NumberFormat.currency(
-      symbol: _getCurrencySymbol(transaction.currency),
-      decimalDigits: 2,
+    final formattedAmount = CurrencyFormatter.formatFromCents(
+      transaction.amountCents,
+      transaction.currency,
     );
 
-    final amount = transaction.amountCents / 100;
     final color = transaction.type == TransactionType.expense
         ? AppColors.expense
         : AppColors.income;
@@ -61,7 +61,7 @@ class TransactionItem extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text(
-            '${transaction.type == TransactionType.expense ? '-' : '+'}${formatter.format(amount)}',
+            '${transaction.type == TransactionType.expense ? '-' : '+'}$formattedAmount',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: color,
                   fontWeight: FontWeight.w700,
@@ -74,19 +74,6 @@ class TransactionItem extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _getCurrencySymbol(String currency) {
-    switch (currency.toUpperCase()) {
-      case 'USD':
-        return '\$';
-      case 'VND':
-        return '₫';
-      case 'EUR':
-        return '€';
-      default:
-        return currency;
-    }
   }
 }
 

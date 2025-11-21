@@ -18,7 +18,6 @@ class Transaction with _$Transaction {
     required String currency,
     required DateTime dateTime,
     required int categoryId,
-    required int accountId,
     required TransactionType type,
     String? note,
     String? receiptPath,

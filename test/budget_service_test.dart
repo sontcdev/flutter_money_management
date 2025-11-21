@@ -31,18 +31,6 @@ void main() {
         ),
       );
 
-      // Create a test account
-      final accountId = await database.accountDao.insertAccount(
-        AccountsCompanion.insert(
-          name: 'Cash',
-          balanceCents: 100000,
-          currency: 'USD',
-          type: 'cash',
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        ),
-      );
-
       // Create a budget
       final now = DateTime.now();
       final budgetId = await database.budgetDao.insertBudget(
@@ -64,10 +52,9 @@ void main() {
       final transaction = Transaction(
         id: 1,
         amountCents: 10000,
-        currency: 'USD',
+        currency: 'VND',
         dateTime: now,
         categoryId: categoryId,
-        accountId: accountId,
         type: TransactionType.expense,
         createdAt: now,
         updatedAt: now,
@@ -97,18 +84,6 @@ void main() {
         ),
       );
 
-      // Create a test account
-      final accountId = await database.accountDao.insertAccount(
-        AccountsCompanion.insert(
-          name: 'Cash',
-          balanceCents: 100000,
-          currency: 'USD',
-          type: 'cash',
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        ),
-      );
-
       // Create a budget with low limit
       final now = DateTime.now();
       await database.budgetDao.insertBudget(
@@ -130,10 +105,9 @@ void main() {
       final transaction = Transaction(
         id: 1,
         amountCents: 10000,
-        currency: 'USD',
+        currency: 'VND',
         dateTime: now,
         categoryId: categoryId,
-        accountId: accountId,
         type: TransactionType.expense,
         createdAt: now,
         updatedAt: now,
@@ -160,18 +134,6 @@ void main() {
         ),
       );
 
-      // Create a test account
-      final accountId = await database.accountDao.insertAccount(
-        AccountsCompanion.insert(
-          name: 'Cash',
-          balanceCents: 100000,
-          currency: 'USD',
-          type: 'cash',
-          createdAt: DateTime.now(),
-          updatedAt: DateTime.now(),
-        ),
-      );
-
       // Create a budget with overdraft allowed
       final now = DateTime.now();
       final budgetId = await database.budgetDao.insertBudget(
@@ -193,10 +155,9 @@ void main() {
       final transaction = Transaction(
         id: 1,
         amountCents: 10000,
-        currency: 'USD',
+        currency: 'VND',
         dateTime: now,
         categoryId: categoryId,
-        accountId: accountId,
         type: TransactionType.expense,
         createdAt: now,
         updatedAt: now,

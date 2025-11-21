@@ -32,10 +32,6 @@ class TransactionDao extends DatabaseAccessor<AppDatabase>
         .get();
   }
 
-  Future<List<TransactionEntity>> getTransactionsByAccount(int accountId) {
-    return (select(transactions)..where((t) => t.accountId.equals(accountId)))
-        .get();
-  }
 
   Future<TransactionEntity> getTransactionById(int id) {
     return (select(transactions)..where((t) => t.id.equals(id))).getSingle();

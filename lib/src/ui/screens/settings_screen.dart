@@ -65,14 +65,6 @@ class SettingsScreen extends ConsumerWidget {
               Navigator.pushNamed(context, '/categories');
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.account_balance_wallet),
-            title: Text(l10n.accounts),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.pushNamed(context, '/accounts');
-            },
-          ),
           const Divider(),
           if (isLoggedIn)
             ListTile(

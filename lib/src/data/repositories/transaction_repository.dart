@@ -30,7 +30,6 @@ class TransactionRepository {
 
   Future<model.Transaction> createTransaction(
     model.Transaction transaction, {
-    bool affectAccountBalance = true,
     bool allowOverdraft = false,
   }) async {
     return await _db.transaction(() async {
@@ -45,45 +44,21 @@ class TransactionRepository {
         allowOverdraft: allowOverdraft,
       );
 
-      // Update account balance
-      if (affectAccountBalance) {
-        final amountDelta = transaction.type == model.TransactionType.expense
-            ? -transaction.amountCents
-            : transaction.amountCents;
-        await _db.accountDao.updateBalance(transaction.accountId, amountDelta);
-      }
-
       return created;
     });
   }
 
   Future<void> updateTransaction(
-    model.Transaction transaction, {
-    bool affectAccountBalance = true,
-  }) async {
+    model.Transaction transaction,
+  ) async {
     await _db.transaction(() async {
-      // Get old transaction to reverse account balance
+      // Get old transaction
       final oldTransaction =
           await _db.transactionDao.getTransactionById(transaction.id);
 
       // Update transaction
       final companion = _modelToCompanion(transaction);
       await _db.transactionDao.updateTransaction(companion);
-
-      // Update account balance
-      if (affectAccountBalance) {
-        // Reverse old transaction
-        final oldDelta = oldTransaction.type == 'expense'
-            ? oldTransaction.amountCents
-            : -oldTransaction.amountCents;
-        await _db.accountDao.updateBalance(oldTransaction.accountId, oldDelta);
-
-        // Apply new transaction
-        final newDelta = transaction.type == model.TransactionType.expense
-            ? -transaction.amountCents
-            : transaction.amountCents;
-        await _db.accountDao.updateBalance(transaction.accountId, newDelta);
-      }
 
       // Recalculate budgets for affected category
       final budgets = await _db.budgetDao
@@ -94,24 +69,13 @@ class TransactionRepository {
     });
   }
 
-  Future<void> deleteTransaction(
-    int id, {
-    bool affectAccountBalance = true,
-  }) async {
+  Future<void> deleteTransaction(int id) async {
     await _db.transaction(() async {
-      // Get transaction to reverse account balance
+      // Get transaction
       final transaction = await _db.transactionDao.getTransactionById(id);
 
       // Delete transaction
       await _db.transactionDao.deleteTransaction(id);
-
-      // Update account balance
-      if (affectAccountBalance) {
-        final amountDelta = transaction.type == 'expense'
-            ? transaction.amountCents
-            : -transaction.amountCents;
-        await _db.accountDao.updateBalance(transaction.accountId, amountDelta);
-      }
 
       // Recalculate budgets for affected category
       final budgets =
@@ -129,7 +93,6 @@ class TransactionRepository {
       currency: entity.currency,
       dateTime: entity.transactionDate,
       categoryId: entity.categoryId,
-      accountId: entity.accountId,
       type: entity.type == 'expense'
           ? model.TransactionType.expense
           : model.TransactionType.income,
@@ -147,7 +110,6 @@ class TransactionRepository {
       currency: Value(transaction.currency),
       transactionDate: Value(transaction.dateTime),
       categoryId: Value(transaction.categoryId),
-      accountId: Value(transaction.accountId),
       type: Value(transaction.type == model.TransactionType.expense
           ? 'expense'
           : 'income'),

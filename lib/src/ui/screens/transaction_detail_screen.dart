@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
+import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:intl/intl.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -27,7 +28,6 @@ class TransactionDetailScreen extends ConsumerWidget {
         }
 
         final transaction = snapshot.data!;
-        final formatter = NumberFormat.currency(symbol: '\$', decimalDigits: 2);
 
         return Scaffold(
           appBar: AppBar(
@@ -64,6 +64,8 @@ class TransactionDetailScreen extends ConsumerWidget {
                   );
                   if (confirm == true) {
                     await transactionRepo.deleteTransaction(transactionId);
+                    // Invalidate budgets to refresh budget data
+                    ref.invalidate(budgetsProvider);
                     if (context.mounted) Navigator.pop(context);
                   }
                 },
@@ -81,13 +83,12 @@ class TransactionDetailScreen extends ConsumerWidget {
                     children: [
                       Text(l10n.amount, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                       Text(
-                        formatter.format(transaction.amountCents / 100),
+                        CurrencyFormatter.formatVNDFromCents(transaction.amountCents),
                         style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 16),
                       _DetailRow(l10n.date, DateFormat('MMM d, yyyy HH:mm').format(transaction.dateTime)),
                       _DetailRow(l10n.category, 'Category ${transaction.categoryId}'),
-                      _DetailRow(l10n.account, 'Account ${transaction.accountId}'),
                       if (transaction.note != null)
                         _DetailRow(l10n.note, transaction.note!),
                     ],

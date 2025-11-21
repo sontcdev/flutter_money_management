@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/ui/widgets/chart_widget.dart';
+import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:intl/intl.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -122,7 +123,7 @@ class ReportsScreen extends HookConsumerWidget {
                               return ListTile(
                                 title: Text(item.categoryName),
                                 trailing: Text(
-                                  formatter.format(item.amountCents / 100),
+                                  CurrencyFormatter.formatVNDFromCents(item.amountCents),
                                   style: const TextStyle(fontWeight: FontWeight.w600),
                                 ),
                                 subtitle: Text('${item.percentage.toStringAsFixed(1)}%'),

@@ -50,12 +50,13 @@ class CategoryEditScreen extends HookConsumerWidget {
 
         if (category == null) {
           await categoryRepo.createCategory(newCategory);
+          // Không cần gọi invalidate - provider sẽ tự động refresh khi màn hình trở lại
         } else {
           await categoryRepo.updateCategory(newCategory);
         }
 
         if (context.mounted) {
-          Navigator.of(context).pop();
+          Navigator.of(context).pop(true);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(l10n.success)),
           );

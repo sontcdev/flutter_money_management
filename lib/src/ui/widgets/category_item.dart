@@ -25,9 +25,9 @@ class CategoryItem extends StatelessWidget {
       onTap: onTap,
       leading: CircleAvatar(
         backgroundColor: color.withOpacity(0.1),
-        child: Icon(
-          _getIconData(category.iconName),
-          color: color,
+        child: Text(
+          category.iconName,
+          style: const TextStyle(fontSize: 24),
         ),
       ),
       title: Text(
@@ -54,23 +54,5 @@ class CategoryItem extends StatelessWidget {
     );
   }
 
-  IconData _getIconData(String iconName) {
-    final iconMap = {
-      'shopping_cart': Icons.shopping_cart,
-      'restaurant': Icons.restaurant,
-      'directions_car': Icons.directions_car,
-      'home': Icons.home,
-      'local_hospital': Icons.local_hospital,
-      'school': Icons.school,
-      'movie': Icons.movie,
-      'flight': Icons.flight,
-      'phone': Icons.phone,
-      'fitness_center': Icons.fitness_center,
-      'attach_money': Icons.attach_money,
-      'card_giftcard': Icons.card_giftcard,
-    };
-
-    return iconMap[iconName] ?? Icons.category;
-  }
 }
 
