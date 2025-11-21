@@ -3,40 +3,68 @@ name: iOS-ipa-build
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read   # giảm quyền mặc định. Khi cần upload release asset, bạn có thể mở write cho job cụ thể.
+
 jobs:
   build-ios:
-    name: 🎉 iOS Build
+    name: iOS Build
     runs-on: macos-latest
+
     steps:
-      - uses: actions/checkout@v3
-
-      - uses: subosito/flutter-action@v2
+      - name: Checkout repository
+        # Khuyến nghị: pin hành động bằng SHA thay vì @v3. Ví dụ: actions/checkout@<sha>
+        uses: actions/checkout@v3
         with:
-          channel: 'stable'
+          fetch-depth: 0
+
+      - name: Setup Flutter
+        # Khuyến nghị: pin subosito/flutter-action tới commit SHA thay vì @v2
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
           architecture: x64
-      - run: flutter pub get
-      
 
-      - run: pod repo update
+      - name: Install dependencies (flutter)
+        run: flutter pub get
+
+      - name: Install CocoaPods repos
         working-directory: ios
+        run: |
+          set -e
+          pod repo update
 
-      - run: flutter build ios --release --no-codesign
+      - name: Build iOS (no codesign)
+        run: flutter build ios --release --no-codesign
 
-      - run: mkdir Payload
+      - name: Inspect build output
+        run: |
+          echo "Listing build/ios/iphoneos"
+          ls -la build/ios/iphoneos || true
+
+      - name: Prepare Payload and IPA
         working-directory: build/ios/iphoneos
+        run: |
+          set -e
+          if [ ! -d "Runner.app" ]; then
+            echo "Runner.app not found in $(pwd). Build may have failed."
+            ls -la
+            exit 1
+          fi
+          rm -rf Payload
+          mkdir Payload
+          mv Runner.app Payload/
+          # create ipa
+          if [ -d "Payload" ]; then
+            zip -qq -r -9 FlutterIpaExport.ipa Payload
+            echo "IPA created at: build/ios/iphoneos/FlutterIpaExport.ipa"
+          else
+            echo "Payload directory missing"
+            exit 1
+          fi
 
-      - run: mv Runner.app/ Payload
-        working-directory: build/ios/iphoneos
-
-      - name: Zip output
-        run: zip -qq -r -9 FlutterIpaExport.ipa Payload
-        working-directory: build/ios/iphoneos
-
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
+      - name: Upload IPA as artifact (safer than third-party release action)
+        uses: actions/upload-artifact@v4
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/ios/iphoneos/FlutterIpaExport.ipa
-          tag: v1.0
-          overwrite: true
-          body: "This is first release"
+          name: FlutterIpaExport
+          path: build/ios/iphoneos/FlutterIpaExport.ipa
