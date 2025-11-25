@@ -21,6 +21,7 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.appTitle),
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
@@ -169,6 +170,7 @@ class HomeScreen extends ConsumerWidget {
                         return TransactionItem(
                           transaction: transaction,
                           categoryName: category?.name ?? 'Unknown',
+                          categoryIconName: category?.iconName,
                           categoryColor: category != null
                               ? Color(category.colorValue)
                               : null,

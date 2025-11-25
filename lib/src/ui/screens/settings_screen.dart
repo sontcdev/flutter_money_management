@@ -1,14 +1,13 @@
 // path: lib/src/ui/screens/settings_screen.dart
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_money_management/src/i18n/locale_provider.dart';
 import 'package:flutter_money_management/src/i18n/theme_provider.dart';
 import '../../../l10n/app_localizations.dart';
 
-// Temporary stub for isLoggedInProvider - should be in auth_service
-final isLoggedInProvider = StateProvider<bool>((ref) => true);
-
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends HookConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
@@ -16,7 +15,7 @@ class SettingsScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final locale = ref.watch(localeProvider);
     final themeMode = ref.watch(themeModeProvider);
-    final isLoggedIn = ref.watch(isLoggedInProvider);
+    final packageInfo = useFuture(useMemoized(() => PackageInfo.fromPlatform()));
 
     return Scaffold(
       appBar: AppBar(
@@ -58,24 +57,37 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.category),
-            title: Text(l10n.categories),
+            leading: const Icon(Icons.import_export),
+            title: const Text('Import / Export'),
+            subtitle: const Text('Sao lưu và khôi phục dữ liệu'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              Navigator.pushNamed(context, '/categories');
+              Navigator.pushNamed(context, '/import-export');
             },
           ),
           const Divider(),
-          if (isLoggedIn)
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: Text(l10n.logout, style: const TextStyle(color: Colors.red)),
-              onTap: () async {
-                ref.read(isLoggedInProvider.notifier).state = false;
-                if (context.mounted) {
-                  Navigator.pushReplacementNamed(context, '/login');
-                }
-              },
+          if (packageInfo.data != null)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Center(
+                child: Column(
+                  children: [
+                    Text(
+                      packageInfo.data!.appName,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Version ${packageInfo.data!.version} (${packageInfo.data!.buildNumber})',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
         ],
       ),

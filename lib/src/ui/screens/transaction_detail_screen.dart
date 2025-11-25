@@ -16,9 +16,13 @@ class TransactionDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final transactionRepo = ref.read(transactionRepositoryProvider);
+    final categoryRepo = ref.read(categoryRepositoryProvider);
 
     return FutureBuilder(
-      future: transactionRepo.getTransactionById(transactionId),
+      future: Future.wait([
+        transactionRepo.getTransactionById(transactionId),
+        categoryRepo.getAllCategories(),
+      ]),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Scaffold(
@@ -27,7 +31,17 @@ class TransactionDetailScreen extends ConsumerWidget {
           );
         }
 
-        final transaction = snapshot.data!;
+        final transaction = snapshot.data![0] as dynamic;
+        final categories = snapshot.data![1] as List<dynamic>;
+        String categoryName = 'Không xác định';
+        try {
+          final category = categories.firstWhere(
+            (c) => c.id == transaction.categoryId,
+          );
+          categoryName = category.name;
+        } catch (_) {
+          // Category not found
+        }
 
         return Scaffold(
           appBar: AppBar(
@@ -84,11 +98,11 @@ class TransactionDetailScreen extends ConsumerWidget {
                       Text(l10n.amount, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                       Text(
                         CurrencyFormatter.formatVNDFromCents(transaction.amountCents),
-                        style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 16),
-                      _DetailRow(l10n.date, DateFormat('MMM d, yyyy HH:mm').format(transaction.dateTime)),
-                      _DetailRow(l10n.category, 'Category ${transaction.categoryId}'),
+                      _DetailRow(l10n.date, DateFormat('dd/MM/yyyy').format(transaction.dateTime)),
+                      _DetailRow(l10n.category, categoryName),
                       if (transaction.note != null)
                         _DetailRow(l10n.note, transaction.note!),
                     ],

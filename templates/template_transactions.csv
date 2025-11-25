@@ -1,0 +1,11 @@
+date,type,amount,category,note
+25/11/2024,expense,50000,Ăn uống,Ăn sáng phở
+25/11/2024,expense,35000,Ăn uống,Ăn trưa cơm văn phòng
+25/11/2024,income,15000000,Lương,Lương tháng 11/2024
+26/11/2024,expense,100000,Di chuyển,Đổ xăng xe máy
+26/11/2024,expense,200000,Mua sắm,Mua quần áo
+27/11/2024,expense,500000,Sức khỏe,Khám bệnh
+27/11/2024,expense,150000,Giải trí,Xem phim rạp
+28/11/2024,income,2000000,Thu nhập khác,Thưởng dự án
+28/11/2024,expense,1500000,Hóa đơn,Tiền điện nước tháng 11
+29/11/2024,expense,80000,Ăn uống,Ăn tối với bạn bè

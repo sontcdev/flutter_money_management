@@ -8,7 +8,6 @@ import 'app_router.dart';
 import 'theme/app_theme.dart';
 import 'i18n/locale_provider.dart';
 import 'i18n/theme_provider.dart';
-import 'providers/providers.dart';
 
 class MoneyManagementApp extends ConsumerWidget {
   const MoneyManagementApp({super.key});
@@ -17,7 +16,6 @@ class MoneyManagementApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = ref.watch(localeProvider);
     final themeMode = ref.watch(themeModeProvider);
-    final authService = ref.watch(authServiceProvider);
 
     return MaterialApp(
       title: 'Money Manager',
@@ -36,7 +34,8 @@ class MoneyManagementApp extends ConsumerWidget {
         Locale('vi'),
       ],
       onGenerateRoute: AppRouter.generateRoute,
-      initialRoute: authService.isLoggedIn ? '/home' : '/login',
+      initialRoute: '/home',
+      debugShowCheckedModeBanner: false,
     );
   }
 }

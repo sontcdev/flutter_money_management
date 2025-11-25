@@ -1,10 +1,13 @@
 // filepath: lib/src/ui/screens/transactions_screen.dart
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../providers/providers.dart';
 import '../../models/transaction.dart';
 import '../../models/category.dart';
+import '../../utils/currency_formatter.dart';
+import '../../theme/app_colors.dart';
 
 class TransactionsScreen extends ConsumerWidget {
   const TransactionsScreen({super.key});
@@ -56,31 +59,33 @@ class TransactionsScreen extends ConsumerWidget {
                     orElse: () => Category(
                       id: 0,
                       name: 'Unknown',
-                      iconName: 'help_outline',
+                      iconName: '📦',
                       colorValue: Colors.grey.toARGB32(),
                       createdAt: DateTime.now(),
                       updatedAt: DateTime.now(),
                     ),
                   );
 
+                  final isExpense = transaction.type == TransactionType.expense;
+                  final amountColor = isExpense ? AppColors.expense : AppColors.income;
+                  final amountPrefix = isExpense ? '-' : '+';
+
                   return ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Color(category.colorValue),
-                      child: Icon(
-                        _getIconData(category.iconName),
-                        color: Colors.white,
+                      backgroundColor: Color(category.colorValue).withOpacity(0.1),
+                      child: Text(
+                        category.iconName,
+                        style: const TextStyle(fontSize: 20),
                       ),
                     ),
                     title: Text(category.name),
                     subtitle: Text(
-                      '${transaction.dateTime.day}/${transaction.dateTime.month}/${transaction.dateTime.year}',
+                      DateFormat('dd/MM/yyyy').format(transaction.dateTime),
                     ),
                     trailing: Text(
-                      '${transaction.type == TransactionType.expense ? '-' : '+'}\$${(transaction.amountCents / 100).toStringAsFixed(2)}',
+                      '$amountPrefix${CurrencyFormatter.formatVNDFromCents(transaction.amountCents)}',
                       style: TextStyle(
-                        color: transaction.type == TransactionType.expense
-                            ? Colors.red
-                            : Colors.green,
+                        color: amountColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -116,30 +121,6 @@ class TransactionsScreen extends ConsumerWidget {
         child: const Icon(Icons.add),
       ),
     );
-  }
-
-  IconData _getIconData(String iconName) {
-    // Map icon names to IconData
-    switch (iconName) {
-      case 'shopping_cart':
-        return Icons.shopping_cart;
-      case 'restaurant':
-        return Icons.restaurant;
-      case 'local_gas_station':
-        return Icons.local_gas_station;
-      case 'home':
-        return Icons.home;
-      case 'phone_android':
-        return Icons.phone_android;
-      case 'medical_services':
-        return Icons.medical_services;
-      case 'school':
-        return Icons.school;
-      case 'sports_esports':
-        return Icons.sports_esports;
-      default:
-        return Icons.help_outline;
-    }
   }
 }
 

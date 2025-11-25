@@ -45,6 +45,9 @@ dependencies:
   # Persistence
   shared_preferences: ^2.2.2
 
+  # App info
+  package_info_plus: ^8.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

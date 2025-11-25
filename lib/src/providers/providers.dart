@@ -7,7 +7,6 @@ import '../data/repositories/transaction_repository.dart';
 import '../data/repositories/budget_repository.dart';
 import '../data/repositories/category_repository.dart';
 import '../services/budget_service.dart';
-import '../services/report_service.dart';
 import '../services/auth_service.dart';
 import '../models/transaction.dart';
 import '../models/budget.dart';
@@ -34,10 +33,6 @@ final budgetServiceProvider = Provider<BudgetService>((ref) {
   return BudgetService(db);
 });
 
-final reportServiceProvider = Provider<ReportService>((ref) {
-  final db = ref.watch(databaseProvider);
-  return ReportService(db);
-});
 
 // Repositories
 final transactionRepositoryProvider = Provider<TransactionRepository>((ref) {

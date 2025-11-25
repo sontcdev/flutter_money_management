@@ -9,6 +9,7 @@ import '../../utils/currency_formatter.dart';
 class TransactionItem extends StatelessWidget {
   final Transaction transaction;
   final String categoryName;
+  final String? categoryIconName;
   final IconData? categoryIcon;
   final Color? categoryColor;
   final VoidCallback? onTap;
@@ -17,6 +18,7 @@ class TransactionItem extends StatelessWidget {
     super.key,
     required this.transaction,
     required this.categoryName,
+    this.categoryIconName,
     this.categoryIcon,
     this.categoryColor,
     this.onTap,
@@ -37,10 +39,15 @@ class TransactionItem extends StatelessWidget {
       onTap: onTap,
       leading: CircleAvatar(
         backgroundColor: categoryColor?.withOpacity(0.1) ?? AppColors.primary.withOpacity(0.1),
-        child: Icon(
-          categoryIcon ?? Icons.category,
-          color: categoryColor ?? AppColors.primary,
-        ),
+        child: categoryIconName != null && categoryIconName!.isNotEmpty
+            ? Text(
+                categoryIconName!,
+                style: const TextStyle(fontSize: 20),
+              )
+            : Icon(
+                categoryIcon ?? Icons.category,
+                color: categoryColor ?? AppColors.primary,
+              ),
       ),
       title: Text(
         categoryName,
@@ -68,7 +75,7 @@ class TransactionItem extends StatelessWidget {
                 ),
           ),
           Text(
-            DateFormat('HH:mm').format(transaction.dateTime),
+            DateFormat('dd/MM/yyyy').format(transaction.dateTime),
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],

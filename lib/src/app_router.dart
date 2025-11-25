@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'models/category.dart';
 import 'models/budget.dart';
-import 'ui/screens/login_screen.dart';
 import 'ui/screens/home_screen.dart';
 import 'ui/screens/transactions_screen.dart';
 import 'ui/screens/add_transaction_screen.dart';
@@ -15,13 +14,13 @@ import 'ui/screens/categories_screen.dart';
 import 'ui/screens/category_edit_screen.dart';
 import 'ui/screens/reports_screen.dart';
 import 'ui/screens/settings_screen.dart';
+import 'ui/screens/report_calendar_screen.dart';
+import 'ui/screens/import_export_screen.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case '/':
-      case '/login':
-        return MaterialPageRoute(builder: (_) => const LoginScreen());
       case '/home':
         return MaterialPageRoute(builder: (_) => const HomeScreen());
       case '/transactions':
@@ -59,8 +58,12 @@ class AppRouter {
         );
       case '/reports':
         return MaterialPageRoute(builder: (_) => const ReportsScreen());
+      case '/report-calendar':
+        return MaterialPageRoute(builder: (_) => const ReportCalendarScreen());
       case '/settings':
         return MaterialPageRoute(builder: (_) => const SettingsScreen());
+      case '/import-export':
+        return MaterialPageRoute(builder: (_) => const ImportExportScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
