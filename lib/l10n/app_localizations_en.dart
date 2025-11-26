@@ -114,6 +114,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get yearly => 'Yearly';
 
   @override
+  String get weekly => 'Weekly';
+
+  @override
+  String get quarterly => 'Quarterly';
+
+  @override
   String get custom => 'Custom';
 
   @override
@@ -184,6 +190,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dark => 'Dark';
+
+  @override
+  String get system => 'System';
 
   @override
   String get login => 'Login';
@@ -289,4 +298,272 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get skip => 'Skip';
+
+  @override
+  String get add => 'Add';
+
+  @override
+  String get all => 'All';
+
+  @override
+  String get calendar => 'Calendar';
+
+  @override
+  String get overview => 'Overview';
+
+  @override
+  String get byCategory => 'By Category';
+
+  @override
+  String get byBudget => 'By Budget';
+
+  @override
+  String get lastMonth => 'Last Month';
+
+  @override
+  String get selectMonth => 'Select Month';
+
+  @override
+  String get selectYear => 'Select Year';
+
+  @override
+  String get noData => 'No data';
+
+  @override
+  String get loading => 'Loading...';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get proceed => 'Proceed';
+
+  @override
+  String get back => 'Back';
+
+  @override
+  String get next => 'Next';
+
+  @override
+  String get done => 'Done';
+
+  @override
+  String get search => 'Search';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get export => 'Export';
+
+  @override
+  String get import => 'Import';
+
+  @override
+  String get importExport => 'Import/Export Data';
+
+  @override
+  String get languageAndDisplay => 'Language & Display';
+
+  @override
+  String get themeColor => 'Theme Color';
+
+  @override
+  String get selectThemeColor => 'Select your favorite interface color';
+
+  @override
+  String get budgetSettings => 'Budget Settings';
+
+  @override
+  String get defaultBudgetPeriod => 'Default Budget Period';
+
+  @override
+  String get manageBudgets => 'Manage Budgets';
+
+  @override
+  String get viewEditBudgets => 'View and edit budgets';
+
+  @override
+  String get data => 'Data';
+
+  @override
+  String get backupRestore => 'Backup and restore data';
+
+  @override
+  String get manageCategories => 'Manage Categories';
+
+  @override
+  String get addEditDeleteCategories => 'Add, edit, delete categories';
+
+  @override
+  String get info => 'Info';
+
+  @override
+  String get selectBudgetPeriod => 'Select Budget Period';
+
+  @override
+  String get selectInterfaceColor => 'Select Interface Color';
+
+  @override
+  String get colorBlue => 'Blue';
+
+  @override
+  String get colorGreen => 'Green';
+
+  @override
+  String get colorPurple => 'Purple';
+
+  @override
+  String get colorOrange => 'Orange';
+
+  @override
+  String get colorTeal => 'Teal';
+
+  @override
+  String get colorPink => 'Pink';
+
+  @override
+  String get colorIndigo => 'Indigo';
+
+  @override
+  String get colorRed => 'Red';
+
+  @override
+  String get noNote => 'No note';
+
+  @override
+  String get reportOverview => 'Report Overview';
+
+  @override
+  String get expenseByCategory => 'Expense by Category';
+
+  @override
+  String get incomeByCategory => 'Income by Category';
+
+  @override
+  String get reportByBudget => 'Report by Budget';
+
+  @override
+  String get viewAll => 'View All';
+
+  @override
+  String get noBudgetsYet => 'No budgets yet';
+
+  @override
+  String get noExpenseInPeriod => 'No expense in this period';
+
+  @override
+  String get noIncomeInPeriod => 'No income in this period';
+
+  @override
+  String get selectTimePeriod => 'Select Time Period';
+
+  @override
+  String get byMonth => 'By Month';
+
+  @override
+  String get byYear => 'By Year';
+
+  @override
+  String monthFormat(Object month, Object year) {
+    return 'Month $month/$year';
+  }
+
+  @override
+  String yearFormat(Object year) {
+    return 'Year $year';
+  }
+
+  @override
+  String get categoryType => 'Category Type';
+
+  @override
+  String get showMoreIcons => 'Show More Icons';
+
+  @override
+  String get collapse => 'Collapse';
+
+  @override
+  String get noCategoryYet => 'No expense category yet. Tap \"Add\" to create one.';
+
+  @override
+  String get transactionsInPeriod => 'Transactions in Period';
+
+  @override
+  String get selected => 'Selected';
+
+  @override
+  String get selectTransactionsForBudget => 'Select transactions for budget';
+
+  @override
+  String get noExpenseTransactionInPeriod => 'No expense transaction in this period.';
+
+  @override
+  String get selectAll => 'Select All';
+
+  @override
+  String get deselectAll => 'Deselect All';
+
+  @override
+  String get fromDate => 'From Date';
+
+  @override
+  String get toDate => 'To Date';
+
+  @override
+  String get languageDisplay => 'Language & Display';
+
+  @override
+  String get manageBudgetsDesc => 'View and edit budgets';
+
+  @override
+  String get dataSection => 'Data';
+
+  @override
+  String get importExportDesc => 'Backup and restore data';
+
+  @override
+  String get manageCategoriesDesc => 'Add, edit, delete categories';
+
+  @override
+  String get aboutSection => 'About';
+
+  @override
+  String get overviewReport => 'Overview Report';
+
+  @override
+  String get transactionCount => 'Number of transactions';
+
+  @override
+  String get budgetReports => 'Budget Reports';
+
+  @override
+  String get noExpenseBudgets => 'No expense budgets';
+
+  @override
+  String get noIncomeBudgets => 'No income budgets';
+
+  @override
+  String get noExpenseThisPeriod => 'No expense in this period';
+
+  @override
+  String get noIncomeThisPeriod => 'No income in this period';
+
+  @override
+  String get selectPeriod => 'Select Time Period';
+
+  @override
+  String get transactionsCount => 'transactions';
+
+  @override
+  String get month => 'Month';
+
+  @override
+  String get year => 'Year';
 }

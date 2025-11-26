@@ -16,11 +16,12 @@ class MoneyManagementApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = ref.watch(localeProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final themeColor = ref.watch(themeColorProvider);
 
     return MaterialApp(
       title: 'Money Manager',
-      theme: AppTheme.lightTheme(),
-      darkTheme: AppTheme.darkTheme(),
+      theme: AppTheme.lightTheme(primaryColor: themeColor),
+      darkTheme: AppTheme.darkTheme(primaryColor: themeColor),
       themeMode: themeMode,
       locale: locale,
       localizationsDelegates: const [

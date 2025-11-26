@@ -52,9 +52,17 @@ class AppRouter {
       case '/categories':
         return MaterialPageRoute(builder: (_) => const CategoriesScreen());
       case '/category-edit':
-        final category = settings.arguments as Category?;
+        final args = settings.arguments;
+        Category? category;
+        CategoryType? initialType;
+        if (args is Category) {
+          category = args;
+        } else if (args is Map<String, dynamic>) {
+          category = args['category'] as Category?;
+          initialType = args['initialType'] as CategoryType?;
+        }
         return MaterialPageRoute(
-          builder: (_) => CategoryEditScreen(category: category),
+          builder: (_) => CategoryEditScreen(category: category, initialType: initialType),
         );
       case '/reports':
         return MaterialPageRoute(builder: (_) => const ReportsScreen());

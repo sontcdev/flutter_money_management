@@ -10,8 +10,9 @@ import '../../../l10n/app_localizations.dart';
 
 class CategoryEditScreen extends HookConsumerWidget {
   final Category? category;
+  final CategoryType? initialType;
 
-  const CategoryEditScreen({super.key, this.category});
+  const CategoryEditScreen({super.key, this.category, this.initialType});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -19,12 +20,46 @@ class CategoryEditScreen extends HookConsumerWidget {
     final nameController = useTextEditingController(text: category?.name ?? '');
     final selectedIcon = useState(category?.iconName ?? '🏷️');
     final selectedColor = useState(category?.colorValue ?? 0xFF7F3DFF);
+    final selectedType = useState(category?.type ?? initialType ?? CategoryType.expense);
     final isLoading = useState(false);
+    final showAllIcons = useState(false);
 
-    final icons = ['🏷️', '🍔', '🚗', '🏠', '💊', '🎓', '💰', '🎮', '✈️', '👕'];
+    // Basic icons shown initially
+    final basicIcons = ['🏷️', '🍔', '🚗', '🏠', '💊', '🎓', '💰', '🎮', '✈️', '👕'];
+    
+    // Full icon list
+    final allIcons = [
+      // Basic
+      '🏷️', '🍔', '🚗', '🏠', '💊', '🎓', '💰', '🎮', '✈️', '👕',
+      // Food & Drinks
+      '🍕', '🍜', '🍱', '🥗', '🍰', '☕', '🍺', '🍷', '🥤', '🍿',
+      // Transport
+      '🚌', '🚇', '🚕', '⛽', '🚲', '✈️', '🛵', '🚢', '🚁', '🚀',
+      // Shopping
+      '🛒', '🛍️', '👗', '👠', '💄', '⌚', '💎', '🎁', '📱', '💻',
+      // Home
+      '🏡', '🛋️', '🛏️', '🚿', '🧹', '🔧', '💡', '🌱', '🐕', '🐈',
+      // Health
+      '💊', '🏥', '🩺', '💉', '🧘', '🏃', '🏋️', '🧴', '😷', '🦷',
+      // Entertainment
+      '🎬', '🎵', '🎸', '📚', '🎨', '📷', '🎯', '🎲', '♠️', '🎰',
+      // Finance
+      '💵', '💳', '🏦', '📈', '📊', '🧾', '💹', '🏧', '💱', '🪙',
+      // Work & Education
+      '💼', '📝', '📖', '🎒', '✏️', '📐', '🔬', '💻', '🖨️', '📁',
+      // Others
+      '❤️', '⭐', '🔥', '⚡', '🌈', '🎉', '🏆', '🎗️', '♻️', '✨',
+    ];
+
+    final displayIcons = showAllIcons.value ? allIcons : basicIcons;
+    
     final colors = [
       0xFF7F3DFF, 0xFFFD3C4A, 0xFFFD9B63, 0xFFFCAC12,
       0xFF00A86B, 0xFF0077FF, 0xFFFF7EB3, 0xFF7F3D3D,
+      0xFF9C27B0, 0xFF673AB7, 0xFF3F51B5, 0xFF2196F3,
+      0xFF03A9F4, 0xFF00BCD4, 0xFF009688, 0xFF4CAF50,
+      0xFF8BC34A, 0xFFCDDC39, 0xFFFFEB3B, 0xFFFFC107,
+      0xFFFF9800, 0xFFFF5722, 0xFF795548, 0xFF607D8B,
     ];
 
     Future<void> save() async {
@@ -44,6 +79,7 @@ class CategoryEditScreen extends HookConsumerWidget {
           name: nameController.text,
           iconName: selectedIcon.value,
           colorValue: selectedColor.value,
+          type: selectedType.value,
           createdAt: category?.createdAt ?? DateTime.now(),
           updatedAt: DateTime.now(),
         );
@@ -80,6 +116,28 @@ class CategoryEditScreen extends HookConsumerWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            // Category Type Selector
+            Text('Loại danh mục', style: const TextStyle(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 8),
+            SegmentedButton<CategoryType>(
+              segments: const [
+                ButtonSegment(
+                  value: CategoryType.expense,
+                  label: Text('Chi tiêu'),
+                  icon: Icon(Icons.arrow_upward),
+                ),
+                ButtonSegment(
+                  value: CategoryType.income,
+                  label: Text('Thu nhập'),
+                  icon: Icon(Icons.arrow_downward),
+                ),
+              ],
+              selected: {selectedType.value},
+              onSelectionChanged: (Set<CategoryType> selection) {
+                selectedType.value = selection.first;
+              },
+            ),
+            const SizedBox(height: 16),
             AppInput(
               label: l10n.categoryName,
               controller: nameController,
@@ -90,7 +148,7 @@ class CategoryEditScreen extends HookConsumerWidget {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: icons.map((icon) {
+              children: displayIcons.map((icon) {
                 final isSelected = selectedIcon.value == icon;
                 return GestureDetector(
                   onTap: () => selectedIcon.value = icon,
@@ -105,6 +163,14 @@ class CategoryEditScreen extends HookConsumerWidget {
                   ),
                 );
               }).toList(),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: TextButton.icon(
+                icon: Icon(showAllIcons.value ? Icons.expand_less : Icons.expand_more),
+                label: Text(showAllIcons.value ? 'Thu gọn' : 'Xem thêm biểu tượng'),
+                onPressed: () => showAllIcons.value = !showAllIcons.value,
+              ),
             ),
             const SizedBox(height: 16),
             Text(l10n.categoryColor, style: const TextStyle(fontWeight: FontWeight.w600)),

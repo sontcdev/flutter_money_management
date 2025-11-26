@@ -35,10 +35,12 @@ class TransactionItem extends StatelessWidget {
         ? AppColors.expense
         : AppColors.income;
 
+    final themeColor = Theme.of(context).colorScheme.primary;
+
     return ListTile(
       onTap: onTap,
       leading: CircleAvatar(
-        backgroundColor: categoryColor?.withOpacity(0.1) ?? AppColors.primary.withOpacity(0.1),
+        backgroundColor: categoryColor?.withOpacity(0.1) ?? themeColor.withOpacity(0.1),
         child: categoryIconName != null && categoryIconName!.isNotEmpty
             ? Text(
                 categoryIconName!,
@@ -46,7 +48,7 @@ class TransactionItem extends StatelessWidget {
               )
             : Icon(
                 categoryIcon ?? Icons.category,
-                color: categoryColor ?? AppColors.primary,
+                color: categoryColor ?? themeColor,
               ),
       ),
       title: Text(

@@ -15,6 +15,12 @@ class CategoryRepository {
     return entities.map(_entityToModel).toList();
   }
 
+  Future<List<model.Category>> getCategoriesByType(model.CategoryType type) async {
+    final typeString = type == model.CategoryType.income ? 'income' : 'expense';
+    final entities = await _db.categoryDao.getCategoriesByType(typeString);
+    return entities.map(_entityToModel).toList();
+  }
+
   Future<model.Category> getCategoryById(int id) async {
     final entity = await _db.categoryDao.getCategoryById(id);
     return _entityToModel(entity);
@@ -47,6 +53,7 @@ class CategoryRepository {
       name: entity.name,
       iconName: entity.iconName,
       colorValue: entity.colorValue,
+      type: entity.type == 'income' ? model.CategoryType.income : model.CategoryType.expense,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
     );
@@ -58,6 +65,7 @@ class CategoryRepository {
       name: Value(category.name),
       iconName: Value(category.iconName),
       colorValue: Value(category.colorValue),
+      type: Value(category.type == model.CategoryType.income ? 'income' : 'expense'),
       createdAt: Value(category.createdAt),
       updatedAt: Value(category.updatedAt),
     );

@@ -27,7 +27,10 @@ class TransactionGroupHeader extends StatelessWidget {
     final amountLabel = netAmount >= 0
         ? '+${amountFormatter.format(netAmount / 100)}'
         : amountFormatter.format(netAmount / 100);
-    final amountColor = netAmount >= 0 ? ReportTheme.incomeColor : ReportTheme.expenseColor;
+    // Daily total uses theme color for positive, red for negative
+    final amountColor = netAmount >= 0 
+        ? Theme.of(context).colorScheme.primary  // Theme color for positive
+        : const Color(0xFFD32F2F); // Red for negative
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -46,11 +49,18 @@ class TransactionGroupHeader extends StatelessWidget {
               color: Colors.grey[800],
             ),
           ),
-          Text(
-            amountLabel,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: amountColor,
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: amountColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              amountLabel,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: amountColor,
+              ),
             ),
           ),
         ],

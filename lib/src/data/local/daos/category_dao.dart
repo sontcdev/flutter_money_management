@@ -15,6 +15,10 @@ class CategoryDao extends DatabaseAccessor<AppDatabase>
     return select(categories).get();
   }
 
+  Future<List<CategoryEntity>> getCategoriesByType(String type) {
+    return (select(categories)..where((c) => c.type.equals(type))).get();
+  }
+
   Future<CategoryEntity> getCategoryById(int id) {
     return (select(categories)..where((c) => c.id.equals(id))).getSingle();
   }

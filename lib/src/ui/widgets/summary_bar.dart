@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../theme/report_theme.dart';
+import '../../theme/app_colors.dart';
 
 class SummaryBar extends StatelessWidget {
   final int totalIncome;
@@ -34,7 +34,7 @@ class SummaryBar extends StatelessWidget {
               context,
               'Thu nhập',
               formatter.format(totalIncome / 100),
-              ReportTheme.incomeColor,
+              AppColors.income, // Green for income
             ),
           ),
           Container(width: 1, height: 40, color: Colors.grey[300]),
@@ -43,7 +43,7 @@ class SummaryBar extends StatelessWidget {
               context,
               'Chi tiêu',
               formatter.format(totalExpense / 100),
-              ReportTheme.expenseColor,
+              AppColors.expense, // Red for expense
             ),
           ),
           Container(width: 1, height: 40, color: Colors.grey[300]),
@@ -52,7 +52,7 @@ class SummaryBar extends StatelessWidget {
               context,
               'Tổng',
               '${net >= 0 ? '+' : ''}${formatter.format(net / 100)}',
-              net >= 0 ? ReportTheme.incomeColor : ReportTheme.expenseColor,
+              net >= 0 ? AppColors.income : AppColors.expense,
             ),
           ),
         ],

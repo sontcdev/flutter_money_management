@@ -13,7 +13,15 @@ class BudgetRepository {
 
   Future<List<model.Budget>> getAllBudgets() async {
     final entities = await _db.budgetDao.getAllBudgets();
-    return entities.map(_entityToModel).toList();
+    
+    // Recalculate consumed for all budgets to ensure up-to-date data
+    for (final entity in entities) {
+      await _db.budgetDao.recalculateConsumed(entity.id);
+    }
+    
+    // Re-fetch to get updated consumed values
+    final updatedEntities = await _db.budgetDao.getAllBudgets();
+    return updatedEntities.map(_entityToModel).toList();
   }
 
   Future<model.Budget> getBudgetById(int id) async {

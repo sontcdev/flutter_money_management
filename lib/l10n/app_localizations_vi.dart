@@ -96,7 +96,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get remaining => 'Còn lại';
 
   @override
-  String get limit => 'Giới hạn';
+  String get limit => 'Hạn mức';
 
   @override
   String get exceeded => 'Vượt quá';
@@ -114,13 +114,19 @@ class AppLocalizationsVi extends AppLocalizations {
   String get yearly => 'Hàng năm';
 
   @override
+  String get weekly => 'Hàng tuần';
+
+  @override
+  String get quarterly => 'Hàng quý';
+
+  @override
   String get custom => 'Tùy chỉnh';
 
   @override
-  String get period => 'Kỳ hạn';
+  String get period => 'Chu kỳ';
 
   @override
-  String get allowOverdraft => 'Cho phép vượt quá';
+  String get allowOverdraft => 'Cho phép chi vượt';
 
   @override
   String get addCategory => 'Thêm danh mục';
@@ -186,6 +192,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get dark => 'Tối';
 
   @override
+  String get system => 'Hệ thống';
+
+  @override
   String get login => 'Đăng nhập';
 
   @override
@@ -222,7 +231,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get categoryInUse => 'Danh mục đang được sử dụng và không thể xóa';
 
   @override
-  String get budgetOverlap => 'Kỳ hạn ngân sách trùng với ngân sách hiện có';
+  String get budgetOverlap => 'Chu kỳ ngân sách trùng với ngân sách hiện có';
 
   @override
   String get selectCategory => 'Chọn danh mục';
@@ -261,19 +270,19 @@ class AppLocalizationsVi extends AppLocalizations {
   String get thisYear => 'Năm nay';
 
   @override
-  String get noTransactions => 'Không tìm thấy giao dịch';
+  String get noTransactions => 'Chưa có giao dịch nào';
 
   @override
-  String get noBudgets => 'Không tìm thấy ngân sách';
+  String get noBudgets => 'Chưa có ngân sách nào';
 
   @override
-  String get noCategories => 'Không tìm thấy danh mục';
+  String get noCategories => 'Chưa có danh mục nào';
 
   @override
-  String get noAccounts => 'Không tìm thấy tài khoản';
+  String get noAccounts => 'Chưa có tài khoản nào';
 
   @override
-  String get createFirst => 'Tạo mục đầu tiên của bạn!';
+  String get createFirst => 'Hãy tạo mục đầu tiên!';
 
   @override
   String get welcome => 'Chào mừng đến với Quản lý Tài chính';
@@ -289,4 +298,272 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get skip => 'Bỏ qua';
+
+  @override
+  String get add => 'Thêm';
+
+  @override
+  String get all => 'Tất cả';
+
+  @override
+  String get calendar => 'Lịch';
+
+  @override
+  String get overview => 'Tổng quan';
+
+  @override
+  String get byCategory => 'Theo danh mục';
+
+  @override
+  String get byBudget => 'Theo ngân sách';
+
+  @override
+  String get lastMonth => 'Tháng trước';
+
+  @override
+  String get selectMonth => 'Chọn tháng';
+
+  @override
+  String get selectYear => 'Chọn năm';
+
+  @override
+  String get noData => 'Không có dữ liệu';
+
+  @override
+  String get loading => 'Đang tải...';
+
+  @override
+  String get retry => 'Thử lại';
+
+  @override
+  String get close => 'Đóng';
+
+  @override
+  String get confirm => 'Xác nhận';
+
+  @override
+  String get proceed => 'Tiếp tục';
+
+  @override
+  String get back => 'Quay lại';
+
+  @override
+  String get next => 'Tiếp theo';
+
+  @override
+  String get done => 'Xong';
+
+  @override
+  String get search => 'Tìm kiếm';
+
+  @override
+  String get share => 'Chia sẻ';
+
+  @override
+  String get export => 'Xuất';
+
+  @override
+  String get import => 'Nhập';
+
+  @override
+  String get importExport => 'Nhập/Xuất dữ liệu';
+
+  @override
+  String get languageAndDisplay => 'Ngôn ngữ & Hiển thị';
+
+  @override
+  String get themeColor => 'Màu chủ đề';
+
+  @override
+  String get selectThemeColor => 'Chọn màu giao diện yêu thích';
+
+  @override
+  String get budgetSettings => 'Cài đặt Ngân sách';
+
+  @override
+  String get defaultBudgetPeriod => 'Chu kỳ ngân sách mặc định';
+
+  @override
+  String get manageBudgets => 'Quản lý ngân sách';
+
+  @override
+  String get viewEditBudgets => 'Xem và chỉnh sửa các ngân sách';
+
+  @override
+  String get data => 'Dữ liệu';
+
+  @override
+  String get backupRestore => 'Sao lưu và khôi phục dữ liệu';
+
+  @override
+  String get manageCategories => 'Quản lý danh mục';
+
+  @override
+  String get addEditDeleteCategories => 'Thêm, sửa, xóa danh mục';
+
+  @override
+  String get info => 'Thông tin';
+
+  @override
+  String get selectBudgetPeriod => 'Chọn chu kỳ ngân sách';
+
+  @override
+  String get selectInterfaceColor => 'Chọn màu giao diện';
+
+  @override
+  String get colorBlue => 'Xanh dương';
+
+  @override
+  String get colorGreen => 'Xanh lá';
+
+  @override
+  String get colorPurple => 'Tím';
+
+  @override
+  String get colorOrange => 'Cam';
+
+  @override
+  String get colorTeal => 'Ngọc lam';
+
+  @override
+  String get colorPink => 'Hồng';
+
+  @override
+  String get colorIndigo => 'Chàm';
+
+  @override
+  String get colorRed => 'Đỏ';
+
+  @override
+  String get noNote => 'Không có ghi chú';
+
+  @override
+  String get reportOverview => 'Báo cáo tổng quan';
+
+  @override
+  String get expenseByCategory => 'Chi tiêu theo danh mục';
+
+  @override
+  String get incomeByCategory => 'Thu nhập theo danh mục';
+
+  @override
+  String get reportByBudget => 'Báo cáo theo ngân sách';
+
+  @override
+  String get viewAll => 'Xem tất cả';
+
+  @override
+  String get noBudgetsYet => 'Chưa có ngân sách nào';
+
+  @override
+  String get noExpenseInPeriod => 'Chưa có chi tiêu trong kỳ này';
+
+  @override
+  String get noIncomeInPeriod => 'Chưa có thu nhập trong kỳ này';
+
+  @override
+  String get selectTimePeriod => 'Chọn khoảng thời gian';
+
+  @override
+  String get byMonth => 'Theo tháng';
+
+  @override
+  String get byYear => 'Theo năm';
+
+  @override
+  String monthFormat(Object month, Object year) {
+    return 'Tháng $month/$year';
+  }
+
+  @override
+  String yearFormat(Object year) {
+    return 'Năm $year';
+  }
+
+  @override
+  String get categoryType => 'Loại danh mục';
+
+  @override
+  String get showMoreIcons => 'Xem thêm biểu tượng';
+
+  @override
+  String get collapse => 'Thu gọn';
+
+  @override
+  String get noCategoryYet => 'Chưa có danh mục chi tiêu. Nhấn \"Thêm\" để tạo mới.';
+
+  @override
+  String get transactionsInPeriod => 'Giao dịch trong chu kỳ';
+
+  @override
+  String get selected => 'Đã chọn';
+
+  @override
+  String get selectTransactionsForBudget => 'Chọn giao dịch để tính vào ngân sách';
+
+  @override
+  String get noExpenseTransactionInPeriod => 'Không có giao dịch chi tiêu nào trong chu kỳ này.';
+
+  @override
+  String get selectAll => 'Chọn tất cả';
+
+  @override
+  String get deselectAll => 'Bỏ chọn tất cả';
+
+  @override
+  String get fromDate => 'Từ ngày';
+
+  @override
+  String get toDate => 'Đến ngày';
+
+  @override
+  String get languageDisplay => 'Ngôn ngữ & Hiển thị';
+
+  @override
+  String get manageBudgetsDesc => 'Xem và chỉnh sửa các ngân sách';
+
+  @override
+  String get dataSection => 'Dữ liệu';
+
+  @override
+  String get importExportDesc => 'Sao lưu và khôi phục dữ liệu';
+
+  @override
+  String get manageCategoriesDesc => 'Thêm, sửa, xóa danh mục';
+
+  @override
+  String get aboutSection => 'Thông tin';
+
+  @override
+  String get overviewReport => 'Báo cáo tổng quan';
+
+  @override
+  String get transactionCount => 'Số giao dịch';
+
+  @override
+  String get budgetReports => 'Báo cáo theo ngân sách';
+
+  @override
+  String get noExpenseBudgets => 'Không có ngân sách chi tiêu';
+
+  @override
+  String get noIncomeBudgets => 'Không có ngân sách thu nhập';
+
+  @override
+  String get noExpenseThisPeriod => 'Chưa có chi tiêu trong kỳ này';
+
+  @override
+  String get noIncomeThisPeriod => 'Chưa có thu nhập trong kỳ này';
+
+  @override
+  String get selectPeriod => 'Chọn khoảng thời gian';
+
+  @override
+  String get transactionsCount => 'giao dịch';
+
+  @override
+  String get month => 'Tháng';
+
+  @override
+  String get year => 'Năm';
 }

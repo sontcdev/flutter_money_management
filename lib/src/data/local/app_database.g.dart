@@ -38,6 +38,13 @@ class $CategoriesTable extends Categories
   late final GeneratedColumn<int> colorValue = GeneratedColumn<int>(
       'color_value', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+      'type', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('expense'));
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -52,7 +59,7 @@ class $CategoriesTable extends Categories
       type: DriftSqlType.dateTime, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, name, iconName, colorValue, createdAt, updatedAt];
+      [id, name, iconName, colorValue, type, createdAt, updatedAt];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -86,6 +93,10 @@ class $CategoriesTable extends Categories
     } else if (isInserting) {
       context.missing(_colorValueMeta);
     }
+    if (data.containsKey('type')) {
+      context.handle(
+          _typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
+    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
@@ -115,6 +126,8 @@ class $CategoriesTable extends Categories
           .read(DriftSqlType.string, data['${effectivePrefix}icon_name'])!,
       colorValue: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}color_value'])!,
+      type: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}type'])!,
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
@@ -133,6 +146,7 @@ class CategoryEntity extends DataClass implements Insertable<CategoryEntity> {
   final String name;
   final String iconName;
   final int colorValue;
+  final String type;
   final DateTime createdAt;
   final DateTime updatedAt;
   const CategoryEntity(
@@ -140,6 +154,7 @@ class CategoryEntity extends DataClass implements Insertable<CategoryEntity> {
       required this.name,
       required this.iconName,
       required this.colorValue,
+      required this.type,
       required this.createdAt,
       required this.updatedAt});
   @override
@@ -149,6 +164,7 @@ class CategoryEntity extends DataClass implements Insertable<CategoryEntity> {
     map['name'] = Variable<String>(name);
     map['icon_name'] = Variable<String>(iconName);
     map['color_value'] = Variable<int>(colorValue);
+    map['type'] = Variable<String>(type);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     return map;
@@ -160,6 +176,7 @@ class CategoryEntity extends DataClass implements Insertable<CategoryEntity> {
       name: Value(name),
       iconName: Value(iconName),
       colorValue: Value(colorValue),
+      type: Value(type),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );
@@ -173,6 +190,7 @@ class CategoryEntity extends DataClass implements Insertable<CategoryEntity> {
       name: serializer.fromJson<String>(json['name']),
       iconName: serializer.fromJson<String>(json['iconName']),
       colorValue: serializer.fromJson<int>(json['colorValue']),
+      type: serializer.fromJson<String>(json['type']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
     );
@@ -185,6 +203,7 @@ class CategoryEntity extends DataClass implements Insertable<CategoryEntity> {
       'name': serializer.toJson<String>(name),
       'iconName': serializer.toJson<String>(iconName),
       'colorValue': serializer.toJson<int>(colorValue),
+      'type': serializer.toJson<String>(type),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
     };
@@ -195,6 +214,7 @@ class CategoryEntity extends DataClass implements Insertable<CategoryEntity> {
           String? name,
           String? iconName,
           int? colorValue,
+          String? type,
           DateTime? createdAt,
           DateTime? updatedAt}) =>
       CategoryEntity(
@@ -202,6 +222,7 @@ class CategoryEntity extends DataClass implements Insertable<CategoryEntity> {
         name: name ?? this.name,
         iconName: iconName ?? this.iconName,
         colorValue: colorValue ?? this.colorValue,
+        type: type ?? this.type,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
       );
@@ -212,6 +233,7 @@ class CategoryEntity extends DataClass implements Insertable<CategoryEntity> {
       iconName: data.iconName.present ? data.iconName.value : this.iconName,
       colorValue:
           data.colorValue.present ? data.colorValue.value : this.colorValue,
+      type: data.type.present ? data.type.value : this.type,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -224,6 +246,7 @@ class CategoryEntity extends DataClass implements Insertable<CategoryEntity> {
           ..write('name: $name, ')
           ..write('iconName: $iconName, ')
           ..write('colorValue: $colorValue, ')
+          ..write('type: $type, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -232,7 +255,7 @@ class CategoryEntity extends DataClass implements Insertable<CategoryEntity> {
 
   @override
   int get hashCode =>
-      Object.hash(id, name, iconName, colorValue, createdAt, updatedAt);
+      Object.hash(id, name, iconName, colorValue, type, createdAt, updatedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -241,6 +264,7 @@ class CategoryEntity extends DataClass implements Insertable<CategoryEntity> {
           other.name == this.name &&
           other.iconName == this.iconName &&
           other.colorValue == this.colorValue &&
+          other.type == this.type &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -250,6 +274,7 @@ class CategoriesCompanion extends UpdateCompanion<CategoryEntity> {
   final Value<String> name;
   final Value<String> iconName;
   final Value<int> colorValue;
+  final Value<String> type;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   const CategoriesCompanion({
@@ -257,6 +282,7 @@ class CategoriesCompanion extends UpdateCompanion<CategoryEntity> {
     this.name = const Value.absent(),
     this.iconName = const Value.absent(),
     this.colorValue = const Value.absent(),
+    this.type = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
   });
@@ -265,6 +291,7 @@ class CategoriesCompanion extends UpdateCompanion<CategoryEntity> {
     required String name,
     required String iconName,
     required int colorValue,
+    this.type = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
   })  : name = Value(name),
@@ -277,6 +304,7 @@ class CategoriesCompanion extends UpdateCompanion<CategoryEntity> {
     Expression<String>? name,
     Expression<String>? iconName,
     Expression<int>? colorValue,
+    Expression<String>? type,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
   }) {
@@ -285,6 +313,7 @@ class CategoriesCompanion extends UpdateCompanion<CategoryEntity> {
       if (name != null) 'name': name,
       if (iconName != null) 'icon_name': iconName,
       if (colorValue != null) 'color_value': colorValue,
+      if (type != null) 'type': type,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
     });
@@ -295,6 +324,7 @@ class CategoriesCompanion extends UpdateCompanion<CategoryEntity> {
       Value<String>? name,
       Value<String>? iconName,
       Value<int>? colorValue,
+      Value<String>? type,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt}) {
     return CategoriesCompanion(
@@ -302,6 +332,7 @@ class CategoriesCompanion extends UpdateCompanion<CategoryEntity> {
       name: name ?? this.name,
       iconName: iconName ?? this.iconName,
       colorValue: colorValue ?? this.colorValue,
+      type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -322,6 +353,9 @@ class CategoriesCompanion extends UpdateCompanion<CategoryEntity> {
     if (colorValue.present) {
       map['color_value'] = Variable<int>(colorValue.value);
     }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -338,6 +372,7 @@ class CategoriesCompanion extends UpdateCompanion<CategoryEntity> {
           ..write('name: $name, ')
           ..write('iconName: $iconName, ')
           ..write('colorValue: $colorValue, ')
+          ..write('type: $type, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1452,6 +1487,7 @@ typedef $$CategoriesTableCreateCompanionBuilder = CategoriesCompanion Function({
   required String name,
   required String iconName,
   required int colorValue,
+  Value<String> type,
   required DateTime createdAt,
   required DateTime updatedAt,
 });
@@ -1460,6 +1496,7 @@ typedef $$CategoriesTableUpdateCompanionBuilder = CategoriesCompanion Function({
   Value<String> name,
   Value<String> iconName,
   Value<int> colorValue,
+  Value<String> type,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
 });
@@ -1519,6 +1556,9 @@ class $$CategoriesTableFilterComposer
 
   ColumnFilters<int> get colorValue => $composableBuilder(
       column: $table.colorValue, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnFilters(column));
@@ -1590,6 +1630,9 @@ class $$CategoriesTableOrderingComposer
   ColumnOrderings<int> get colorValue => $composableBuilder(
       column: $table.colorValue, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
@@ -1617,6 +1660,9 @@ class $$CategoriesTableAnnotationComposer
 
   GeneratedColumn<int> get colorValue => $composableBuilder(
       column: $table.colorValue, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -1694,6 +1740,7 @@ class $$CategoriesTableTableManager extends RootTableManager<
             Value<String> name = const Value.absent(),
             Value<String> iconName = const Value.absent(),
             Value<int> colorValue = const Value.absent(),
+            Value<String> type = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
           }) =>
@@ -1702,6 +1749,7 @@ class $$CategoriesTableTableManager extends RootTableManager<
             name: name,
             iconName: iconName,
             colorValue: colorValue,
+            type: type,
             createdAt: createdAt,
             updatedAt: updatedAt,
           ),
@@ -1710,6 +1758,7 @@ class $$CategoriesTableTableManager extends RootTableManager<
             required String name,
             required String iconName,
             required int colorValue,
+            Value<String> type = const Value.absent(),
             required DateTime createdAt,
             required DateTime updatedAt,
           }) =>
@@ -1718,6 +1767,7 @@ class $$CategoriesTableTableManager extends RootTableManager<
             name: name,
             iconName: iconName,
             colorValue: colorValue,
+            type: type,
             createdAt: createdAt,
             updatedAt: updatedAt,
           ),

@@ -24,6 +24,7 @@ mixin _$Category {
   String get name => throw _privateConstructorUsedError;
   String get iconName => throw _privateConstructorUsedError;
   int get colorValue => throw _privateConstructorUsedError;
+  CategoryType get type => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
@@ -47,6 +48,7 @@ abstract class $CategoryCopyWith<$Res> {
       String name,
       String iconName,
       int colorValue,
+      CategoryType type,
       DateTime createdAt,
       DateTime updatedAt});
 }
@@ -70,6 +72,7 @@ class _$CategoryCopyWithImpl<$Res, $Val extends Category>
     Object? name = null,
     Object? iconName = null,
     Object? colorValue = null,
+    Object? type = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -90,6 +93,10 @@ class _$CategoryCopyWithImpl<$Res, $Val extends Category>
           ? _value.colorValue
           : colorValue // ignore: cast_nullable_to_non_nullable
               as int,
+      type: null == type
+          ? _value.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as CategoryType,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -115,6 +122,7 @@ abstract class _$$CategoryImplCopyWith<$Res>
       String name,
       String iconName,
       int colorValue,
+      CategoryType type,
       DateTime createdAt,
       DateTime updatedAt});
 }
@@ -136,6 +144,7 @@ class __$$CategoryImplCopyWithImpl<$Res>
     Object? name = null,
     Object? iconName = null,
     Object? colorValue = null,
+    Object? type = null,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -156,6 +165,10 @@ class __$$CategoryImplCopyWithImpl<$Res>
           ? _value.colorValue
           : colorValue // ignore: cast_nullable_to_non_nullable
               as int,
+      type: null == type
+          ? _value.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as CategoryType,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -176,6 +189,7 @@ class _$CategoryImpl implements _Category {
       required this.name,
       required this.iconName,
       required this.colorValue,
+      this.type = CategoryType.expense,
       required this.createdAt,
       required this.updatedAt});
 
@@ -191,13 +205,16 @@ class _$CategoryImpl implements _Category {
   @override
   final int colorValue;
   @override
+  @JsonKey()
+  final CategoryType type;
+  @override
   final DateTime createdAt;
   @override
   final DateTime updatedAt;
 
   @override
   String toString() {
-    return 'Category(id: $id, name: $name, iconName: $iconName, colorValue: $colorValue, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Category(id: $id, name: $name, iconName: $iconName, colorValue: $colorValue, type: $type, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -211,6 +228,7 @@ class _$CategoryImpl implements _Category {
                 other.iconName == iconName) &&
             (identical(other.colorValue, colorValue) ||
                 other.colorValue == colorValue) &&
+            (identical(other.type, type) || other.type == type) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -220,7 +238,7 @@ class _$CategoryImpl implements _Category {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType, id, name, iconName, colorValue, createdAt, updatedAt);
+      runtimeType, id, name, iconName, colorValue, type, createdAt, updatedAt);
 
   /// Create a copy of Category
   /// with the given fields replaced by the non-null parameter values.
@@ -244,6 +262,7 @@ abstract class _Category implements Category {
       required final String name,
       required final String iconName,
       required final int colorValue,
+      final CategoryType type,
       required final DateTime createdAt,
       required final DateTime updatedAt}) = _$CategoryImpl;
 
@@ -258,6 +277,8 @@ abstract class _Category implements Category {
   String get iconName;
   @override
   int get colorValue;
+  @override
+  CategoryType get type;
   @override
   DateTime get createdAt;
   @override

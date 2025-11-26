@@ -8,6 +8,7 @@ class Categories extends Table {
   TextColumn get name => text().withLength(min: 1, max: 100)();
   TextColumn get iconName => text()();
   IntColumn get colorValue => integer()();
+  TextColumn get type => text().withDefault(const Constant('expense'))();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
 }

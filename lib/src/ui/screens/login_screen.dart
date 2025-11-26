@@ -65,10 +65,10 @@ class LoginScreen extends HookConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.account_balance_wallet,
                 size: 100,
-                color: AppColors.primary,
+                color: Theme.of(context).colorScheme.primary,
               ),
               const SizedBox(height: 24),
               Text(

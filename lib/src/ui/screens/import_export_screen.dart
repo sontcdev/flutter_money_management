@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../services/import_export_service.dart';
 import '../../providers/providers.dart';
 import '../../models/transaction.dart';
@@ -61,6 +62,10 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
                           color: _isError ? Colors.red[800] : Colors.green[800],
                         ),
                       ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, size: 18),
+                      onPressed: () => setState(() => _statusMessage = null),
                     ),
                   ],
                 ),
@@ -120,22 +125,38 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
             ),
             const SizedBox(height: 16),
 
+            // Import from File buttons
             Row(
               children: [
                 Expanded(
                   child: _ActionCard(
                     icon: Icons.upload_file,
-                    title: 'Import CSV',
-                    subtitle: 'Từ file .csv',
+                    title: 'Import từ File',
+                    subtitle: 'Chọn file .csv hoặc .json',
+                    onTap: _isLoading ? null : _pickAndImportFile,
+                    isPrimary: true,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            
+            Row(
+              children: [
+                Expanded(
+                  child: _ActionCard(
+                    icon: Icons.content_paste,
+                    title: 'Dán CSV',
+                    subtitle: 'Từ clipboard',
                     onTap: _isLoading ? null : () => _showImportDialog('csv'),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _ActionCard(
-                    icon: Icons.upload_file,
-                    title: 'Import JSON',
-                    subtitle: 'Từ file .json',
+                    icon: Icons.content_paste,
+                    title: 'Dán JSON',
+                    subtitle: 'Từ clipboard',
                     onTap: _isLoading ? null : () => _showImportDialog('json'),
                   ),
                 ),
@@ -242,6 +263,59 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _pickAndImportFile() async {
+    setState(() {
+      _isLoading = true;
+      _statusMessage = null;
+    });
+
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv', 'json'],
+        allowMultiple: false,
+      );
+
+      if (result == null) {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final file = result.files.first;
+      if (file.path == null) {
+        setState(() {
+          _statusMessage = 'Không thể đọc file';
+          _isError = true;
+          _isLoading = false;
+        });
+        return;
+      }
+
+      final content = await File(file.path!).readAsString();
+      final extension = file.extension?.toLowerCase() ?? '';
+
+      if (extension == 'csv') {
+        await _importData(content, 'csv');
+      } else if (extension == 'json') {
+        await _importData(content, 'json');
+      } else {
+        setState(() {
+          _statusMessage = 'Định dạng file không được hỗ trợ. Vui lòng chọn file .csv hoặc .json';
+          _isError = true;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _statusMessage = 'Lỗi đọc file: ${e.toString()}';
+        _isError = true;
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _exportData(String format) async {
@@ -567,17 +641,20 @@ class _ActionCard extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback? onTap;
+  final bool isPrimary;
 
   const _ActionCard({
     required this.icon,
     required this.title,
     required this.subtitle,
     this.onTap,
+    this.isPrimary = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: isPrimary ? Theme.of(context).colorScheme.primary.withOpacity(0.1) : null,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -585,11 +662,20 @@ class _ActionCard extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              Icon(icon, size: 32, color: Theme.of(context).primaryColor),
+              Icon(
+                icon, 
+                size: 32, 
+                color: isPrimary 
+                    ? Theme.of(context).colorScheme.primary 
+                    : Theme.of(context).primaryColor,
+              ),
               const SizedBox(height: 8),
               Text(
                 title,
-                style: const TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: isPrimary ? Theme.of(context).colorScheme.primary : null,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 4),

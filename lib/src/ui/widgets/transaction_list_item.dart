@@ -33,7 +33,8 @@ class TransactionListItem extends StatelessWidget {
     final amountText = isExpense
         ? '-${formatter.format(transaction.amountCents.abs() / 100)}'
         : '+${formatter.format(transaction.amountCents.abs() / 100)}';
-    final amountColor = isExpense ? ReportTheme.expenseColor : ReportTheme.incomeColor;
+    // Transaction amounts are black, only prefix +/- shows the type
+    const amountColor = Colors.black87;
 
     return InkWell(
       onTap: onTap,

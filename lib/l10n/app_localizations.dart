@@ -305,6 +305,18 @@ abstract class AppLocalizations {
   /// **'Yearly'**
   String get yearly;
 
+  /// No description provided for @weekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get weekly;
+
+  /// No description provided for @quarterly.
+  ///
+  /// In en, this message translates to:
+  /// **'Quarterly'**
+  String get quarterly;
+
   /// No description provided for @custom.
   ///
   /// In en, this message translates to:
@@ -448,6 +460,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark'**
   String get dark;
+
+  /// No description provided for @system.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get system;
 
   /// No description provided for @login.
   ///
@@ -658,6 +676,534 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Skip'**
   String get skip;
+
+  /// No description provided for @add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// No description provided for @all.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
+
+  /// No description provided for @calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get calendar;
+
+  /// No description provided for @overview.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview'**
+  String get overview;
+
+  /// No description provided for @byCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'By Category'**
+  String get byCategory;
+
+  /// No description provided for @byBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'By Budget'**
+  String get byBudget;
+
+  /// No description provided for @lastMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Month'**
+  String get lastMonth;
+
+  /// No description provided for @selectMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Month'**
+  String get selectMonth;
+
+  /// No description provided for @selectYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Year'**
+  String get selectYear;
+
+  /// No description provided for @noData.
+  ///
+  /// In en, this message translates to:
+  /// **'No data'**
+  String get noData;
+
+  /// No description provided for @loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get loading;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @proceed.
+  ///
+  /// In en, this message translates to:
+  /// **'Proceed'**
+  String get proceed;
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// No description provided for @next.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get next;
+
+  /// No description provided for @done.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
+  /// No description provided for @search.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get search;
+
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// No description provided for @export.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get export;
+
+  /// No description provided for @import.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get import;
+
+  /// No description provided for @importExport.
+  ///
+  /// In en, this message translates to:
+  /// **'Import/Export Data'**
+  String get importExport;
+
+  /// No description provided for @languageAndDisplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Language & Display'**
+  String get languageAndDisplay;
+
+  /// No description provided for @themeColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme Color'**
+  String get themeColor;
+
+  /// No description provided for @selectThemeColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Select your favorite interface color'**
+  String get selectThemeColor;
+
+  /// No description provided for @budgetSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget Settings'**
+  String get budgetSettings;
+
+  /// No description provided for @defaultBudgetPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Default Budget Period'**
+  String get defaultBudgetPeriod;
+
+  /// No description provided for @manageBudgets.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Budgets'**
+  String get manageBudgets;
+
+  /// No description provided for @viewEditBudgets.
+  ///
+  /// In en, this message translates to:
+  /// **'View and edit budgets'**
+  String get viewEditBudgets;
+
+  /// No description provided for @data.
+  ///
+  /// In en, this message translates to:
+  /// **'Data'**
+  String get data;
+
+  /// No description provided for @backupRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup and restore data'**
+  String get backupRestore;
+
+  /// No description provided for @manageCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Categories'**
+  String get manageCategories;
+
+  /// No description provided for @addEditDeleteCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Add, edit, delete categories'**
+  String get addEditDeleteCategories;
+
+  /// No description provided for @info.
+  ///
+  /// In en, this message translates to:
+  /// **'Info'**
+  String get info;
+
+  /// No description provided for @selectBudgetPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Budget Period'**
+  String get selectBudgetPeriod;
+
+  /// No description provided for @selectInterfaceColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Interface Color'**
+  String get selectInterfaceColor;
+
+  /// No description provided for @colorBlue.
+  ///
+  /// In en, this message translates to:
+  /// **'Blue'**
+  String get colorBlue;
+
+  /// No description provided for @colorGreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Green'**
+  String get colorGreen;
+
+  /// No description provided for @colorPurple.
+  ///
+  /// In en, this message translates to:
+  /// **'Purple'**
+  String get colorPurple;
+
+  /// No description provided for @colorOrange.
+  ///
+  /// In en, this message translates to:
+  /// **'Orange'**
+  String get colorOrange;
+
+  /// No description provided for @colorTeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Teal'**
+  String get colorTeal;
+
+  /// No description provided for @colorPink.
+  ///
+  /// In en, this message translates to:
+  /// **'Pink'**
+  String get colorPink;
+
+  /// No description provided for @colorIndigo.
+  ///
+  /// In en, this message translates to:
+  /// **'Indigo'**
+  String get colorIndigo;
+
+  /// No description provided for @colorRed.
+  ///
+  /// In en, this message translates to:
+  /// **'Red'**
+  String get colorRed;
+
+  /// No description provided for @noNote.
+  ///
+  /// In en, this message translates to:
+  /// **'No note'**
+  String get noNote;
+
+  /// No description provided for @reportOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Report Overview'**
+  String get reportOverview;
+
+  /// No description provided for @expenseByCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense by Category'**
+  String get expenseByCategory;
+
+  /// No description provided for @incomeByCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Income by Category'**
+  String get incomeByCategory;
+
+  /// No description provided for @reportByBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Report by Budget'**
+  String get reportByBudget;
+
+  /// No description provided for @viewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View All'**
+  String get viewAll;
+
+  /// No description provided for @noBudgetsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No budgets yet'**
+  String get noBudgetsYet;
+
+  /// No description provided for @noExpenseInPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'No expense in this period'**
+  String get noExpenseInPeriod;
+
+  /// No description provided for @noIncomeInPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'No income in this period'**
+  String get noIncomeInPeriod;
+
+  /// No description provided for @selectTimePeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Time Period'**
+  String get selectTimePeriod;
+
+  /// No description provided for @byMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'By Month'**
+  String get byMonth;
+
+  /// No description provided for @byYear.
+  ///
+  /// In en, this message translates to:
+  /// **'By Year'**
+  String get byYear;
+
+  /// No description provided for @monthFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Month {month}/{year}'**
+  String monthFormat(Object month, Object year);
+
+  /// No description provided for @yearFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Year {year}'**
+  String yearFormat(Object year);
+
+  /// No description provided for @categoryType.
+  ///
+  /// In en, this message translates to:
+  /// **'Category Type'**
+  String get categoryType;
+
+  /// No description provided for @showMoreIcons.
+  ///
+  /// In en, this message translates to:
+  /// **'Show More Icons'**
+  String get showMoreIcons;
+
+  /// No description provided for @collapse.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse'**
+  String get collapse;
+
+  /// No description provided for @noCategoryYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No expense category yet. Tap \"Add\" to create one.'**
+  String get noCategoryYet;
+
+  /// No description provided for @transactionsInPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Transactions in Period'**
+  String get transactionsInPeriod;
+
+  /// No description provided for @selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected'**
+  String get selected;
+
+  /// No description provided for @selectTransactionsForBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Select transactions for budget'**
+  String get selectTransactionsForBudget;
+
+  /// No description provided for @noExpenseTransactionInPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'No expense transaction in this period.'**
+  String get noExpenseTransactionInPeriod;
+
+  /// No description provided for @selectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select All'**
+  String get selectAll;
+
+  /// No description provided for @deselectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect All'**
+  String get deselectAll;
+
+  /// No description provided for @fromDate.
+  ///
+  /// In en, this message translates to:
+  /// **'From Date'**
+  String get fromDate;
+
+  /// No description provided for @toDate.
+  ///
+  /// In en, this message translates to:
+  /// **'To Date'**
+  String get toDate;
+
+  /// No description provided for @languageDisplay.
+  ///
+  /// In en, this message translates to:
+  /// **'Language & Display'**
+  String get languageDisplay;
+
+  /// No description provided for @manageBudgetsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'View and edit budgets'**
+  String get manageBudgetsDesc;
+
+  /// No description provided for @dataSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Data'**
+  String get dataSection;
+
+  /// No description provided for @importExportDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup and restore data'**
+  String get importExportDesc;
+
+  /// No description provided for @manageCategoriesDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Add, edit, delete categories'**
+  String get manageCategoriesDesc;
+
+  /// No description provided for @aboutSection.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get aboutSection;
+
+  /// No description provided for @overviewReport.
+  ///
+  /// In en, this message translates to:
+  /// **'Overview Report'**
+  String get overviewReport;
+
+  /// No description provided for @transactionCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Number of transactions'**
+  String get transactionCount;
+
+  /// No description provided for @budgetReports.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget Reports'**
+  String get budgetReports;
+
+  /// No description provided for @noExpenseBudgets.
+  ///
+  /// In en, this message translates to:
+  /// **'No expense budgets'**
+  String get noExpenseBudgets;
+
+  /// No description provided for @noIncomeBudgets.
+  ///
+  /// In en, this message translates to:
+  /// **'No income budgets'**
+  String get noIncomeBudgets;
+
+  /// No description provided for @noExpenseThisPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'No expense in this period'**
+  String get noExpenseThisPeriod;
+
+  /// No description provided for @noIncomeThisPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'No income in this period'**
+  String get noIncomeThisPeriod;
+
+  /// No description provided for @selectPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Time Period'**
+  String get selectPeriod;
+
+  /// No description provided for @transactionsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'transactions'**
+  String get transactionsCount;
+
+  /// No description provided for @month.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get month;
+
+  /// No description provided for @year.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get year;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

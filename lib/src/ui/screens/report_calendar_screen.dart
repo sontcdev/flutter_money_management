@@ -29,6 +29,10 @@ class ReportCalendarScreen extends HookConsumerWidget {
       appBar: AppBar(
         title: Text(l10n?.reports ?? 'Lịch'),
         centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -152,16 +156,30 @@ class ReportCalendarScreen extends HookConsumerWidget {
           ),
           Expanded(
             child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  monthLabel,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+              child: InkWell(
+                onTap: () => _showMonthYearPicker(context, ref, month),
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        monthLabel,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_drop_down,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -174,6 +192,23 @@ class ReportCalendarScreen extends HookConsumerWidget {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  void _showMonthYearPicker(BuildContext context, WidgetRef ref, DateTime currentMonth) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => _MonthYearPickerSheet(
+        initialMonth: currentMonth,
+        onMonthSelected: (selectedMonth) {
+          ref.read(transactionListNotifierProvider.notifier).goToMonth(selectedMonth);
+          Navigator.pop(context);
+        },
       ),
     );
   }
@@ -230,6 +265,123 @@ class ReportCalendarScreen extends HookConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _MonthYearPickerSheet extends HookWidget {
+  final DateTime initialMonth;
+  final Function(DateTime) onMonthSelected;
+
+  const _MonthYearPickerSheet({
+    required this.initialMonth,
+    required this.onMonthSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedYear = useState(initialMonth.year);
+    final now = DateTime.now();
+    final years = List.generate(10, (i) => now.year - 5 + i);
+    final months = [
+      'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
+      'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8',
+      'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12',
+    ];
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.5,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Chọn tháng/năm',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // Year selector
+          SizedBox(
+            height: 40,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: years.length,
+              itemBuilder: (context, index) {
+                final year = years[index];
+                final isSelected = year == selectedYear.value;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ChoiceChip(
+                    label: Text(year.toString()),
+                    selected: isSelected,
+                    onSelected: (_) => selectedYear.value = year,
+                    selectedColor: Theme.of(context).colorScheme.primary,
+                    labelStyle: TextStyle(
+                      color: isSelected ? Colors.white : null,
+                      fontWeight: isSelected ? FontWeight.bold : null,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Month grid
+          Expanded(
+            child: GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                childAspectRatio: 2,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+              ),
+              itemCount: 12,
+              itemBuilder: (context, index) {
+                final monthNum = index + 1;
+                final isCurrentSelection = 
+                    selectedYear.value == initialMonth.year && 
+                    monthNum == initialMonth.month;
+                final isCurrentMonth = 
+                    selectedYear.value == now.year && 
+                    monthNum == now.month;
+                
+                return Material(
+                  color: isCurrentSelection
+                      ? Theme.of(context).colorScheme.primary
+                      : isCurrentMonth
+                          ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                          : Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                  child: InkWell(
+                    onTap: () => onMonthSelected(DateTime(selectedYear.value, monthNum)),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Center(
+                      child: Text(
+                        months[index],
+                        style: TextStyle(
+                          color: isCurrentSelection ? Colors.white : null,
+                          fontWeight: isCurrentSelection || isCurrentMonth ? FontWeight.bold : null,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -75,9 +75,33 @@ final categoriesProvider = FutureProvider<List<Category>>((ref) async {
   return repository.getAllCategories();
 });
 
+final categoriesByTypeProvider = FutureProvider.family<List<Category>, CategoryType>((ref, type) async {
+  final repository = ref.watch(categoryRepositoryProvider);
+  return repository.getCategoriesByType(type);
+});
+
 final categoryProvider = FutureProvider.family<Category?, int>((ref, categoryId) async {
   final repository = ref.watch(categoryRepositoryProvider);
   return repository.getCategoryById(categoryId);
+});
+
+// Budget with calculated consumed cents from transactions
+final budgetsWithConsumedProvider = FutureProvider<List<Budget>>((ref) async {
+  final budgets = await ref.watch(budgetsProvider.future);
+  final transactions = await ref.watch(transactionsProvider.future);
+  
+  return budgets.map((budget) {
+    // Calculate consumed cents from transactions for this budget's category and period
+    final consumedCents = transactions
+        .where((t) =>
+            t.categoryId == budget.categoryId &&
+            t.type == TransactionType.expense &&
+            t.dateTime.isAfter(budget.periodStart.subtract(const Duration(seconds: 1))) &&
+            t.dateTime.isBefore(budget.periodEnd.add(const Duration(seconds: 1))))
+        .fold<int>(0, (sum, t) => sum + t.amountCents);
+    
+    return budget.copyWith(consumedCents: consumedCents);
+  }).toList();
 });
 
 // Helper classes

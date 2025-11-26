@@ -33,7 +33,7 @@ class TransactionDetailScreen extends ConsumerWidget {
 
         final transaction = snapshot.data![0] as dynamic;
         final categories = snapshot.data![1] as List<dynamic>;
-        String categoryName = 'Không xác định';
+        String categoryName = l10n.noData;
         try {
           final category = categories.firstWhere(
             (c) => c.id == transaction.categoryId,
@@ -80,6 +80,7 @@ class TransactionDetailScreen extends ConsumerWidget {
                     await transactionRepo.deleteTransaction(transactionId);
                     // Invalidate budgets to refresh budget data
                     ref.invalidate(budgetsProvider);
+                    ref.invalidate(budgetsWithConsumedProvider);
                     if (context.mounted) Navigator.pop(context);
                   }
                 },

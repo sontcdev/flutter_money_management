@@ -104,6 +104,7 @@ class AddTransactionScreen extends HookConsumerWidget {
 
         // Invalidate budgets to refresh budget data
         ref.invalidate(budgetsProvider);
+        ref.invalidate(budgetsWithConsumedProvider);
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

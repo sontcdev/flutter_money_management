@@ -18,6 +18,7 @@ void main() async {
         sharedPreferencesProvider.overrideWithValue(sharedPreferences),
         localeProvider.overrideWith((ref) => LocaleNotifier(sharedPreferences)),
         themeModeProvider.overrideWith((ref) => ThemeNotifier(sharedPreferences)),
+        themeColorProvider.overrideWith((ref) => ThemeColorNotifier(sharedPreferences)),
       ],
       child: const MoneyManagementApp(),
     ),

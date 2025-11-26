@@ -171,6 +171,11 @@ class TransactionListNotifier extends StateNotifier<AsyncValue<void>> {
     ref.read(selectedDateProvider.notifier).state = null;
   }
 
+  void goToMonth(DateTime month) {
+    ref.read(selectedMonthProvider.notifier).state = DateTime(month.year, month.month, 1);
+    ref.read(selectedDateProvider.notifier).state = null;
+  }
+
   Future<void> refresh() async {
     state = const AsyncValue.loading();
     try {

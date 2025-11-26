@@ -4,13 +4,15 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 class AppTheme {
-  static ThemeData lightTheme() {
+  static ThemeData lightTheme({Color? primaryColor}) {
+    final primary = primaryColor ?? AppColors.primary;
+    
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      colorScheme: const ColorScheme.light(
-        primary: AppColors.primary,
-        secondary: AppColors.secondary,
+      colorScheme: ColorScheme.light(
+        primary: primary,
+        secondary: primary.withOpacity(0.8),
         error: AppColors.error,
         surface: AppColors.surface,
         onPrimary: AppColors.textLight,
@@ -39,7 +41,7 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: primary,
           foregroundColor: AppColors.textLight,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -54,8 +56,8 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.primary, width: 2),
+          foregroundColor: primary,
+          side: BorderSide(color: primary, width: 2),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -79,7 +81,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderSide: BorderSide(color: primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
@@ -145,16 +147,34 @@ class AppTheme {
         thickness: 1,
         space: 1,
       ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: primary,
+        foregroundColor: AppColors.textLight,
+      ),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        selectedItemColor: primary,
+        unselectedItemColor: AppColors.textSecondary,
+      ),
+      tabBarTheme: TabBarThemeData(
+        labelColor: primary,
+        unselectedLabelColor: AppColors.textSecondary,
+        indicatorColor: primary,
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: primary,
+      ),
     );
   }
 
-  static ThemeData darkTheme() {
+  static ThemeData darkTheme({Color? primaryColor}) {
+    final primary = primaryColor ?? AppColors.primary;
+    
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      colorScheme: const ColorScheme.dark(
-        primary: AppColors.primary,
-        secondary: AppColors.secondary,
+      colorScheme: ColorScheme.dark(
+        primary: primary,
+        secondary: primary.withOpacity(0.8),
         error: AppColors.error,
         surface: AppColors.surfaceDark,
         onPrimary: AppColors.textLight,
@@ -183,7 +203,7 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: primary,
           foregroundColor: AppColors.textLight,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -198,8 +218,8 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.primary, width: 2),
+          foregroundColor: primary,
+          side: BorderSide(color: primary, width: 2),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -223,7 +243,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
+          borderSide: BorderSide(color: primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
@@ -288,6 +308,22 @@ class AppTheme {
         color: AppColors.borderDark,
         thickness: 1,
         space: 1,
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: primary,
+        foregroundColor: AppColors.textLight,
+      ),
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        selectedItemColor: primary,
+        unselectedItemColor: AppColors.textSecondary,
+      ),
+      tabBarTheme: TabBarThemeData(
+        labelColor: primary,
+        unselectedLabelColor: AppColors.textSecondary,
+        indicatorColor: primary,
+      ),
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        color: primary,
       ),
     );
   }

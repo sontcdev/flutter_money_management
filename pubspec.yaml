@@ -36,6 +36,9 @@ dependencies:
   # Image handling
   image_picker: ^1.0.4
 
+  # File picker
+  file_picker: ^8.0.0
+
   # Notifications
   flutter_local_notifications: ^16.1.0
 
