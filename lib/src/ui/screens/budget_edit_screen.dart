@@ -92,14 +92,14 @@ class BudgetEditScreen extends HookConsumerWidget {
     Future<void> handleSave() async {
       if (limitController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Vui lòng nhập hạn mức')),
+          SnackBar(content: Text('${l10n.error}: ${l10n.limit} ${l10n.noData}')),
         );
         return;
       }
 
       if (selectedCategoryId.value == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Vui lòng chọn danh mục')),
+          SnackBar(content: Text('${l10n.error}: ${l10n.selectCategory}')),
         );
         return;
       }
@@ -110,7 +110,7 @@ class BudgetEditScreen extends HookConsumerWidget {
         final budgetRepo = ref.read(budgetRepositoryProvider);
         final limit = CurrencyFormatter.parseVND(limitController.text);
         if (limit == null) {
-          throw FormatException('Định dạng số tiền không hợp lệ');
+          throw FormatException(l10n.error);
         }
         final limitCents = CurrencyFormatter.toCents(limit);
 
@@ -182,7 +182,15 @@ class BudgetEditScreen extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(budget == null ? 'Thêm Ngân Sách' : 'Sửa Ngân Sách'),
+        title: Text(budget == null ? l10n.addBudget : l10n.editBudget),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            // Unfocus to hide keyboard before popping
+            FocusScope.of(context).unfocus();
+            Navigator.of(context).pop();
+          },
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -192,9 +200,9 @@ class BudgetEditScreen extends HookConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Danh mục',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                Text(
+                  l10n.category,
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                 ),
                 TextButton.icon(
                   onPressed: () async {
@@ -211,7 +219,7 @@ class BudgetEditScreen extends HookConsumerWidget {
                     }
                   },
                   icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Thêm'),
+                  label: Text(l10n.add),
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     visualDensity: VisualDensity.compact,
@@ -230,16 +238,16 @@ class BudgetEditScreen extends HookConsumerWidget {
                 if (filteredCategories.isEmpty) {
                   return Card(
                     color: Colors.grey[100],
-                    child: const Padding(
-                      padding: EdgeInsets.all(16),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
                       child: Row(
                         children: [
-                          Icon(Icons.info_outline, color: Colors.grey),
-                          SizedBox(width: 12),
+                          const Icon(Icons.info_outline, color: Colors.grey),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              'Chưa có danh mục chi tiêu. Nhấn "Thêm" để tạo mới.',
-                              style: TextStyle(color: Colors.grey),
+                              l10n.noCategoryYet,
+                              style: const TextStyle(color: Colors.grey),
                             ),
                           ),
                         ],
@@ -254,7 +262,7 @@ class BudgetEditScreen extends HookConsumerWidget {
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    hintText: 'Chọn danh mục',
+                    hintText: l10n.selectCategory,
                   ),
                   items: filteredCategories.map((category) {
                     return DropdownMenuItem(
@@ -276,11 +284,11 @@ class BudgetEditScreen extends HookConsumerWidget {
                 );
               },
               loading: () => const CircularProgressIndicator(),
-              error: (err, stack) => Text('Lỗi: $err'),
+              error: (err, stack) => Text('${l10n.error}: $err'),
             ),
             const SizedBox(height: 16),
             AppInput(
-              label: 'Hạn mức (VNĐ)',
+              label: '${l10n.limit} (${l10n.currency})',
               controller: limitController,
               keyboardType: TextInputType.number,
               inputFormatters: [
@@ -300,16 +308,16 @@ class BudgetEditScreen extends HookConsumerWidget {
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Chu kỳ',
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+            Text(
+              l10n.period,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
             ),
             const SizedBox(height: 8),
             Row(
               children: [
                 Expanded(
                   child: _PeriodOptionButton(
-                    label: 'Tháng',
+                    label: l10n.monthly,
                     icon: Icons.calendar_month,
                     isSelected: selectedPeriodType.value == PeriodType.monthly,
                     onTap: () {
@@ -321,7 +329,7 @@ class BudgetEditScreen extends HookConsumerWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: _PeriodOptionButton(
-                    label: 'Năm',
+                    label: l10n.yearly,
                     icon: Icons.calendar_today,
                     isSelected: selectedPeriodType.value == PeriodType.yearly,
                     onTap: () {
@@ -333,7 +341,7 @@ class BudgetEditScreen extends HookConsumerWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: _PeriodOptionButton(
-                    label: 'Tùy chỉnh',
+                    label: l10n.custom,
                     icon: Icons.date_range,
                     isSelected: selectedPeriodType.value == PeriodType.custom,
                     onTap: () {
@@ -352,7 +360,7 @@ class BudgetEditScreen extends HookConsumerWidget {
                 children: [
                   Expanded(
                     child: _DatePickerField(
-                      label: 'Từ ngày',
+                      label: l10n.fromDate,
                       date: customStartDate.value,
                       onTap: () async {
                         final picked = await showDatePicker(
@@ -371,7 +379,7 @@ class BudgetEditScreen extends HookConsumerWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: _DatePickerField(
-                      label: 'Đến ngày',
+                      label: l10n.toDate,
                       date: customEndDate.value,
                       onTap: () async {
                         final picked = await showDatePicker(
@@ -401,16 +409,16 @@ class BudgetEditScreen extends HookConsumerWidget {
                   if (categoryTransactions.isEmpty) {
                     return Card(
                       color: Colors.grey[100],
-                      child: const Padding(
-                        padding: EdgeInsets.all(16),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
                         child: Row(
                           children: [
-                            Icon(Icons.info_outline, color: Colors.grey),
-                            SizedBox(width: 12),
+                            const Icon(Icons.info_outline, color: Colors.grey),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'Không có giao dịch chi tiêu nào trong chu kỳ này.',
-                                style: TextStyle(color: Colors.grey),
+                                l10n.noExpenseTransactionInPeriod,
+                                style: const TextStyle(color: Colors.grey),
                               ),
                             ),
                           ],
@@ -428,18 +436,18 @@ class BudgetEditScreen extends HookConsumerWidget {
                       children: [
                         ListTile(
                           title: Text(
-                            'Giao dịch trong chu kỳ (${categoryTransactions.length})',
+                            '${l10n.transactionsInPeriod} (${categoryTransactions.length})',
                             style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                           subtitle: selectedTransactionIds.value.isNotEmpty
                               ? Text(
-                                  'Đã chọn: ${CurrencyFormatter.formatVNDFromCents(selectedTotal)}',
+                                  '${l10n.selected}: ${CurrencyFormatter.formatVNDFromCents(selectedTotal)}',
                                   style: TextStyle(
                                     color: Theme.of(context).colorScheme.primary,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 )
-                              : const Text('Chọn giao dịch để tính vào ngân sách'),
+                              : Text(l10n.selectTransactionsForBudget),
                           trailing: IconButton(
                             icon: Icon(
                               showTransactionSelector.value 
@@ -465,7 +473,7 @@ class BudgetEditScreen extends HookConsumerWidget {
                                         ? Icons.check_box 
                                         : Icons.check_box_outline_blank,
                                   ),
-                                  label: Text(allSelected ? 'Bỏ chọn tất cả' : 'Chọn tất cả'),
+                                  label: Text(allSelected ? l10n.deselectAll : l10n.selectAll),
                                   onPressed: () {
                                     if (allSelected) {
                                       selectedTransactionIds.value = {};
@@ -493,7 +501,7 @@ class BudgetEditScreen extends HookConsumerWidget {
                                 selectedTransactionIds.value = newSet;
                               },
                               title: Text(
-                                t.note ?? 'Không có ghi chú',
+                                t.note ?? l10n.noNote,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -521,8 +529,8 @@ class BudgetEditScreen extends HookConsumerWidget {
             
             const SizedBox(height: 16),
             SwitchListTile(
-              title: const Text('Cho phép chi vượt'),
-              subtitle: const Text('Không chặn khi vượt hạn mức'),
+              title: Text(l10n.allowOverdraft),
+              subtitle: Text('${l10n.budgetExceeded} - ${l10n.proceed}'),
               value: allowOverdraft.value,
               onChanged: (value) => allowOverdraft.value = value,
             ),

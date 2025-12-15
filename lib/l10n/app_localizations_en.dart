@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Money Manager';
+  String get appTitle => 'MoneyWise';
 
   @override
   String get home => 'Home';
@@ -37,6 +37,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get editTransaction => 'Edit Transaction';
+
+  @override
+  String get type => 'Type';
 
   @override
   String get amount => 'Amount';
@@ -285,7 +288,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createFirst => 'Create your first one!';
 
   @override
-  String get welcome => 'Welcome to Money Manager';
+  String get welcome => 'Welcome to MoneyWise';
 
   @override
   String get onboardingTitle => 'Manage your money with ease';

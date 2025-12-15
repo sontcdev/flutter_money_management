@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../providers/providers.dart';
 import '../../models/transaction.dart' as model;
+import '../../models/category.dart';
 import '../../services/budget_service.dart';
 import '../../utils/currency_formatter.dart';
 import '../../utils/vnd_input_formatter.dart';
@@ -102,9 +103,10 @@ class AddTransactionScreen extends HookConsumerWidget {
           await repository.updateTransaction(transaction);
         }
 
-        // Invalidate budgets to refresh budget data
+        // Invalidate providers to refresh data
         ref.invalidate(budgetsProvider);
         ref.invalidate(budgetsWithConsumedProvider);
+        ref.invalidate(transactionsProvider);
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -184,6 +186,8 @@ class AddTransactionScreen extends HookConsumerWidget {
               selected: {selectedType.value},
               onSelectionChanged: (Set<model.TransactionType> selection) {
                 selectedType.value = selection.first;
+                // Reset category when transaction type changes
+                selectedCategoryId.value = null;
               },
             ),
             const SizedBox(height: 24),
@@ -198,7 +202,17 @@ class AddTransactionScreen extends HookConsumerWidget {
                 FilteringTextInputFormatter.digitsOnly,
                 VNDInputFormatter(),
               ],
-              prefixIcon: const Icon(Icons.attach_money),
+              prefixIcon: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                child: Text(
+                  '\$',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ),
               suffixIcon: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                 child: Text(
@@ -216,9 +230,22 @@ class AddTransactionScreen extends HookConsumerWidget {
             // Category Selector
             categoriesAsync.when(
               data: (categories) {
-                if (categories.isEmpty) {
+                // Filter categories by transaction type
+                final filteredCategories = categories.where((c) {
+                  if (selectedType.value == model.TransactionType.expense) {
+                    return c.type == CategoryType.expense;
+                  } else {
+                    return c.type == CategoryType.income;
+                  }
+                }).toList();
+
+                if (filteredCategories.isEmpty) {
                   return Text(l10n.noCategories);
                 }
+
+                // Check if selected category is still valid for current type
+                final isSelectedCategoryValid = selectedCategoryId.value != null &&
+                    filteredCategories.any((c) => c.id == selectedCategoryId.value);
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,11 +256,11 @@ class AddTransactionScreen extends HookConsumerWidget {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<int>(
-                      value: selectedCategoryId.value,
+                      value: isSelectedCategoryValid ? selectedCategoryId.value : null,
                       decoration: const InputDecoration(
                         hintText: 'Select category',
                       ),
-                      items: categories.map((category) {
+                      items: filteredCategories.map((category) {
                         return DropdownMenuItem(
                           value: category.id,
                           child: Row(
@@ -265,31 +292,83 @@ class AddTransactionScreen extends HookConsumerWidget {
             const SizedBox(height: 16),
 
             // Date Picker
-            AppInput(
-              label: l10n.date,
-              controller: TextEditingController(
-                text: '${selectedDate.value.year}-${selectedDate.value.month.toString().padLeft(2, '0')}-${selectedDate.value.day.toString().padLeft(2, '0')}',
-              ),
-              readOnly: true,
-              suffixIcon: const Icon(Icons.calendar_today),
-              onTap: () async {
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate: selectedDate.value,
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime(2100),
-                );
-                if (picked != null) {
-                  selectedDate.value = picked;
-                }
-              },
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.date,
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.chevron_left, size: 20),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () {
+                        selectedDate.value = selectedDate.value.subtract(const Duration(days: 1));
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.grey[300]!,
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: InkWell(
+                          onTap: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: selectedDate.value,
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2100),
+                            );
+                            if (picked != null) {
+                              selectedDate.value = picked;
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.calendar_today, size: 16, color: Colors.grey[700]),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '${selectedDate.value.day.toString().padLeft(2, '0')}/${selectedDate.value.month.toString().padLeft(2, '0')}/${selectedDate.value.year}',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(Icons.chevron_right, size: 20),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () {
+                        selectedDate.value = selectedDate.value.add(const Duration(days: 1));
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ),
             const SizedBox(height: 16),
 
             // Note Input
             AppInput(
               label: l10n.note,
-              hint: 'Add a note (optional)',
+              hint: 'Note',
               controller: noteController,
               maxLines: 3,
             ),

@@ -155,6 +155,12 @@ abstract class AppLocalizations {
   /// **'Edit Transaction'**
   String get editTransaction;
 
+  /// No description provided for @type.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get type;
+
   /// No description provided for @amount.
   ///
   /// In en, this message translates to:

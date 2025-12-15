@@ -33,17 +33,46 @@ final calendarDataProvider = FutureProvider.family<Map<DateTime, List<AmountBadg
 
   final Map<DateTime, List<AmountBadge>> cellData = {};
 
+  // Group transactions by date and calculate totals
+  final Map<DateTime, int> dailyIncome = {};
+  final Map<DateTime, int> dailyExpense = {};
+
   for (final txn in transactions) {
     final date = DateTime(txn.dateTime.year, txn.dateTime.month, txn.dateTime.day);
 
-    if (!cellData.containsKey(date)) {
-      cellData[date] = [];
+    if (txn.type == TransactionType.income) {
+      dailyIncome[date] = (dailyIncome[date] ?? 0) + txn.amountCents;
+    } else {
+      dailyExpense[date] = (dailyExpense[date] ?? 0) + txn.amountCents;
+    }
+  }
+
+  // Get all unique dates
+  final allDates = {...dailyIncome.keys, ...dailyExpense.keys};
+
+  // Convert daily totals to AmountBadges
+  for (final date in allDates) {
+    cellData[date] = [];
+
+    final incomeTotal = dailyIncome[date] ?? 0;
+    final expenseTotal = dailyExpense[date] ?? 0;
+
+
+    // Add income badge if there's income
+    if (incomeTotal > 0) {
+      cellData[date]!.add(AmountBadge(
+        amountCents: incomeTotal,
+        isIncome: true,
+      ));
     }
 
-    cellData[date]!.add(AmountBadge(
-      amountCents: txn.amountCents,
-      isIncome: txn.type == TransactionType.income,
-    ));
+    // Add expense badge if there's expense
+    if (expenseTotal > 0) {
+      cellData[date]!.add(AmountBadge(
+        amountCents: expenseTotal,
+        isIncome: false,
+      ));
+    }
   }
 
   return cellData;
@@ -125,19 +154,21 @@ final transactionGroupsProvider = FutureProvider.family<List<TransactionGroup>, 
 
   for (final entry in groups.entries) {
     final dayTransactions = entry.value;
-    int netAmount = 0;
+    int totalIncome = 0;
+    int totalExpense = 0;
 
     for (final txnWithCat in dayTransactions) {
       if (txnWithCat.transaction.type == TransactionType.income) {
-        netAmount += txnWithCat.transaction.amountCents;
+        totalIncome += txnWithCat.transaction.amountCents;
       } else {
-        netAmount -= txnWithCat.transaction.amountCents;
+        totalExpense += txnWithCat.transaction.amountCents;
       }
     }
 
     result.add(TransactionGroup(
       date: entry.key,
-      netAmount: netAmount,
+      totalIncome: totalIncome,
+      totalExpense: totalExpense,
       transactions: dayTransactions,
     ));
   }
@@ -212,12 +243,14 @@ class TransactionListNotifier extends StateNotifier<AsyncValue<void>> {
 // Transaction group model
 class TransactionGroup {
   final DateTime date;
-  final int netAmount;
+  final int totalIncome;
+  final int totalExpense;
   final List<TransactionWithCategory> transactions;
 
   TransactionGroup({
     required this.date,
-    required this.netAmount,
+    required this.totalIncome,
+    required this.totalExpense,
     required this.transactions,
   });
 }

@@ -6,6 +6,7 @@ import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:intl/intl.dart';
 import '../../../l10n/app_localizations.dart';
+import 'add_transaction_screen.dart';
 
 class TransactionDetailScreen extends ConsumerWidget {
   final int transactionId;
@@ -49,12 +50,20 @@ class TransactionDetailScreen extends ConsumerWidget {
             actions: [
               IconButton(
                 icon: const Icon(Icons.edit),
-                onPressed: () {
-                  Navigator.pushNamed(
+                onPressed: () async {
+                  final result = await Navigator.push(
                     context,
-                    '/add-transaction',
-                    arguments: {'transactionId': transactionId},
+                    MaterialPageRoute(
+                      builder: (context) => AddTransactionScreen(
+                        transactionId: transactionId,
+                      ),
+                    ),
                   );
+                  // If transaction was updated, refresh the screen
+                  if (result == true && context.mounted) {
+                    // Trigger rebuild by popping and showing updated data
+                    Navigator.pop(context);
+                  }
                 },
               ),
               IconButton(
@@ -102,6 +111,12 @@ class TransactionDetailScreen extends ConsumerWidget {
                         style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 16),
+                      _DetailRow(
+                        l10n.type,
+                        transaction.type.toString().contains('expense')
+                            ? l10n.expense
+                            : l10n.income,
+                      ),
                       _DetailRow(l10n.date, DateFormat('dd/MM/yyyy').format(transaction.dateTime)),
                       _DetailRow(l10n.category, categoryName),
                       if (transaction.note != null)

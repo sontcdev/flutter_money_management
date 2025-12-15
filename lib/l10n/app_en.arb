@@ -10,6 +10,7 @@
   "accounts": "Accounts",
   "addTransaction": "Add Transaction",
   "editTransaction": "Edit Transaction",
+  "type": "Type",
   "amount": "Amount",
   "date": "Date",
   "category": "Category",

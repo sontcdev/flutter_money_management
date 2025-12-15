@@ -6,13 +6,15 @@ import '../../theme/report_theme.dart';
 
 class TransactionGroupHeader extends StatelessWidget {
   final DateTime date;
-  final int netAmount;
+  final int totalIncome;
+  final int totalExpense;
   final bool isHighlighted;
 
   const TransactionGroupHeader({
     super.key,
     required this.date,
-    required this.netAmount,
+    required this.totalIncome,
+    required this.totalExpense,
     this.isHighlighted = false,
   });
 
@@ -23,14 +25,6 @@ class TransactionGroupHeader extends StatelessWidget {
       symbol: 'đ',
       decimalDigits: 0,
     );
-
-    final amountLabel = netAmount >= 0
-        ? '+${amountFormatter.format(netAmount / 100)}'
-        : amountFormatter.format(netAmount / 100);
-    // Daily total uses theme color for positive, red for negative
-    final amountColor = netAmount >= 0 
-        ? Theme.of(context).colorScheme.primary  // Theme color for positive
-        : const Color(0xFFD32F2F); // Red for negative
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -49,19 +43,41 @@ class TransactionGroupHeader extends StatelessWidget {
               color: Colors.grey[800],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: amountColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              amountLabel,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: amountColor,
-              ),
-            ),
+          Row(
+            children: [
+              if (totalIncome > 0) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '+${amountFormatter.format(totalIncome / 100)}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF4CAF50),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              if (totalExpense > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF6B3D).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    '-${amountFormatter.format(totalExpense / 100)}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFFFF6B3D),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       ),

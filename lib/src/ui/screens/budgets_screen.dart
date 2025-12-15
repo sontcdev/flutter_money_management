@@ -101,6 +101,7 @@ class _BudgetCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final categoryAsync = ref.watch(categoryProvider(budget.categoryId));
+    final l10n = AppLocalizations.of(context)!;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -150,10 +151,10 @@ class _BudgetCard extends ConsumerWidget {
                   ),
                   Text(
                     budget.periodType == PeriodType.monthly 
-                        ? 'Hàng tháng' 
+                        ? l10n.monthly
                         : budget.periodType == PeriodType.yearly
-                            ? 'Hàng năm'
-                            : 'Tùy chỉnh',
+                            ? l10n.yearly
+                            : l10n.custom,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.primary,
                           fontWeight: FontWeight.w600,
@@ -210,7 +211,7 @@ class _BudgetCard extends ConsumerWidget {
                   const SizedBox(width: 8),
                   Flexible(
                     child: Text(
-                      'Còn: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents - budget.consumedCents)}',
+                      '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents - budget.consumedCents)}',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: budget.consumedCents > budget.limitCents
                                 ? Colors.red
@@ -263,6 +264,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final transactionsAsync = ref.watch(transactionsProvider);
+    final l10n = AppLocalizations.of(context)!;
     final percentage = budget.limitCents > 0
         ? (budget.consumedCents / budget.limitCents * 100)
         : 0.0;
@@ -301,9 +303,9 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Đã chi',
-                          style: TextStyle(color: Colors.grey),
+                        Text(
+                          l10n.spent,
+                          style: const TextStyle(color: Colors.grey),
                         ),
                         Text(
                           CurrencyFormatter.formatVNDFromCents(budget.consumedCents),
@@ -350,11 +352,11 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Hạn mức: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents)}',
+                      '${l10n.limit}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents)}',
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                     Text(
-                      'Còn: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents - budget.consumedCents)}',
+                      '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents - budget.consumedCents)}',
                       style: TextStyle(
                         color: budget.consumedCents > budget.limitCents
                             ? Colors.red
@@ -387,7 +389,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                       children: [
                         Icon(Icons.receipt_long, size: 64, color: Colors.grey[400]),
                         const SizedBox(height: 16),
-                        const Text('Chưa có giao dịch nào'),
+                        Text(l10n.noTransactions),
                       ],
                     ),
                   );
@@ -466,7 +468,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                               ),
                             ),
                             title: Text(
-                              t.note ?? 'Không có ghi chú',
+                              t.note ?? l10n.noNote,
                               style: const TextStyle(fontSize: 14),
                             ),
                             subtitle: Text(
@@ -498,7 +500,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('Lỗi: $err')),
+              error: (err, _) => Center(child: Text('${l10n.error}: $err')),
             ),
           ),
         ],
@@ -507,16 +509,8 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
   }
 
   String _formatDate(DateTime date) {
-    final weekdayMap = {
-      1: 'Thứ 2',
-      2: 'Thứ 3',
-      3: 'Thứ 4',
-      4: 'Thứ 5',
-      5: 'Thứ 6',
-      6: 'Thứ 7',
-      7: 'Chủ nhật',
-    };
-    final weekday = weekdayMap[date.weekday] ?? '';
+    final weekdayNames = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+    final weekday = weekdayNames[date.weekday % 7];
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year} - $weekday';
   }
 }

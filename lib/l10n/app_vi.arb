@@ -10,6 +10,7 @@
   "accounts": "Tài khoản",
   "addTransaction": "Thêm giao dịch",
   "editTransaction": "Sửa giao dịch",
+  "type": "Loại",
   "amount": "Số tiền",
   "date": "Ngày",
   "category": "Danh mục",

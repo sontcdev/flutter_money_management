@@ -39,7 +39,8 @@ void main() {
       testGroups = [
         TransactionGroup(
           date: DateTime(2025, 11, 5),
-          netAmount: -200000 * 100,
+          totalIncome: 200000 * 100,
+          totalExpense: 50000 * 100,
           transactions: [
             TransactionWithCategory(
               transaction: Transaction(

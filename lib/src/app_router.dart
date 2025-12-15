@@ -26,11 +26,17 @@ class AppRouter {
       case '/transactions':
         return MaterialPageRoute(builder: (_) => const TransactionsScreen());
       case '/add-transaction':
-        final args = settings.arguments as Map<String, dynamic>?;
+        int? transactionId;
+        if (settings.arguments != null) {
+          if (settings.arguments is Map<String, dynamic>) {
+            final args = settings.arguments as Map<String, dynamic>;
+            transactionId = args['transactionId'] as int?;
+          } else if (settings.arguments is int) {
+            transactionId = settings.arguments as int;
+          }
+        }
         return MaterialPageRoute(
-          builder: (_) => AddTransactionScreen(
-            transactionId: args?['transactionId'] as int?,
-          ),
+          builder: (_) => AddTransactionScreen(transactionId: transactionId),
         );
       case '/transaction-detail':
         final transactionId = settings.arguments as int;

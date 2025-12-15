@@ -42,7 +42,7 @@ class CategoriesScreen extends HookConsumerWidget {
               children: [
                 Expanded(
                   child: _TabButton(
-                    label: 'Tất cả',
+                    label: l10n.all,
                     isSelected: selectedTab.value == 0,
                     onTap: () => selectedTab.value = 0,
                   ),
@@ -50,7 +50,7 @@ class CategoriesScreen extends HookConsumerWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: _TabButton(
-                    label: 'Chi tiêu',
+                    label: l10n.expense,
                     isSelected: selectedTab.value == 1,
                     onTap: () => selectedTab.value = 1,
                     color: Colors.red,
@@ -59,7 +59,7 @@ class CategoriesScreen extends HookConsumerWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: _TabButton(
-                    label: 'Thu nhập',
+                    label: l10n.income,
                     isSelected: selectedTab.value == 2,
                     onTap: () => selectedTab.value = 2,
                     color: Colors.green,

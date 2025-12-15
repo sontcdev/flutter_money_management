@@ -27,7 +27,7 @@ class ReportCalendarScreen extends HookConsumerWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: Text(l10n?.reports ?? 'Lịch'),
+        title: Text(l10n?.calendar ?? 'Lịch'),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -106,7 +106,8 @@ class ReportCalendarScreen extends HookConsumerWidget {
                       children: [
                         TransactionGroupHeader(
                           date: group.date,
-                          netAmount: group.netAmount,
+                          totalIncome: group.totalIncome,
+                          totalExpense: group.totalExpense,
                           isHighlighted: isHighlighted,
                         ),
                         ...group.transactions.map((txnWithCat) => TransactionListItem(
@@ -162,7 +163,7 @@ class ReportCalendarScreen extends HookConsumerWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -281,14 +282,35 @@ class _MonthYearPickerSheet extends HookWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final selectedYear = useState(initialMonth.year);
     final now = DateTime.now();
     final years = List.generate(10, (i) => now.year - 5 + i);
-    final months = [
-      'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
-      'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8',
-      'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12',
-    ];
+
+    // Generate month names using localization
+    final months = List.generate(12, (i) => '${l10n.month} ${i + 1}');
+
+    // Create ScrollController to scroll to current year
+    final scrollController = useScrollController();
+
+    useEffect(() {
+      // Scroll to current year after build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final currentYearIndex = years.indexOf(selectedYear.value);
+        if (currentYearIndex != -1 && scrollController.hasClients) {
+          // Calculate offset to center the current year
+          final itemWidth = 80.0; // Approximate width of each chip
+          final screenWidth = MediaQuery.of(context).size.width;
+          final offset = (currentYearIndex * itemWidth) - (screenWidth / 2) + (itemWidth / 2);
+          scrollController.animateTo(
+            offset.clamp(0.0, scrollController.position.maxScrollExtent),
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
+      return null;
+    }, []);
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.5,
@@ -300,7 +322,7 @@ class _MonthYearPickerSheet extends HookWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Chọn tháng/năm',
+                '${l10n.selectMonth}/${l10n.selectYear}',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -316,6 +338,7 @@ class _MonthYearPickerSheet extends HookWidget {
           SizedBox(
             height: 40,
             child: ListView.builder(
+              controller: scrollController,
               scrollDirection: Axis.horizontal,
               itemCount: years.length,
               itemBuilder: (context, index) {
@@ -361,7 +384,7 @@ class _MonthYearPickerSheet extends HookWidget {
                   color: isCurrentSelection
                       ? Theme.of(context).colorScheme.primary
                       : isCurrentMonth
-                          ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                          ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
                           : Colors.grey[100],
                   borderRadius: BorderRadius.circular(8),
                   child: InkWell(

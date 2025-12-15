@@ -65,7 +65,7 @@ class CategoryEditScreen extends HookConsumerWidget {
     Future<void> save() async {
       if (nameController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please enter category name')),
+          SnackBar(content: Text('${l10n.error}: ${l10n.categoryName} ${l10n.noData}')),
         );
         return;
       }
@@ -117,19 +117,19 @@ class CategoryEditScreen extends HookConsumerWidget {
         child: Column(
           children: [
             // Category Type Selector
-            Text('Loại danh mục', style: const TextStyle(fontWeight: FontWeight.w600)),
+            Text(l10n.categoryType, style: const TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             SegmentedButton<CategoryType>(
-              segments: const [
+              segments: [
                 ButtonSegment(
                   value: CategoryType.expense,
-                  label: Text('Chi tiêu'),
-                  icon: Icon(Icons.arrow_upward),
+                  label: Text(l10n.expense),
+                  icon: const Icon(Icons.arrow_upward),
                 ),
                 ButtonSegment(
                   value: CategoryType.income,
-                  label: Text('Thu nhập'),
-                  icon: Icon(Icons.arrow_downward),
+                  label: Text(l10n.income),
+                  icon: const Icon(Icons.arrow_downward),
                 ),
               ],
               selected: {selectedType.value},
@@ -168,7 +168,7 @@ class CategoryEditScreen extends HookConsumerWidget {
             Center(
               child: TextButton.icon(
                 icon: Icon(showAllIcons.value ? Icons.expand_less : Icons.expand_more),
-                label: Text(showAllIcons.value ? 'Thu gọn' : 'Xem thêm biểu tượng'),
+                label: Text(showAllIcons.value ? l10n.collapse : l10n.showMoreIcons),
                 onPressed: () => showAllIcons.value = !showAllIcons.value,
               ),
             ),

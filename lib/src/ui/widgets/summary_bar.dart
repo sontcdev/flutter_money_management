@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../theme/app_colors.dart';
 
 class SummaryBar extends StatelessWidget {
@@ -18,6 +19,7 @@ class SummaryBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final formatter = NumberFormat.currency(
       locale: 'vi',
       symbol: 'đ',
@@ -32,7 +34,7 @@ class SummaryBar extends StatelessWidget {
           Expanded(
             child: _buildSummaryItem(
               context,
-              'Thu nhập',
+              l10n.income,
               formatter.format(totalIncome / 100),
               AppColors.income, // Green for income
             ),
@@ -41,7 +43,7 @@ class SummaryBar extends StatelessWidget {
           Expanded(
             child: _buildSummaryItem(
               context,
-              'Chi tiêu',
+              l10n.expense,
               formatter.format(totalExpense / 100),
               AppColors.expense, // Red for expense
             ),
@@ -50,7 +52,7 @@ class SummaryBar extends StatelessWidget {
           Expanded(
             child: _buildSummaryItem(
               context,
-              'Tổng',
+              l10n.net,
               '${net >= 0 ? '+' : ''}${formatter.format(net / 100)}',
               net >= 0 ? AppColors.income : AppColors.expense,
             ),
