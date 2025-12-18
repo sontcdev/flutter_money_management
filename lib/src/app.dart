@@ -8,6 +8,7 @@ import 'app_router.dart';
 import 'theme/app_theme.dart';
 import 'i18n/locale_provider.dart';
 import 'i18n/theme_provider.dart';
+import 'utils/responsive.dart';
 
 class MoneyManagementApp extends ConsumerWidget {
   const MoneyManagementApp({super.key});
@@ -37,6 +38,30 @@ class MoneyManagementApp extends ConsumerWidget {
       onGenerateRoute: AppRouter.generateRoute,
       initialRoute: '/home',
       debugShowCheckedModeBanner: false,
+      builder: (context, child) {
+        // Initialize responsive dimensions
+        Responsive.init(context);
+        
+        // Calculate text scale factor based on screen width
+        final screenWidth = MediaQuery.of(context).size.width;
+        double textScaleFactor = 1.0;
+        
+        if (screenWidth >= 900) {
+          // Large tablets (iPad Pro)
+          textScaleFactor = 1.5;
+        } else if (screenWidth >= 600) {
+          // Tablets (iPad)
+          textScaleFactor = 1.35;
+        }
+        
+        // Apply text scaling for tablets
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaleFactor: textScaleFactor,
+          ),
+          child: child!,
+        );
+      },
     );
   }
 }
