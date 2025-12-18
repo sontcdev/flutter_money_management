@@ -27,6 +27,7 @@ class ReportsScreen extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.reports),
+        automaticallyImplyLeading: false,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -1376,8 +1377,13 @@ class _CustomPeriodPickerSheet extends HookWidget {
                       selected: isSelected,
                       onSelected: (_) => selectedYear.value = year,
                       selectedColor: Theme.of(context).colorScheme.primary,
+                      backgroundColor: Theme.of(context).brightness == Brightness.dark 
+                          ? Colors.grey[800] 
+                          : Colors.grey[200],
                       labelStyle: TextStyle(
-                        color: isSelected ? Colors.white : null,
+                        color: isSelected 
+                            ? Colors.white 
+                            : Theme.of(context).textTheme.bodyLarge?.color,
                         fontWeight: isSelected ? FontWeight.bold : null,
                       ),
                     ),
@@ -1410,7 +1416,9 @@ class _CustomPeriodPickerSheet extends HookWidget {
                         ? Theme.of(context).colorScheme.primary
                         : isCurrentMonth
                             ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
-                            : Colors.grey[100],
+                            : (Theme.of(context).brightness == Brightness.dark 
+                                ? Colors.grey[800] 
+                                : Colors.grey[100]),
                     borderRadius: BorderRadius.circular(8),
                     child: InkWell(
                       onTap: () => Navigator.pop(context, {
@@ -1422,7 +1430,11 @@ class _CustomPeriodPickerSheet extends HookWidget {
                         child: Text(
                           months[index],
                           style: TextStyle(
-                            color: isCurrentSelection ? Colors.white : null,
+                            color: isCurrentSelection 
+                                ? Colors.white 
+                                : (isCurrentMonth 
+                                    ? Theme.of(context).colorScheme.primary 
+                                    : Theme.of(context).textTheme.bodyLarge?.color),
                             fontWeight: isCurrentSelection || isCurrentMonth ? FontWeight.bold : null,
                           ),
                         ),
@@ -1453,7 +1465,9 @@ class _CustomPeriodPickerSheet extends HookWidget {
                         ? Theme.of(context).colorScheme.primary
                         : isCurrentYear
                             ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
-                            : Colors.grey[100],
+                            : (Theme.of(context).brightness == Brightness.dark 
+                                ? Colors.grey[800] 
+                                : Colors.grey[100]),
                     borderRadius: BorderRadius.circular(8),
                     child: InkWell(
                       onTap: () => Navigator.pop(context, {
@@ -1465,7 +1479,11 @@ class _CustomPeriodPickerSheet extends HookWidget {
                         child: Text(
                           year.toString(),
                           style: TextStyle(
-                            color: isCurrentSelection ? Colors.white : null,
+                            color: isCurrentSelection 
+                                ? Colors.white 
+                                : (isCurrentYear 
+                                    ? Theme.of(context).colorScheme.primary 
+                                    : Theme.of(context).textTheme.bodyLarge?.color),
                             fontWeight: isCurrentSelection || isCurrentYear ? FontWeight.bold : null,
                             fontSize: 16,
                           ),

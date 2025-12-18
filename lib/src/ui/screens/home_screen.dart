@@ -34,7 +34,7 @@ class HomeScreen extends HookConsumerWidget {
     final screens = [
       const _AddTransactionTab(),
       const CategoriesScreen(),
-      const BudgetsScreen(),
+      const BudgetsScreen(showBackButton: false), // No back button in bottom nav
       const ReportCalendarScreen(),
       const ReportsScreen(),
       const SettingsScreen(),

@@ -16,15 +16,16 @@ import 'ui/screens/reports_screen.dart';
 import 'ui/screens/settings_screen.dart';
 import 'ui/screens/report_calendar_screen.dart';
 import 'ui/screens/import_export_screen.dart';
+import 'utils/animations.dart';
 
 class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case '/':
       case '/home':
-        return MaterialPageRoute(builder: (_) => const HomeScreen());
+        return AppAnimations.fadeRoute(const HomeScreen());
       case '/transactions':
-        return MaterialPageRoute(builder: (_) => const TransactionsScreen());
+        return AppAnimations.slideRoute(const TransactionsScreen());
       case '/add-transaction':
         int? transactionId;
         if (settings.arguments != null) {
@@ -35,28 +36,28 @@ class AppRouter {
             transactionId = settings.arguments as int;
           }
         }
-        return MaterialPageRoute(
-          builder: (_) => AddTransactionScreen(transactionId: transactionId),
+        return AppAnimations.slideRoute(
+          AddTransactionScreen(transactionId: transactionId),
         );
       case '/transaction-detail':
         final transactionId = settings.arguments as int;
-        return MaterialPageRoute(
-          builder: (_) => TransactionDetailScreen(transactionId: transactionId),
+        return AppAnimations.slideRoute(
+          TransactionDetailScreen(transactionId: transactionId),
         );
       case '/budgets':
-        return MaterialPageRoute(builder: (_) => const BudgetsScreen());
+        return AppAnimations.slideRoute(const BudgetsScreen());
       case '/budget-detail':
         final budgetId = settings.arguments as int;
-        return MaterialPageRoute(
-          builder: (_) => BudgetDetailScreen(budgetId: budgetId),
+        return AppAnimations.slideRoute(
+          BudgetDetailScreen(budgetId: budgetId),
         );
       case '/budget-edit':
         final budget = settings.arguments as Budget?;
-        return MaterialPageRoute(
-          builder: (_) => BudgetEditScreen(budget: budget),
+        return AppAnimations.slideRoute(
+          BudgetEditScreen(budget: budget),
         );
       case '/categories':
-        return MaterialPageRoute(builder: (_) => const CategoriesScreen());
+        return AppAnimations.slideRoute(const CategoriesScreen());
       case '/category-edit':
         final args = settings.arguments;
         Category? category;
@@ -67,20 +68,20 @@ class AppRouter {
           category = args['category'] as Category?;
           initialType = args['initialType'] as CategoryType?;
         }
-        return MaterialPageRoute(
-          builder: (_) => CategoryEditScreen(category: category, initialType: initialType),
+        return AppAnimations.slideRoute(
+          CategoryEditScreen(category: category, initialType: initialType),
         );
       case '/reports':
-        return MaterialPageRoute(builder: (_) => const ReportsScreen());
+        return AppAnimations.slideRoute(const ReportsScreen());
       case '/report-calendar':
-        return MaterialPageRoute(builder: (_) => const ReportCalendarScreen());
+        return AppAnimations.slideRoute(const ReportCalendarScreen());
       case '/settings':
-        return MaterialPageRoute(builder: (_) => const SettingsScreen());
+        return AppAnimations.slideRoute(const SettingsScreen());
       case '/import-export':
-        return MaterialPageRoute(builder: (_) => const ImportExportScreen());
+        return AppAnimations.slideRoute(const ImportExportScreen());
       default:
-        return MaterialPageRoute(
-          builder: (_) => Scaffold(
+        return AppAnimations.fadeRoute(
+          Scaffold(
             body: Center(
               child: Text('No route defined for ${settings.name}'),
             ),

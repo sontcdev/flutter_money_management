@@ -29,10 +29,7 @@ class ReportCalendarScreen extends HookConsumerWidget {
       appBar: AppBar(
         title: Text(l10n?.calendar ?? 'Lịch'),
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -385,7 +382,9 @@ class _MonthYearPickerSheet extends HookWidget {
                       ? Theme.of(context).colorScheme.primary
                       : isCurrentMonth
                           ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
-                          : Colors.grey[100],
+                          : (Theme.of(context).brightness == Brightness.dark 
+                              ? Colors.grey[800] 
+                              : Colors.grey[100]),
                   borderRadius: BorderRadius.circular(8),
                   child: InkWell(
                     onTap: () => onMonthSelected(DateTime(selectedYear.value, monthNum)),
@@ -394,7 +393,11 @@ class _MonthYearPickerSheet extends HookWidget {
                       child: Text(
                         months[index],
                         style: TextStyle(
-                          color: isCurrentSelection ? Colors.white : null,
+                          color: isCurrentSelection 
+                              ? Colors.white 
+                              : (isCurrentMonth 
+                                  ? Theme.of(context).colorScheme.primary 
+                                  : Theme.of(context).textTheme.bodyLarge?.color),
                           fontWeight: isCurrentSelection || isCurrentMonth ? FontWeight.bold : null,
                         ),
                       ),

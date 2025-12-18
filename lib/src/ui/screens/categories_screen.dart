@@ -4,6 +4,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/ui/widgets/category_item.dart';
+import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
+import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
 import 'package:flutter_money_management/src/services/budget_service.dart';
 import 'package:flutter_money_management/src/models/category.dart';
 import '../../../l10n/app_localizations.dart';
@@ -20,6 +22,7 @@ class CategoriesScreen extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.categories),
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -81,16 +84,17 @@ class CategoriesScreen extends HookConsumerWidget {
                 }
 
                 if (filteredCategories.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.category, size: 64, color: Colors.grey),
-                        const SizedBox(height: 16),
-                        Text(l10n.noCategories),
-                        Text(l10n.createFirst),
-                      ],
-                    ),
+                  return EmptyState(
+                    icon: Icons.category,
+                    title: l10n.noCategories,
+                    message: l10n.createFirst,
+                    actionLabel: 'Add Category',
+                    onAction: () async {
+                      final result = await Navigator.pushNamed(context, '/category-edit');
+                      if (result == true) {
+                        ref.invalidate(categoriesProvider);
+                      }
+                    },
                   );
                 }
 
@@ -150,7 +154,10 @@ class CategoriesScreen extends HookConsumerWidget {
                   },
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => ListView.builder(
+                itemCount: 5,
+                itemBuilder: (context, index) => const ShimmerListItem(),
+              ),
               error: (error, stack) => Center(child: Text('Error: $error')),
             ),
           ),

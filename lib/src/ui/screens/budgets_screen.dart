@@ -7,11 +7,15 @@ import '../../models/budget.dart';
 import '../../models/transaction.dart';
 import '../../models/category.dart';
 import '../widgets/budget_progress.dart';
+import '../widgets/empty_state.dart';
+import '../widgets/shimmer_loading.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/currency_formatter.dart';
 
 class BudgetsScreen extends ConsumerWidget {
-  const BudgetsScreen({super.key});
+  final bool showBackButton;
+  
+  const BudgetsScreen({super.key, this.showBackButton = true});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,6 +26,7 @@ class BudgetsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.budgets),
+        automaticallyImplyLeading: showBackButton,
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
@@ -35,7 +40,15 @@ class BudgetsScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: budgetsAsync.when(
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(budgetsProvider);
+          ref.invalidate(budgetsWithConsumedProvider);
+          ref.invalidate(categoriesProvider);
+          // Wait a bit for the providers to refresh
+          await Future.delayed(const Duration(milliseconds: 500));
+        },
+        child: budgetsAsync.when(
         data: (budgets) {
           return categoriesAsync.when(
             data: (categories) {
@@ -49,24 +62,18 @@ class BudgetsScreen extends ConsumerWidget {
               }).toList();
 
               if (filteredBudgets.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.account_balance_wallet_outlined,
-                        size: 64,
-                        color: Colors.grey[400],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        l10n.noBudgets,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              color: Colors.grey[600],
-                            ),
-                      ),
-                    ],
-                  ),
+                return EmptyState(
+                  icon: Icons.account_balance_wallet_outlined,
+                  title: l10n.noBudgets,
+                  message: 'Create your first budget to track your spending',
+                  actionLabel: 'Add Budget',
+                  onAction: () async {
+                    final result = await Navigator.pushNamed(context, '/budget-edit');
+                    if (result == true) {
+                      ref.invalidate(budgetsProvider);
+                      ref.invalidate(budgetsWithConsumedProvider);
+                    }
+                  },
                 );
               }
 
@@ -79,13 +86,22 @@ class BudgetsScreen extends ConsumerWidget {
                 },
               );
             },
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: 3,
+              itemBuilder: (context, index) => const ShimmerCard(),
+            ),
             error: (error, stack) => Center(child: Text('Lỗi: $error')),
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: 3,
+          itemBuilder: (context, index) => const ShimmerCard(),
+        ),
         error: (error, stack) => Center(
           child: Text('Lỗi: $error'),
+        ),
         ),
       ),
     );

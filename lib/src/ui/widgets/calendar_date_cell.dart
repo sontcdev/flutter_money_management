@@ -47,7 +47,11 @@ class CalendarDateCell extends StatelessWidget {
               date.day.toString(),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                color: isCurrentMonth ? Colors.black : Colors.grey[400],
+                color: (isSelected || isToday)
+                    ? Colors.black // Black text on light background (selected/today)
+                    : (isCurrentMonth 
+                        ? Theme.of(context).textTheme.bodyLarge?.color 
+                        : Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.4)),
               ),
             ),
             if (badges.isNotEmpty) ...[              const SizedBox(height: 1),
