@@ -506,7 +506,7 @@
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = HNQG99N63Z;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.sontc.financeapp.RunnerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sontc.financeappv1.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = MoneyWise;
@@ -529,7 +529,7 @@
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = HNQG99N63Z;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.sontc.financeapp.RunnerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sontc.financeappv1.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = MoneyWise;
@@ -550,7 +550,7 @@
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = HNQG99N63Z;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.sontc.financeapp.RunnerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sontc.financeappv1.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = MoneyWise;

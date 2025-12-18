@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.sontc.financeapp"
+    namespace = "com.sontc.financeappv1"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 
@@ -21,7 +21,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.sontc.financeapp"
+        applicationId = "com.sontc.financeappv1"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
