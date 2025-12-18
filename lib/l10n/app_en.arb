@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "Money Manager",
+  "appTitle": "Money Wise",
   "home": "Home",
   "transactions": "Transactions",
   "budgets": "Budgets",
@@ -93,7 +93,7 @@
   "noCategories": "No categories found",
   "noAccounts": "No accounts found",
   "createFirst": "Create your first one!",
-  "welcome": "Welcome to Money Manager",
+  "welcome": "Welcome to Money Wise",
   "onboardingTitle": "Manage your money with ease",
   "onboardingSubtitle": "Track expenses, set budgets, and view reports",
   "getStarted": "Get Started",

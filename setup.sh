@@ -1,11 +1,11 @@
 #!/bin/bash
 # path: setup.sh
 
-# Flutter Money Management App Setup Script
+# Money Wise App Setup Script
 
 set -e
 
-echo "🚀 Setting up Flutter Money Management App..."
+echo "🚀 Setting up Money Wise App..."
 echo ""
 
 # Check Flutter installation

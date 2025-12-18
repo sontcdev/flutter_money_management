@@ -19,7 +19,7 @@ class MoneyManagementApp extends ConsumerWidget {
     final themeColor = ref.watch(themeColorProvider);
 
     return MaterialApp(
-      title: 'Money Manager',
+      title: 'Money Wise',
       theme: AppTheme.lightTheme(primaryColor: themeColor),
       darkTheme: AppTheme.darkTheme(primaryColor: themeColor),
       themeMode: themeMode,

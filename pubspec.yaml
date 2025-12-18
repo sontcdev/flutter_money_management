@@ -1,5 +1,5 @@
 name: flutter_money_management
-description: MoneyWise - A smart money management application with budgets and transaction tracking.
+description: Money Wise - A smart money management application with budgets and transaction tracking.
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -9,6 +9,8 @@ environment:
 flutter:
   uses-material-design: true
   generate: true
+  assets:
+    - assets/icon/
 
 dependencies:
   flutter:

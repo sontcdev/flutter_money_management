@@ -98,7 +98,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'Money Manager'**
+  /// **'Money Wise'**
   String get appTitle;
 
   /// No description provided for @home.
@@ -656,7 +656,7 @@ abstract class AppLocalizations {
   /// No description provided for @welcome.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to Money Manager'**
+  /// **'Welcome to Money Wise'**
   String get welcome;
 
   /// No description provided for @onboardingTitle.

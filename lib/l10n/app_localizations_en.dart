@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'MoneyWise';
+  String get appTitle => 'Money Wise';
 
   @override
   String get home => 'Home';
@@ -288,7 +288,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createFirst => 'Create your first one!';
 
   @override
-  String get welcome => 'Welcome to MoneyWise';
+  String get welcome => 'Welcome to Money Wise';
 
   @override
   String get onboardingTitle => 'Manage your money with ease';

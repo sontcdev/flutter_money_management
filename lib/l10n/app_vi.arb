@@ -1,6 +1,6 @@
 {
   "@@locale": "vi",
-  "appTitle": "Quản lý Tài chính",
+  "appTitle": "Money Wise",
   "home": "Trang chủ",
   "transactions": "Giao dịch",
   "budgets": "Ngân sách",
@@ -93,7 +93,7 @@
   "noCategories": "Chưa có danh mục nào",
   "noAccounts": "Chưa có tài khoản nào",
   "createFirst": "Hãy tạo mục đầu tiên!",
-  "welcome": "Chào mừng đến với Quản lý Tài chính",
+  "welcome": "Chào mừng đến với Money Wise",
   "onboardingTitle": "Quản lý tiền bạc dễ dàng",
   "onboardingSubtitle": "Theo dõi chi tiêu, đặt ngân sách và xem báo cáo",
   "getStarted": "Bắt đầu",

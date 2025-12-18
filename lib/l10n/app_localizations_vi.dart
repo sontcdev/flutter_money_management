@@ -9,7 +9,7 @@ class AppLocalizationsVi extends AppLocalizations {
   AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
-  String get appTitle => 'MoneyWise';
+  String get appTitle => 'Money Wise';
 
   @override
   String get home => 'Trang chủ';
@@ -87,7 +87,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get balance => 'Số dư';
 
   @override
-  String get net => 'Tổng';
+  String get net => 'Ròng';
 
   @override
   String get budget => 'Ngân sách';
@@ -288,7 +288,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get createFirst => 'Hãy tạo mục đầu tiên!';
 
   @override
-  String get welcome => 'Chào mừng đến với MoneyWise';
+  String get welcome => 'Chào mừng đến với Money Wise';
 
   @override
   String get onboardingTitle => 'Quản lý tiền bạc dễ dàng';

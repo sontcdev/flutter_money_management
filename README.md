@@ -1,7 +1,7 @@
-# MoneyWise - Ứng dụng Quản lý Tài chính Cá nhân 💰
+# Money Wise - Ứng dụng Quản lý Tài chính Cá nhân 💰
 
 <p align="center">
-  <img src="assets/icon/app_icon.png" alt="MoneyWise Logo" width="120" height="120">
+  <img src="assets/icon/app_icon.png" alt="Money Wise Logo" width="120" height="120">
 </p>
 
 <p align="center">
@@ -20,7 +20,7 @@
 
 ## 📱 Giới thiệu
 
-**MoneyWise** là ứng dụng quản lý tài chính cá nhân hiện đại, giúp bạn:
+**Money Wise** là ứng dụng quản lý tài chính cá nhân hiện đại, giúp bạn:
 - 📊 Theo dõi thu chi hàng ngày dễ dàng
 - 💼 Quản lý ngân sách theo danh mục
 - 📈 Xem báo cáo chi tiết và trực quan
@@ -331,6 +331,24 @@ open ios/Runner.xcworkspace
    - Deployment Target: iOS 12.0+
    - Architecture: ARM64
 
+##### 🚀 Quick Build & Install (KHUYẾN NGHỊ)
+Sử dụng script tự động để build RELEASE và cài đặt iOS app:
+
+```bash
+# Build iOS RELEASE (Device + Simulator)
+./ios_build_all.sh
+```
+
+Script có interactive menu (TẤT CẢ đều build RELEASE):
+- **[1]** Physical devices only - Build release
+- **[2]** Simulators only - Build release 
+- **[3]** Both devices and simulators - Build release
+- **[4]** Select specific target - Build release
+
+**Lưu ý:** Script build RELEASE cho cả physical device và simulator để đảm bảo performance tối ưu.
+
+📖 Xem hướng dẫn chi tiết: [FINAL_SUMMARY.md](FINAL_SUMMARY.md)
+
 ##### Build từ Command Line
 ```bash
 # Build iOS
@@ -339,7 +357,7 @@ flutter build ios --release
 # Archive
 flutter build ipa --release
 
-# Output: build/ios/ipa/MoneyWise.ipa
+# Output: build/ios/ipa/Money Wise.ipa
 ```
 
 ##### Build từ Xcode
@@ -573,6 +591,6 @@ Nếu bạn gặp vấn đề hoặc có câu hỏi:
 </p>
 
 <p align="center">
-  <strong>MoneyWise - Quản lý tài chính thông minh</strong>
+  <strong>Money Wise - Quản lý tài chính thông minh</strong>
 </p>
 
