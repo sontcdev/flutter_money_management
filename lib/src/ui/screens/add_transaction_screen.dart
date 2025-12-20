@@ -34,6 +34,7 @@ class AddTransactionScreen extends HookConsumerWidget {
     final receiptPath = useState<String?>(null);
     final isLoading = useState(false);
     final allowOverdraft = useState(false);
+    final showAllCategories = useState(false);
 
     // Load existing transaction if editing
     useEffect(() {
@@ -192,105 +193,6 @@ class AddTransactionScreen extends HookConsumerWidget {
             ),
             const SizedBox(height: 24),
 
-            // Amount Input
-            AppInput(
-              label: l10n.amount,
-              hint: '0',
-              controller: amountController,
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                VNDInputFormatter(),
-              ],
-              prefixIcon: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                child: Text(
-                  '\$',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-              ),
-              suffixIcon: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                child: Text(
-                  '₫',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Category Selector
-            categoriesAsync.when(
-              data: (categories) {
-                // Filter categories by transaction type
-                final filteredCategories = categories.where((c) {
-                  if (selectedType.value == model.TransactionType.expense) {
-                    return c.type == CategoryType.expense;
-                  } else {
-                    return c.type == CategoryType.income;
-                  }
-                }).toList();
-
-                if (filteredCategories.isEmpty) {
-                  return Text(l10n.noCategories);
-                }
-
-                // Check if selected category is still valid for current type
-                final isSelectedCategoryValid = selectedCategoryId.value != null &&
-                    filteredCategories.any((c) => c.id == selectedCategoryId.value);
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.category,
-                      style: Theme.of(context).textTheme.labelLarge,
-                    ),
-                    const SizedBox(height: 8),
-                    DropdownButtonFormField<int>(
-                      value: isSelectedCategoryValid ? selectedCategoryId.value : null,
-                      decoration: const InputDecoration(
-                        hintText: 'Select category',
-                      ),
-                      items: filteredCategories.map((category) {
-                        return DropdownMenuItem(
-                          value: category.id,
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 12,
-                                height: 12,
-                                decoration: BoxDecoration(
-                                  color: Color(category.colorValue),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(category.name),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        selectedCategoryId.value = value;
-                      },
-                    ),
-                  ],
-                );
-              },
-              loading: () => const CircularProgressIndicator(),
-              error: (err, stack) => Text('Error: $err'),
-            ),
-            const SizedBox(height: 16),
-
             // Date Picker
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -371,6 +273,157 @@ class AddTransactionScreen extends HookConsumerWidget {
               hint: 'Note',
               controller: noteController,
               maxLines: 3,
+            ),
+            const SizedBox(height: 16),
+
+            // Amount Input
+            AppInput(
+              label: l10n.amount,
+              hint: '0',
+              controller: amountController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                VNDInputFormatter(),
+              ],
+              prefixIcon: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                child: Text(
+                  '\$',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              suffixIcon: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                child: Text(
+                  '₫',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Category Selector
+            categoriesAsync.when(
+              data: (categories) {
+                // Filter categories by transaction type
+                final filteredCategories = categories.where((c) {
+                  if (selectedType.value == model.TransactionType.expense) {
+                    return c.type == CategoryType.expense;
+                  } else {
+                    return c.type == CategoryType.income;
+                  }
+                }).toList();
+
+                if (filteredCategories.isEmpty) {
+                  return Text(l10n.noCategories);
+                }
+
+                // Determine how many categories to show
+                final int displayCount = showAllCategories.value 
+                    ? filteredCategories.length 
+                    : (filteredCategories.length > 15 ? 15 : filteredCategories.length);
+                final categoriesToShow = filteredCategories.take(displayCount).toList();
+                final hasMore = filteredCategories.length > 15;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.category,
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: categoriesToShow.map((category) {
+                        final isSelected = selectedCategoryId.value == category.id;
+                        return GestureDetector(
+                          onTap: () {
+                            selectedCategoryId.value = category.id;
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: isSelected 
+                                  ? Color(category.colorValue).withOpacity(0.2)
+                                  : Colors.grey.shade100,
+                              border: Border.all(
+                                color: isSelected 
+                                    ? Color(category.colorValue)
+                                    : Colors.grey.shade300,
+                                width: isSelected ? 2 : 1,
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  category.iconName,
+                                  style: const TextStyle(fontSize: 18),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  category.name,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                                    color: isSelected 
+                                        ? Color(category.colorValue)
+                                        : Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    if (hasMore && !showAllCategories.value) ...[
+                      const SizedBox(height: 12),
+                      Center(
+                        child: TextButton.icon(
+                          onPressed: () {
+                            showAllCategories.value = true;
+                          },
+                          icon: const Icon(Icons.expand_more, size: 18),
+                          label: Text('Show more (${filteredCategories.length - 15} more)'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                    ],
+                    if (hasMore && showAllCategories.value) ...[
+                      const SizedBox(height: 12),
+                      Center(
+                        child: TextButton.icon(
+                          onPressed: () {
+                            showAllCategories.value = false;
+                          },
+                          icon: const Icon(Icons.expand_less, size: 18),
+                          label: const Text('Show less'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                );
+              },
+              loading: () => const CircularProgressIndicator(),
+              error: (err, stack) => Text('Error: $err'),
             ),
             const SizedBox(height: 16),
 

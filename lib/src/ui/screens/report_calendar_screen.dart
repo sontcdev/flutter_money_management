@@ -10,6 +10,7 @@ import '../widgets/summary_bar.dart';
 import '../widgets/transaction_group_header.dart';
 import '../widgets/transaction_list_item.dart';
 import '../widgets/confirm_delete_dialog.dart';
+import 'settings_screen.dart';
 
 class ReportCalendarScreen extends HookConsumerWidget {
   const ReportCalendarScreen({super.key});
@@ -18,6 +19,7 @@ class ReportCalendarScreen extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final selectedMonth = ref.watch(selectedMonthProvider);
+    final monthStartDay = ref.watch(monthStartDayProvider);
     final calendarData = ref.watch(calendarDataProvider(selectedMonth));
     final monthlySummary = ref.watch(monthlySummaryProvider(selectedMonth));
     final transactionGroups = ref.watch(transactionGroupsProvider(selectedMonth));
@@ -57,6 +59,7 @@ class ReportCalendarScreen extends HookConsumerWidget {
                       month: selectedMonth,
                       cellData: data,
                       selectedDate: selectedDate,
+                      monthStartDay: monthStartDay,
                       onDateSelected: (date) {
                         ref.read(selectedDateProvider.notifier).state = date;
                       },

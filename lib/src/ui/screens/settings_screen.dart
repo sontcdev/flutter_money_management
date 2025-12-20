@@ -36,6 +36,34 @@ class BudgetPeriodNotifier extends StateNotifier<String> {
   }
 }
 
+// Month start day provider (1-31, default 1)
+final monthStartDayProvider = StateNotifierProvider<MonthStartDayNotifier, int>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return MonthStartDayNotifier(prefs);
+});
+
+class MonthStartDayNotifier extends StateNotifier<int> {
+  static const String _startDayKey = 'month_start_day';
+  final SharedPreferences _prefs;
+
+  MonthStartDayNotifier(this._prefs) : super(1) {
+    _loadStartDay();
+  }
+
+  void _loadStartDay() {
+    final startDay = _prefs.getInt(_startDayKey);
+    if (startDay != null) {
+      state = startDay;
+    }
+  }
+
+  Future<void> setStartDay(int day) async {
+    final clampedDay = day.clamp(1, 31);
+    await _prefs.setInt(_startDayKey, clampedDay);
+    state = clampedDay;
+  }
+}
+
 class SettingsScreen extends HookConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -46,6 +74,7 @@ class SettingsScreen extends HookConsumerWidget {
     final themeMode = ref.watch(themeModeProvider);
     final budgetPeriod = ref.watch(budgetPeriodProvider);
     final themeColor = ref.watch(themeColorProvider);
+    final monthStartDay = ref.watch(monthStartDayProvider);
     final packageInfo = useFuture(useMemoized(() => PackageInfo.fromPlatform()));
 
     return Scaffold(
@@ -114,10 +143,10 @@ class SettingsScreen extends HookConsumerWidget {
           _buildSectionHeader(context, l10n.budgetSettings),
           ListTile(
             leading: const Icon(Icons.calendar_month),
-            title: Text(l10n.defaultBudgetPeriod),
-            subtitle: Text(_getPeriodLabel(budgetPeriod, l10n)),
+            title: const Text('Ngày bắt đầu của tháng'),
+            subtitle: Text('Ngày $monthStartDay hàng tháng'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => _showPeriodPicker(context, ref, budgetPeriod, l10n),
+            onTap: () => _showMonthStartDayPicker(context, ref, monthStartDay),
           ),
           ListTile(
             leading: const Icon(Icons.pie_chart),
@@ -232,6 +261,73 @@ class SettingsScreen extends HookConsumerWidget {
         ref.read(budgetPeriodProvider.notifier).setPeriod(value);
         Navigator.pop(context);
       },
+    );
+  }
+
+  void _showMonthStartDayPicker(BuildContext context, WidgetRef ref, int currentDay) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'Chọn ngày bắt đầu của tháng',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 200,
+              child: GridView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 7,
+                  childAspectRatio: 1,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                ),
+                itemCount: 31,
+                itemBuilder: (context, index) {
+                  final day = index + 1;
+                  final isSelected = day == currentDay;
+                  return GestureDetector(
+                    onTap: () {
+                      ref.read(monthStartDayProvider.notifier).setStartDay(day);
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isSelected 
+                            ? Theme.of(context).colorScheme.primary 
+                            : Colors.grey[100],
+                        borderRadius: BorderRadius.circular(8),
+                        border: isSelected 
+                            ? null 
+                            : Border.all(color: Colors.grey[300]!),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '$day',
+                          style: TextStyle(
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
     );
   }
 

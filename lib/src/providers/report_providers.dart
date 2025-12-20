@@ -3,6 +3,8 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../models/transaction.dart';
 import '../ui/widgets/calendar_grid.dart';
+import '../ui/screens/settings_screen.dart';
+import '../utils/cycle_utils.dart';
 import 'providers.dart';
 
 // Selected month provider
@@ -17,11 +19,14 @@ final selectedDateProvider = StateProvider<DateTime?>((ref) => null);
 
 // Calendar data provider
 final calendarDataProvider = FutureProvider.family<Map<DateTime, List<AmountBadge>>, DateTime>((ref, month) async {
-  // Watch transactionsProvider để tự động reload khi có thay đổi
+  // Watch transactionsProvider và monthStartDayProvider để tự động reload khi có thay đổi
   ref.watch(transactionsProvider);
+  final monthStartDay = ref.watch(monthStartDayProvider);
   
-  final startDate = DateTime(month.year, month.month, 1);
-  final endDate = DateTime(month.year, month.month + 1, 0, 23, 59, 59);
+  // Sử dụng cycle dates thay vì calendar month
+  final cycleRange = CycleUtils.getCycleRangeForDate(month, monthStartDay);
+  final startDate = cycleRange.start;
+  final endDate = cycleRange.end;
 
   final txnRepo = ref.watch(transactionRepositoryProvider);
   final allTransactions = await txnRepo.getAllTransactions();
@@ -80,11 +85,14 @@ final calendarDataProvider = FutureProvider.family<Map<DateTime, List<AmountBadg
 
 // Monthly summary provider
 final monthlySummaryProvider = FutureProvider.family<Map<String, int>, DateTime>((ref, month) async {
-  // Watch transactionsProvider để tự động reload khi có thay đổi
+  // Watch transactionsProvider và monthStartDayProvider để tự động reload khi có thay đổi
   ref.watch(transactionsProvider);
+  final monthStartDay = ref.watch(monthStartDayProvider);
   
-  final startDate = DateTime(month.year, month.month, 1);
-  final endDate = DateTime(month.year, month.month + 1, 0, 23, 59, 59);
+  // Sử dụng cycle dates thay vì calendar month
+  final cycleRange = CycleUtils.getCycleRangeForDate(month, monthStartDay);
+  final startDate = cycleRange.start;
+  final endDate = cycleRange.end;
 
   final txnRepo = ref.watch(transactionRepositoryProvider);
   final allTransactions = await txnRepo.getAllTransactions();
@@ -114,11 +122,14 @@ final monthlySummaryProvider = FutureProvider.family<Map<String, int>, DateTime>
 
 // Transaction groups provider
 final transactionGroupsProvider = FutureProvider.family<List<TransactionGroup>, DateTime>((ref, month) async {
-  // Watch transactionsProvider để tự động reload khi có thay đổi
+  // Watch transactionsProvider và monthStartDayProvider để tự động reload khi có thay đổi
   ref.watch(transactionsProvider);
+  final monthStartDay = ref.watch(monthStartDayProvider);
   
-  final startDate = DateTime(month.year, month.month, 1);
-  final endDate = DateTime(month.year, month.month + 1, 0, 23, 59, 59);
+  // Sử dụng cycle dates thay vì calendar month
+  final cycleRange = CycleUtils.getCycleRangeForDate(month, monthStartDay);
+  final startDate = cycleRange.start;
+  final endDate = cycleRange.end;
 
   final txnRepo = ref.watch(transactionRepositoryProvider);
   final allTransactions = await txnRepo.getAllTransactions();

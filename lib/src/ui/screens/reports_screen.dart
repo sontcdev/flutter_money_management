@@ -9,6 +9,8 @@ import '../../models/budget.dart';
 import '../../models/category.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/currency_formatter.dart';
+import '../../utils/cycle_utils.dart';
+import 'settings_screen.dart';
 
 class ReportsScreen extends HookConsumerWidget {
   const ReportsScreen({super.key});
@@ -19,6 +21,7 @@ class ReportsScreen extends HookConsumerWidget {
     final transactionsAsync = ref.watch(transactionsProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
     final budgetsAsync = ref.watch(budgetsProvider);
+    final monthStartDay = ref.watch(monthStartDayProvider);
     final selectedPeriod = useState(0); // 0: Tháng này, 1: Tùy chỉnh (tháng), 2: Tùy chỉnh (năm)
     final customMonth = useState<DateTime?>(null);
     final customYear = useState<int?>(null);
@@ -122,7 +125,8 @@ class ReportsScreen extends HookConsumerWidget {
               data: (transactions) {
                 final filteredTransactions = _filterTransactions(
                   transactions, 
-                  selectedPeriod.value, 
+                  selectedPeriod.value,
+                  monthStartDay,
                   customMonth.value,
                   customYear.value,
                 );
@@ -279,7 +283,7 @@ class ReportsScreen extends HookConsumerWidget {
                     return transactionsAsync.when(
                       data: (transactions) {
                         // Get date range based on selected period
-                        final dateRange = _getDateRange(selectedPeriod.value, customMonth.value, customYear.value);
+                        final dateRange = _getDateRange(selectedPeriod.value, customMonth.value, customYear.value, monthStartDay);
                         
                         // Filter budgets based on category type
                         final categoryMap = {for (var c in categories) c.id: c};
@@ -506,7 +510,7 @@ class ReportsScreen extends HookConsumerWidget {
                         ? TransactionType.income 
                         : TransactionType.expense;
                     
-                    var filteredTransactions = _filterTransactions(transactions, selectedPeriod.value, customMonth.value, customYear.value)
+                    var filteredTransactions = _filterTransactions(transactions, selectedPeriod.value, monthStartDay, customMonth.value, customYear.value)
                         .where((t) => t.type == transactionTypeFilter)
                         .toList();
                     
@@ -735,23 +739,26 @@ class ReportsScreen extends HookConsumerWidget {
   }
 
   // Helper to get date range based on selected period
-  ({DateTime start, DateTime end}) _getDateRange(int period, DateTime? customMonth, int? customYear) {
+  ({DateTime start, DateTime end}) _getDateRange(int period, DateTime? customMonth, int? customYear, int monthStartDay) {
     final now = DateTime.now();
     DateTime startDate;
     DateTime endDate;
 
     switch (period) {
-      case 0: // This month
-        startDate = DateTime(now.year, now.month, 1);
-        endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+      case 0: // This month - use cycle dates based on monthStartDay
+        final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
+        startDate = cycleRange.start;
+        endDate = cycleRange.end;
         break;
-      case 1: // Custom month
+      case 1: // Custom month - use cycle dates
         if (customMonth != null) {
-          startDate = DateTime(customMonth.year, customMonth.month, 1);
-          endDate = DateTime(customMonth.year, customMonth.month + 1, 0, 23, 59, 59);
+          final cycleRange = CycleUtils.getCycleRangeForDate(customMonth, monthStartDay);
+          startDate = cycleRange.start;
+          endDate = cycleRange.end;
         } else {
-          startDate = DateTime(now.year, now.month, 1);
-          endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+          final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
+          startDate = cycleRange.start;
+          endDate = cycleRange.end;
         }
         break;
       case 2: // Custom year
@@ -760,8 +767,9 @@ class ReportsScreen extends HookConsumerWidget {
         endDate = DateTime(year, 12, 31, 23, 59, 59);
         break;
       default:
-        startDate = DateTime(now.year, now.month, 1);
-        endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+        final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
+        startDate = cycleRange.start;
+        endDate = cycleRange.end;
     }
 
     return (start: startDate, end: endDate);
@@ -770,6 +778,7 @@ class ReportsScreen extends HookConsumerWidget {
   List<Transaction> _filterTransactions(
     List<Transaction> transactions, 
     int period, 
+    int monthStartDay,
     [DateTime? customMonth, int? customYear]
   ) {
     final now = DateTime.now();
@@ -777,17 +786,20 @@ class ReportsScreen extends HookConsumerWidget {
     DateTime endDate;
 
     switch (period) {
-      case 0: // Tháng này
-        startDate = DateTime(now.year, now.month, 1);
-        endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+      case 0: // Tháng này - use cycle dates
+        final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
+        startDate = cycleRange.start;
+        endDate = cycleRange.end;
         break;
-      case 1: // Tùy chỉnh - Tháng
+      case 1: // Tùy chỉnh - Tháng - use cycle dates
         if (customMonth != null) {
-          startDate = DateTime(customMonth.year, customMonth.month, 1);
-          endDate = DateTime(customMonth.year, customMonth.month + 1, 0, 23, 59, 59);
+          final cycleRange = CycleUtils.getCycleRangeForDate(customMonth, monthStartDay);
+          startDate = cycleRange.start;
+          endDate = cycleRange.end;
         } else {
-          startDate = DateTime(now.year, now.month, 1);
-          endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+          final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
+          startDate = cycleRange.start;
+          endDate = cycleRange.end;
         }
         break;
       case 2: // Tùy chỉnh - Năm
@@ -796,8 +808,9 @@ class ReportsScreen extends HookConsumerWidget {
         endDate = DateTime(year, 12, 31, 23, 59, 59);
         break;
       default:
-        startDate = DateTime(now.year, now.month, 1);
-        endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+        final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
+        startDate = cycleRange.start;
+        endDate = cycleRange.end;
     }
 
     return transactions.where((t) =>

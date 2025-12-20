@@ -250,109 +250,6 @@ class _AddTransactionTab extends HookConsumerWidget {
             ),
             const SizedBox(height: 24),
 
-            // Amount Input
-            AppInput(
-              label: l10n.amount,
-              hint: '0',
-              controller: amountController,
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                VNDInputFormatter(),
-              ],
-              prefixIcon: const Icon(Icons.attach_money),
-              suffixIcon: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                child: Text(
-                  '₫',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Category Selector with Add button
-            categoriesAsync.when(
-              data: (categories) {
-                // Filter categories by selected transaction type
-                final filteredCategories = categories.where((c) {
-                  if (selectedType.value == model.TransactionType.expense) {
-                    return c.type == CategoryType.expense;
-                  } else {
-                    return c.type == CategoryType.income;
-                  }
-                }).toList();
-                
-                // Reset category selection if current selection is not in filtered list
-                if (selectedCategoryId.value != null && 
-                    !filteredCategories.any((c) => c.id == selectedCategoryId.value)) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    selectedCategoryId.value = null;
-                  });
-                }
-                
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            l10n.category,
-                            style: Theme.of(context).textTheme.labelLarge,
-                          ),
-                        ),
-                        TextButton.icon(
-                          icon: const Icon(Icons.add, size: 18),
-                          label: Text(l10n.add),
-                          onPressed: () async {
-                            final result = await Navigator.pushNamed(context, '/category-edit');
-                            if (result == true) {
-                              ref.invalidate(categoriesProvider);
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    if (filteredCategories.isEmpty)
-                      Text(selectedType.value == model.TransactionType.expense 
-                          ? l10n.noCategories 
-                          : l10n.noCategories)
-                    else
-                      DropdownButtonFormField<int>(
-                        value: selectedCategoryId.value,
-                        decoration: InputDecoration(
-                          hintText: l10n.selectCategory,
-                        ),
-                        items: filteredCategories.map((category) {
-                          return DropdownMenuItem(
-                            value: category.id,
-                            child: Row(
-                              children: [
-                                Text(category.iconName, style: const TextStyle(fontSize: 18)),
-                                const SizedBox(width: 8),
-                                Text(category.name),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          selectedCategoryId.value = value;
-                        },
-                      ),
-                  ],
-                );
-              },
-              loading: () => const CircularProgressIndicator(),
-              error: (err, stack) => Text('Error: $err'),
-            ),
-            const SizedBox(height: 16),
-
             // Date Picker with prev/next buttons
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -421,6 +318,133 @@ class _AddTransactionTab extends HookConsumerWidget {
               hint: l10n.note,
               controller: noteController,
               maxLines: 2,
+            ),
+            const SizedBox(height: 16),
+
+            // Amount Input
+            AppInput(
+              label: l10n.amount,
+              hint: '0',
+              controller: amountController,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                VNDInputFormatter(),
+              ],
+              prefixIcon: const Icon(Icons.attach_money),
+              suffixIcon: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                child: Text(
+                  '₫',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Category Selector with Add button - Grid View
+            categoriesAsync.when(
+              data: (categories) {
+                // Filter categories by selected transaction type
+                final filteredCategories = categories.where((c) {
+                  if (selectedType.value == model.TransactionType.expense) {
+                    return c.type == CategoryType.expense;
+                  } else {
+                    return c.type == CategoryType.income;
+                  }
+                }).toList();
+                
+                // Reset category selection if current selection is not in filtered list
+                if (selectedCategoryId.value != null && 
+                    !filteredCategories.any((c) => c.id == selectedCategoryId.value)) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    selectedCategoryId.value = null;
+                  });
+                }
+                
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            l10n.category,
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
+                        ),
+                        TextButton.icon(
+                          icon: const Icon(Icons.add, size: 18),
+                          label: Text(l10n.add),
+                          onPressed: () async {
+                            final result = await Navigator.pushNamed(context, '/category-edit');
+                            if (result == true) {
+                              ref.invalidate(categoriesProvider);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    if (filteredCategories.isEmpty)
+                      Text(l10n.noCategories)
+                    else
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: filteredCategories.map((category) {
+                          final isSelected = selectedCategoryId.value == category.id;
+                          return GestureDetector(
+                            onTap: () {
+                              selectedCategoryId.value = category.id;
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: isSelected 
+                                    ? Color(category.colorValue).withOpacity(0.2)
+                                    : Colors.grey.shade100,
+                                border: Border.all(
+                                  color: isSelected 
+                                      ? Color(category.colorValue)
+                                      : Colors.grey.shade300,
+                                  width: isSelected ? 2 : 1,
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    category.iconName,
+                                    style: const TextStyle(fontSize: 18),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    category.name,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                                      color: isSelected 
+                                          ? Color(category.colorValue)
+                                          : Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                  ],
+                );
+              },
+              loading: () => const CircularProgressIndicator(),
+              error: (err, stack) => Text('Error: $err'),
             ),
             const SizedBox(height: 16),
 

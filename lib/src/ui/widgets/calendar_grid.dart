@@ -2,12 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'calendar_date_cell.dart';
+import '../../utils/cycle_utils.dart';
 
 class CalendarGrid extends StatelessWidget {
   final DateTime month;
   final Map<DateTime, List<AmountBadge>> cellData;
   final DateTime? selectedDate;
   final Function(DateTime) onDateSelected;
+  final int monthStartDay;
 
   const CalendarGrid({
     super.key,
@@ -15,6 +17,7 @@ class CalendarGrid extends StatelessWidget {
     required this.cellData,
     this.selectedDate,
     required this.onDateSelected,
+    this.monthStartDay = 1,
   });
 
   @override
@@ -76,9 +79,10 @@ class CalendarGrid extends StatelessWidget {
   }
 
   List<List<DateTime?>> _generateWeeks() {
-    // Chỉ hiển thị tháng hiện tại
-    final startDate = DateTime(month.year, month.month, 1);
-    final endDate = DateTime(month.year, month.month + 1, 0); // Ngày cuối của tháng
+    // Sử dụng cycle range dựa trên monthStartDay
+    final cycleRange = CycleUtils.getCycleRangeForDate(month, monthStartDay);
+    final startDate = cycleRange.start;
+    final endDate = cycleRange.end;
 
     final weeks = <List<DateTime?>>[];
     var currentWeek = <DateTime?>[];
@@ -90,7 +94,7 @@ class CalendarGrid extends StatelessWidget {
     }
 
     var current = startDate;
-    while (current.isBefore(endDate) || current.day == endDate.day) {
+    while (current.isBefore(endDate) || _isSameDay(current, endDate)) {
       currentWeek.add(current);
 
       if (currentWeek.length == 7) {
@@ -100,8 +104,8 @@ class CalendarGrid extends StatelessWidget {
 
       current = current.add(const Duration(days: 1));
       
-      // Thoát khi đã qua ngày cuối tháng
-      if (current.month != month.month) break;
+      // Thoát khi đã qua ngày cuối chu kỳ
+      if (current.isAfter(endDate)) break;
     }
 
     // Fill remaining cells
