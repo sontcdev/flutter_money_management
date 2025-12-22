@@ -9,7 +9,7 @@ class AppLocalizationsVi extends AppLocalizations {
   AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
-  String get appTitle => 'Money Wise';
+  String get appTitle => 'MyMoney';
 
   @override
   String get home => 'Trang chủ';
@@ -288,7 +288,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get createFirst => 'Hãy tạo mục đầu tiên!';
 
   @override
-  String get welcome => 'Chào mừng đến với Money Wise';
+  String get welcome => 'Chào mừng đến với MyMoney';
 
   @override
   String get onboardingTitle => 'Quản lý tiền bạc dễ dàng';
@@ -569,4 +569,237 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get year => 'Năm';
+
+  @override
+  String get exportData => 'Xuất dữ liệu';
+
+  @override
+  String get exportDataDesc => 'Xuất tất cả giao dịch ra file để sao lưu hoặc chuyển sang thiết bị khác.';
+
+  @override
+  String get exportCsv => 'Xuất CSV';
+
+  @override
+  String get exportCsvDesc => 'Mở được bằng Excel';
+
+  @override
+  String get exportJson => 'Xuất JSON';
+
+  @override
+  String get exportJsonDesc => 'Định dạng chuẩn';
+
+  @override
+  String get importData => 'Nhập dữ liệu';
+
+  @override
+  String get importDataDesc => 'Nhập giao dịch từ file CSV hoặc JSON. Danh mục mới sẽ được tự động tạo.';
+
+  @override
+  String get importFromFile => 'Nhập từ File';
+
+  @override
+  String get importFromFileDesc => 'Chọn file .csv hoặc .json';
+
+  @override
+  String get pasteCsv => 'Dán CSV';
+
+  @override
+  String get pasteJson => 'Dán JSON';
+
+  @override
+  String get fromClipboard => 'Từ clipboard';
+
+  @override
+  String get templateSection => 'Mẫu file';
+
+  @override
+  String get templateDesc => 'Tải file mẫu để biết định dạng file import.';
+
+  @override
+  String get templateCsv => 'Mẫu CSV';
+
+  @override
+  String get templateJson => 'Mẫu JSON';
+
+  @override
+  String get downloadTemplate => 'Tải file mẫu';
+
+  @override
+  String get formatGuide => 'Hướng dẫn định dạng';
+
+  @override
+  String get formatDate => 'Ngày giao dịch (dd/MM/yyyy)';
+
+  @override
+  String get formatType => 'income hoặc expense';
+
+  @override
+  String get formatAmount => 'Số tiền (VND, không có dấu)';
+
+  @override
+  String get formatCategory => 'Tên danh mục';
+
+  @override
+  String get formatNote => 'Ghi chú (không bắt buộc)';
+
+  @override
+  String get cannotReadFile => 'Không thể đọc file';
+
+  @override
+  String get unsupportedFormat => 'Định dạng file không được hỗ trợ. Vui lòng chọn file .csv hoặc .json';
+
+  @override
+  String get fileReadError => 'Lỗi đọc file';
+
+  @override
+  String get noTransactionToExport => 'Không có giao dịch nào để xuất';
+
+  @override
+  String exportedTransactions(Object count) {
+    return 'Đã xuất $count giao dịch';
+  }
+
+  @override
+  String fileSavedAt(Object path) {
+    return 'File: $path';
+  }
+
+  @override
+  String get exportError => 'Lỗi xuất file';
+
+  @override
+  String get exportSuccess => 'Xuất file thành công';
+
+  @override
+  String get fileSavedAtPath => 'File đã được lưu tại:';
+
+  @override
+  String get whatNext => 'Bạn muốn làm gì tiếp?';
+
+  @override
+  String get copyContent => 'Sao chép nội dung';
+
+  @override
+  String get copiedToClipboard => 'Đã sao chép nội dung vào clipboard';
+
+  @override
+  String importFromFormat(Object format) {
+    return 'Nhập từ $format';
+  }
+
+  @override
+  String get pasteContentHere => 'Dán nội dung file vào đây:';
+
+  @override
+  String get emptyContent => 'Nội dung trống';
+
+  @override
+  String get noTransactionToImport => 'Không có giao dịch nào để nhập';
+
+  @override
+  String importedTransactions(Object count) {
+    return 'Đã nhập $count giao dịch';
+  }
+
+  @override
+  String createdCategories(Object count, Object names) {
+    return 'Đã tạo $count danh mục mới: $names';
+  }
+
+  @override
+  String get importError => 'Lỗi nhập file';
+
+  @override
+  String get savedTemplate => 'Đã lưu file mẫu';
+
+  @override
+  String get copiedTemplateToClipboard => 'Đã sao chép mẫu vào clipboard';
+
+  @override
+  String get monthStartDay => 'Ngày bắt đầu của tháng';
+
+  @override
+  String monthStartDayDesc(Object day) {
+    return 'Ngày $day hàng tháng';
+  }
+
+  @override
+  String get selectMonthStartDay => 'Chọn ngày bắt đầu của tháng';
+
+  @override
+  String get iconManagement => 'Quản lý biểu tượng';
+
+  @override
+  String get iconManagementDesc => 'Tìm và thêm biểu tượng mới cho danh mục';
+
+  @override
+  String get searchIcon => 'Tìm kiếm biểu tượng';
+
+  @override
+  String get searchIconHint => 'Nhập tên tiếng Anh (VD: car, food, money)';
+
+  @override
+  String get addIcon => 'Thêm biểu tượng';
+
+  @override
+  String get removeIcon => 'Xóa biểu tượng';
+
+  @override
+  String get myIcons => 'Biểu tượng của tôi';
+
+  @override
+  String get availableIcons => 'Biểu tượng có sẵn';
+
+  @override
+  String get noIconsFound => 'Không tìm thấy biểu tượng';
+
+  @override
+  String get iconAdded => 'Đã thêm biểu tượng';
+
+  @override
+  String get iconRemoved => 'Đã xóa biểu tượng';
+
+  @override
+  String get iconAlreadyAdded => 'Biểu tượng đã được thêm trước đó';
+
+  @override
+  String get manageTransactions => 'Quản lý giao dịch';
+
+  @override
+  String get manageTransactionsDesc => 'Xem, tìm kiếm và chỉnh sửa tất cả giao dịch';
+
+  @override
+  String get searchByNameOrAmount => 'Tìm theo tên hoặc số tiền';
+
+  @override
+  String get allCategories => 'Tất cả danh mục';
+
+  @override
+  String get allBudgets => 'Tất cả ngân sách';
+
+  @override
+  String get editSelected => 'Sửa các mục đã chọn';
+
+  @override
+  String get changeCategory => 'Đổi danh mục';
+
+  @override
+  String get changeDate => 'Đổi ngày';
+
+  @override
+  String selectedCount(Object count) {
+    return 'Đã chọn $count mục';
+  }
+
+  @override
+  String get updateSuccess => 'Cập nhật thành công';
+
+  @override
+  String get selectNewCategory => 'Chọn danh mục mới';
+
+  @override
+  String get selectNewDate => 'Chọn ngày mới';
+
+  @override
+  String get noBudget => 'Không có ngân sách';
 }

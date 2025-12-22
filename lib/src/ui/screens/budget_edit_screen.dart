@@ -11,6 +11,7 @@ import '../../utils/currency_formatter.dart';
 import '../../utils/vnd_input_formatter.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_input.dart';
+import '../widgets/category_icon_widget.dart';
 
 class BudgetEditScreen extends HookConsumerWidget {
   final Budget? budget;
@@ -269,7 +270,7 @@ class BudgetEditScreen extends HookConsumerWidget {
                       value: category.id,
                       child: Row(
                         children: [
-                          Text(category.iconName, style: const TextStyle(fontSize: 20)),
+                          CategoryIconWidget(iconName: category.iconName, size: 20),
                           const SizedBox(width: 8),
                           Text(category.name),
                         ],

@@ -24,7 +24,7 @@ final calendarDataProvider = FutureProvider.family<Map<DateTime, List<AmountBadg
   final monthStartDay = ref.watch(monthStartDayProvider);
   
   // Sử dụng cycle dates thay vì calendar month
-  final cycleRange = CycleUtils.getCycleRangeForDate(month, monthStartDay);
+  final cycleRange = CycleUtils.getCycleRangeForMonth(month, monthStartDay);
   final startDate = cycleRange.start;
   final endDate = cycleRange.end;
 
@@ -90,7 +90,7 @@ final monthlySummaryProvider = FutureProvider.family<Map<String, int>, DateTime>
   final monthStartDay = ref.watch(monthStartDayProvider);
   
   // Sử dụng cycle dates thay vì calendar month
-  final cycleRange = CycleUtils.getCycleRangeForDate(month, monthStartDay);
+  final cycleRange = CycleUtils.getCycleRangeForMonth(month, monthStartDay);
   final startDate = cycleRange.start;
   final endDate = cycleRange.end;
 
@@ -127,7 +127,7 @@ final transactionGroupsProvider = FutureProvider.family<List<TransactionGroup>, 
   final monthStartDay = ref.watch(monthStartDayProvider);
   
   // Sử dụng cycle dates thay vì calendar month
-  final cycleRange = CycleUtils.getCycleRangeForDate(month, monthStartDay);
+  final cycleRange = CycleUtils.getCycleRangeForMonth(month, monthStartDay);
   final startDate = cycleRange.start;
   final endDate = cycleRange.end;
 

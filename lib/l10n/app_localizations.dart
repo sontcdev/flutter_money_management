@@ -98,7 +98,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
-  /// **'Money Wise'**
+  /// **'MyMoney'**
   String get appTitle;
 
   /// No description provided for @home.
@@ -656,7 +656,7 @@ abstract class AppLocalizations {
   /// No description provided for @welcome.
   ///
   /// In en, this message translates to:
-  /// **'Welcome to Money Wise'**
+  /// **'Welcome to MyMoney'**
   String get welcome;
 
   /// No description provided for @onboardingTitle.
@@ -1210,6 +1210,444 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Year'**
   String get year;
+
+  /// No description provided for @exportData.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Data'**
+  String get exportData;
+
+  /// No description provided for @exportDataDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Export all transactions to a file for backup or transfer to another device.'**
+  String get exportDataDesc;
+
+  /// No description provided for @exportCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Export CSV'**
+  String get exportCsv;
+
+  /// No description provided for @exportCsvDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Can be opened with Excel'**
+  String get exportCsvDesc;
+
+  /// No description provided for @exportJson.
+  ///
+  /// In en, this message translates to:
+  /// **'Export JSON'**
+  String get exportJson;
+
+  /// No description provided for @exportJsonDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Standard format'**
+  String get exportJsonDesc;
+
+  /// No description provided for @importData.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Data'**
+  String get importData;
+
+  /// No description provided for @importDataDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Import transactions from CSV or JSON file. New categories will be created automatically.'**
+  String get importDataDesc;
+
+  /// No description provided for @importFromFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from File'**
+  String get importFromFile;
+
+  /// No description provided for @importFromFileDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Select .csv or .json file'**
+  String get importFromFileDesc;
+
+  /// No description provided for @pasteCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste CSV'**
+  String get pasteCsv;
+
+  /// No description provided for @pasteJson.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste JSON'**
+  String get pasteJson;
+
+  /// No description provided for @fromClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'From clipboard'**
+  String get fromClipboard;
+
+  /// No description provided for @templateSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Template'**
+  String get templateSection;
+
+  /// No description provided for @templateDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Download template file to learn the import file format.'**
+  String get templateDesc;
+
+  /// No description provided for @templateCsv.
+  ///
+  /// In en, this message translates to:
+  /// **'CSV Template'**
+  String get templateCsv;
+
+  /// No description provided for @templateJson.
+  ///
+  /// In en, this message translates to:
+  /// **'JSON Template'**
+  String get templateJson;
+
+  /// No description provided for @downloadTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Download template'**
+  String get downloadTemplate;
+
+  /// No description provided for @formatGuide.
+  ///
+  /// In en, this message translates to:
+  /// **'Format Guide'**
+  String get formatGuide;
+
+  /// No description provided for @formatDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction date (dd/MM/yyyy)'**
+  String get formatDate;
+
+  /// No description provided for @formatType.
+  ///
+  /// In en, this message translates to:
+  /// **'income or expense'**
+  String get formatType;
+
+  /// No description provided for @formatAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount (VND, no decimals)'**
+  String get formatAmount;
+
+  /// No description provided for @formatCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category name'**
+  String get formatCategory;
+
+  /// No description provided for @formatNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get formatNote;
+
+  /// No description provided for @cannotReadFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot read file'**
+  String get cannotReadFile;
+
+  /// No description provided for @unsupportedFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsupported file format. Please select a .csv or .json file'**
+  String get unsupportedFormat;
+
+  /// No description provided for @fileReadError.
+  ///
+  /// In en, this message translates to:
+  /// **'File read error'**
+  String get fileReadError;
+
+  /// No description provided for @noTransactionToExport.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions to export'**
+  String get noTransactionToExport;
+
+  /// No description provided for @exportedTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'Exported {count} transactions'**
+  String exportedTransactions(Object count);
+
+  /// No description provided for @fileSavedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'File: {path}'**
+  String fileSavedAt(Object path);
+
+  /// No description provided for @exportError.
+  ///
+  /// In en, this message translates to:
+  /// **'Export error'**
+  String get exportError;
+
+  /// No description provided for @exportSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Export successful'**
+  String get exportSuccess;
+
+  /// No description provided for @fileSavedAtPath.
+  ///
+  /// In en, this message translates to:
+  /// **'File saved at:'**
+  String get fileSavedAtPath;
+
+  /// No description provided for @whatNext.
+  ///
+  /// In en, this message translates to:
+  /// **'What would you like to do next?'**
+  String get whatNext;
+
+  /// No description provided for @copyContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy content'**
+  String get copyContent;
+
+  /// No description provided for @copiedToClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Content copied to clipboard'**
+  String get copiedToClipboard;
+
+  /// No description provided for @importFromFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Import from {format}'**
+  String importFromFormat(Object format);
+
+  /// No description provided for @pasteContentHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste file content here:'**
+  String get pasteContentHere;
+
+  /// No description provided for @emptyContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Empty content'**
+  String get emptyContent;
+
+  /// No description provided for @noTransactionToImport.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions to import'**
+  String get noTransactionToImport;
+
+  /// No description provided for @importedTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'Imported {count} transactions'**
+  String importedTransactions(Object count);
+
+  /// No description provided for @createdCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Created {count} new categories: {names}'**
+  String createdCategories(Object count, Object names);
+
+  /// No description provided for @importError.
+  ///
+  /// In en, this message translates to:
+  /// **'Import error'**
+  String get importError;
+
+  /// No description provided for @savedTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Template saved'**
+  String get savedTemplate;
+
+  /// No description provided for @copiedTemplateToClipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Template copied to clipboard'**
+  String get copiedTemplateToClipboard;
+
+  /// No description provided for @monthStartDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Month Start Day'**
+  String get monthStartDay;
+
+  /// No description provided for @monthStartDayDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Day {day} of each month'**
+  String monthStartDayDesc(Object day);
+
+  /// No description provided for @selectMonthStartDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Select month start day'**
+  String get selectMonthStartDay;
+
+  /// No description provided for @iconManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon Management'**
+  String get iconManagement;
+
+  /// No description provided for @iconManagementDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Search and add new icons for categories'**
+  String get iconManagementDesc;
+
+  /// No description provided for @searchIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'Search Icon'**
+  String get searchIcon;
+
+  /// No description provided for @searchIconHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter name in English (e.g. car, food, money)'**
+  String get searchIconHint;
+
+  /// No description provided for @addIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Icon'**
+  String get addIcon;
+
+  /// No description provided for @removeIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Icon'**
+  String get removeIcon;
+
+  /// No description provided for @myIcons.
+  ///
+  /// In en, this message translates to:
+  /// **'My Icons'**
+  String get myIcons;
+
+  /// No description provided for @availableIcons.
+  ///
+  /// In en, this message translates to:
+  /// **'Available Icons'**
+  String get availableIcons;
+
+  /// No description provided for @noIconsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No icons found'**
+  String get noIconsFound;
+
+  /// No description provided for @iconAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon added'**
+  String get iconAdded;
+
+  /// No description provided for @iconRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon removed'**
+  String get iconRemoved;
+
+  /// No description provided for @iconAlreadyAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon already added'**
+  String get iconAlreadyAdded;
+
+  /// No description provided for @manageTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Transactions'**
+  String get manageTransactions;
+
+  /// No description provided for @manageTransactionsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'View, search, and edit all transactions'**
+  String get manageTransactionsDesc;
+
+  /// No description provided for @searchByNameOrAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name or amount'**
+  String get searchByNameOrAmount;
+
+  /// No description provided for @allCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'All Categories'**
+  String get allCategories;
+
+  /// No description provided for @allBudgets.
+  ///
+  /// In en, this message translates to:
+  /// **'All Budgets'**
+  String get allBudgets;
+
+  /// No description provided for @editSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Selected'**
+  String get editSelected;
+
+  /// No description provided for @changeCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Category'**
+  String get changeCategory;
+
+  /// No description provided for @changeDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Date'**
+  String get changeDate;
+
+  /// No description provided for @selectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String selectedCount(Object count);
+
+  /// No description provided for @updateSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated successfully'**
+  String get updateSuccess;
+
+  /// No description provided for @selectNewCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Select New Category'**
+  String get selectNewCategory;
+
+  /// No description provided for @selectNewDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select New Date'**
+  String get selectNewDate;
+
+  /// No description provided for @noBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'No Budget'**
+  String get noBudget;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

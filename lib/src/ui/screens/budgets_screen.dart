@@ -11,6 +11,7 @@ import '../widgets/empty_state.dart';
 import '../widgets/shimmer_loading.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/currency_formatter.dart';
+import '../widgets/category_icon_widget.dart';
 
 class BudgetsScreen extends ConsumerWidget {
   final bool showBackButton;
@@ -143,9 +144,10 @@ class _BudgetCard extends ConsumerWidget {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Center(
-                                child: Text(
-                                  category.iconName,
-                                  style: const TextStyle(fontSize: 16),
+                                child: CategoryIconWidget(
+                                  iconName: category.iconName,
+                                  size: 16,
+                                  color: Color(category.colorValue),
                                 ),
                               ),
                             ),

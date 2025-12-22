@@ -80,7 +80,7 @@ class CalendarGrid extends StatelessWidget {
 
   List<List<DateTime?>> _generateWeeks() {
     // Sử dụng cycle range dựa trên monthStartDay
-    final cycleRange = CycleUtils.getCycleRangeForDate(month, monthStartDay);
+    final cycleRange = CycleUtils.getCycleRangeForMonth(month, monthStartDay);
     final startDate = cycleRange.start;
     final endDate = cycleRange.end;
 

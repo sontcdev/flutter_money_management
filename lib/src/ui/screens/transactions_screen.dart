@@ -8,6 +8,7 @@ import '../../models/transaction.dart';
 import '../../models/category.dart';
 import '../../utils/currency_formatter.dart';
 import '../../theme/app_colors.dart';
+import '../widgets/category_icon_widget.dart';
 
 class TransactionsScreen extends ConsumerWidget {
   const TransactionsScreen({super.key});
@@ -73,9 +74,10 @@ class TransactionsScreen extends ConsumerWidget {
                   return ListTile(
                     leading: CircleAvatar(
                       backgroundColor: Color(category.colorValue).withOpacity(0.1),
-                      child: Text(
-                        category.iconName,
-                        style: const TextStyle(fontSize: 20),
+                      child: CategoryIconWidget(
+                        iconName: category.iconName,
+                        size: 20,
+                        color: Color(category.colorValue),
                       ),
                     ),
                     title: Text(category.name),

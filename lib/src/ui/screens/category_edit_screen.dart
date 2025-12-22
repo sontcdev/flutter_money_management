@@ -6,6 +6,8 @@ import 'package:flutter_money_management/src/models/category.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
+import 'package:flutter_money_management/src/utils/category_icons.dart';
+import 'package:flutter_money_management/src/ui/screens/icon_management_screen.dart';
 import '../../../l10n/app_localizations.dart';
 
 class CategoryEditScreen extends HookConsumerWidget {
@@ -18,40 +20,24 @@ class CategoryEditScreen extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final nameController = useTextEditingController(text: category?.name ?? '');
-    final selectedIcon = useState(category?.iconName ?? '🏷️');
+    final selectedIcon = useState(category?.iconName ?? 'shopping_cart');
     final selectedColor = useState(category?.colorValue ?? 0xFF7F3DFF);
     final selectedType = useState(category?.type ?? initialType ?? CategoryType.expense);
     final isLoading = useState(false);
     final showAllIcons = useState(false);
-
-    // Basic icons shown initially
-    final basicIcons = ['🏷️', '🍔', '🚗', '🏠', '💊', '🎓', '💰', '🎮', '✈️', '👕'];
     
-    // Full icon list
-    final allIcons = [
-      // Basic
-      '🏷️', '🍔', '🚗', '🏠', '💊', '🎓', '💰', '🎮', '✈️', '👕',
-      // Food & Drinks
-      '🍕', '🍜', '🍱', '🥗', '🍰', '☕', '🍺', '🍷', '🥤', '🍿',
-      // Transport
-      '🚌', '🚇', '🚕', '⛽', '🚲', '✈️', '🛵', '🚢', '🚁', '🚀',
-      // Shopping
-      '🛒', '🛍️', '👗', '👠', '💄', '⌚', '💎', '🎁', '📱', '💻',
-      // Home
-      '🏡', '🛋️', '🛏️', '🚿', '🧹', '🔧', '💡', '🌱', '🐕', '🐈',
-      // Health
-      '💊', '🏥', '🩺', '💉', '🧘', '🏃', '🏋️', '🧴', '😷', '🦷',
-      // Entertainment
-      '🎬', '🎵', '🎸', '📚', '🎨', '📷', '🎯', '🎲', '♠️', '🎰',
-      // Finance
-      '💵', '💳', '🏦', '📈', '📊', '🧾', '💹', '🏧', '💱', '🪙',
-      // Work & Education
-      '💼', '📝', '📖', '🎒', '✏️', '📐', '🔬', '💻', '🖨️', '📁',
-      // Others
-      '❤️', '⭐', '🔥', '⚡', '🌈', '🎉', '🏆', '🎗️', '♻️', '✨',
+    // Get custom icons from provider
+    final customIcons = ref.watch(customIconsProvider);
+
+    // Combine custom icons with default icons
+    final List<String> allAvailableIcons = [
+      ...customIcons, // Custom icons first
+      ...CategoryIcons.allIconKeys.where((k) => !customIcons.contains(k)),
     ];
 
-    final displayIcons = showAllIcons.value ? allIcons : basicIcons;
+    final displayIconKeys = showAllIcons.value 
+        ? allAvailableIcons
+        : [...customIcons.take(5), ...CategoryIcons.basicIconKeys.where((k) => !customIcons.contains(k))].take(15).toList();
     
     final colors = [
       0xFF7F3DFF, 0xFFFD3C4A, 0xFFFD9B63, 0xFFFCAC12,
@@ -86,7 +72,6 @@ class CategoryEditScreen extends HookConsumerWidget {
 
         if (category == null) {
           await categoryRepo.createCategory(newCategory);
-          // Không cần gọi invalidate - provider sẽ tự động refresh khi màn hình trở lại
         } else {
           await categoryRepo.updateCategory(newCategory);
         }
@@ -148,18 +133,42 @@ class CategoryEditScreen extends HookConsumerWidget {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: displayIcons.map((icon) {
-                final isSelected = selectedIcon.value == icon;
+              children: displayIconKeys.map((iconKey) {
+                final isSelected = selectedIcon.value == iconKey;
+                final iconData = CategoryIcons.getIcon(iconKey);
+                final iconColor = Color(selectedColor.value);
                 return GestureDetector(
-                  onTap: () => selectedIcon.value = icon,
+                  onTap: () => selectedIcon.value = iconKey,
                   child: Container(
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[200],
+                      color: isSelected 
+                          ? iconColor.withValues(alpha: 0.2)
+                          : Theme.of(context).brightness == Brightness.dark
+                              ? Colors.grey[800]
+                              : Colors.grey[100],
                       borderRadius: BorderRadius.circular(12),
+                      border: isSelected 
+                          ? Border.all(color: iconColor, width: 2)
+                          : Border.all(
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.grey[700]!
+                                  : Colors.grey[300]!,
+                              width: 1,
+                            ),
                     ),
-                    child: Center(child: Text(icon, style: const TextStyle(fontSize: 24))),
+                    child: Center(
+                      child: Icon(
+                        iconData,
+                        size: 24,
+                        color: isSelected 
+                            ? iconColor 
+                            : Theme.of(context).brightness == Brightness.dark
+                                ? Colors.grey[400]
+                                : Colors.grey[600],
+                      ),
+                    ),
                   ),
                 );
               }).toList(),
@@ -209,4 +218,3 @@ class CategoryEditScreen extends HookConsumerWidget {
     );
   }
 }
-

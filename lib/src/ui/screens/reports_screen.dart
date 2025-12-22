@@ -10,6 +10,7 @@ import '../../models/category.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/currency_formatter.dart';
 import '../../utils/cycle_utils.dart';
+import '../widgets/category_icon_widget.dart';
 import 'settings_screen.dart';
 
 class ReportsScreen extends HookConsumerWidget {
@@ -363,9 +364,10 @@ class ReportsScreen extends HookConsumerWidget {
                                               borderRadius: BorderRadius.circular(8),
                                             ),
                                             child: Center(
-                                              child: Text(
-                                                category.iconName,
-                                                style: const TextStyle(fontSize: 20),
+                                              child: CategoryIconWidget(
+                                                iconName: category.iconName,
+                                                size: 20,
+                                                color: Color(category.colorValue),
                                               ),
                                             ),
                                           ),
@@ -587,9 +589,10 @@ class ReportsScreen extends HookConsumerWidget {
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Center(
-                                      child: Text(
-                                        category.iconName,
-                                        style: const TextStyle(fontSize: 16),
+                                      child: CategoryIconWidget(
+                                        iconName: category.iconName,
+                                        size: 16,
+                                        color: Colors.white,
                                       ),
                                     ),
                                   ),

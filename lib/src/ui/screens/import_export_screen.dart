@@ -4,13 +4,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../services/import_export_service.dart';
 import '../../providers/providers.dart';
 import '../../models/transaction.dart';
 import '../../models/category.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ImportExportScreen extends ConsumerStatefulWidget {
   const ImportExportScreen({super.key});
@@ -27,9 +27,11 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Import / Export'),
+        title: Text(l10n.importExport),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -75,15 +77,15 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
 
             // Export Section
             Text(
-              'Export dữ liệu',
+              l10n.exportData,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Xuất tất cả giao dịch ra file để sao lưu hoặc chuyển sang thiết bị khác.',
-              style: TextStyle(color: Colors.grey),
+            Text(
+              l10n.exportDataDesc,
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 16),
 
@@ -92,18 +94,18 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
                 Expanded(
                   child: _ActionCard(
                     icon: Icons.table_chart,
-                    title: 'Export CSV',
-                    subtitle: 'Mở được bằng Excel',
-                    onTap: _isLoading ? null : () => _exportData('csv'),
+                    title: l10n.exportCsv,
+                    subtitle: l10n.exportCsvDesc,
+                    onTap: _isLoading ? null : () => _exportData('csv', l10n),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _ActionCard(
                     icon: Icons.code,
-                    title: 'Export JSON',
-                    subtitle: 'Định dạng chuẩn',
-                    onTap: _isLoading ? null : () => _exportData('json'),
+                    title: l10n.exportJson,
+                    subtitle: l10n.exportJsonDesc,
+                    onTap: _isLoading ? null : () => _exportData('json', l10n),
                   ),
                 ),
               ],
@@ -113,15 +115,15 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
 
             // Import Section
             Text(
-              'Import dữ liệu',
+              l10n.importData,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Nhập giao dịch từ file CSV hoặc JSON. Danh mục mới sẽ được tự động tạo.',
-              style: TextStyle(color: Colors.grey),
+            Text(
+              l10n.importDataDesc,
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 16),
 
@@ -131,9 +133,9 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
                 Expanded(
                   child: _ActionCard(
                     icon: Icons.upload_file,
-                    title: 'Import từ File',
-                    subtitle: 'Chọn file .csv hoặc .json',
-                    onTap: _isLoading ? null : _pickAndImportFile,
+                    title: l10n.importFromFile,
+                    subtitle: l10n.importFromFileDesc,
+                    onTap: _isLoading ? null : () => _pickAndImportFile(l10n),
                     isPrimary: true,
                   ),
                 ),
@@ -146,18 +148,18 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
                 Expanded(
                   child: _ActionCard(
                     icon: Icons.content_paste,
-                    title: 'Dán CSV',
-                    subtitle: 'Từ clipboard',
-                    onTap: _isLoading ? null : () => _showImportDialog('csv'),
+                    title: l10n.pasteCsv,
+                    subtitle: l10n.fromClipboard,
+                    onTap: _isLoading ? null : () => _showImportDialog('csv', l10n),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _ActionCard(
                     icon: Icons.content_paste,
-                    title: 'Dán JSON',
-                    subtitle: 'Từ clipboard',
-                    onTap: _isLoading ? null : () => _showImportDialog('json'),
+                    title: l10n.pasteJson,
+                    subtitle: l10n.fromClipboard,
+                    onTap: _isLoading ? null : () => _showImportDialog('json', l10n),
                   ),
                 ),
               ],
@@ -167,15 +169,15 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
 
             // Template Section
             Text(
-              'Template mẫu',
+              l10n.templateSection,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Tải template mẫu để biết định dạng file import.',
-              style: TextStyle(color: Colors.grey),
+            Text(
+              l10n.templateDesc,
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 16),
 
@@ -184,18 +186,18 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
                 Expanded(
                   child: _ActionCard(
                     icon: Icons.download,
-                    title: 'Template CSV',
-                    subtitle: 'Tải file mẫu',
-                    onTap: _isLoading ? null : () => _saveTemplate('csv'),
+                    title: l10n.templateCsv,
+                    subtitle: l10n.downloadTemplate,
+                    onTap: _isLoading ? null : () => _saveTemplate('csv', l10n),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _ActionCard(
                     icon: Icons.download,
-                    title: 'Template JSON',
-                    subtitle: 'Tải file mẫu',
-                    onTap: _isLoading ? null : () => _saveTemplate('json'),
+                    title: l10n.templateJson,
+                    subtitle: l10n.downloadTemplate,
+                    onTap: _isLoading ? null : () => _saveTemplate('json', l10n),
                   ),
                 ),
               ],
@@ -215,7 +217,7 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
                         const Icon(Icons.info_outline, color: Colors.blue),
                         const SizedBox(width: 8),
                         Text(
-                          'Hướng dẫn định dạng',
+                          l10n.formatGuide,
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -223,11 +225,11 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    _buildFormatRow('date', 'Ngày giao dịch (dd/MM/yyyy)'),
-                    _buildFormatRow('type', 'income hoặc expense'),
-                    _buildFormatRow('amount', 'Số tiền (VND, không có dấu)'),
-                    _buildFormatRow('category', 'Tên danh mục'),
-                    _buildFormatRow('note', 'Ghi chú (không bắt buộc)'),
+                    _buildFormatRow('date', l10n.formatDate),
+                    _buildFormatRow('type', l10n.formatType),
+                    _buildFormatRow('amount', l10n.formatAmount),
+                    _buildFormatRow('category', l10n.formatCategory),
+                    _buildFormatRow('note', l10n.formatNote),
                   ],
                 ),
               ),
@@ -265,7 +267,7 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
     );
   }
 
-  Future<void> _pickAndImportFile() async {
+  Future<void> _pickAndImportFile(AppLocalizations l10n) async {
     setState(() {
       _isLoading = true;
       _statusMessage = null;
@@ -288,7 +290,7 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
       final file = result.files.first;
       if (file.path == null) {
         setState(() {
-          _statusMessage = 'Không thể đọc file';
+          _statusMessage = l10n.cannotReadFile;
           _isError = true;
           _isLoading = false;
         });
@@ -299,26 +301,26 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
       final extension = file.extension?.toLowerCase() ?? '';
 
       if (extension == 'csv') {
-        await _importData(content, 'csv');
+        await _importData(content, 'csv', l10n);
       } else if (extension == 'json') {
-        await _importData(content, 'json');
+        await _importData(content, 'json', l10n);
       } else {
         setState(() {
-          _statusMessage = 'Định dạng file không được hỗ trợ. Vui lòng chọn file .csv hoặc .json';
+          _statusMessage = l10n.unsupportedFormat;
           _isError = true;
           _isLoading = false;
         });
       }
     } catch (e) {
       setState(() {
-        _statusMessage = 'Lỗi đọc file: ${e.toString()}';
+        _statusMessage = '${l10n.fileReadError}: ${e.toString()}';
         _isError = true;
         _isLoading = false;
       });
     }
   }
 
-  Future<void> _exportData(String format) async {
+  Future<void> _exportData(String format, AppLocalizations l10n) async {
     setState(() {
       _isLoading = true;
       _statusMessage = null;
@@ -330,7 +332,7 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
 
       if (transactions.isEmpty) {
         setState(() {
-          _statusMessage = 'Không có giao dịch nào để export';
+          _statusMessage = l10n.noTransactionToExport;
           _isError = true;
           _isLoading = false;
         });
@@ -352,34 +354,34 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
       final filePath = await _importExportService.saveToFile(content, filename);
 
       setState(() {
-        _statusMessage = 'Đã export ${transactions.length} giao dịch\nFile: $filePath';
+        _statusMessage = '${l10n.exportedTransactions(transactions.length)}\n${l10n.fileSavedAt(filePath)}';
         _isError = false;
         _isLoading = false;
       });
 
       // Show share dialog
-      _showExportSuccessDialog(filePath, content);
+      _showExportSuccessDialog(filePath, content, l10n);
     } catch (e) {
       setState(() {
-        _statusMessage = 'Lỗi export: ${e.toString()}';
+        _statusMessage = '${l10n.exportError}: ${e.toString()}';
         _isError = true;
         _isLoading = false;
       });
     }
   }
 
-  void _showExportSuccessDialog(String filePath, String content) {
+  void _showExportSuccessDialog(String filePath, String content, AppLocalizations l10n) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Export thành công'),
+        title: Text(l10n.exportSuccess),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('File đã được lưu tại:\n$filePath'),
+            Text('${l10n.fileSavedAtPath}\n$filePath'),
             const SizedBox(height: 16),
-            const Text('Bạn muốn làm gì tiếp?'),
+            Text(l10n.whatNext),
           ],
         ),
         actions: [
@@ -388,34 +390,34 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
               Clipboard.setData(ClipboardData(text: content));
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Đã copy nội dung vào clipboard')),
+                SnackBar(content: Text(l10n.copiedToClipboard)),
               );
             },
-            child: const Text('Copy nội dung'),
+            child: Text(l10n.copyContent),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Đóng'),
+            child: Text(l10n.close),
           ),
         ],
       ),
     );
   }
 
-  void _showImportDialog(String format) {
+  void _showImportDialog(String format, AppLocalizations l10n) {
     final controller = TextEditingController();
     
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Import từ ${format.toUpperCase()}'),
+        title: Text(l10n.importFromFormat(format.toUpperCase())),
         content: SizedBox(
           width: double.maxFinite,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Dán nội dung file vào đây:'),
+              Text(l10n.pasteContentHere),
               const SizedBox(height: 8),
               TextField(
                 controller: controller,
@@ -433,24 +435,24 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Hủy'),
+            child: Text(l10n.cancel),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _importData(controller.text, format);
+              _importData(controller.text, format, l10n);
             },
-            child: const Text('Import'),
+            child: Text(l10n.import),
           ),
         ],
       ),
     );
   }
 
-  Future<void> _importData(String content, String format) async {
+  Future<void> _importData(String content, String format, AppLocalizations l10n) async {
     if (content.trim().isEmpty) {
       setState(() {
-        _statusMessage = 'Nội dung trống';
+        _statusMessage = l10n.emptyContent;
         _isError = true;
       });
       return;
@@ -472,7 +474,7 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
 
       if (importedTransactions.isEmpty) {
         setState(() {
-          _statusMessage = 'Không có giao dịch nào để import';
+          _statusMessage = l10n.noTransactionToImport;
           _isError = true;
           _isLoading = false;
         });
@@ -542,9 +544,9 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
       ref.invalidate(transactionsProvider);
       ref.invalidate(categoriesProvider);
 
-      String message = 'Đã import $successCount giao dịch';
+      String message = l10n.importedTransactions(successCount);
       if (newCategories.isNotEmpty) {
-        message += '\nĐã tạo ${newCategories.length} danh mục mới: ${newCategories.join(", ")}';
+        message += '\n${l10n.createdCategories(newCategories.length, newCategories.join(", "))}';
       }
 
       setState(() {
@@ -554,14 +556,14 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
       });
     } catch (e) {
       setState(() {
-        _statusMessage = 'Lỗi import: ${e.toString()}';
+        _statusMessage = '${l10n.importError}: ${e.toString()}';
         _isError = true;
         _isLoading = false;
       });
     }
   }
 
-  Future<void> _saveTemplate(String format) async {
+  Future<void> _saveTemplate(String format, AppLocalizations l10n) async {
     setState(() {
       _isLoading = true;
       _statusMessage = null;
@@ -582,7 +584,7 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
       final filePath = await _importExportService.saveToFile(content, filename);
 
       setState(() {
-        _statusMessage = 'Đã lưu template\nFile: $filePath';
+        _statusMessage = '${l10n.savedTemplate}\n${l10n.fileSavedAt(filePath)}';
         _isError = false;
         _isLoading = false;
       });
@@ -591,12 +593,12 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
       await Clipboard.setData(ClipboardData(text: content));
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Đã copy template vào clipboard')),
+          SnackBar(content: Text(l10n.copiedTemplateToClipboard)),
         );
       }
     } catch (e) {
       setState(() {
-        _statusMessage = 'Lỗi: ${e.toString()}';
+        _statusMessage = '${l10n.error}: ${e.toString()}';
         _isError = true;
         _isLoading = false;
       });

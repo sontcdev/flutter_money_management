@@ -16,6 +16,8 @@ import 'ui/screens/reports_screen.dart';
 import 'ui/screens/settings_screen.dart';
 import 'ui/screens/report_calendar_screen.dart';
 import 'ui/screens/import_export_screen.dart';
+import 'ui/screens/icon_management_screen.dart';
+import 'ui/screens/transaction_management_screen.dart';
 import 'utils/animations.dart';
 
 class AppRouter {
@@ -79,6 +81,10 @@ class AppRouter {
         return AppAnimations.slideRoute(const SettingsScreen());
       case '/import-export':
         return AppAnimations.slideRoute(const ImportExportScreen());
+      case '/icon-management':
+        return AppAnimations.slideRoute(const IconManagementScreen());
+      case '/transaction-management':
+        return AppAnimations.slideRoute(const TransactionManagementScreen());
       default:
         return AppAnimations.fadeRoute(
           Scaffold(

@@ -14,6 +14,7 @@ import '../../utils/currency_formatter.dart';
 import '../../utils/vnd_input_formatter.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_input.dart';
+import '../widgets/category_icon_widget.dart';
 
 class AddTransactionScreen extends HookConsumerWidget {
   final int? transactionId;
@@ -368,9 +369,10 @@ class AddTransactionScreen extends HookConsumerWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                  category.iconName,
-                                  style: const TextStyle(fontSize: 18),
+                                CategoryIconWidget(
+                                  iconName: category.iconName,
+                                  size: 18,
+                                  color: isSelected ? Color(category.colorValue) : null,
                                 ),
                                 const SizedBox(width: 6),
                                 Text(

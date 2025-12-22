@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Money Wise';
+  String get appTitle => 'MyMoney';
 
   @override
   String get home => 'Home';
@@ -288,7 +288,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createFirst => 'Create your first one!';
 
   @override
-  String get welcome => 'Welcome to Money Wise';
+  String get welcome => 'Welcome to MyMoney';
 
   @override
   String get onboardingTitle => 'Manage your money with ease';
@@ -569,4 +569,237 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get year => 'Year';
+
+  @override
+  String get exportData => 'Export Data';
+
+  @override
+  String get exportDataDesc => 'Export all transactions to a file for backup or transfer to another device.';
+
+  @override
+  String get exportCsv => 'Export CSV';
+
+  @override
+  String get exportCsvDesc => 'Can be opened with Excel';
+
+  @override
+  String get exportJson => 'Export JSON';
+
+  @override
+  String get exportJsonDesc => 'Standard format';
+
+  @override
+  String get importData => 'Import Data';
+
+  @override
+  String get importDataDesc => 'Import transactions from CSV or JSON file. New categories will be created automatically.';
+
+  @override
+  String get importFromFile => 'Import from File';
+
+  @override
+  String get importFromFileDesc => 'Select .csv or .json file';
+
+  @override
+  String get pasteCsv => 'Paste CSV';
+
+  @override
+  String get pasteJson => 'Paste JSON';
+
+  @override
+  String get fromClipboard => 'From clipboard';
+
+  @override
+  String get templateSection => 'Template';
+
+  @override
+  String get templateDesc => 'Download template file to learn the import file format.';
+
+  @override
+  String get templateCsv => 'CSV Template';
+
+  @override
+  String get templateJson => 'JSON Template';
+
+  @override
+  String get downloadTemplate => 'Download template';
+
+  @override
+  String get formatGuide => 'Format Guide';
+
+  @override
+  String get formatDate => 'Transaction date (dd/MM/yyyy)';
+
+  @override
+  String get formatType => 'income or expense';
+
+  @override
+  String get formatAmount => 'Amount (VND, no decimals)';
+
+  @override
+  String get formatCategory => 'Category name';
+
+  @override
+  String get formatNote => 'Note (optional)';
+
+  @override
+  String get cannotReadFile => 'Cannot read file';
+
+  @override
+  String get unsupportedFormat => 'Unsupported file format. Please select a .csv or .json file';
+
+  @override
+  String get fileReadError => 'File read error';
+
+  @override
+  String get noTransactionToExport => 'No transactions to export';
+
+  @override
+  String exportedTransactions(Object count) {
+    return 'Exported $count transactions';
+  }
+
+  @override
+  String fileSavedAt(Object path) {
+    return 'File: $path';
+  }
+
+  @override
+  String get exportError => 'Export error';
+
+  @override
+  String get exportSuccess => 'Export successful';
+
+  @override
+  String get fileSavedAtPath => 'File saved at:';
+
+  @override
+  String get whatNext => 'What would you like to do next?';
+
+  @override
+  String get copyContent => 'Copy content';
+
+  @override
+  String get copiedToClipboard => 'Content copied to clipboard';
+
+  @override
+  String importFromFormat(Object format) {
+    return 'Import from $format';
+  }
+
+  @override
+  String get pasteContentHere => 'Paste file content here:';
+
+  @override
+  String get emptyContent => 'Empty content';
+
+  @override
+  String get noTransactionToImport => 'No transactions to import';
+
+  @override
+  String importedTransactions(Object count) {
+    return 'Imported $count transactions';
+  }
+
+  @override
+  String createdCategories(Object count, Object names) {
+    return 'Created $count new categories: $names';
+  }
+
+  @override
+  String get importError => 'Import error';
+
+  @override
+  String get savedTemplate => 'Template saved';
+
+  @override
+  String get copiedTemplateToClipboard => 'Template copied to clipboard';
+
+  @override
+  String get monthStartDay => 'Month Start Day';
+
+  @override
+  String monthStartDayDesc(Object day) {
+    return 'Day $day of each month';
+  }
+
+  @override
+  String get selectMonthStartDay => 'Select month start day';
+
+  @override
+  String get iconManagement => 'Icon Management';
+
+  @override
+  String get iconManagementDesc => 'Search and add new icons for categories';
+
+  @override
+  String get searchIcon => 'Search Icon';
+
+  @override
+  String get searchIconHint => 'Enter name in English (e.g. car, food, money)';
+
+  @override
+  String get addIcon => 'Add Icon';
+
+  @override
+  String get removeIcon => 'Remove Icon';
+
+  @override
+  String get myIcons => 'My Icons';
+
+  @override
+  String get availableIcons => 'Available Icons';
+
+  @override
+  String get noIconsFound => 'No icons found';
+
+  @override
+  String get iconAdded => 'Icon added';
+
+  @override
+  String get iconRemoved => 'Icon removed';
+
+  @override
+  String get iconAlreadyAdded => 'Icon already added';
+
+  @override
+  String get manageTransactions => 'Manage Transactions';
+
+  @override
+  String get manageTransactionsDesc => 'View, search, and edit all transactions';
+
+  @override
+  String get searchByNameOrAmount => 'Search by name or amount';
+
+  @override
+  String get allCategories => 'All Categories';
+
+  @override
+  String get allBudgets => 'All Budgets';
+
+  @override
+  String get editSelected => 'Edit Selected';
+
+  @override
+  String get changeCategory => 'Change Category';
+
+  @override
+  String get changeDate => 'Change Date';
+
+  @override
+  String selectedCount(Object count) {
+    return '$count selected';
+  }
+
+  @override
+  String get updateSuccess => 'Updated successfully';
+
+  @override
+  String get selectNewCategory => 'Select New Category';
+
+  @override
+  String get selectNewDate => 'Select New Date';
+
+  @override
+  String get noBudget => 'No Budget';
 }

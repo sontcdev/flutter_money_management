@@ -18,6 +18,7 @@ import '../widgets/app_button.dart';
 import '../widgets/app_input.dart';
 import '../widgets/transaction_item.dart';
 import 'categories_screen.dart';
+import '../widgets/category_icon_widget.dart';
 import 'budgets_screen.dart';
 import 'report_calendar_screen.dart';
 import 'reports_screen.dart';
@@ -419,9 +420,10 @@ class _AddTransactionTab extends HookConsumerWidget {
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(
-                                    category.iconName,
-                                    style: const TextStyle(fontSize: 18),
+                                  CategoryIconWidget(
+                                    iconName: category.iconName,
+                                    size: 18,
+                                    color: isSelected ? Color(category.colorValue) : null,
                                   ),
                                   const SizedBox(width: 6),
                                   Text(

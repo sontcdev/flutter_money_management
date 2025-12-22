@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '../../models/category.dart';
+import '../../utils/category_icons.dart';
 
 class CategoryItem extends StatelessWidget {
   final Category category;
@@ -20,14 +21,16 @@ class CategoryItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = Color(category.colorValue);
+    final iconData = CategoryIcons.getIcon(category.iconName);
 
     return ListTile(
       onTap: onTap,
       leading: CircleAvatar(
-        backgroundColor: color.withOpacity(0.1),
-        child: Text(
-          category.iconName,
-          style: const TextStyle(fontSize: 24),
+        backgroundColor: color.withValues(alpha: 0.15),
+        child: Icon(
+          iconData,
+          color: color,
+          size: 24,
         ),
       ),
       title: Text(
@@ -55,4 +58,3 @@ class CategoryItem extends StatelessWidget {
   }
 
 }
-

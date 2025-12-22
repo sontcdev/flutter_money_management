@@ -143,10 +143,10 @@ class SettingsScreen extends HookConsumerWidget {
           _buildSectionHeader(context, l10n.budgetSettings),
           ListTile(
             leading: const Icon(Icons.calendar_month),
-            title: const Text('Ngày bắt đầu của tháng'),
-            subtitle: Text('Ngày $monthStartDay hàng tháng'),
+            title: Text(l10n.monthStartDay),
+            subtitle: Text(l10n.monthStartDayDesc(monthStartDay)),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () => _showMonthStartDayPicker(context, ref, monthStartDay),
+            onTap: () => _showMonthStartDayPicker(context, ref, monthStartDay, l10n),
           ),
           ListTile(
             leading: const Icon(Icons.pie_chart),
@@ -154,6 +154,13 @@ class SettingsScreen extends HookConsumerWidget {
             subtitle: Text(l10n.manageBudgetsDesc),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => Navigator.pushNamed(context, '/budgets'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.add_photo_alternate),
+            title: Text(l10n.iconManagement),
+            subtitle: Text(l10n.iconManagementDesc),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.pushNamed(context, '/icon-management'),
           ),
 
           const Divider(),
@@ -175,6 +182,13 @@ class SettingsScreen extends HookConsumerWidget {
             subtitle: Text(l10n.manageCategoriesDesc),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => Navigator.pushNamed(context, '/categories'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.receipt_long),
+            title: Text(l10n.manageTransactions),
+            subtitle: Text(l10n.manageTransactionsDesc),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.pushNamed(context, '/transaction-management'),
           ),
           
           const Divider(),
@@ -264,18 +278,18 @@ class SettingsScreen extends HookConsumerWidget {
     );
   }
 
-  void _showMonthStartDayPicker(BuildContext context, WidgetRef ref, int currentDay) {
+  void _showMonthStartDayPicker(BuildContext context, WidgetRef ref, int currentDay, AppLocalizations l10n) {
     showModalBottomSheet(
       context: context,
       builder: (context) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Padding(
-              padding: EdgeInsets.all(16),
+            Padding(
+              padding: const EdgeInsets.all(16),
               child: Text(
-                'Chọn ngày bắt đầu của tháng',
-                style: TextStyle(
+                l10n.selectMonthStartDay,
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
