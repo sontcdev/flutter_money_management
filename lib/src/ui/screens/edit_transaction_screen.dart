@@ -1,4 +1,4 @@
-// path: lib/src/ui/screens/add_transaction_screen.dart
+// path: lib/src/ui/screens/edit_transaction_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -16,10 +16,10 @@ import '../widgets/app_button.dart';
 import '../widgets/app_input.dart';
 import '../widgets/category_icon_widget.dart';
 
-class AddTransactionScreen extends HookConsumerWidget {
-  final int? transactionId;
+class EditTransactionScreen extends HookConsumerWidget {
+  final int transactionId;
 
-  const AddTransactionScreen({super.key, this.transactionId});
+  const EditTransactionScreen({super.key, required this.transactionId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -37,11 +37,10 @@ class AddTransactionScreen extends HookConsumerWidget {
     final allowOverdraft = useState(false);
     final showAllCategories = useState(false);
 
-    // Load existing transaction if editing
+    // Load existing transaction for editing
     useEffect(() {
-      if (transactionId != null) {
-        Future.microtask(() async {
-          final transaction = await repository.getTransactionById(transactionId!);
+      Future.microtask(() async {
+        final transaction = await repository.getTransactionById(transactionId);
           // Format amount as VND (without decimals)
           final amount = (transaction.amountCents / 100).round();
           amountController.text = CurrencyFormatter.formatInputVND(amount.toString());
@@ -50,8 +49,7 @@ class AddTransactionScreen extends HookConsumerWidget {
           selectedType.value = transaction.type;
           selectedCategoryId.value = transaction.categoryId;
           receiptPath.value = transaction.receiptPath;
-        });
-      }
+      });
       return null;
     }, [transactionId]);
 
@@ -82,7 +80,7 @@ class AddTransactionScreen extends HookConsumerWidget {
         final amountCents = CurrencyFormatter.toCents(amount);
 
         final transaction = model.Transaction(
-          id: transactionId ?? 0,
+          id: transactionId,
           amountCents: amountCents,
           currency: 'VND',
           dateTime: selectedDate.value,
@@ -94,16 +92,8 @@ class AddTransactionScreen extends HookConsumerWidget {
           updatedAt: DateTime.now(),
         );
 
-        if (transactionId == null) {
-          // Create new transaction
-          await repository.createTransaction(
-            transaction,
-            allowOverdraft: allowOverdraft.value,
-          );
-        } else {
-          // Update existing transaction
-          await repository.updateTransaction(transaction);
-        }
+        // Update existing transaction
+        await repository.updateTransaction(transaction);
 
         // Invalidate providers to refresh data
         ref.invalidate(budgetsProvider);
@@ -162,9 +152,7 @@ class AddTransactionScreen extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(transactionId == null
-            ? l10n.addTransaction
-            : l10n.editTransaction),
+        title: Text(l10n.editTransaction),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -348,6 +336,7 @@ class AddTransactionScreen extends HookConsumerWidget {
                       runSpacing: 8,
                       children: categoriesToShow.map((category) {
                         final isSelected = selectedCategoryId.value == category.id;
+                        final categoryColor = Color(category.colorValue);
                         return GestureDetector(
                           onTap: () {
                             selectedCategoryId.value = category.id;
@@ -355,14 +344,10 @@ class AddTransactionScreen extends HookConsumerWidget {
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                             decoration: BoxDecoration(
-                              color: isSelected 
-                                  ? Color(category.colorValue).withOpacity(0.2)
-                                  : Colors.grey.shade100,
+                              color: categoryColor.withOpacity(0.2),
                               border: Border.all(
-                                color: isSelected 
-                                    ? Color(category.colorValue)
-                                    : Colors.grey.shade300,
-                                width: isSelected ? 2 : 1,
+                                color: categoryColor,
+                                width: isSelected ? 3 : 1.5,
                               ),
                               borderRadius: BorderRadius.circular(20),
                             ),
@@ -372,17 +357,15 @@ class AddTransactionScreen extends HookConsumerWidget {
                                 CategoryIconWidget(
                                   iconName: category.iconName,
                                   size: 18,
-                                  color: isSelected ? Color(category.colorValue) : null,
+                                  color: categoryColor,
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
                                   category.name,
                                   style: TextStyle(
                                     fontSize: 14,
-                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                                    color: isSelected 
-                                        ? Color(category.colorValue)
-                                        : Colors.black87,
+                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                    color: categoryColor,
                                   ),
                                 ),
                               ],

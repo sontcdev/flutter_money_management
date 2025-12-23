@@ -6,7 +6,7 @@ import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:intl/intl.dart';
 import '../../../l10n/app_localizations.dart';
-import 'add_transaction_screen.dart';
+import 'edit_transaction_screen.dart';
 
 class TransactionDetailScreen extends ConsumerWidget {
   final int transactionId;
@@ -54,7 +54,7 @@ class TransactionDetailScreen extends ConsumerWidget {
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => AddTransactionScreen(
+                      builder: (context) => EditTransactionScreen(
                         transactionId: transactionId,
                       ),
                     ),

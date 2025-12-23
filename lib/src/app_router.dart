@@ -5,7 +5,7 @@ import 'models/category.dart';
 import 'models/budget.dart';
 import 'ui/screens/home_screen.dart';
 import 'ui/screens/transactions_screen.dart';
-import 'ui/screens/add_transaction_screen.dart';
+import 'ui/screens/edit_transaction_screen.dart';
 import 'ui/screens/transaction_detail_screen.dart';
 import 'ui/screens/budgets_screen.dart';
 import 'ui/screens/budget_detail_screen.dart';
@@ -28,18 +28,10 @@ class AppRouter {
         return AppAnimations.fadeRoute(const HomeScreen());
       case '/transactions':
         return AppAnimations.slideRoute(const TransactionsScreen());
-      case '/add-transaction':
-        int? transactionId;
-        if (settings.arguments != null) {
-          if (settings.arguments is Map<String, dynamic>) {
-            final args = settings.arguments as Map<String, dynamic>;
-            transactionId = args['transactionId'] as int?;
-          } else if (settings.arguments is int) {
-            transactionId = settings.arguments as int;
-          }
-        }
+      case '/edit-transaction':
+        final transactionId = settings.arguments as int;
         return AppAnimations.slideRoute(
-          AddTransactionScreen(transactionId: transactionId),
+          EditTransactionScreen(transactionId: transactionId),
         );
       case '/transaction-detail':
         final transactionId = settings.arguments as int;

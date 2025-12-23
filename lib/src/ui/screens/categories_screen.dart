@@ -22,7 +22,6 @@ class CategoriesScreen extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.categories),
-        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.add),

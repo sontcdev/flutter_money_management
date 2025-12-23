@@ -399,6 +399,7 @@ class _AddTransactionTab extends HookConsumerWidget {
                         runSpacing: 8,
                         children: filteredCategories.map((category) {
                           final isSelected = selectedCategoryId.value == category.id;
+                          final categoryColor = Color(category.colorValue);
                           return GestureDetector(
                             onTap: () {
                               selectedCategoryId.value = category.id;
@@ -406,14 +407,10 @@ class _AddTransactionTab extends HookConsumerWidget {
                             child: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                               decoration: BoxDecoration(
-                                color: isSelected 
-                                    ? Color(category.colorValue).withOpacity(0.2)
-                                    : Colors.grey.shade100,
+                                color: categoryColor.withOpacity(0.2),
                                 border: Border.all(
-                                  color: isSelected 
-                                      ? Color(category.colorValue)
-                                      : Colors.grey.shade300,
-                                  width: isSelected ? 2 : 1,
+                                  color: categoryColor,
+                                  width: isSelected ? 3 : 1.5,
                                 ),
                                 borderRadius: BorderRadius.circular(20),
                               ),
@@ -423,17 +420,15 @@ class _AddTransactionTab extends HookConsumerWidget {
                                   CategoryIconWidget(
                                     iconName: category.iconName,
                                     size: 18,
-                                    color: isSelected ? Color(category.colorValue) : null,
+                                    color: categoryColor,
                                   ),
                                   const SizedBox(width: 6),
                                   Text(
                                     category.name,
                                     style: TextStyle(
                                       fontSize: 14,
-                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                                      color: isSelected 
-                                          ? Color(category.colorValue)
-                                          : Colors.black87,
+                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                      color: categoryColor,
                                     ),
                                   ),
                                 ],

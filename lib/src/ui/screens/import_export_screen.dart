@@ -634,7 +634,7 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
     } else if (nameLower.contains('mua sắm') || nameLower.contains('shopping')) {
       return Colors.pink.value;
     }
-    return Colors.grey.value;
+    return 0xFF7F3DFF; // Default purple color
   }
 }
 

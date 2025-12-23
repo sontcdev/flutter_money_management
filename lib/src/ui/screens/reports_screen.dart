@@ -429,18 +429,23 @@ class ReportsScreen extends HookConsumerWidget {
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text(
-                                        '${l10n.spent}: ${CurrencyFormatter.formatVNDFromCents(consumedCents)}',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey[600],
+                                      Flexible(
+                                        child: Text(
+                                          '${CurrencyFormatter.formatVNDFromCents(consumedCents)} / ${CurrencyFormatter.formatVNDFromCents(budget.limitCents)}',
+                                          style: Theme.of(context).textTheme.bodyMedium,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
-                                      Text(
-                                        '${l10n.limit}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents)}',
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey[600],
+                                      const SizedBox(width: 8),
+                                      Flexible(
+                                        child: Text(
+                                          '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents - consumedCents)}',
+                                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                                color: isExceeded ? Colors.red : Colors.green,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                          textAlign: TextAlign.right,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                     ],
@@ -1083,7 +1088,23 @@ class BudgetTransactionsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${l10n.transactions}: $categoryName'),
+        title: Text(categoryName),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () async {
+              final result = await Navigator.pushNamed(
+                context,
+                '/budget-edit',
+                arguments: budget,
+              );
+              if (result == true) {
+                ref.invalidate(budgetsProvider);
+                ref.invalidate(budgetsWithConsumedProvider);
+              }
+            },
+          ),
+        ],
       ),
       body: transactionsAsync.when(
         data: (transactions) {
@@ -1095,104 +1116,235 @@ class BudgetTransactionsScreen extends ConsumerWidget {
                 t.dateTime.isBefore(budget.periodEnd.add(const Duration(days: 1)));
           }).toList();
 
-          if (budgetTransactions.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.receipt_long, size: 64, color: Colors.grey[400]),
-                  const SizedBox(height: 16),
-                  Text(l10n.noTransactions),
-                ],
-              ),
-            );
-          }
+          // Calculate consumed amount from filtered transactions
+          final consumedCents = budgetTransactions.fold<int>(0, (sum, t) => sum + t.amountCents);
+          final percentage = budget.limitCents > 0
+              ? (consumedCents / budget.limitCents * 100)
+              : 0.0;
+          final isExceeded = consumedCents > budget.limitCents;
 
-          // Group by date
-          final Map<DateTime, List<Transaction>> groupedByDate = {};
-          for (final t in budgetTransactions) {
-            final date = DateTime(t.dateTime.year, t.dateTime.month, t.dateTime.day);
-            if (!groupedByDate.containsKey(date)) {
-              groupedByDate[date] = [];
-            }
-            groupedByDate[date]!.add(t);
-          }
-
-          final sortedDates = groupedByDate.keys.toList()
-            ..sort((a, b) => b.compareTo(a));
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: sortedDates.length,
-            itemBuilder: (context, index) {
-              final date = sortedDates[index];
-              final dayTransactions = groupedByDate[date]!;
-              final dayTotal = dayTransactions.fold<int>(0, (sum, t) => sum + t.amountCents);
-
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
+          return Column(
+            children: [
+              // Budget summary header
+              Container(
+                padding: const EdgeInsets.all(16),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Date header with distinct color for daily total
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}',
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              '-${CurrencyFormatter.formatVNDFromCents(dayTotal)}',
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.spent,
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.primary,
+                                color: Colors.grey[600],
+                                fontSize: 14,
                               ),
                             ),
+                            Text(
+                              CurrencyFormatter.formatVNDFromCents(consumedCents),
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: isExceeded
+                                ? Colors.red.withOpacity(0.1)
+                                : Colors.green.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                        ],
-                      ),
+                          child: Text(
+                            '${percentage.toStringAsFixed(1)}%',
+                            style: TextStyle(
+                              color: isExceeded ? Colors.red : Colors.green,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    // Transactions
-                    ...dayTransactions.map((t) => ListTile(
-                      title: Text(t.note ?? l10n.noNote),
-                      trailing: Text(
-                        '-${CurrencyFormatter.formatVNDFromCents(t.amountCents)}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: LinearProgressIndicator(
+                        value: (percentage / 100).clamp(0.0, 1.0),
+                        minHeight: 10,
+                        backgroundColor: Colors.grey[200],
+                        valueColor: AlwaysStoppedAnimation(
+                          isExceeded ? Colors.red : Theme.of(context).colorScheme.primary,
                         ),
                       ),
-                      onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          '/transaction-detail',
-                          arguments: t.id,
-                        );
-                      },
-                    )),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '${l10n.limit}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents)}',
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                        Text(
+                          '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents - consumedCents)}',
+                          style: TextStyle(
+                            color: isExceeded ? Colors.red : Colors.green,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
-              );
-            },
+              ),
+
+              // Transactions list
+              Expanded(
+                child: budgetTransactions.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.receipt_long, size: 64, color: Colors.grey[400]),
+                            const SizedBox(height: 16),
+                            Text(l10n.noTransactions),
+                          ],
+                        ),
+                      )
+                    : _buildTransactionsList(context, ref, budgetTransactions, l10n),
+              ),
+            ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, _) => Center(child: Text('${l10n.error}: $err')),
       ),
     );
+  }
+
+  Widget _buildTransactionsList(
+    BuildContext context,
+    WidgetRef ref,
+    List<Transaction> budgetTransactions,
+    AppLocalizations l10n,
+  ) {
+    // Group by date
+    final Map<DateTime, List<Transaction>> groupedByDate = {};
+    for (final t in budgetTransactions) {
+      final date = DateTime(t.dateTime.year, t.dateTime.month, t.dateTime.day);
+      if (!groupedByDate.containsKey(date)) {
+        groupedByDate[date] = [];
+      }
+      groupedByDate[date]!.add(t);
+    }
+
+    final sortedDates = groupedByDate.keys.toList()
+      ..sort((a, b) => b.compareTo(a));
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: sortedDates.length,
+      itemBuilder: (context, index) {
+        final date = sortedDates[index];
+        final dayTransactions = groupedByDate[date]!;
+        final dayTotal = dayTransactions.fold<int>(0, (sum, t) => sum + t.amountCents);
+
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Date header with weekday and daily total
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _formatDate(date),
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '-${CurrencyFormatter.formatVNDFromCents(dayTotal)}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Transactions with icon and time
+              ...dayTransactions.map((t) => ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.expense.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.shopping_cart,
+                    color: AppColors.expense,
+                    size: 20,
+                  ),
+                ),
+                title: Text(
+                  t.note ?? l10n.noNote,
+                  style: const TextStyle(fontSize: 14),
+                ),
+                subtitle: Text(
+                  '${t.dateTime.hour.toString().padLeft(2, '0')}:${t.dateTime.minute.toString().padLeft(2, '0')}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                trailing: Text(
+                  '-${CurrencyFormatter.formatVNDFromCents(t.amountCents)}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/transaction-detail',
+                    arguments: t.id,
+                  );
+                },
+              )),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final weekdayNames = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+    final weekday = weekdayNames[date.weekday % 7];
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year} - $weekday';
   }
 }
 
