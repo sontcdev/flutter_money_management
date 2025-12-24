@@ -158,6 +158,8 @@ final transactionGroupsProvider = FutureProvider.family<List<TransactionGroup>, 
     groups[date]!.add(TransactionWithCategory(
       transaction: txn,
       categoryName: category.name,
+      categoryIconName: category.iconName,
+      categoryColorValue: category.colorValue,
     ));
   }
 
@@ -270,10 +272,13 @@ class TransactionGroup {
 class TransactionWithCategory {
   final Transaction transaction;
   final String categoryName;
+  final String categoryIconName;
+  final int categoryColorValue;
 
   TransactionWithCategory({
     required this.transaction,
     required this.categoryName,
+    required this.categoryIconName,
+    required this.categoryColorValue,
   });
 }
-

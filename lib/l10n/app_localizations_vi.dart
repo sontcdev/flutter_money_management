@@ -813,4 +813,13 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get notification => 'Thông báo';
+
+  @override
+  String get chooseSaveLocation => 'Chọn vị trí lưu file';
+
+  @override
+  String get exportedTransactionsSubject => 'MyMoney - Dữ liệu giao dịch';
+
+  @override
+  String get shareError => 'Không thể chia sẻ file';
 }

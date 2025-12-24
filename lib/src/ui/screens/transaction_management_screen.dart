@@ -192,11 +192,11 @@ class TransactionManagementScreen extends HookConsumerWidget {
                                   },
                                 )
                               : CircleAvatar(
-                                  backgroundColor: Color(category.colorValue).withValues(alpha: 0.1),
+                                  backgroundColor: getCategoryColor(category.colorValue).withValues(alpha: 0.1),
                                   child: CategoryIconWidget(
                                     iconName: category.iconName,
                                     size: 20,
-                                    color: Color(category.colorValue),
+                                    color: getCategoryColor(category.colorValue),
                                   ),
                                 ),
                           title: Text(
@@ -483,11 +483,11 @@ class TransactionManagementScreen extends HookConsumerWidget {
                   final category = categories[index];
                   return ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Color(category.colorValue).withValues(alpha: 0.1),
+                      backgroundColor: getCategoryColor(category.colorValue).withValues(alpha: 0.1),
                       child: CategoryIconWidget(
                         iconName: category.iconName,
                         size: 20,
-                        color: Color(category.colorValue),
+                        color: getCategoryColor(category.colorValue),
                       ),
                     ),
                     title: Text(category.name),

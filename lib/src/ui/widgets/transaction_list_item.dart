@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/transaction.dart';
 import '../../providers/report_providers.dart';
-import '../../theme/report_theme.dart';
+import 'category_icon_widget.dart';
 
 class TransactionListItem extends StatelessWidget {
   final TransactionWithCategory transactionWithCategory;
@@ -88,50 +88,23 @@ class TransactionListItem extends StatelessWidget {
   }
 
   Widget _buildCategoryIcon(BuildContext context) {
+    // Use getCategoryColor for fallback to light gray
+    final categoryColor = getCategoryColor(transactionWithCategory.categoryColorValue);
+    
     return Container(
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: _getCategoryColor().withValues(alpha: 0.15),
+        color: categoryColor.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Icon(
-        _getCategoryIcon(),
-        color: _getCategoryColor(),
-        size: 24,
+      child: Center(
+        child: CategoryIconWidget(
+          iconName: transactionWithCategory.categoryIconName,
+          size: 24,
+          color: categoryColor,
+        ),
       ),
     );
   }
-
-  IconData _getCategoryIcon() {
-    // Map common category names to icons
-    final categoryLower = transactionWithCategory.categoryName.toLowerCase();
-
-    if (categoryLower.contains('food') || categoryLower.contains('ăn')) {
-      return Icons.restaurant;
-    } else if (categoryLower.contains('transport') || categoryLower.contains('xe')) {
-      return Icons.directions_car;
-    } else if (categoryLower.contains('shopping') || categoryLower.contains('mua')) {
-      return Icons.shopping_bag;
-    } else if (categoryLower.contains('entertainment') || categoryLower.contains('giải trí')) {
-      return Icons.movie;
-    } else if (categoryLower.contains('health') || categoryLower.contains('sức khỏe')) {
-      return Icons.local_hospital;
-    } else if (categoryLower.contains('salary') || categoryLower.contains('lương')) {
-      return Icons.work;
-    } else if (categoryLower.contains('investment') || categoryLower.contains('đầu tư')) {
-      return Icons.trending_up;
-    }
-
-    return transactionWithCategory.transaction.type == TransactionType.expense
-        ? Icons.shopping_cart
-        : Icons.attach_money;
-  }
-
-  Color _getCategoryColor() {
-    return transactionWithCategory.transaction.type == TransactionType.expense
-        ? ReportTheme.expenseColor
-        : ReportTheme.incomeColor;
-  }
 }
-

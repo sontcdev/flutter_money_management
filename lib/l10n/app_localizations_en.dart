@@ -813,4 +813,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notification => 'Notification';
+
+  @override
+  String get chooseSaveLocation => 'Choose save location';
+
+  @override
+  String get exportedTransactionsSubject => 'MyMoney - Exported Transactions';
+
+  @override
+  String get shareError => 'Cannot share file';
 }

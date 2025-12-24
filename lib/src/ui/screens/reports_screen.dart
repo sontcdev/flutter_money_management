@@ -360,14 +360,14 @@ class ReportsScreen extends HookConsumerWidget {
                                             width: 40,
                                             height: 40,
                                             decoration: BoxDecoration(
-                                              color: Color(category.colorValue).withOpacity(0.2),
+                                              color: getCategoryColor(category.colorValue).withOpacity(0.2),
                                               borderRadius: BorderRadius.circular(8),
                                             ),
                                             child: Center(
                                               child: CategoryIconWidget(
                                                 iconName: category.iconName,
                                                 size: 20,
-                                                color: Color(category.colorValue),
+                                                color: getCategoryColor(category.colorValue),
                                               ),
                                             ),
                                           ),
@@ -421,7 +421,7 @@ class ReportsScreen extends HookConsumerWidget {
                                       minHeight: 8,
                                       backgroundColor: Colors.grey[200],
                                       valueColor: AlwaysStoppedAnimation(
-                                        isExceeded ? Colors.red : Color(category.colorValue),
+                                        isExceeded ? Colors.red : getCategoryColor(category.colorValue),
                                       ),
                                     ),
                                   ),
@@ -590,7 +590,7 @@ class ReportsScreen extends HookConsumerWidget {
                                     width: 32,
                                     height: 32,
                                     decoration: BoxDecoration(
-                                      color: Color(category.colorValue),
+                                      color: getCategoryColor(category.colorValue),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Center(
@@ -616,7 +616,7 @@ class ReportsScreen extends HookConsumerWidget {
                                           child: LinearProgressIndicator(
                                             value: totalExpense > 0 ? entry.value / totalExpense : 0,
                                             backgroundColor: Colors.grey[200],
-                                            valueColor: AlwaysStoppedAnimation(Color(category.colorValue)),
+                                            valueColor: AlwaysStoppedAnimation(getCategoryColor(category.colorValue)),
                                           ),
                                         ),
                                       ],
@@ -853,27 +853,31 @@ class CategoryTransactionsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final transactionsAsync = ref.watch(transactionsProvider);
+    final monthStartDay = ref.watch(monthStartDayProvider);
     
-    // Calculate date range based on selected period
+    // Calculate date range based on selected period using cycle dates
     final now = DateTime.now();
     DateTime startDate;
     DateTime endDate;
     String periodLabel;
 
     switch (selectedPeriod) {
-      case 0: // This month
-        startDate = DateTime(now.year, now.month, 1);
-        endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+      case 0: // This month - use cycle dates based on monthStartDay
+        final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
+        startDate = cycleRange.start;
+        endDate = cycleRange.end;
         periodLabel = '${l10n.month} ${now.month}/${now.year}';
         break;
-      case 1: // Custom month
+      case 1: // Custom month - use cycle dates
         if (customMonth != null) {
-          startDate = DateTime(customMonth!.year, customMonth!.month, 1);
-          endDate = DateTime(customMonth!.year, customMonth!.month + 1, 0, 23, 59, 59);
+          final cycleRange = CycleUtils.getCycleRangeForDate(customMonth!, monthStartDay);
+          startDate = cycleRange.start;
+          endDate = cycleRange.end;
           periodLabel = '${l10n.month} ${customMonth!.month}/${customMonth!.year}';
         } else {
-          startDate = DateTime(now.year, now.month, 1);
-          endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+          final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
+          startDate = cycleRange.start;
+          endDate = cycleRange.end;
           periodLabel = '${l10n.month} ${now.month}/${now.year}';
         }
         break;
@@ -884,8 +888,9 @@ class CategoryTransactionsScreen extends ConsumerWidget {
         periodLabel = '${l10n.year} $year';
         break;
       default:
-        startDate = DateTime(now.year, now.month, 1);
-        endDate = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+        final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
+        startDate = cycleRange.start;
+        endDate = cycleRange.end;
         periodLabel = '${l10n.month} ${now.month}/${now.year}';
     }
 
@@ -1112,8 +1117,8 @@ class BudgetTransactionsScreen extends ConsumerWidget {
           final budgetTransactions = transactions.where((t) {
             return t.categoryId == budget.categoryId &&
                 t.type == TransactionType.expense &&
-                t.dateTime.isAfter(budget.periodStart.subtract(const Duration(days: 1))) &&
-                t.dateTime.isBefore(budget.periodEnd.add(const Duration(days: 1)));
+                t.dateTime.isAfter(budget.periodStart.subtract(const Duration(seconds: 1))) &&
+                t.dateTime.isBefore(budget.periodEnd.add(const Duration(seconds: 1)));
           }).toList();
 
           // Calculate consumed amount from filtered transactions

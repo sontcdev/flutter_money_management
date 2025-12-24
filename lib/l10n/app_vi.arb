@@ -261,6 +261,9 @@
   "noBudget": "Không có ngân sách",
   "budgetDeleted": "Đã xóa ngân sách",
   "confirmDeleteBudget": "Bạn có chắc chắn muốn xóa ngân sách cho \"{categoryName}\"?",
-  "notification": "Thông báo"
+  "notification": "Thông báo",
+  "chooseSaveLocation": "Chọn vị trí lưu file",
+  "exportedTransactionsSubject": "MyMoney - Dữ liệu giao dịch",
+  "shareError": "Không thể chia sẻ file"
 }
 

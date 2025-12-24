@@ -336,7 +336,8 @@ class EditTransactionScreen extends HookConsumerWidget {
                       runSpacing: 8,
                       children: categoriesToShow.map((category) {
                         final isSelected = selectedCategoryId.value == category.id;
-                        final categoryColor = Color(category.colorValue);
+                        // Use getCategoryColor for fallback to light gray
+                        final categoryColor = getCategoryColor(category.colorValue);
                         return GestureDetector(
                           onTap: () {
                             selectedCategoryId.value = category.id;

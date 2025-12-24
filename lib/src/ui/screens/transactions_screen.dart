@@ -73,11 +73,11 @@ class TransactionsScreen extends ConsumerWidget {
 
                   return ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Color(category.colorValue).withOpacity(0.1),
+                      backgroundColor: getCategoryColor(category.colorValue).withOpacity(0.1),
                       child: CategoryIconWidget(
                         iconName: category.iconName,
                         size: 20,
-                        color: Color(category.colorValue),
+                        color: getCategoryColor(category.colorValue),
                       ),
                     ),
                     title: Text(category.name),

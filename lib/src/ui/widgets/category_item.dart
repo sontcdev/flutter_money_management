@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../../models/category.dart';
 import '../../utils/category_icons.dart';
+import 'category_icon_widget.dart';
 
 class CategoryItem extends StatelessWidget {
   final Category category;
@@ -20,7 +21,8 @@ class CategoryItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Color(category.colorValue);
+    // Use getCategoryColor for fallback to light gray
+    final color = getCategoryColor(category.colorValue);
     final iconData = CategoryIcons.getIcon(category.iconName);
 
     return ListTile(

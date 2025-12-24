@@ -21,7 +21,7 @@ class CategoryEditScreen extends HookConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final nameController = useTextEditingController(text: category?.name ?? '');
     final selectedIcon = useState(category?.iconName ?? 'shopping_cart');
-    final selectedColor = useState(category?.colorValue ?? 0xFF7F3DFF);
+    final selectedColor = useState(category?.colorValue ?? 0xFF9E9E9E); // Default light gray
     final selectedType = useState(category?.type ?? initialType ?? CategoryType.expense);
     final isLoading = useState(false);
     final showAllIcons = useState(false);
@@ -40,7 +40,7 @@ class CategoryEditScreen extends HookConsumerWidget {
         : [...customIcons.take(5), ...CategoryIcons.basicIconKeys.where((k) => !customIcons.contains(k))].take(15).toList();
     
     final colors = [
-      0xFF7F3DFF, 0xFFFD3C4A, 0xFFFD9B63, 0xFFFCAC12,
+      0xFF9E9E9E, 0xFF7F3DFF, 0xFFFD3C4A, 0xFFFD9B63, 0xFFFCAC12,
       0xFF00A86B, 0xFF0077FF, 0xFFFF7EB3, 0xFF7F3D3D,
       0xFF9C27B0, 0xFF673AB7, 0xFF3F51B5, 0xFF2196F3,
       0xFF03A9F4, 0xFF00BCD4, 0xFF009688, 0xFF4CAF50,

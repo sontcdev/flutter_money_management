@@ -35,3 +35,14 @@ class CategoryIconWidget extends StatelessWidget {
     );
   }
 }
+
+/// Default color for categories without a valid color value
+const int kDefaultCategoryColorValue = 0xFF9E9E9E; // Light gray (Colors.grey)
+
+/// Helper function to get category color with fallback to light gray
+Color getCategoryColor(int colorValue) {
+  if (colorValue <= 0) {
+    return const Color(kDefaultCategoryColorValue);
+  }
+  return Color(colorValue);
+}

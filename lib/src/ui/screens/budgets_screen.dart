@@ -246,14 +246,14 @@ class _BudgetCard extends ConsumerWidget {
                               width: 32,
                               height: 32,
                               decoration: BoxDecoration(
-                                color: Color(category.colorValue).withOpacity(0.2),
+                                color: getCategoryColor(category.colorValue).withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Center(
                                 child: CategoryIconWidget(
                                   iconName: category.iconName,
                                   size: 16,
-                                  color: Color(category.colorValue),
+                                  color: getCategoryColor(category.colorValue),
                                 ),
                               ),
                             ),
@@ -518,8 +518,8 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                 final budgetTransactions = transactions.where((t) {
                   return t.categoryId == budget.categoryId &&
                       t.type == TransactionType.expense &&
-                      t.dateTime.isAfter(periodStart.subtract(const Duration(days: 1))) &&
-                      t.dateTime.isBefore(periodEnd.add(const Duration(days: 1)));
+                      t.dateTime.isAfter(periodStart.subtract(const Duration(seconds: 1))) &&
+                      t.dateTime.isBefore(periodEnd.add(const Duration(seconds: 1)));
                 }).toList();
 
                 if (budgetTransactions.isEmpty) {

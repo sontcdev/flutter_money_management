@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../services/import_export_service.dart';
 import '../../providers/providers.dart';
 import '../../models/transaction.dart';
@@ -340,18 +341,43 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
       }
 
       String content;
-      String filename;
+      String defaultFilename;
       final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
 
       if (format == 'csv') {
         content = await _importExportService.exportToCSV(transactions, categories);
-        filename = 'transactions_$timestamp.csv';
+        defaultFilename = 'transactions_$timestamp.csv';
       } else {
         content = await _importExportService.exportToJSON(transactions, categories);
-        filename = 'transactions_$timestamp.json';
+        defaultFilename = 'transactions_$timestamp.json';
       }
 
-      final filePath = await _importExportService.saveToFile(content, filename);
+      String filePath;
+      
+      // On mobile platforms, FilePicker.saveFile requires bytes
+      // So we save to documents directory first, then allow sharing
+      if (Platform.isAndroid || Platform.isIOS) {
+        // Save to documents directory
+        filePath = await _importExportService.saveToFile(content, defaultFilename);
+      } else {
+        // On desktop, let user choose save location
+        String? outputPath = await FilePicker.platform.saveFile(
+          dialogTitle: l10n.chooseSaveLocation,
+          fileName: defaultFilename,
+          type: FileType.custom,
+          allowedExtensions: [format],
+        );
+
+        if (outputPath != null) {
+          // User chose a location - save there
+          final file = File(outputPath);
+          await file.writeAsString(content);
+          filePath = outputPath;
+        } else {
+          // User cancelled - save to default location
+          filePath = await _importExportService.saveToFile(content, defaultFilename);
+        }
+      }
 
       setState(() {
         _statusMessage = '${l10n.exportedTransactions(transactions.length)}\n${l10n.fileSavedAt(filePath)}';
@@ -360,7 +386,7 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
       });
 
       // Show share dialog
-      _showExportSuccessDialog(filePath, content, l10n);
+      _showExportSuccessDialog(filePath, content, format, l10n);
     } catch (e) {
       setState(() {
         _statusMessage = '${l10n.exportError}: ${e.toString()}';
@@ -370,22 +396,62 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
     }
   }
 
-  void _showExportSuccessDialog(String filePath, String content, AppLocalizations l10n) {
+  void _showExportSuccessDialog(String filePath, String content, String format, AppLocalizations l10n) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n.exportSuccess),
+        title: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.green),
+            const SizedBox(width: 8),
+            Expanded(child: Text(l10n.exportSuccess)),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('${l10n.fileSavedAtPath}\n$filePath'),
-            const SizedBox(height: 16),
-            Text(l10n.whatNext),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    format == 'csv' ? Icons.table_chart : Icons.code,
+                    color: Colors.grey[600],
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      filePath.split('/').last,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              l10n.fileSavedAtPath,
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              filePath,
+              style: const TextStyle(fontSize: 11),
+            ),
           ],
         ),
+        actionsAlignment: MainAxisAlignment.spaceBetween,
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         actions: [
-          TextButton(
+          // Left side - Copy button
+          TextButton.icon(
             onPressed: () {
               Clipboard.setData(ClipboardData(text: content));
               Navigator.pop(context);
@@ -393,15 +459,52 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
                 SnackBar(content: Text(l10n.copiedToClipboard)),
               );
             },
-            child: Text(l10n.copyContent),
+            icon: const Icon(Icons.copy, size: 18),
+            label: Text(l10n.copyContent),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.close),
+          // Right side - Share and Close buttons
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Share button
+              FilledButton.icon(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  await _shareFile(filePath, format, l10n);
+                },
+                icon: const Icon(Icons.share, size: 18),
+                label: Text(l10n.share),
+              ),
+              const SizedBox(width: 8),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(l10n.close),
+              ),
+            ],
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _shareFile(String filePath, String format, AppLocalizations l10n) async {
+    try {
+      final file = XFile(filePath);
+      
+      await Share.shareXFiles(
+        [file],
+        subject: l10n.exportedTransactionsSubject,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${l10n.shareError}: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _showImportDialog(String format, AppLocalizations l10n) {
@@ -607,20 +710,40 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
 
   String _getDefaultIconForCategory(String categoryName) {
     final nameLower = categoryName.toLowerCase();
-    if (nameLower.contains('ăn') || nameLower.contains('food') || nameLower.contains('eat')) {
-      return '🍔';
-    } else if (nameLower.contains('di chuyển') || nameLower.contains('xăng') || nameLower.contains('transport')) {
-      return '🚗';
-    } else if (nameLower.contains('lương') || nameLower.contains('salary') || nameLower.contains('income')) {
-      return '💰';
-    } else if (nameLower.contains('mua sắm') || nameLower.contains('shopping')) {
-      return '🛍️';
-    } else if (nameLower.contains('giải trí') || nameLower.contains('entertainment')) {
-      return '🎮';
-    } else if (nameLower.contains('sức khỏe') || nameLower.contains('health')) {
-      return '🏥';
+    // Return Material Icon keys instead of emoji for consistency
+    if (nameLower.contains('ăn') || nameLower.contains('food') || nameLower.contains('eat') || 
+        nameLower.contains('cơm') || nameLower.contains('sáng') || nameLower.contains('trưa') || 
+        nameLower.contains('tối') || nameLower.contains('nấu')) {
+      return 'restaurant';
+    } else if (nameLower.contains('di chuyển') || nameLower.contains('xăng') || 
+               nameLower.contains('transport') || nameLower.contains('xe') || nameLower.contains('đi lại')) {
+      return 'directions_car';
+    } else if (nameLower.contains('lương') || nameLower.contains('salary') || 
+               nameLower.contains('income') || nameLower.contains('tiền')) {
+      return 'attach_money';
+    } else if (nameLower.contains('mua sắm') || nameLower.contains('shopping') || 
+               nameLower.contains('shopee') || nameLower.contains('tiktok')) {
+      return 'shopping_bag';
+    } else if (nameLower.contains('giải trí') || nameLower.contains('entertainment') || 
+               nameLower.contains('chơi') || nameLower.contains('game')) {
+      return 'sports_esports';
+    } else if (nameLower.contains('sức khỏe') || nameLower.contains('health') || 
+               nameLower.contains('thuốc') || nameLower.contains('bệnh')) {
+      return 'local_hospital';
+    } else if (nameLower.contains('nhà') || nameLower.contains('home') || 
+               nameLower.contains('điện') || nameLower.contains('nước')) {
+      return 'home';
+    } else if (nameLower.contains('công việc') || nameLower.contains('work') || 
+               nameLower.contains('việc')) {
+      return 'work';
+    } else if (nameLower.contains('credit') || nameLower.contains('thẻ') || 
+               nameLower.contains('bank') || nameLower.contains('ngân hàng')) {
+      return 'credit_card';
+    } else if (nameLower.contains('linh tinh') || nameLower.contains('khác') || 
+               nameLower.contains('other')) {
+      return 'category';
     }
-    return '📦';
+    return 'shopping_cart'; // Default Material Icon
   }
 
   int _getDefaultColorForCategory(String categoryName) {
@@ -634,7 +757,7 @@ class _ImportExportScreenState extends ConsumerState<ImportExportScreen> {
     } else if (nameLower.contains('mua sắm') || nameLower.contains('shopping')) {
       return Colors.pink.value;
     }
-    return 0xFF7F3DFF; // Default purple color
+    return 0xFF9E9E9E; // Default light gray color
   }
 }
 

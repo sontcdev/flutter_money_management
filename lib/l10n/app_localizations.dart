@@ -1666,6 +1666,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Notification'**
   String get notification;
+
+  /// No description provided for @chooseSaveLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose save location'**
+  String get chooseSaveLocation;
+
+  /// No description provided for @exportedTransactionsSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'MyMoney - Exported Transactions'**
+  String get exportedTransactionsSubject;
+
+  /// No description provided for @shareError.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot share file'**
+  String get shareError;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

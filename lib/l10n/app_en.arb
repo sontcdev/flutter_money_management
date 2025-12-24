@@ -261,6 +261,9 @@
   "noBudget": "No Budget",
   "budgetDeleted": "Budget deleted",
   "confirmDeleteBudget": "Are you sure you want to delete the budget for \"{categoryName}\"?",
-  "notification": "Notification"
+  "notification": "Notification",
+  "chooseSaveLocation": "Choose save location",
+  "exportedTransactionsSubject": "MyMoney - Exported Transactions",
+  "shareError": "Cannot share file"
 }
 
