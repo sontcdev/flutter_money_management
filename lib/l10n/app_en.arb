@@ -258,6 +258,9 @@
   "updateSuccess": "Updated successfully",
   "selectNewCategory": "Select New Category",
   "selectNewDate": "Select New Date",
-  "noBudget": "No Budget"
+  "noBudget": "No Budget",
+  "budgetDeleted": "Budget deleted",
+  "confirmDeleteBudget": "Are you sure you want to delete the budget for \"{categoryName}\"?",
+  "notification": "Notification"
 }
 

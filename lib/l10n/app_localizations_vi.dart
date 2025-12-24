@@ -802,4 +802,15 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get noBudget => 'Không có ngân sách';
+
+  @override
+  String get budgetDeleted => 'Đã xóa ngân sách';
+
+  @override
+  String confirmDeleteBudget(Object categoryName) {
+    return 'Bạn có chắc chắn muốn xóa ngân sách cho \"$categoryName\"?';
+  }
+
+  @override
+  String get notification => 'Thông báo';
 }

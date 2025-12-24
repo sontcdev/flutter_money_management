@@ -258,6 +258,9 @@
   "updateSuccess": "Cập nhật thành công",
   "selectNewCategory": "Chọn danh mục mới",
   "selectNewDate": "Chọn ngày mới",
-  "noBudget": "Không có ngân sách"
+  "noBudget": "Không có ngân sách",
+  "budgetDeleted": "Đã xóa ngân sách",
+  "confirmDeleteBudget": "Bạn có chắc chắn muốn xóa ngân sách cho \"{categoryName}\"?",
+  "notification": "Thông báo"
 }
 

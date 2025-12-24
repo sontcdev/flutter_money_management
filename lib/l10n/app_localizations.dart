@@ -1648,6 +1648,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No Budget'**
   String get noBudget;
+
+  /// No description provided for @budgetDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget deleted'**
+  String get budgetDeleted;
+
+  /// No description provided for @confirmDeleteBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete the budget for \"{categoryName}\"?'**
+  String confirmDeleteBudget(Object categoryName);
+
+  /// No description provided for @notification.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification'**
+  String get notification;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -11,6 +11,8 @@ import '../services/auth_service.dart';
 import '../models/transaction.dart';
 import '../models/budget.dart';
 import '../models/category.dart';
+import '../utils/cycle_utils.dart';
+import '../ui/screens/settings_screen.dart';
 
 // SharedPreferences provider
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
@@ -89,15 +91,31 @@ final categoryProvider = FutureProvider.family<Category?, int>((ref, categoryId)
 final budgetsWithConsumedProvider = FutureProvider<List<Budget>>((ref) async {
   final budgets = await ref.watch(budgetsProvider.future);
   final transactions = await ref.watch(transactionsProvider.future);
+  final monthStartDay = ref.watch(monthStartDayProvider);
   
   return budgets.map((budget) {
+    // Calculate period based on monthStartDay for monthly budgets
+    late final DateTime periodStart;
+    late final DateTime periodEnd;
+    
+    if (budget.periodType == PeriodType.monthly) {
+      // Use cycle range from monthStartDay setting
+      final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
+      periodStart = cycleRange.start;
+      periodEnd = cycleRange.end;
+    } else {
+      // Use budget's stored period for yearly/custom
+      periodStart = budget.periodStart;
+      periodEnd = budget.periodEnd;
+    }
+    
     // Calculate consumed cents from transactions for this budget's category and period
     final consumedCents = transactions
         .where((t) =>
             t.categoryId == budget.categoryId &&
             t.type == TransactionType.expense &&
-            t.dateTime.isAfter(budget.periodStart.subtract(const Duration(seconds: 1))) &&
-            t.dateTime.isBefore(budget.periodEnd.add(const Duration(seconds: 1))))
+            t.dateTime.isAfter(periodStart.subtract(const Duration(seconds: 1))) &&
+            t.dateTime.isBefore(periodEnd.add(const Duration(seconds: 1))))
         .fold<int>(0, (sum, t) => sum + t.amountCents);
     
     return budget.copyWith(consumedCents: consumedCents);

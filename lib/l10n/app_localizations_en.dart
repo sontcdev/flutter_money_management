@@ -802,4 +802,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noBudget => 'No Budget';
+
+  @override
+  String get budgetDeleted => 'Budget deleted';
+
+  @override
+  String confirmDeleteBudget(Object categoryName) {
+    return 'Are you sure you want to delete the budget for \"$categoryName\"?';
+  }
+
+  @override
+  String get notification => 'Notification';
 }

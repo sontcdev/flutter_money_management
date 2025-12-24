@@ -12,6 +12,9 @@ import '../widgets/shimmer_loading.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/currency_formatter.dart';
 import '../widgets/category_icon_widget.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import '../../utils/cycle_utils.dart';
+import 'settings_screen.dart';
 
 class BudgetsScreen extends ConsumerWidget {
   final bool showBackButton;
@@ -83,7 +86,13 @@ class BudgetsScreen extends ConsumerWidget {
                 itemCount: filteredBudgets.length,
                 itemBuilder: (context, index) {
                   final budget = filteredBudgets[index];
-                  return _BudgetCard(budget: budget);
+                  return _SwipeableBudgetCard(
+                    budget: budget,
+                    onDeleted: () {
+                      ref.invalidate(budgetsProvider);
+                      ref.invalidate(budgetsWithConsumedProvider);
+                    },
+                  );
                 },
               );
             },
@@ -106,6 +115,103 @@ class BudgetsScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+
+class _SwipeableBudgetCard extends ConsumerWidget {
+  final Budget budget;
+  final VoidCallback onDeleted;
+
+  const _SwipeableBudgetCard({
+    required this.budget,
+    required this.onDeleted,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final categoryAsync = ref.watch(categoryProvider(budget.categoryId));
+    
+    return Slidable(
+      key: Key('budget_${budget.id}'),
+      endActionPane: ActionPane(
+        motion: const BehindMotion(),
+        extentRatio: 0.25, // Only takes 25% of the width
+        children: [
+          SlidableAction(
+            onPressed: (context) async {
+              final confirmed = await _showDeleteConfirmDialog(context, l10n, categoryAsync);
+              if (confirmed) {
+                await _deleteBudget(ref, l10n, context);
+              }
+            },
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+            icon: Icons.delete,
+            label: l10n.delete,
+            borderRadius: const BorderRadius.only(
+              topRight: Radius.circular(12),
+              bottomRight: Radius.circular(12),
+            ),
+          ),
+        ],
+      ),
+      child: _BudgetCard(budget: budget),
+    );
+  }
+
+  Future<bool> _showDeleteConfirmDialog(
+    BuildContext context,
+    AppLocalizations l10n,
+    AsyncValue<Category?> categoryAsync,
+  ) async {
+    final categoryName = categoryAsync.maybeWhen(
+      data: (category) => category?.name ?? 'Unknown',
+      orElse: () => 'Unknown',
+    );
+
+    return await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(l10n.notification),
+          content: Text(
+            l10n.confirmDeleteBudget(categoryName),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: Text(l10n.delete),
+            ),
+          ],
+        );
+      },
+    ) ?? false;
+  }
+
+  Future<void> _deleteBudget(WidgetRef ref, AppLocalizations l10n, BuildContext context) async {
+    try {
+      final repository = ref.read(budgetRepositoryProvider);
+      await repository.deleteBudget(budget.id);
+      onDeleted();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.budgetDeleted)),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.error}: $e')),
+        );
+      }
+    }
   }
 }
 
@@ -282,6 +388,23 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final transactionsAsync = ref.watch(transactionsProvider);
     final l10n = AppLocalizations.of(context)!;
+    final monthStartDay = ref.watch(monthStartDayProvider);
+    
+    // Calculate period based on monthStartDay for monthly budgets
+    late final DateTime periodStart;
+    late final DateTime periodEnd;
+    
+    if (budget.periodType == PeriodType.monthly) {
+      // Use cycle range from monthStartDay setting
+      final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
+      periodStart = cycleRange.start;
+      periodEnd = cycleRange.end;
+    } else {
+      // Use budget's stored period for yearly/custom
+      periodStart = budget.periodStart;
+      periodEnd = budget.periodEnd;
+    }
+    
     final percentage = budget.limitCents > 0
         ? (budget.consumedCents / budget.limitCents * 100)
         : 0.0;
@@ -395,8 +518,8 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                 final budgetTransactions = transactions.where((t) {
                   return t.categoryId == budget.categoryId &&
                       t.type == TransactionType.expense &&
-                      t.dateTime.isAfter(budget.periodStart.subtract(const Duration(days: 1))) &&
-                      t.dateTime.isBefore(budget.periodEnd.add(const Duration(days: 1)));
+                      t.dateTime.isAfter(periodStart.subtract(const Duration(days: 1))) &&
+                      t.dateTime.isBefore(periodEnd.add(const Duration(days: 1)));
                 }).toList();
 
                 if (budgetTransactions.isEmpty) {
