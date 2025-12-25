@@ -12,6 +12,11 @@ import '../widgets/transaction_list_item.dart';
 import '../widgets/confirm_delete_dialog.dart';
 import 'settings_screen.dart';
 
+/// Check if two dates are the same day
+bool _isSameDay(DateTime a, DateTime b) {
+  return a.year == b.year && a.month == b.month && a.day == b.day;
+}
+
 class ReportCalendarScreen extends HookConsumerWidget {
   const ReportCalendarScreen({super.key});
 
@@ -23,8 +28,79 @@ class ReportCalendarScreen extends HookConsumerWidget {
     final calendarData = ref.watch(calendarDataProvider(selectedMonth));
     final monthlySummary = ref.watch(monthlySummaryProvider(selectedMonth));
     final transactionGroups = ref.watch(transactionGroupsProvider(selectedMonth));
-    final scrollController = useScrollController();
     final selectedDate = ref.watch(selectedDateProvider);
+
+    // Lấy groups hiện tại
+    final groups = transactionGroups.valueOrNull ?? [];
+
+    // ========== GLOBAL KEYS CHO MỖI GROUP ==========
+    // Dùng useRef để giữ keys stable, không tạo mới mỗi build
+    final groupKeysRef = useRef<List<GlobalKey>>([]);
+    
+    // Đảm bảo có đủ keys cho tất cả groups
+    while (groupKeysRef.value.length < groups.length) {
+      groupKeysRef.value.add(GlobalKey());
+    }
+
+    // ========== SCROLL FUNCTION ==========
+    void scrollToDate(DateTime targetDate) {
+      if (groups.isEmpty) {
+        _showNoTransactionsMessage(context);
+        return;
+      }
+
+      int targetIndex = -1;
+      bool isExactMatch = false;
+
+      // 1. Tìm ngày chính xác
+      for (int i = 0; i < groups.length; i++) {
+        if (_isSameDay(groups[i].date, targetDate)) {
+          targetIndex = i;
+          isExactMatch = true;
+          break;
+        }
+      }
+
+      // 2. Nếu không có, tìm ngày gần nhất (groups sorted descending)
+      if (targetIndex == -1) {
+        for (int i = 0; i < groups.length; i++) {
+          if (groups[i].date.isBefore(targetDate)) {
+            targetIndex = i;
+            break;
+          }
+        }
+        if (targetIndex == -1) {
+          targetIndex = groups.length - 1;
+        }
+      }
+
+      // 3. Scroll đến widget bằng GlobalKey
+      if (targetIndex >= 0 && targetIndex < groupKeysRef.value.length) {
+        final key = groupKeysRef.value[targetIndex];
+        
+        // Dùng Future.delayed để đảm bảo widget đã được render
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (key.currentContext != null) {
+            Scrollable.ensureVisible(
+              key.currentContext!,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              alignment: 0.0, // Scroll item lên đầu
+            );
+          }
+        });
+
+        if (!isExactMatch) {
+          _showScrollingToNearestMessage(context, groups[targetIndex].date);
+        }
+      }
+    }
+
+    // ========== DATE SELECTION HANDLER ==========
+    void onDateSelected(DateTime date) {
+      ref.read(selectedDateProvider.notifier).state = date;
+      scrollToDate(date);
+    }
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -41,102 +117,110 @@ class ReportCalendarScreen extends HookConsumerWidget {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await ref.read(transactionListNotifierProvider.notifier).refresh();
-        },
-        child: CustomScrollView(
-          controller: scrollController,
-          slivers: [
-            SliverToBoxAdapter(
-              child: Column(
-                children: [
-                  const SizedBox(height: 16),
-                  _buildMonthSelector(context, ref, selectedMonth),
-                  const SizedBox(height: 16),
-                  calendarData.when(
-                    data: (data) => CalendarGrid(
-                      month: selectedMonth,
-                      cellData: data,
-                      selectedDate: selectedDate,
-                      monthStartDay: monthStartDay,
-                      onDateSelected: (date) {
-                        ref.read(selectedDateProvider.notifier).state = date;
-                      },
-                    ),
-                    loading: () => const SizedBox(
-                      height: 300,
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
-                    error: (e, s) => SizedBox(
-                      height: 300,
-                      child: Center(child: Text('Error: $e')),
-                    ),
+      // ========== LAYOUT CỐ ĐỊNH CALENDAR, CHỈ SCROLL TRANSACTION LIST ==========
+      body: Column(
+        children: [
+          // ========== CALENDAR SECTION (CỐ ĐỊNH) ==========
+          Container(
+            color: Theme.of(context).colorScheme.surface,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 8),
+                _buildMonthSelector(context, ref, selectedMonth),
+                const SizedBox(height: 4),
+                calendarData.when(
+                  data: (data) => CalendarGrid(
+                    month: selectedMonth,
+                    cellData: data,
+                    selectedDate: selectedDate,
+                    monthStartDay: monthStartDay,
+                    onDateSelected: onDateSelected,
                   ),
-                  const SizedBox(height: 16),
-                  monthlySummary.when(
-                    data: (summary) => SummaryBar(
-                      totalIncome: summary['income'] ?? 0,
-                      totalExpense: summary['expense'] ?? 0,
-                      net: summary['net'] ?? 0,
-                    ),
-                    loading: () => const SizedBox(height: 80),
-                    error: (e, s) => const SizedBox(height: 80),
+                  loading: () => const SizedBox(
+                    height: 280,
+                    child: Center(child: CircularProgressIndicator()),
                   ),
-                  const SizedBox(height: 8),
-                ],
-              ),
-            ),
-            transactionGroups.when(
-              data: (groups) => SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    if (index >= groups.length * 2 - 1) return null;
-
-                    if (index.isOdd) {
-                      return const Divider(height: 1);
-                    }
-
-                    final groupIndex = index ~/ 2;
-                    final group = groups[groupIndex];
-                    final isHighlighted = selectedDate != null &&
-                        _isSameDay(group.date, selectedDate);
-
-                    return Column(
-                      children: [
-                        TransactionGroupHeader(
-                          date: group.date,
-                          totalIncome: group.totalIncome,
-                          totalExpense: group.totalExpense,
-                          isHighlighted: isHighlighted,
-                        ),
-                        ...group.transactions.map((txnWithCat) => TransactionListItem(
-                          transactionWithCategory: txnWithCat,
-                          onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              '/transaction-detail',
-                              arguments: txnWithCat.transaction.id,
-                            );
-                          },
-                          onLongPress: () {
-                            _showTransactionActions(context, ref, txnWithCat);
-                          },
-                        )),
-                      ],
-                    );
-                  },
+                  error: (e, s) => SizedBox(
+                    height: 280,
+                    child: Center(child: Text('Error: $e')),
+                  ),
                 ),
-              ),
-              loading: () => const SliverToBoxAdapter(
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              error: (e, s) => SliverToBoxAdapter(
-                child: Center(child: Text('Error: $e')),
-              ),
+                const SizedBox(height: 4),
+                monthlySummary.when(
+                  data: (summary) => SummaryBar(
+                    totalIncome: summary['income'] ?? 0,
+                    totalExpense: summary['expense'] ?? 0,
+                    net: summary['net'] ?? 0,
+                  ),
+                  loading: () => const SizedBox(height: 70),
+                  error: (e, s) => const SizedBox(height: 70),
+                ),
+                const Divider(height: 1),
+              ],
             ),
-          ],
-        ),
+          ),
+
+          // ========== TRANSACTION LIST (SCROLLABLE) ==========
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                await ref.read(transactionListNotifierProvider.notifier).refresh();
+              },
+              child: groups.isEmpty
+                  ? ListView(
+                      // Empty ListView để RefreshIndicator hoạt động
+                      children: const [
+                        SizedBox(height: 100),
+                        Center(
+                          child: Text(
+                            'Không có giao dịch trong tháng này',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                      ],
+                    )
+                  : SingleChildScrollView(
+                      child: Column(
+                        children: List.generate(groups.length, (index) {
+                          final group = groups[index];
+                          final isHighlighted = selectedDate != null &&
+                              _isSameDay(group.date, selectedDate);
+
+                          return Container(
+                            key: groupKeysRef.value[index],
+                            child: Column(
+                              children: [
+                                TransactionGroupHeader(
+                                  date: group.date,
+                                  totalIncome: group.totalIncome,
+                                  totalExpense: group.totalExpense,
+                                  isHighlighted: isHighlighted,
+                                ),
+                                ...group.transactions.map((txnWithCat) => TransactionListItem(
+                                  transactionWithCategory: txnWithCat,
+                                  onTap: () {
+                                    Navigator.pushNamed(
+                                      context,
+                                      '/transaction-detail',
+                                      arguments: txnWithCat.transaction.id,
+                                    );
+                                  },
+                                  onLongPress: () {
+                                    _showTransactionActions(context, ref, txnWithCat);
+                                  },
+                                )),
+                                if (index < groups.length - 1)
+                                  const Divider(height: 1),
+                              ],
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -218,10 +302,6 @@ class ReportCalendarScreen extends HookConsumerWidget {
     return 'Tháng ${month.month.toString().padLeft(2, '0')}/${month.year}';
   }
 
-  bool _isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
-  }
-
   void _showTransactionActions(BuildContext context, WidgetRef ref, TransactionWithCategory txnWithCat) {
     final txn = txnWithCat.transaction;
     showModalBottomSheet(
@@ -271,6 +351,30 @@ class ReportCalendarScreen extends HookConsumerWidget {
   }
 }
 
+void _showNoTransactionsMessage(BuildContext context) {
+  ScaffoldMessenger.of(context).clearSnackBars();
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Không có giao dịch'),
+      duration: Duration(seconds: 2),
+      behavior: SnackBarBehavior.floating,
+    ),
+  );
+}
+
+void _showScrollingToNearestMessage(BuildContext context, DateTime nearestDate) {
+  final dateStr = '${nearestDate.day}/${nearestDate.month}';
+  ScaffoldMessenger.of(context).clearSnackBars();
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('Không có giao dịch. Hiển thị ngày gần nhất: $dateStr'),
+      duration: const Duration(seconds: 2),
+      behavior: SnackBarBehavior.floating,
+    ),
+  );
+}
+
+// ========== MONTH YEAR PICKER ==========
 class _MonthYearPickerSheet extends HookWidget {
   final DateTime initialMonth;
   final Function(DateTime) onMonthSelected;
@@ -286,20 +390,14 @@ class _MonthYearPickerSheet extends HookWidget {
     final selectedYear = useState(initialMonth.year);
     final now = DateTime.now();
     final years = List.generate(10, (i) => now.year - 5 + i);
-
-    // Generate month names using localization
     final months = List.generate(12, (i) => '${l10n.month} ${i + 1}');
-
-    // Create ScrollController to scroll to current year
     final scrollController = useScrollController();
 
     useEffect(() {
-      // Scroll to current year after build
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final currentYearIndex = years.indexOf(selectedYear.value);
         if (currentYearIndex != -1 && scrollController.hasClients) {
-          // Calculate offset to center the current year
-          final itemWidth = 80.0; // Approximate width of each chip
+          final itemWidth = 80.0;
           final screenWidth = MediaQuery.of(context).size.width;
           final offset = (currentYearIndex * itemWidth) - (screenWidth / 2) + (itemWidth / 2);
           scrollController.animateTo(
@@ -334,7 +432,6 @@ class _MonthYearPickerSheet extends HookWidget {
             ],
           ),
           const SizedBox(height: 16),
-          // Year selector
           SizedBox(
             height: 40,
             child: ListView.builder(
@@ -361,7 +458,6 @@ class _MonthYearPickerSheet extends HookWidget {
             ),
           ),
           const SizedBox(height: 16),
-          // Month grid
           Expanded(
             child: GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -373,20 +469,19 @@ class _MonthYearPickerSheet extends HookWidget {
               itemCount: 12,
               itemBuilder: (context, index) {
                 final monthNum = index + 1;
-                final isCurrentSelection = 
-                    selectedYear.value == initialMonth.year && 
+                final isCurrentSelection =
+                    selectedYear.value == initialMonth.year &&
                     monthNum == initialMonth.month;
-                final isCurrentMonth = 
-                    selectedYear.value == now.year && 
-                    monthNum == now.month;
-                
+                final isCurrentMonth =
+                    selectedYear.value == now.year && monthNum == now.month;
+
                 return Material(
                   color: isCurrentSelection
                       ? Theme.of(context).colorScheme.primary
                       : isCurrentMonth
                           ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
-                          : (Theme.of(context).brightness == Brightness.dark 
-                              ? Colors.grey[800] 
+                          : (Theme.of(context).brightness == Brightness.dark
+                              ? Colors.grey[800]
                               : Colors.grey[100]),
                   borderRadius: BorderRadius.circular(8),
                   child: InkWell(
@@ -396,10 +491,10 @@ class _MonthYearPickerSheet extends HookWidget {
                       child: Text(
                         months[index],
                         style: TextStyle(
-                          color: isCurrentSelection 
-                              ? Colors.white 
-                              : (isCurrentMonth 
-                                  ? Theme.of(context).colorScheme.primary 
+                          color: isCurrentSelection
+                              ? Colors.white
+                              : (isCurrentMonth
+                                  ? Theme.of(context).colorScheme.primary
                                   : Theme.of(context).textTheme.bodyLarge?.color),
                           fontWeight: isCurrentSelection || isCurrentMonth ? FontWeight.bold : null,
                         ),
@@ -415,4 +510,3 @@ class _MonthYearPickerSheet extends HookWidget {
     );
   }
 }
-

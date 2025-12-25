@@ -55,6 +55,8 @@ void main() {
                 updatedAt: DateTime(2025, 11, 5),
               ),
               categoryName: 'Ăn uống',
+              categoryIconName: 'restaurant',
+              categoryColorValue: 0xFFF44336,
             ),
           ],
         ),
