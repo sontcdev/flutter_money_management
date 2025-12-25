@@ -106,9 +106,16 @@ class TransactionDetailScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(l10n.amount, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                      // Màu đỏ cho expense, xanh cho income
                       Text(
-                        CurrencyFormatter.formatVNDFromCents(transaction.amountCents),
-                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        '${transaction.type.toString().contains('expense') ? '-' : '+'}${CurrencyFormatter.formatVNDFromCents(transaction.amountCents)}',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: transaction.type.toString().contains('expense')
+                              ? Colors.red
+                              : Colors.green,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       _DetailRow(
