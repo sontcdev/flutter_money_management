@@ -580,6 +580,7 @@ class ReportsScreen extends HookConsumerWidget {
                                 selectedPeriod.value,
                                 customMonth.value,
                                 customYear.value,
+                                reportTypeFilter.value == 2, // isIncomeReport
                               ),
                               borderRadius: BorderRadius.circular(8),
                               child: Padding(
@@ -710,6 +711,7 @@ class ReportsScreen extends HookConsumerWidget {
     int selectedPeriod,
     DateTime? customMonth,
     int? customYear,
+    bool isIncomeReport,
   ) {
     Navigator.push(
       context,
@@ -722,6 +724,7 @@ class ReportsScreen extends HookConsumerWidget {
           selectedPeriod: selectedPeriod,
           customMonth: customMonth,
           customYear: customYear,
+          isIncomeReport: isIncomeReport,
         ),
       ),
     );
@@ -837,6 +840,7 @@ class CategoryTransactionsScreen extends ConsumerWidget {
   final int selectedPeriod;
   final DateTime? customMonth;
   final int? customYear;
+  final bool isIncomeReport;
 
   const CategoryTransactionsScreen({
     super.key,
@@ -847,6 +851,7 @@ class CategoryTransactionsScreen extends ConsumerWidget {
     required this.selectedPeriod,
     this.customMonth,
     this.customYear,
+    this.isIncomeReport = false,
   });
 
   @override
@@ -925,9 +930,11 @@ class CategoryTransactionsScreen extends ConsumerWidget {
       body: transactionsAsync.when(
         data: (transactions) {
           // Filter transactions by category and period
+          // Filter by transaction type based on report type
+          final expectedType = isIncomeReport ? TransactionType.income : TransactionType.expense;
           final categoryTransactions = transactions.where((t) {
             return t.categoryId == categoryId &&
-                t.type == TransactionType.expense &&
+                t.type == expectedType &&
                 t.dateTime.isAfter(startDate.subtract(const Duration(seconds: 1))) &&
                 t.dateTime.isBefore(endDate.add(const Duration(seconds: 1)));
           }).toList();
@@ -976,7 +983,7 @@ class CategoryTransactionsScreen extends ConsumerWidget {
                 child: Column(
                   children: [
                     Text(
-                      l10n.totalExpense,
+                      isIncomeReport ? l10n.totalIncome : l10n.totalExpense,
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 4),
@@ -1031,7 +1038,7 @@ class CategoryTransactionsScreen extends ConsumerWidget {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
-                                    '-${CurrencyFormatter.formatVNDFromCents(dayTotal)}',
+                                    '${isIncomeReport ? "+" : "-"}${CurrencyFormatter.formatVNDFromCents(dayTotal)}',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: Color(categoryColor),
@@ -1045,10 +1052,10 @@ class CategoryTransactionsScreen extends ConsumerWidget {
                           ...dayTransactions.map((t) => ListTile(
                             title: Text(t.note ?? l10n.noNote),
                             trailing: Text(
-                              '-${CurrencyFormatter.formatVNDFromCents(t.amountCents)}',
-                              style: const TextStyle(
+                              '${isIncomeReport ? "+" : "-"}${CurrencyFormatter.formatVNDFromCents(t.amountCents)}',
+                              style: TextStyle(
                                 fontWeight: FontWeight.w500,
-                                color: Colors.black87,
+                                color: isIncomeReport ? Colors.green : Colors.black87,
                               ),
                             ),
                             onTap: () {
