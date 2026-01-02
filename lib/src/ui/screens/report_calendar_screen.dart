@@ -11,6 +11,7 @@ import '../widgets/transaction_group_header.dart';
 import '../widgets/transaction_list_item.dart';
 import '../widgets/confirm_delete_dialog.dart';
 import 'settings_screen.dart';
+import '../../utils/cycle_utils.dart';
 
 /// Check if two dates are the same day
 bool _isSameDay(DateTime a, DateTime b) {
@@ -227,6 +228,9 @@ class ReportCalendarScreen extends HookConsumerWidget {
 
   Widget _buildMonthSelector(BuildContext context, WidgetRef ref, DateTime month) {
     final monthLabel = _formatMonthLabel(month);
+    final monthStartDay = ref.watch(monthStartDayProvider);
+    final cycleRange = CycleUtils.getCycleRangeForMonth(month, monthStartDay);
+    final cycleLabel = CycleUtils.getCycleLabel(cycleRange.start, cycleRange.end);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -250,20 +254,35 @@ class ReportCalendarScreen extends HookConsumerWidget {
                     color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Row(
+                  child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        monthLabel,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            monthLabel,
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.arrow_drop_down,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ],
+                      ),
+                      if (monthStartDay != 1) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          cycleLabel,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        Icons.arrow_drop_down,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
+                      ],
                     ],
                   ),
                 ),

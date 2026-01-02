@@ -134,7 +134,7 @@ class CategoriesScreen extends HookConsumerWidget {
                         if (confirm == true) {
                           try {
                             await ref.read(categoryRepositoryProvider).deleteCategory(category.id);
-                            ref.invalidate(categoriesProvider);
+                            await ref.refresh(categoriesProvider.future);
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(content: Text(l10n.success)),

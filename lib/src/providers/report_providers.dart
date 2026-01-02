@@ -7,10 +7,22 @@ import '../ui/screens/settings_screen.dart';
 import '../utils/cycle_utils.dart';
 import 'providers.dart';
 
-// Selected month provider
-final selectedMonthProvider = StateProvider<DateTime>((ref) {
+// Tính toán tháng chu kỳ dựa trên ngày hiện tại và monthStartDay
+DateTime _calculateCycleMonth(int monthStartDay) {
   final now = DateTime.now();
+  // Nếu ngày hiện tại < ngày bắt đầu chu kỳ → lùi 1 tháng
+  if (now.day < monthStartDay) {
+    final prevMonth = DateTime(now.year, now.month - 1, 1);
+    return DateTime(prevMonth.year, prevMonth.month, 1);
+  }
   return DateTime(now.year, now.month, 1);
+}
+
+// Selected month provider
+// Khởi tạo dựa trên tháng của chu kỳ hiện tại, không phải tháng thực tế
+final selectedMonthProvider = StateProvider<DateTime>((ref) {
+  final monthStartDay = ref.watch(monthStartDayProvider);
+  return _calculateCycleMonth(monthStartDay);
 });
 
 // Selected date provider
@@ -223,7 +235,9 @@ class TransactionListNotifier extends StateNotifier<AsyncValue<void>> {
   Future<void> refresh() async {
     state = const AsyncValue.loading();
     try {
-      // Invalidate all providers to force reload
+      // Invalidate transactionsProvider first so dependent providers get fresh data
+      ref.invalidate(transactionsProvider);
+      // Invalidate all report providers to force reload
       ref.invalidate(calendarDataProvider);
       ref.invalidate(monthlySummaryProvider);
       ref.invalidate(transactionGroupsProvider);
