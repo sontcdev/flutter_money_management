@@ -18,12 +18,38 @@ DateTime _calculateCycleMonth(int monthStartDay) {
   return DateTime(now.year, now.month, 1);
 }
 
+// Override month provider - chỉ có giá trị khi user chủ động navigate
+final _selectedMonthOverrideProvider = StateProvider<DateTime?>((ref) => null);
+
 // Selected month provider
-// Khởi tạo dựa trên tháng của chu kỳ hiện tại, không phải tháng thực tế
-final selectedMonthProvider = StateProvider<DateTime>((ref) {
+// Nếu có override (user đã navigate) thì dùng override, ngược lại tính toán từ chu kỳ
+final selectedMonthProvider = Provider<DateTime>((ref) {
+  final override = ref.watch(_selectedMonthOverrideProvider);
+  if (override != null) {
+    return override;
+  }
+  // Tự động tính toán dựa trên monthStartDay
   final monthStartDay = ref.watch(monthStartDayProvider);
   return _calculateCycleMonth(monthStartDay);
 });
+
+// Notifier để update override
+final selectedMonthNotifierProvider = Provider<SelectedMonthNotifier>((ref) {
+  return SelectedMonthNotifier(ref);
+});
+
+class SelectedMonthNotifier {
+  final Ref ref;
+  SelectedMonthNotifier(this.ref);
+  
+  void setMonth(DateTime month) {
+    ref.read(_selectedMonthOverrideProvider.notifier).state = DateTime(month.year, month.month, 1);
+  }
+  
+  void resetToCurrentCycle() {
+    ref.read(_selectedMonthOverrideProvider.notifier).state = null;
+  }
+}
 
 // Selected date provider
 final selectedDateProvider = StateProvider<DateTime?>((ref) => null);
@@ -216,19 +242,19 @@ class TransactionListNotifier extends StateNotifier<AsyncValue<void>> {
   void loadNextMonth() {
     final currentMonth = ref.read(selectedMonthProvider);
     final nextMonth = DateTime(currentMonth.year, currentMonth.month + 1, 1);
-    ref.read(selectedMonthProvider.notifier).state = nextMonth;
+    ref.read(selectedMonthNotifierProvider).setMonth(nextMonth);
     ref.read(selectedDateProvider.notifier).state = null;
   }
 
   void loadPreviousMonth() {
     final currentMonth = ref.read(selectedMonthProvider);
     final prevMonth = DateTime(currentMonth.year, currentMonth.month - 1, 1);
-    ref.read(selectedMonthProvider.notifier).state = prevMonth;
+    ref.read(selectedMonthNotifierProvider).setMonth(prevMonth);
     ref.read(selectedDateProvider.notifier).state = null;
   }
 
   void goToMonth(DateTime month) {
-    ref.read(selectedMonthProvider.notifier).state = DateTime(month.year, month.month, 1);
+    ref.read(selectedMonthNotifierProvider).setMonth(month);
     ref.read(selectedDateProvider.notifier).state = null;
   }
 
