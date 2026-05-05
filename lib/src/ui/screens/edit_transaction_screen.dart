@@ -10,6 +10,7 @@ import '../../providers/providers.dart';
 import '../../models/transaction.dart' as model;
 import '../../models/category.dart';
 import '../../services/budget_service.dart';
+import '../../theme/app_spacing.dart';
 import '../../utils/currency_formatter.dart';
 import '../../utils/vnd_input_formatter.dart';
 import '../widgets/app_button.dart';
@@ -35,29 +36,26 @@ class EditTransactionScreen extends HookConsumerWidget {
     final receiptPath = useState<String?>(null);
     final isLoading = useState(false);
     final allowOverdraft = useState(false);
-    final showAllCategories = useState(false);
 
     // Load existing transaction for editing
     useEffect(() {
       Future.microtask(() async {
         final transaction = await repository.getTransactionById(transactionId);
-          // Format amount as VND (without decimals)
-          final amount = (transaction.amountCents / 100).round();
-          amountController.text = CurrencyFormatter.formatInputVND(amount.toString());
-          noteController.text = transaction.note ?? '';
-          selectedDate.value = transaction.dateTime;
-          selectedType.value = transaction.type;
-          selectedCategoryId.value = transaction.categoryId;
-          receiptPath.value = transaction.receiptPath;
+        final amount = (transaction.amountCents / 100).round();
+        amountController.text = CurrencyFormatter.formatInputVND(amount.toString());
+        noteController.text = transaction.note ?? '';
+        selectedDate.value = transaction.dateTime;
+        selectedType.value = transaction.type;
+        selectedCategoryId.value = transaction.categoryId;
+        receiptPath.value = transaction.receiptPath;
       });
       return null;
     }, [transactionId]);
 
     Future<void> handleSubmit() async {
-      // Validation
       if (amountController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.error}: Amount is required')),
+          SnackBar(content: Text('${l10n.error}: ${l10n.amount}')),
         );
         return;
       }
@@ -72,7 +70,6 @@ class EditTransactionScreen extends HookConsumerWidget {
       isLoading.value = true;
 
       try {
-        // Parse VND formatted input (remove dots and parse)
         final amount = CurrencyFormatter.parseVND(amountController.text);
         if (amount == null) {
           throw FormatException('Invalid amount format');
@@ -92,10 +89,8 @@ class EditTransactionScreen extends HookConsumerWidget {
           updatedAt: DateTime.now(),
         );
 
-        // Update existing transaction
         await repository.updateTransaction(transaction);
 
-        // Invalidate providers to refresh data
         ref.invalidate(budgetsProvider);
         ref.invalidate(budgetsWithConsumedProvider);
         ref.invalidate(transactionsProvider);
@@ -120,7 +115,7 @@ class EditTransactionScreen extends HookConsumerWidget {
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(context, true),
-                  child: const Text('Proceed Anyway'),
+                  child: Text(l10n.proceed),
                 ),
               ],
             ),
@@ -155,117 +150,35 @@ class EditTransactionScreen extends HookConsumerWidget {
         title: Text(l10n.editTransaction),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.screenPadding),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Type Toggle
-            SegmentedButton<model.TransactionType>(
-              segments: [
-                ButtonSegment(
-                  value: model.TransactionType.expense,
-                  label: Text(l10n.expense),
-                  icon: const Icon(Icons.arrow_upward),
-                ),
-                ButtonSegment(
-                  value: model.TransactionType.income,
-                  label: Text(l10n.income),
-                  icon: const Icon(Icons.arrow_downward),
-                ),
-              ],
-              selected: {selectedType.value},
-              onSelectionChanged: (Set<model.TransactionType> selection) {
-                selectedType.value = selection.first;
-                // Reset category when transaction type changes
-                selectedCategoryId.value = null;
-              },
+            // Type Toggle - Centered
+            Center(
+              child: SegmentedButton<model.TransactionType>(
+                segments: [
+                  ButtonSegment(
+                    value: model.TransactionType.expense,
+                    label: Text(l10n.expense),
+                    icon: const Icon(Icons.arrow_upward),
+                  ),
+                  ButtonSegment(
+                    value: model.TransactionType.income,
+                    label: Text(l10n.income),
+                    icon: const Icon(Icons.arrow_downward),
+                  ),
+                ],
+                selected: {selectedType.value},
+                onSelectionChanged: (Set<model.TransactionType> selection) {
+                  selectedType.value = selection.first;
+                  selectedCategoryId.value = null;
+                },
+              ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.sectionGap),
 
-            // Date Picker
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.date,
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.chevron_left, size: 20),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      onPressed: () {
-                        selectedDate.value = selectedDate.value.subtract(const Duration(days: 1));
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Colors.grey[300]!,
-                            width: 1,
-                          ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: InkWell(
-                          onTap: () async {
-                            final picked = await showDatePicker(
-                              context: context,
-                              initialDate: selectedDate.value,
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2100),
-                            );
-                            if (picked != null) {
-                              selectedDate.value = picked;
-                            }
-                          },
-                          borderRadius: BorderRadius.circular(8),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.calendar_today, size: 16, color: Colors.grey[700]),
-                                const SizedBox(width: 8),
-                                Text(
-                                  '${selectedDate.value.day.toString().padLeft(2, '0')}/${selectedDate.value.month.toString().padLeft(2, '0')}/${selectedDate.value.year}',
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      icon: const Icon(Icons.chevron_right, size: 20),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      onPressed: () {
-                        selectedDate.value = selectedDate.value.add(const Duration(days: 1));
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Note Input
-            AppInput(
-              label: l10n.note,
-              hint: 'Note',
-              controller: noteController,
-              maxLines: 3,
-            ),
-            const SizedBox(height: 16),
-
-            // Amount Input
+            // Amount Input - Priority 1
             AppInput(
               label: l10n.amount,
               hint: '0',
@@ -275,19 +188,9 @@ class EditTransactionScreen extends HookConsumerWidget {
                 FilteringTextInputFormatter.digitsOnly,
                 VNDInputFormatter(),
               ],
-              prefixIcon: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                child: Text(
-                  '\$',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-              ),
+              prefixIcon: const Icon(Icons.attach_money),
               suffixIcon: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.lg),
                 child: Text(
                   '₫',
                   style: TextStyle(
@@ -298,12 +201,11 @@ class EditTransactionScreen extends HookConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
 
-            // Category Selector
+            // Category Selector - Priority 2
             categoriesAsync.when(
               data: (categories) {
-                // Filter categories by transaction type
                 final filteredCategories = categories.where((c) {
                   if (selectedType.value == model.TransactionType.expense) {
                     return c.type == CategoryType.expense;
@@ -311,116 +213,174 @@ class EditTransactionScreen extends HookConsumerWidget {
                     return c.type == CategoryType.income;
                   }
                 }).toList();
-
-                if (filteredCategories.isEmpty) {
-                  return Text(l10n.noCategories);
-                }
-
-                // Determine how many categories to show
-                final int displayCount = showAllCategories.value 
-                    ? filteredCategories.length 
-                    : (filteredCategories.length > 15 ? 15 : filteredCategories.length);
-                final categoriesToShow = filteredCategories.take(displayCount).toList();
-                final hasMore = filteredCategories.length > 15;
-
+                
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      l10n.category,
-                      style: Theme.of(context).textTheme.labelLarge,
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: categoriesToShow.map((category) {
-                        final isSelected = selectedCategoryId.value == category.id;
-                        // Use getCategoryColor for fallback to light gray
-                        final categoryColor = getCategoryColor(category.colorValue);
-                        return GestureDetector(
-                          onTap: () {
-                            selectedCategoryId.value = category.id;
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            l10n.category,
+                            style: Theme.of(context).textTheme.labelLarge,
+                          ),
+                        ),
+                        TextButton.icon(
+                          icon: const Icon(Icons.add, size: 18),
+                          label: Text(l10n.add),
+                          onPressed: () async {
+                            final result = await Navigator.pushNamed(
+                              context,
+                              '/category-edit',
+                              arguments: {'initialType': selectedType.value == model.TransactionType.expense ? CategoryType.expense : CategoryType.income},
+                            );
+                            if (result == true) {
+                              ref.invalidate(categoriesProvider);
+                            }
                           },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: categoryColor.withOpacity(0.2),
-                              border: Border.all(
-                                color: categoryColor,
-                                width: isSelected ? 3 : 1.5,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    if (filteredCategories.isEmpty)
+                      Text(l10n.noCategories)
+                    else
+                      Wrap(
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.sm,
+                        children: filteredCategories.map((category) {
+                          final isSelected = selectedCategoryId.value == category.id;
+                          final categoryColor = getCategoryColor(category.colorValue);
+                          return GestureDetector(
+                            onTap: () {
+                              selectedCategoryId.value = category.id;
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.md,
+                                vertical: AppSpacing.sm,
                               ),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                CategoryIconWidget(
-                                  iconName: category.iconName,
-                                  size: 18,
+                              decoration: BoxDecoration(
+                                color: categoryColor.withOpacity(0.2),
+                                border: Border.all(
                                   color: categoryColor,
+                                  width: isSelected ? 3 : 1.5,
                                 ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  category.name,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CategoryIconWidget(
+                                    iconName: category.iconName,
+                                    size: 18,
                                     color: categoryColor,
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: AppSpacing.xs),
+                                  Text(
+                                    category.name,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                      color: categoryColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                    if (hasMore && !showAllCategories.value) ...[
-                      const SizedBox(height: 12),
-                      Center(
-                        child: TextButton.icon(
-                          onPressed: () {
-                            showAllCategories.value = true;
-                          },
-                          icon: const Icon(Icons.expand_more, size: 18),
-                          label: Text('Show more (${filteredCategories.length - 15} more)'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
+                          );
+                        }).toList(),
                       ),
-                    ],
-                    if (hasMore && showAllCategories.value) ...[
-                      const SizedBox(height: 12),
-                      Center(
-                        child: TextButton.icon(
-                          onPressed: () {
-                            showAllCategories.value = false;
-                          },
-                          icon: const Icon(Icons.expand_less, size: 18),
-                          label: const Text('Show less'),
-                          style: TextButton.styleFrom(
-                            foregroundColor: Theme.of(context).colorScheme.primary,
-                          ),
-                        ),
-                      ),
-                    ],
                   ],
                 );
               },
               loading: () => const CircularProgressIndicator(),
               error: (err, stack) => Text('Error: $err'),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
 
-            // Receipt Attachment
+            // Date Picker - Priority 3
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.date,
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.chevron_left),
+                      onPressed: () {
+                        selectedDate.value = selectedDate.value.subtract(const Duration(days: 1));
+                      },
+                    ),
+                    Expanded(
+                      child: InkWell(
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: context,
+                            initialDate: selectedDate.value,
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime(2100),
+                          );
+                          if (picked != null) {
+                            selectedDate.value = picked;
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.lg,
+                            vertical: AppSpacing.md,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey[300]!),
+                            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.calendar_today, size: 20),
+                              const SizedBox(width: AppSpacing.sm),
+                              Text(
+                                '${selectedDate.value.day.toString().padLeft(2, '0')}/${selectedDate.value.month.toString().padLeft(2, '0')}/${selectedDate.value.year}',
+                                style: const TextStyle(fontSize: 16),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.chevron_right),
+                      onPressed: () {
+                        selectedDate.value = selectedDate.value.add(const Duration(days: 1));
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Note Input - Priority 4
+            AppInput(
+              label: l10n.note,
+              hint: l10n.note,
+              controller: noteController,
+              maxLines: 2,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Receipt Attachment - Priority 5
             Row(
               children: [
                 Expanded(
                   child: Text(
                     receiptPath.value == null
                         ? l10n.attachReceipt
-                        : 'Receipt attached',
+                        : l10n.viewReceipt,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ),
@@ -435,13 +395,16 @@ class EditTransactionScreen extends HookConsumerWidget {
                   ),
               ],
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.sectionGap),
 
             // Submit Button
-            AppButton(
-              text: l10n.save,
-              onPressed: handleSubmit,
-              isLoading: isLoading.value,
+            SizedBox(
+              width: double.infinity,
+              child: AppButton(
+                text: l10n.save,
+                onPressed: handleSubmit,
+                isLoading: isLoading.value,
+              ),
             ),
           ],
         ),
@@ -449,4 +412,3 @@ class EditTransactionScreen extends HookConsumerWidget {
     );
   }
 }
-

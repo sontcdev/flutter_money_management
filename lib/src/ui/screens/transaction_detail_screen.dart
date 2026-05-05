@@ -1,12 +1,17 @@
 // path: lib/src/ui/screens/transaction_detail_screen.dart
+
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:flutter_money_management/src/providers/providers.dart';
-import 'package:flutter_money_management/src/utils/currency_formatter.dart';
-import 'package:intl/intl.dart';
 import '../../../l10n/app_localizations.dart';
-import 'edit_transaction_screen.dart';
+import '../../providers/providers.dart';
+import '../../models/transaction.dart';
+import '../../models/category.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_spacing.dart';
+import '../../utils/currency_formatter.dart';
+import '../widgets/category_icon_widget.dart';
+import 'package:intl/intl.dart';
 
 class TransactionDetailScreen extends ConsumerWidget {
   final int transactionId;
@@ -27,22 +32,28 @@ class TransactionDetailScreen extends ConsumerWidget {
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Scaffold(
-            appBar: AppBar(),
+            appBar: AppBar(
+              title: Text(l10n.transactions),
+            ),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
 
-        final transaction = snapshot.data![0] as dynamic;
-        final categories = snapshot.data![1] as List<dynamic>;
-        String categoryName = l10n.noData;
+        final transaction = snapshot.data![0] as Transaction;
+        final categories = snapshot.data![1] as List<Category>;
+        
+        Category? category;
         try {
-          final category = categories.firstWhere(
+          category = categories.firstWhere(
             (c) => c.id == transaction.categoryId,
           );
-          categoryName = category.name;
         } catch (_) {
           // Category not found
         }
+
+        final isExpense = transaction.type == TransactionType.expense;
+        final amountColor = isExpense ? AppColors.expense : AppColors.income;
+        final amountPrefix = isExpense ? '-' : '+';
 
         return Scaffold(
           appBar: AppBar(
@@ -51,98 +62,201 @@ class TransactionDetailScreen extends ConsumerWidget {
               IconButton(
                 icon: const Icon(Icons.edit),
                 onPressed: () async {
-                  final result = await Navigator.push(
+                  final result = await Navigator.pushNamed(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => EditTransactionScreen(
-                        transactionId: transactionId,
-                      ),
-                    ),
+                    '/edit-transaction',
+                    arguments: transactionId,
                   );
-                  // If transaction was updated, refresh the screen
                   if (result == true && context.mounted) {
-                    // Trigger rebuild by popping and showing updated data
-                    Navigator.pop(context);
+                    ref.invalidate(transactionsProvider);
+                    Navigator.pop(context, true);
                   }
                 },
               ),
-              IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: () async {
-                  final confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      title: Text(l10n.confirmDelete),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: Text(l10n.no),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: Text(l10n.yes),
+              PopupMenuButton<String>(
+                onSelected: (value) async {
+                  if (value == 'delete') {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text(l10n.confirmDelete),
+                        content: Text('Are you sure you want to delete this transaction?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: Text(l10n.cancel),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.red,
+                            ),
+                            child: Text(l10n.delete),
+                          ),
+                        ],
+                      ),
+                    );
+                    
+                    if (confirm == true) {
+                      await transactionRepo.deleteTransaction(transactionId);
+                      ref.invalidate(budgetsProvider);
+                      ref.invalidate(budgetsWithConsumedProvider);
+                      ref.invalidate(transactionsProvider);
+                      if (context.mounted) {
+                        Navigator.pop(context, true);
+                      }
+                    }
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        const Icon(Icons.delete, color: Colors.red, size: 20),
+                        const SizedBox(width: AppSpacing.sm),
+                        Text(
+                          l10n.delete,
+                          style: const TextStyle(color: Colors.red),
                         ),
                       ],
                     ),
-                  );
-                  if (confirm == true) {
-                    await transactionRepo.deleteTransaction(transactionId);
-                    // Invalidate budgets to refresh budget data
-                    ref.invalidate(budgetsProvider);
-                    ref.invalidate(budgetsWithConsumedProvider);
-                    if (context.mounted) Navigator.pop(context);
-                  }
-                },
+                  ),
+                ],
               ),
             ],
           ),
-          body: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
+          body: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Hero Amount Card
+                Container(
+                  padding: const EdgeInsets.all(AppSpacing.sectionGap),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        amountColor.withOpacity(0.1),
+                        amountColor.withOpacity(0.05),
+                      ],
+                    ),
+                  ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(l10n.amount, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                      // Màu đỏ cho expense, xanh cho income
+                      // Category Icon
+                      if (category != null)
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: getCategoryColor(category.colorValue).withOpacity(0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: CategoryIconWidget(
+                              iconName: category.iconName,
+                              size: 40,
+                              color: getCategoryColor(category.colorValue),
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: AppSpacing.lg),
+                      
+                      // Amount
                       Text(
-                        '${transaction.type.toString().contains('expense') ? '-' : '+'}${CurrencyFormatter.formatVNDFromCents(transaction.amountCents)}',
-                        style: TextStyle(
-                          fontSize: 24,
+                        '$amountPrefix${CurrencyFormatter.formatVNDFromCents(transaction.amountCents)}',
+                        style: Theme.of(context).textTheme.displaySmall?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: transaction.type.toString().contains('expense')
-                              ? Colors.red
-                              : Colors.green,
+                          color: amountColor,
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      _DetailRow(
-                        l10n.type,
-                        transaction.type.toString().contains('expense')
-                            ? l10n.expense
-                            : l10n.income,
+                      const SizedBox(height: AppSpacing.sm),
+                      
+                      // Category Name
+                      Text(
+                        category?.name ?? 'Unknown',
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
-                      _DetailRow(l10n.date, DateFormat('dd/MM/yyyy').format(transaction.dateTime)),
-                      _DetailRow(l10n.category, categoryName),
-                      if (transaction.note != null)
-                        _DetailRow(l10n.note, transaction.note!),
                     ],
                   ),
                 ),
-              ),
-              if (transaction.receiptPath != null) ...[
-                const SizedBox(height: 16),
-                Card(
+                
+                // Details Section
+                Padding(
+                  padding: const EdgeInsets.all(AppSpacing.screenPadding),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Image.file(File(transaction.receiptPath!)),
+                      // Transaction Info Card
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppSpacing.cardPadding),
+                          child: Column(
+                            children: [
+                              _DetailRow(
+                                icon: Icons.swap_vert,
+                                label: l10n.type,
+                                value: isExpense ? l10n.expense : l10n.income,
+                                valueColor: amountColor,
+                              ),
+                              const Divider(height: AppSpacing.lg),
+                              _DetailRow(
+                                icon: Icons.calendar_today,
+                                label: l10n.date,
+                                value: DateFormat('EEEE, dd MMMM yyyy').format(transaction.dateTime),
+                              ),
+                              if (transaction.note != null && transaction.note!.isNotEmpty) ...[
+                                const Divider(height: AppSpacing.lg),
+                                _DetailRow(
+                                  icon: Icons.note,
+                                  label: l10n.note,
+                                  value: transaction.note!,
+                                  isMultiline: true,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ),
+                      
+                      // Receipt Section
+                      if (transaction.receiptPath != null) ...[
+                        const SizedBox(height: AppSpacing.lg),
+                        Text(
+                          l10n.receipt,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Card(
+                          clipBehavior: Clip.antiAlias,
+                          child: InkWell(
+                            onTap: () {
+                              // Show full screen image
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => _FullScreenImage(
+                                    imagePath: transaction.receiptPath!,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Image.file(
+                              File(transaction.receiptPath!),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
               ],
-            ],
+            ),
           ),
         );
       },
@@ -151,23 +265,82 @@ class TransactionDetailScreen extends ConsumerWidget {
 }
 
 class _DetailRow extends StatelessWidget {
+  final IconData icon;
   final String label;
   final String value;
+  final Color? valueColor;
+  final bool isMultiline;
 
-  const _DetailRow(this.label, this.value);
+  const _DetailRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.valueColor,
+    this.isMultiline = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(color: Colors.grey)),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
-        ],
-      ),
+    return Row(
+      crossAxisAlignment: isMultiline ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(AppSpacing.sm),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          ),
+          child: Icon(
+            icon,
+            size: 20,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+        const SizedBox(width: AppSpacing.md),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                value,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: valueColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
 
+class _FullScreenImage extends StatelessWidget {
+  final String imagePath;
+
+  const _FullScreenImage({required this.imagePath});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      body: Center(
+        child: InteractiveViewer(
+          child: Image.file(File(imagePath)),
+        ),
+      ),
+    );
+  }
+}

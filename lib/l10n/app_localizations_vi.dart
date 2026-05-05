@@ -822,4 +822,55 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get shareError => 'Không thể chia sẻ file';
+
+  @override
+  String get dashboard => 'Tổng quan';
+
+  @override
+  String get quickActions => 'Thao tác nhanh';
+
+  @override
+  String get addExpense => 'Thêm chi tiêu';
+
+  @override
+  String get addIncome => 'Thêm thu nhập';
+
+  @override
+  String get recentTransactions => 'Giao dịch gần đây';
+
+  @override
+  String get budgetOverview => 'Tổng quan ngân sách';
+
+  @override
+  String get onTrack => 'Đúng kế hoạch';
+
+  @override
+  String get nearLimit => 'Gần hạn mức';
+
+  @override
+  String get noBudgetsMatchFilter => 'Không có ngân sách nào phù hợp với bộ lọc';
+
+  @override
+  String get byUsagePercent => 'Theo % sử dụng';
+
+  @override
+  String get byAmount => 'Theo số tiền';
+
+  @override
+  String get byName => 'Theo tên';
+
+  @override
+  String get editBudgetAction => 'Sửa ngân sách';
+
+  @override
+  String get startTracking => 'Bắt đầu theo dõi tài chính của bạn';
+
+  @override
+  String get noTransactionsMatch => 'Không có giao dịch nào phù hợp với tìm kiếm';
+
+  @override
+  String get createFirstBudget => 'Tạo ngân sách đầu tiên để theo dõi chi tiêu';
+
+  @override
+  String get addBudgetAction => 'Thêm ngân sách';
 }

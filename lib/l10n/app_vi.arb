@@ -264,6 +264,23 @@
   "notification": "Thông báo",
   "chooseSaveLocation": "Chọn vị trí lưu file",
   "exportedTransactionsSubject": "MyMoney - Dữ liệu giao dịch",
-  "shareError": "Không thể chia sẻ file"
+  "shareError": "Không thể chia sẻ file",
+  "dashboard": "Tổng quan",
+  "quickActions": "Thao tác nhanh",
+  "addExpense": "Thêm chi tiêu",
+  "addIncome": "Thêm thu nhập",
+  "recentTransactions": "Giao dịch gần đây",
+  "budgetOverview": "Tổng quan ngân sách",
+  "onTrack": "Đúng kế hoạch",
+  "nearLimit": "Gần hạn mức",
+  "noBudgetsMatchFilter": "Không có ngân sách nào phù hợp với bộ lọc",
+  "byUsagePercent": "Theo % sử dụng",
+  "byAmount": "Theo số tiền",
+  "byName": "Theo tên",
+  "editBudgetAction": "Sửa ngân sách",
+  "startTracking": "Bắt đầu theo dõi tài chính của bạn",
+  "noTransactionsMatch": "Không có giao dịch nào phù hợp với tìm kiếm",
+  "createFirstBudget": "Tạo ngân sách đầu tiên để theo dõi chi tiêu",
+  "addBudgetAction": "Thêm ngân sách"
 }
 

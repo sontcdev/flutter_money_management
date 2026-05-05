@@ -264,6 +264,23 @@
   "notification": "Notification",
   "chooseSaveLocation": "Choose save location",
   "exportedTransactionsSubject": "MyMoney - Exported Transactions",
-  "shareError": "Cannot share file"
+  "shareError": "Cannot share file",
+  "dashboard": "Dashboard",
+  "quickActions": "Quick Actions",
+  "addExpense": "Add Expense",
+  "addIncome": "Add Income",
+  "recentTransactions": "Recent Transactions",
+  "budgetOverview": "Budget Overview",
+  "onTrack": "On Track",
+  "nearLimit": "Near Limit",
+  "noBudgetsMatchFilter": "No budgets match this filter",
+  "byUsagePercent": "By Usage %",
+  "byAmount": "By Amount",
+  "byName": "By Name",
+  "editBudgetAction": "Edit Budget",
+  "startTracking": "Start tracking your finances",
+  "noTransactionsMatch": "No transactions match your search",
+  "createFirstBudget": "Create your first budget to track your spending",
+  "addBudgetAction": "Add Budget"
 }
 

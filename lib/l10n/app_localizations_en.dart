@@ -822,4 +822,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shareError => 'Cannot share file';
+
+  @override
+  String get dashboard => 'Dashboard';
+
+  @override
+  String get quickActions => 'Quick Actions';
+
+  @override
+  String get addExpense => 'Add Expense';
+
+  @override
+  String get addIncome => 'Add Income';
+
+  @override
+  String get recentTransactions => 'Recent Transactions';
+
+  @override
+  String get budgetOverview => 'Budget Overview';
+
+  @override
+  String get onTrack => 'On Track';
+
+  @override
+  String get nearLimit => 'Near Limit';
+
+  @override
+  String get noBudgetsMatchFilter => 'No budgets match this filter';
+
+  @override
+  String get byUsagePercent => 'By Usage %';
+
+  @override
+  String get byAmount => 'By Amount';
+
+  @override
+  String get byName => 'By Name';
+
+  @override
+  String get editBudgetAction => 'Edit Budget';
+
+  @override
+  String get startTracking => 'Start tracking your finances';
+
+  @override
+  String get noTransactionsMatch => 'No transactions match your search';
+
+  @override
+  String get createFirstBudget => 'Create your first budget to track your spending';
+
+  @override
+  String get addBudgetAction => 'Add Budget';
 }

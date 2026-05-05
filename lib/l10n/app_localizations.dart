@@ -1684,6 +1684,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cannot share file'**
   String get shareError;
+
+  /// No description provided for @dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard'**
+  String get dashboard;
+
+  /// No description provided for @quickActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Actions'**
+  String get quickActions;
+
+  /// No description provided for @addExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Expense'**
+  String get addExpense;
+
+  /// No description provided for @addIncome.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Income'**
+  String get addIncome;
+
+  /// No description provided for @recentTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Transactions'**
+  String get recentTransactions;
+
+  /// No description provided for @budgetOverview.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget Overview'**
+  String get budgetOverview;
+
+  /// No description provided for @onTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'On Track'**
+  String get onTrack;
+
+  /// No description provided for @nearLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Near Limit'**
+  String get nearLimit;
+
+  /// No description provided for @noBudgetsMatchFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'No budgets match this filter'**
+  String get noBudgetsMatchFilter;
+
+  /// No description provided for @byUsagePercent.
+  ///
+  /// In en, this message translates to:
+  /// **'By Usage %'**
+  String get byUsagePercent;
+
+  /// No description provided for @byAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'By Amount'**
+  String get byAmount;
+
+  /// No description provided for @byName.
+  ///
+  /// In en, this message translates to:
+  /// **'By Name'**
+  String get byName;
+
+  /// No description provided for @editBudgetAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Budget'**
+  String get editBudgetAction;
+
+  /// No description provided for @startTracking.
+  ///
+  /// In en, this message translates to:
+  /// **'Start tracking your finances'**
+  String get startTracking;
+
+  /// No description provided for @noTransactionsMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions match your search'**
+  String get noTransactionsMatch;
+
+  /// No description provided for @createFirstBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your first budget to track your spending'**
+  String get createFirstBudget;
+
+  /// No description provided for @addBudgetAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Budget'**
+  String get addBudgetAction;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

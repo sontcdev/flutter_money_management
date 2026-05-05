@@ -10,11 +10,16 @@ import '../widgets/budget_progress.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/shimmer_loading.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_spacing.dart';
 import '../../utils/currency_formatter.dart';
 import '../widgets/category_icon_widget.dart';
+import '../widgets/app_metric_card.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import '../../utils/cycle_utils.dart';
 import 'settings_screen.dart';
+
+enum BudgetFilter { all, onTrack, nearLimit, exceeded }
+enum BudgetSort { name, amount, percentage }
 
 class BudgetsScreen extends ConsumerWidget {
   final bool showBackButton;
@@ -49,17 +54,14 @@ class BudgetsScreen extends ConsumerWidget {
           ref.invalidate(budgetsProvider);
           ref.invalidate(budgetsWithConsumedProvider);
           ref.invalidate(categoriesProvider);
-          // Wait a bit for the providers to refresh
           await Future.delayed(const Duration(milliseconds: 500));
         },
         child: budgetsAsync.when(
         data: (budgets) {
           return categoriesAsync.when(
             data: (categories) {
-              // Create a map for quick category lookup
               final categoryMap = {for (var c in categories) c.id: c};
               
-              // Filter budgets to show only expense budgets
               final filteredBudgets = budgets.where((b) {
                 final cat = categoryMap[b.categoryId];
                 return cat?.type == CategoryType.expense;
@@ -69,8 +71,8 @@ class BudgetsScreen extends ConsumerWidget {
                 return EmptyState(
                   icon: Icons.account_balance_wallet_outlined,
                   title: l10n.noBudgets,
-                  message: 'Create your first budget to track your spending',
-                  actionLabel: 'Add Budget',
+                  message: l10n.createFirstBudget,
+                  actionLabel: l10n.addBudgetAction,
                   onAction: () async {
                     final result = await Navigator.pushNamed(context, '/budget-edit');
                     if (result == true) {
@@ -81,19 +83,9 @@ class BudgetsScreen extends ConsumerWidget {
                 );
               }
 
-              return ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: filteredBudgets.length,
-                itemBuilder: (context, index) {
-                  final budget = filteredBudgets[index];
-                  return _SwipeableBudgetCard(
-                    budget: budget,
-                    onDeleted: () {
-                      ref.invalidate(budgetsProvider);
-                      ref.invalidate(budgetsWithConsumedProvider);
-                    },
-                  );
-                },
+              return _BudgetsContent(
+                budgets: filteredBudgets,
+                categoryMap: categoryMap,
               );
             },
             loading: () => ListView.builder(
@@ -112,6 +104,386 @@ class BudgetsScreen extends ConsumerWidget {
         error: (error, stack) => Center(
           child: Text('Lỗi: $error'),
         ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BudgetsContent extends ConsumerStatefulWidget {
+  final List<Budget> budgets;
+  final Map<int, Category> categoryMap;
+
+  const _BudgetsContent({
+    required this.budgets,
+    required this.categoryMap,
+  });
+
+  @override
+  ConsumerState<_BudgetsContent> createState() => _BudgetsContentState();
+}
+
+class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
+  BudgetFilter _filter = BudgetFilter.all;
+  BudgetSort _sort = BudgetSort.percentage;
+
+  List<Budget> get _filteredAndSortedBudgets {
+    var result = widget.budgets.where((b) {
+      final percentage = b.limitCents > 0 ? (b.consumedCents / b.limitCents * 100) : 0.0;
+      
+      switch (_filter) {
+        case BudgetFilter.all:
+          return true;
+        case BudgetFilter.onTrack:
+          return percentage < 80;
+        case BudgetFilter.nearLimit:
+          return percentage >= 80 && percentage <= 100;
+        case BudgetFilter.exceeded:
+          return percentage > 100;
+      }
+    }).toList();
+
+    result.sort((a, b) {
+      switch (_sort) {
+        case BudgetSort.name:
+          final catA = widget.categoryMap[a.categoryId]?.name ?? '';
+          final catB = widget.categoryMap[b.categoryId]?.name ?? '';
+          return catA.compareTo(catB);
+        case BudgetSort.amount:
+          return b.consumedCents.compareTo(a.consumedCents);
+        case BudgetSort.percentage:
+          final percA = a.limitCents > 0 ? (a.consumedCents / a.limitCents) : 0.0;
+          final percB = b.limitCents > 0 ? (b.consumedCents / b.limitCents) : 0.0;
+          return percB.compareTo(percA);
+      }
+    });
+
+    return result;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final totalLimit = widget.budgets.fold<int>(0, (sum, b) => sum + b.limitCents);
+    final totalSpent = widget.budgets.fold<int>(0, (sum, b) => sum + b.consumedCents);
+    final totalRemaining = totalLimit - totalSpent;
+    
+    final onTrackCount = widget.budgets.where((b) {
+      final perc = b.limitCents > 0 ? (b.consumedCents / b.limitCents * 100) : 0.0;
+      return perc < 80;
+    }).length;
+    
+    final exceededCount = widget.budgets.where((b) {
+      final perc = b.limitCents > 0 ? (b.consumedCents / b.limitCents * 100) : 0.0;
+      return perc > 100;
+    }).length;
+
+    final filteredBudgets = _filteredAndSortedBudgets;
+
+    return CustomScrollView(
+      slivers: [
+        // Summary section
+        SliverToBoxAdapter(
+          child: Container(
+            padding: EdgeInsets.all(AppSpacing.md),
+            color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.budgetOverview,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppMetricCard(
+                        label: l10n.spent,
+                        value: CurrencyFormatter.formatVNDFromCents(totalSpent),
+                        color: AppColors.expense,
+                        icon: Icons.trending_up,
+                      ),
+                    ),
+                    SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: AppMetricCard(
+                        label: l10n.remaining,
+                        value: CurrencyFormatter.formatVNDFromCents(totalRemaining),
+                        color: totalRemaining >= 0 ? AppColors.income : AppColors.expense,
+                        icon: Icons.account_balance_wallet,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _StatusCard(
+                        label: l10n.onTrack,
+                        count: onTrackCount,
+                        color: Colors.green,
+                        icon: Icons.check_circle_outline,
+                      ),
+                    ),
+                    SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: _StatusCard(
+                        label: l10n.exceeded,
+                        count: exceededCount,
+                        color: Colors.red,
+                        icon: Icons.warning_amber_rounded,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Filter & Sort bar
+        SliverToBoxAdapter(
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _FilterChip(
+                          label: l10n.all,
+                          count: widget.budgets.length,
+                          isSelected: _filter == BudgetFilter.all,
+                          onTap: () => setState(() => _filter = BudgetFilter.all),
+                        ),
+                        SizedBox(width: AppSpacing.xs),
+                        _FilterChip(
+                          label: l10n.onTrack,
+                          count: onTrackCount,
+                          isSelected: _filter == BudgetFilter.onTrack,
+                          onTap: () => setState(() => _filter = BudgetFilter.onTrack),
+                        ),
+                        SizedBox(width: AppSpacing.xs),
+                        _FilterChip(
+                          label: l10n.nearLimit,
+                          count: widget.budgets.where((b) {
+                            final perc = b.limitCents > 0 ? (b.consumedCents / b.limitCents * 100) : 0.0;
+                            return perc >= 80 && perc <= 100;
+                          }).length,
+                          isSelected: _filter == BudgetFilter.nearLimit,
+                          onTap: () => setState(() => _filter = BudgetFilter.nearLimit),
+                        ),
+                        SizedBox(width: AppSpacing.xs),
+                        _FilterChip(
+                          label: l10n.exceeded,
+                          count: exceededCount,
+                          isSelected: _filter == BudgetFilter.exceeded,
+                          onTap: () => setState(() => _filter = BudgetFilter.exceeded),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(width: AppSpacing.sm),
+                PopupMenuButton<BudgetSort>(
+                  icon: const Icon(Icons.sort),
+                  onSelected: (sort) => setState(() => _sort = sort),
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: BudgetSort.percentage,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.percent,
+                            size: 20,
+                            color: _sort == BudgetSort.percentage 
+                                ? Theme.of(context).colorScheme.primary 
+                                : null,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(l10n.byUsagePercent),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: BudgetSort.amount,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.attach_money,
+                            size: 20,
+                            color: _sort == BudgetSort.amount 
+                                ? Theme.of(context).colorScheme.primary 
+                                : null,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(l10n.byAmount),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: BudgetSort.name,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.sort_by_alpha,
+                            size: 20,
+                            color: _sort == BudgetSort.name 
+                                ? Theme.of(context).colorScheme.primary 
+                                : null,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(l10n.byName),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Budget list
+        if (filteredBudgets.isEmpty)
+          SliverFillRemaining(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.filter_list_off, size: 64, color: Colors.grey[400]),
+                  SizedBox(height: AppSpacing.md),
+                  Text(
+                    l10n.noBudgetsMatchFilter,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          SliverPadding(
+            padding: EdgeInsets.all(AppSpacing.md),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final budget = filteredBudgets[index];
+                  return _SwipeableBudgetCard(
+                    budget: budget,
+                    onDeleted: () {
+                      ref.invalidate(budgetsProvider);
+                      ref.invalidate(budgetsWithConsumedProvider);
+                    },
+                  );
+                },
+                childCount: filteredBudgets.length,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _StatusCard extends StatelessWidget {
+  final String label;
+  final int count;
+  final Color color;
+  final IconData icon;
+
+  const _StatusCard({
+    required this.label,
+    required this.count,
+    required this.color,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 20),
+          SizedBox(width: AppSpacing.xs),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  count.toString(),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.grey[700],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final int count;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _FilterChip({
+    required this.label,
+    required this.count,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? Theme.of(context).colorScheme.primary
+              : Colors.grey[200],
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+        ),
+        child: Text(
+          '$label ($count)',
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            color: isSelected ? Colors.white : Colors.grey[700],
+          ),
         ),
       ),
     );
@@ -390,17 +762,14 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final monthStartDay = ref.watch(monthStartDayProvider);
     
-    // Calculate period based on monthStartDay for monthly budgets
     late final DateTime periodStart;
     late final DateTime periodEnd;
     
     if (budget.periodType == PeriodType.monthly) {
-      // Use cycle range from monthStartDay setting
       final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
       periodStart = cycleRange.start;
       periodEnd = cycleRange.end;
     } else {
-      // Use budget's stored period for yearly/custom
       periodStart = budget.periodStart;
       periodEnd = budget.periodEnd;
     }
@@ -413,61 +782,95 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(categoryName),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: () async {
-              final result = await Navigator.pushNamed(
-                context,
-                '/budget-edit',
-                arguments: budget,
-              );
-              if (result == true) {
-                ref.invalidate(budgetsProvider);
-                ref.invalidate(budgetsWithConsumedProvider);
-              }
-            },
+          PopupMenuButton(
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                child: Row(
+                  children: [
+                    const Icon(Icons.edit, size: 20),
+                    SizedBox(width: AppSpacing.sm),
+                    Text(l10n.editBudgetAction),
+                  ],
+                ),
+                onTap: () async {
+                  await Future.delayed(Duration.zero);
+                  if (context.mounted) {
+                    final result = await Navigator.pushNamed(
+                      context,
+                      '/budget-edit',
+                      arguments: budget,
+                    );
+                    if (result == true) {
+                      ref.invalidate(budgetsProvider);
+                      ref.invalidate(budgetsWithConsumedProvider);
+                    }
+                  }
+                },
+              ),
+            ],
           ),
         ],
       ),
       body: Column(
         children: [
-          // Budget summary card
+          // Hero summary card with gradient
           Container(
-            padding: const EdgeInsets.all(16),
-            color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+            padding: EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: percentage > 100
+                    ? [Colors.red.shade50, Colors.red.shade100]
+                    : percentage >= 80
+                        ? [Colors.orange.shade50, Colors.orange.shade100]
+                        : [Colors.green.shade50, Colors.green.shade100],
+              ),
+            ),
             child: Column(
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.spent,
-                          style: const TextStyle(color: Colors.grey),
-                        ),
-                        Text(
-                          CurrencyFormatter.formatVNDFromCents(budget.consumedCents),
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.spent,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.grey[700],
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
-                      ],
+                          SizedBox(height: AppSpacing.xs),
+                          Text(
+                            CurrencyFormatter.formatVNDFromCents(budget.consumedCents),
+                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.xs,
+                      ),
                       decoration: BoxDecoration(
                         color: percentage > 100
-                            ? Colors.red.withOpacity(0.1)
-                            : Colors.green.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(16),
+                            ? Colors.red
+                            : percentage >= 80
+                                ? Colors.orange
+                                : Colors.green,
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                       ),
                       child: Text(
                         '${percentage.toStringAsFixed(1)}%',
-                        style: TextStyle(
-                          color: percentage > 100 ? Colors.red : Colors.green,
+                        style: const TextStyle(
+                          color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
@@ -475,29 +878,35 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: AppSpacing.md),
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                   child: LinearProgressIndicator(
                     value: (percentage / 100).clamp(0.0, 1.0),
-                    minHeight: 10,
-                    backgroundColor: Colors.grey[200],
+                    minHeight: 12,
+                    backgroundColor: Colors.white.withOpacity(0.5),
                     valueColor: AlwaysStoppedAnimation(
-                      percentage > 100 ? Colors.red : Theme.of(context).colorScheme.primary,
+                      percentage > 100
+                          ? Colors.red
+                          : percentage >= 80
+                              ? Colors.orange
+                              : Colors.green,
                     ),
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: AppSpacing.sm),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       '${l10n.limit}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents)}',
-                      style: TextStyle(color: Colors.grey[600]),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.grey[700],
+                      ),
                     ),
                     Text(
                       '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents - budget.consumedCents)}',
-                      style: TextStyle(
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: budget.consumedCents > budget.limitCents
                             ? Colors.red
                             : Colors.green,
@@ -514,7 +923,6 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
           Expanded(
             child: transactionsAsync.when(
               data: (transactions) {
-                // Filter transactions by category and budget period
                 final budgetTransactions = transactions.where((t) {
                   return t.categoryId == budget.categoryId &&
                       t.type == TransactionType.expense &&
@@ -528,14 +936,18 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.receipt_long, size: 64, color: Colors.grey[400]),
-                        const SizedBox(height: 16),
-                        Text(l10n.noTransactions),
+                        SizedBox(height: AppSpacing.md),
+                        Text(
+                          l10n.noTransactions,
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                        ),
                       ],
                     ),
                   );
                 }
 
-                // Group by date
                 final Map<DateTime, List<Transaction>> groupedByDate = {};
                 for (final t in budgetTransactions) {
                   final date = DateTime(t.dateTime.year, t.dateTime.month, t.dateTime.day);
@@ -549,7 +961,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                   ..sort((a, b) => b.compareTo(a));
 
                 return ListView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(AppSpacing.md),
                   itemCount: sortedDates.length,
                   itemBuilder: (context, index) {
                     final date = sortedDates[index];
@@ -557,16 +969,17 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                     final dayTotal = dayTransactions.fold<int>(0, (sum, t) => sum + t.amountCents);
 
                     return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
+                      margin: EdgeInsets.only(bottom: AppSpacing.sm),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Date header with distinct color
                           Container(
-                            padding: const EdgeInsets.all(12),
+                            padding: EdgeInsets.all(AppSpacing.sm),
                             decoration: BoxDecoration(
                               color: Colors.grey[100],
-                              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(AppSpacing.radiusMd),
+                              ),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -576,10 +989,13 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                                   style: const TextStyle(fontWeight: FontWeight.w600),
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.xs,
+                                    vertical: 4,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                                   ),
                                   child: Text(
                                     '-${CurrencyFormatter.formatVNDFromCents(dayTotal)}',
@@ -592,14 +1008,13 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                               ],
                             ),
                           ),
-                          // Transactions - amounts in black
                           ...dayTransactions.map((t) => ListTile(
                             leading: Container(
                               width: 40,
                               height: 40,
                               decoration: BoxDecoration(
                                 color: AppColors.expense.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                               ),
                               child: const Icon(
                                 Icons.shopping_cart,

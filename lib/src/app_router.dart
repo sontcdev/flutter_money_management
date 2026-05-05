@@ -3,11 +3,14 @@
 import 'package:flutter/material.dart';
 import 'models/category.dart';
 import 'models/budget.dart';
+import 'models/transaction.dart' as model;
 import 'ui/screens/splash_screen.dart';
 import 'ui/screens/auth/sign_in_screen.dart';
 import 'ui/screens/auth/sign_up_screen.dart';
 import 'ui/screens/workspace_selection_screen.dart';
 import 'ui/screens/home_screen.dart';
+import 'ui/screens/dashboard_screen.dart';
+import 'ui/screens/add_transaction_screen.dart';
 import 'ui/screens/transactions_screen.dart';
 import 'ui/screens/edit_transaction_screen.dart';
 import 'ui/screens/transaction_detail_screen.dart';
@@ -37,6 +40,14 @@ class AppRouter {
         return AppAnimations.fadeRoute(const WorkspaceSelectionScreen());
       case '/home':
         return AppAnimations.fadeRoute(const HomeScreen());
+      case '/dashboard':
+        return AppAnimations.fadeRoute(const DashboardScreen());
+      case '/add-transaction':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final initialType = args?['type'] as model.TransactionType?;
+        return AppAnimations.slideRoute(
+          AddTransactionScreen(initialType: initialType),
+        );
       case '/transactions':
         return AppAnimations.slideRoute(const TransactionsScreen());
       case '/edit-transaction':
