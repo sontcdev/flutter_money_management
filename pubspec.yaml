@@ -27,6 +27,9 @@ dependencies:
   sqlite3_flutter_libs: ^0.5.18
   path_provider: ^2.1.1
   path: ^1.8.3
+  
+  # Supabase (Backend & Auth)
+  supabase_flutter: ^2.5.0
 
   # Code generation
   freezed_annotation: ^2.4.1

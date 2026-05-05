@@ -19,6 +19,7 @@ import '../widgets/app_input.dart';
 import '../widgets/transaction_item.dart';
 import 'categories_screen.dart';
 import '../widgets/category_icon_widget.dart';
+import '../widgets/workspace_switcher.dart';
 import 'budgets_screen.dart';
 import 'report_calendar_screen.dart';
 import 'reports_screen.dart';
@@ -222,6 +223,9 @@ class _AddTransactionTab extends HookConsumerWidget {
       appBar: AppBar(
         title: Text(l10n.addTransaction),
         automaticallyImplyLeading: false,
+        actions: const [
+          WorkspaceSwitcher(),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

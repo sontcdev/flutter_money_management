@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
 import 'providers/providers.dart';
 import 'i18n/locale_provider.dart';
 import 'i18n/theme_provider.dart';
+import 'config/supabase_config.dart';
 
 class AppBootstrap extends StatefulWidget {
   const AppBootstrap({super.key});
@@ -27,6 +29,24 @@ class _AppBootstrapState extends State<AppBootstrap> {
   }
 
   Future<void> _init() async {
+    // Initialize Supabase if configured
+    if (SupabaseConfig.isConfigured) {
+      try {
+        await Supabase.initialize(
+          url: SupabaseConfig.supabaseUrl,
+          anonKey: SupabaseConfig.supabaseAnonKey,
+          authOptions: const FlutterAuthClientOptions(
+            authFlowType: AuthFlowType.pkce,
+          ),
+          debug: true, // Enable debug logging for API calls
+        );
+        debugPrint('✅ Supabase initialized: ${SupabaseConfig.supabaseUrl}');
+      } catch (e) {
+        // Log error but continue - app can work in local-only mode
+        debugPrint('❌ Supabase initialization failed: $e');
+      }
+    }
+    
     final prefs = await SharedPreferences.getInstance();
     if (mounted) {
       // Load theme color from preferences

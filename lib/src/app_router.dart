@@ -3,6 +3,10 @@
 import 'package:flutter/material.dart';
 import 'models/category.dart';
 import 'models/budget.dart';
+import 'ui/screens/splash_screen.dart';
+import 'ui/screens/auth/sign_in_screen.dart';
+import 'ui/screens/auth/sign_up_screen.dart';
+import 'ui/screens/workspace_selection_screen.dart';
 import 'ui/screens/home_screen.dart';
 import 'ui/screens/transactions_screen.dart';
 import 'ui/screens/edit_transaction_screen.dart';
@@ -24,6 +28,13 @@ class AppRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case '/':
+        return AppAnimations.fadeRoute(const SplashScreen());
+      case '/sign-in':
+        return AppAnimations.fadeRoute(const SignInScreen());
+      case '/sign-up':
+        return AppAnimations.slideRoute(const SignUpScreen());
+      case '/workspace-selection':
+        return AppAnimations.fadeRoute(const WorkspaceSelectionScreen());
       case '/home':
         return AppAnimations.fadeRoute(const HomeScreen());
       case '/transactions':

@@ -36,7 +36,7 @@ class MoneyManagementApp extends ConsumerWidget {
         Locale('vi'),
       ],
       onGenerateRoute: AppRouter.generateRoute,
-      initialRoute: '/home',
+      initialRoute: '/',
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
         // Initialize responsive dimensions

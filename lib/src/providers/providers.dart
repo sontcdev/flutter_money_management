@@ -7,7 +7,8 @@ import '../data/repositories/transaction_repository.dart';
 import '../data/repositories/budget_repository.dart';
 import '../data/repositories/category_repository.dart';
 import '../services/budget_service.dart';
-import '../services/auth_service.dart';
+import '../services/app_lock_service.dart';
+import '../services/email_persistence_service.dart';
 import '../models/transaction.dart';
 import '../models/budget.dart';
 import '../models/category.dart';
@@ -25,9 +26,14 @@ final databaseProvider = Provider<AppDatabase>((ref) {
 });
 
 // Services
-final authServiceProvider = Provider<AuthService>((ref) {
+final appLockServiceProvider = Provider<AppLockService>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
-  return AuthService(prefs);
+  return AppLockService(prefs);
+});
+
+final emailPersistenceServiceProvider = Provider<EmailPersistenceService>((ref) {
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return EmailPersistenceService(prefs);
 });
 
 final budgetServiceProvider = Provider<BudgetService>((ref) {
