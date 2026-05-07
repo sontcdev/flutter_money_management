@@ -9,6 +9,15 @@ import '../../providers/auth_providers.dart';
 class WorkspaceSelectionScreen extends ConsumerWidget {
   const WorkspaceSelectionScreen({super.key});
 
+  static const _backendMisconfigurationMessage =
+      'No workspace was created for this account.\n\n'
+      'This usually means the Supabase auth trigger `on_auth_user_created` '
+      'is missing or misconfigured.\n\n'
+      'Please contact the administrator and ask them to verify:\n'
+      '- trigger `on_auth_user_created`\n'
+      '- function `public.handle_new_user()`\n'
+      '- rows were created in `profiles`, `workspaces`, and `workspace_members`';
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final workspacesAsync = ref.watch(workspaceListProvider);
@@ -35,27 +44,62 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
       body: workspacesAsync.when(
         data: (workspaces) {
           if (workspaces.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.workspace_premium, size: 64),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'No workspaces found',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            return Padding(
+              padding: const EdgeInsets.all(24),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 520),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        size: 72,
+                        color: Colors.orange,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Workspace setup is incomplete',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        _backendMisconfigurationMessage,
+                        textAlign: TextAlign.left,
+                      ),
+                      const SizedBox(height: 24),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        alignment: WrapAlignment.center,
+                        children: [
+                          OutlinedButton(
+                            onPressed: () {
+                              ref.invalidate(workspaceListProvider);
+                            },
+                            child: const Text('Retry'),
+                          ),
+                          FilledButton(
+                            onPressed: () async {
+                              final supabaseAuth = ref.read(supabaseAuthServiceProvider);
+                              await supabaseAuth.signOut();
+                              clearActiveWorkspace(ref);
+                              if (context.mounted) {
+                                Navigator.of(context).pushReplacementNamed('/sign-in');
+                              }
+                            },
+                            child: const Text('Sign out'),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  const Text('Create your first workspace to get started'),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      _showCreateWorkspaceDialog(context, ref);
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text('Create Workspace'),
-                  ),
-                ],
+                ),
               ),
             );
           }
@@ -111,91 +155,7 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
           ),
         ),
       ),
-      floatingActionButton: workspacesAsync.maybeWhen(
-        data: (workspaces) => workspaces.isNotEmpty
-            ? FloatingActionButton(
-                onPressed: () {
-                  _showCreateWorkspaceDialog(context, ref);
-                },
-                child: const Icon(Icons.add),
-              )
-            : null,
-        orElse: () => null,
-      ),
-    );
-  }
-
-  void _showCreateWorkspaceDialog(BuildContext context, WidgetRef ref) {
-    final nameController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Create Workspace'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: 'Workspace Name',
-                hintText: 'My Workspace',
-              ),
-              autofocus: true,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final name = nameController.text.trim();
-              if (name.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please enter a workspace name')),
-                );
-                return;
-              }
-
-              try {
-                final supabase = ref.read(supabaseClientProvider);
-                final session = ref.read(currentSessionProvider);
-
-                final response = await supabase.from('workspaces').insert({
-                  'name': name,
-                  'type': 'personal',
-                  'owner_user_id': session!.user.id,
-                }).select('id').single();
-
-                final workspaceId = response['id'] as String;
-
-                // Refresh workspace list
-                ref.invalidate(workspaceListProvider);
-
-                if (context.mounted) {
-                  Navigator.of(context).pop();
-                  
-                  // Set active workspace
-                  ref.read(activeWorkspaceIdProvider.notifier).state = workspaceId;
-                  
-                  // Navigate to home immediately
-                  Navigator.of(context).pushReplacementNamed('/home');
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error creating workspace: $e')),
-                  );
-                }
-              }
-            },
-            child: const Text('Create'),
-          ),
-        ],
-      ),
+      floatingActionButton: null,
     );
   }
 }

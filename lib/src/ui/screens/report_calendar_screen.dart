@@ -164,10 +164,10 @@ class ReportCalendarScreen extends HookConsumerWidget {
 
           // ========== TRANSACTION LIST (SCROLLABLE) ==========
           Expanded(
-            child: RefreshIndicator(
-              onRefresh: () async {
-                await ref.read(transactionListNotifierProvider.notifier).refresh();
-              },
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  await ref.read(transactionListNotifierProvider.notifier).refresh();
+                },
               child: groups.isEmpty
                   ? ListView(
                       // Empty ListView để RefreshIndicator hoạt động
@@ -416,7 +416,7 @@ class _MonthYearPickerSheet extends HookWidget {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final currentYearIndex = years.indexOf(selectedYear.value);
         if (currentYearIndex != -1 && scrollController.hasClients) {
-          final itemWidth = 80.0;
+          const itemWidth = 80.0;
           final screenWidth = MediaQuery.of(context).size.width;
           final offset = (currentYearIndex * itemWidth) - (screenWidth / 2) + (itemWidth / 2);
           scrollController.animateTo(

@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_money_management/src/i18n/locale_provider.dart';
 import 'package:flutter_money_management/src/i18n/theme_provider.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
+import 'package:flutter_money_management/src/providers/auth_providers.dart';
+import 'package:flutter_money_management/src/providers/workspace_providers.dart';
 import '../../../l10n/app_localizations.dart';
 
 // Budget period provider
@@ -72,10 +74,11 @@ class SettingsScreen extends HookConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final locale = ref.watch(localeProvider);
     final themeMode = ref.watch(themeModeProvider);
-    final budgetPeriod = ref.watch(budgetPeriodProvider);
     final themeColor = ref.watch(themeColorProvider);
     final monthStartDay = ref.watch(monthStartDayProvider);
     final packageInfo = useFuture(useMemoized(() => PackageInfo.fromPlatform()));
+    final currentUser = ref.watch(currentUserProvider);
+    final activeWorkspace = ref.watch(activeWorkspaceProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -84,8 +87,8 @@ class SettingsScreen extends HookConsumerWidget {
       ),
       body: ListView(
         children: [
-          // Language Section
-          _buildSectionHeader(context, l10n.languageDisplay),
+          // Appearance Section
+          _buildSectionHeader(context, 'Appearance'),
           ListTile(
             leading: const Icon(Icons.language),
             title: Text(l10n.language),
@@ -119,8 +122,6 @@ class SettingsScreen extends HookConsumerWidget {
               },
             ),
           ),
-          
-          // Theme Color Section
           ListTile(
             leading: const Icon(Icons.palette),
             title: Text(l10n.themeColor),
@@ -137,9 +138,9 @@ class SettingsScreen extends HookConsumerWidget {
             onTap: () => _showColorPicker(context, ref, themeColor, l10n),
           ),
 
-          const Divider(),
+          const Divider(height: 32),
           
-          // Budget Period Section
+          // Budget Section
           _buildSectionHeader(context, l10n.budgetSettings),
           ListTile(
             leading: const Icon(Icons.calendar_month),
@@ -155,27 +156,11 @@ class SettingsScreen extends HookConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => Navigator.pushNamed(context, '/budgets'),
           ),
-          ListTile(
-            leading: const Icon(Icons.add_photo_alternate),
-            title: Text(l10n.iconManagement),
-            subtitle: Text(l10n.iconManagementDesc),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.pushNamed(context, '/icon-management'),
-          ),
 
-          const Divider(),
+          const Divider(height: 32),
           
           // Data Section
           _buildSectionHeader(context, l10n.dataSection),
-          ListTile(
-            leading: const Icon(Icons.import_export),
-            title: Text(l10n.importExport),
-            subtitle: Text(l10n.importExportDesc),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.pushNamed(context, '/import-export');
-            },
-          ),
           ListTile(
             leading: const Icon(Icons.category),
             title: Text(l10n.manageCategories),
@@ -190,8 +175,44 @@ class SettingsScreen extends HookConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () => Navigator.pushNamed(context, '/transaction-management'),
           ),
+          const Divider(height: 32),
+
+          // Account Section
+          _buildSectionHeader(context, 'Account'),
+          if (currentUser != null) ...[
+            ListTile(
+              leading: const Icon(Icons.email_outlined),
+              title: const Text('Email'),
+              subtitle: Text(currentUser.email ?? 'Not available'),
+            ),
+            if (activeWorkspace != null)
+              ListTile(
+                leading: const Icon(Icons.workspace_premium_outlined),
+                title: const Text('Active Workspace'),
+                subtitle: Text(activeWorkspace.name),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.pushNamed(context, '/workspace-selection'),
+              ),
+            ListTile(
+              leading: Icon(Icons.logout, color: Colors.red[700]),
+              title: Text(
+                l10n.logout,
+                style: TextStyle(color: Colors.red[700]),
+              ),
+              subtitle: const Text('Sign out and return to login'),
+              onTap: () => _handleLogout(context, ref),
+            ),
+          ] else ...[
+            ListTile(
+              leading: const Icon(Icons.login),
+              title: const Text('Sign In'),
+              subtitle: const Text('Sign in to sync your data'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => Navigator.pushNamed(context, '/sign-in'),
+            ),
+          ],
           
-          const Divider(),
+          const Divider(height: 32),
 
           // About Section
           _buildSectionHeader(context, l10n.aboutSection),
@@ -203,9 +224,69 @@ class SettingsScreen extends HookConsumerWidget {
                 'Version ${packageInfo.data!.version} (${packageInfo.data!.buildNumber})',
               ),
             ),
+          
+          const SizedBox(height: 24),
         ],
       ),
     );
+  }
+
+  Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Sign Out'),
+        content: const Text(
+          'Are you sure you want to sign out?\n\n'
+          'Your local data will be kept and synced when you sign in again.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red[700],
+            ),
+            child: const Text('Sign Out'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      try {
+        // Sign out from Supabase
+        final authService = ref.read(supabaseAuthServiceProvider);
+        await authService.signOut();
+        
+        // Clear active workspace
+        clearActiveWorkspace(ref);
+        
+        // Invalidate auth-related providers
+        ref.invalidate(authStateProvider);
+        ref.invalidate(workspaceListProvider);
+        
+        if (context.mounted) {
+          // Navigate to sign in
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            '/sign-in',
+            (route) => false,
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to sign out: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
   }
 
   Widget _buildSectionHeader(BuildContext context, String title) {
@@ -218,63 +299,6 @@ class SettingsScreen extends HookConsumerWidget {
           fontWeight: FontWeight.w600,
         ),
       ),
-    );
-  }
-
-  String _getPeriodLabel(String period, AppLocalizations l10n) {
-    switch (period) {
-      case 'weekly':
-        return l10n.weekly;
-      case 'monthly':
-        return l10n.monthly;
-      case 'quarterly':
-        return l10n.quarterly;
-      case 'yearly':
-        return l10n.yearly;
-      default:
-        return l10n.monthly;
-    }
-  }
-
-  void _showPeriodPicker(BuildContext context, WidgetRef ref, String currentPeriod, AppLocalizations l10n) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                l10n.selectBudgetPeriod,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            _buildPeriodOption(context, ref, 'weekly', l10n.weekly, currentPeriod),
-            _buildPeriodOption(context, ref, 'monthly', l10n.monthly, currentPeriod),
-            _buildPeriodOption(context, ref, 'quarterly', l10n.quarterly, currentPeriod),
-            _buildPeriodOption(context, ref, 'yearly', l10n.yearly, currentPeriod),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPeriodOption(BuildContext context, WidgetRef ref, String value, String label, String current) {
-    return ListTile(
-      leading: Icon(
-        value == current ? Icons.radio_button_checked : Icons.radio_button_off,
-        color: value == current ? Theme.of(context).colorScheme.primary : null,
-      ),
-      title: Text(label),
-      onTap: () {
-        ref.read(budgetPeriodProvider.notifier).setPeriod(value);
-        Navigator.pop(context);
-      },
     );
   }
 
@@ -370,7 +394,7 @@ class SettingsScreen extends HookConsumerWidget {
                 children: ThemeColorNotifier.availableColors.entries.map((entry) {
                   final color = entry.value;
                   final name = _getColorName(entry.key, l10n);
-                  final isSelected = color.value == currentColor.value;
+                  final isSelected = color.toARGB32() == currentColor.toARGB32();
                   
                   return GestureDetector(
                     onTap: () {
@@ -390,7 +414,7 @@ class SettingsScreen extends HookConsumerWidget {
                                 : null,
                             boxShadow: [
                               BoxShadow(
-                                color: color.withOpacity(0.4),
+                                color: color.withValues(alpha: 0.4),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),

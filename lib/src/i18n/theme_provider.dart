@@ -58,7 +58,7 @@ class ThemeColorNotifier extends StateNotifier<Color> {
   }
 
   Future<void> setThemeColor(Color color) async {
-    await _prefs.setInt(_themeColorKey, color.value);
+    await _prefs.setInt(_themeColorKey, color.toARGB32());
     state = color;
   }
 }
@@ -66,4 +66,3 @@ class ThemeColorNotifier extends StateNotifier<Color> {
 final themeColorProvider = StateNotifierProvider<ThemeColorNotifier, Color>((ref) {
   throw UnimplementedError('ThemeColorNotifier must be overridden');
 });
-

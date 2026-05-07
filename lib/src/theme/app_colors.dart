@@ -56,5 +56,28 @@ class AppColors {
   // Elevation/Shadow colors
   static const Color shadow = Color(0x0F000000);  // Lighter shadow
   static const Color shadowDark = Color(0x40000000);
+
+  // Semantic surface colors for finance UI
+  static const Color surfaceSubtle = Color(0xFFF8F9FA);  // Very subtle background
+  static const Color surfaceMuted = Color(0xFFF3F4F6);  // Muted surface for secondary content
+  static const Color surfaceDarkSubtle = Color(0xFF1F1F26);  // Dark mode subtle surface
+  
+  // Container colors for transaction types
+  static const Color incomeContainer = Color(0xFFD1FAE5);  // Light green container
+  static const Color incomeContainerDark = Color(0xFF064E3B);  // Dark green container
+  static const Color expenseContainer = Color(0xFFFEE2E2);  // Light red container
+  static const Color expenseContainerDark = Color(0xFF7F1D1D);  // Dark red container
+  
+  // Status container colors
+  static const Color warningContainer = Color(0xFFFEF3C7);  // Light amber container
+  static const Color warningContainerDark = Color(0xFF78350F);  // Dark amber container
+  static const Color infoContainer = Color(0xFFDBEAFE);  // Light blue container
+  static const Color infoContainerDark = Color(0xFF1E3A8A);  // Dark blue container
+  static const Color successContainer = Color(0xFFD1FAE5);  // Light green container
+  static const Color successContainerDark = Color(0xFF064E3B);  // Dark green container
+  
+  // Muted text helpers
+  static const Color textMuted = Color(0xFF9CA3AF);  // More muted than secondary
+  static const Color textDisabled = Color(0xFFD1D5DB);  // Disabled state text
 }
 

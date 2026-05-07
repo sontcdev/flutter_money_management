@@ -34,4 +34,8 @@ class AppSpacing {
   static const double radiusLg = 16.0;
   static const double radiusXl = 20.0;
   static const double radiusFull = 999.0;
+
+  // Additional spacing for hero sections and compact lists
+  static const double heroSpacing = 40.0;  // For large hero sections
+  static const double compactGap = 6.0;  // Tighter spacing for compact lists
 }

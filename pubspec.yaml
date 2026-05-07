@@ -22,12 +22,6 @@ dependencies:
   hooks_riverpod: ^2.4.9
   flutter_hooks: ^0.20.3
 
-  # Database
-  drift: ^2.14.1
-  sqlite3_flutter_libs: ^0.5.18
-  path_provider: ^2.1.1
-  path: ^1.8.3
-  
   # Supabase (Backend & Auth)
   supabase_flutter: ^2.5.0
 
@@ -40,9 +34,6 @@ dependencies:
 
   # Image handling
   image_picker: ^1.0.4
-
-  # File picker
-  file_picker: ^8.0.0
 
   # Notifications
   flutter_local_notifications: ^18.0.1
@@ -57,8 +48,8 @@ dependencies:
   package_info_plus: ^8.0.0
   flutter_slidable: ^4.0.3
   
-  # Share files
-  share_plus: ^10.1.4
+  # UUID generation
+  uuid: ^4.5.1
 
 dev_dependencies:
   flutter_test:
@@ -67,7 +58,6 @@ dev_dependencies:
 
   # Code generation
   build_runner: ^2.4.7
-  drift_dev: ^2.14.1
   freezed: ^2.4.5
   json_serializable: ^6.7.1
 
@@ -83,4 +73,3 @@ flutter_launcher_icons:
   image_path: "assets/icon/app_icon.png"
   adaptive_icon_background: "#4CAF50"
   adaptive_icon_foreground: "assets/icon/app_icon.png"
-

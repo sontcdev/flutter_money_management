@@ -12,6 +12,7 @@ import '../widgets/shimmer_loading.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../utils/currency_formatter.dart';
+import '../../services/workspace_sync_helper.dart';
 import '../widgets/category_icon_widget.dart';
 import '../widgets/app_metric_card.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -51,10 +52,7 @@ class BudgetsScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          ref.invalidate(budgetsProvider);
-          ref.invalidate(budgetsWithConsumedProvider);
-          ref.invalidate(categoriesProvider);
-          await Future.delayed(const Duration(milliseconds: 500));
+          await syncCurrentWorkspaceData(ref);
         },
         child: budgetsAsync.when(
         data: (budgets) {
@@ -112,7 +110,7 @@ class BudgetsScreen extends ConsumerWidget {
 
 class _BudgetsContent extends ConsumerStatefulWidget {
   final List<Budget> budgets;
-  final Map<int, Category> categoryMap;
+  final Map<String, Category> categoryMap;
 
   const _BudgetsContent({
     required this.budgets,
@@ -186,7 +184,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
         SliverToBoxAdapter(
           child: Container(
             padding: EdgeInsets.all(AppSpacing.md),
-            color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -414,9 +412,9 @@ class _StatusCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -514,6 +512,7 @@ class _SwipeableBudgetCard extends ConsumerWidget {
           SlidableAction(
             onPressed: (context) async {
               final confirmed = await _showDeleteConfirmDialog(context, l10n, categoryAsync);
+              if (!context.mounted) return;
               if (confirmed) {
                 await _deleteBudget(ref, l10n, context);
               }
@@ -618,7 +617,7 @@ class _BudgetCard extends ConsumerWidget {
                               width: 32,
                               height: 32,
                               decoration: BoxDecoration(
-                                color: getCategoryColor(category.colorValue).withOpacity(0.2),
+                                 color: getCategoryColor(category.colorValue).withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Center(
@@ -884,7 +883,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                   child: LinearProgressIndicator(
                     value: (percentage / 100).clamp(0.0, 1.0),
                     minHeight: 12,
-                    backgroundColor: Colors.white.withOpacity(0.5),
+                     backgroundColor: Colors.white.withValues(alpha: 0.5),
                     valueColor: AlwaysStoppedAnimation(
                       percentage > 100
                           ? Colors.red
@@ -994,7 +993,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                     color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                                   ),
                                   child: Text(
@@ -1013,7 +1012,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                               width: 40,
                               height: 40,
                               decoration: BoxDecoration(
-                                color: AppColors.expense.withOpacity(0.1),
+                                color: AppColors.expense.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                               ),
                               child: const Icon(
@@ -1069,4 +1068,3 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year} - $weekday';
   }
 }
-

@@ -82,7 +82,7 @@ class AppStatusChip extends StatelessWidget {
         vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: isOutlined ? Colors.transparent : color.withOpacity(0.1),
+        color: isOutlined ? Colors.transparent : color.withValues(alpha: 0.1),
         border: isOutlined ? Border.all(color: color, width: 1.5) : null,
         borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
       ),

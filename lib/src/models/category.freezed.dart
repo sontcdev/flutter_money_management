@@ -20,13 +20,18 @@ Category _$CategoryFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Category {
-  int get id => throw _privateConstructorUsedError;
+  String get id =>
+      throw _privateConstructorUsedError; // Changed from int to String (UUID)
   String get name => throw _privateConstructorUsedError;
   String get iconName => throw _privateConstructorUsedError;
   int get colorValue => throw _privateConstructorUsedError;
   CategoryType get type => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
+  SyncStatus get syncStatus => throw _privateConstructorUsedError;
+  DateTime? get syncedAt => throw _privateConstructorUsedError;
+  String? get lastSyncError => throw _privateConstructorUsedError;
+  DateTime? get deletedAt => throw _privateConstructorUsedError;
 
   /// Serializes this Category to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -44,13 +49,17 @@ abstract class $CategoryCopyWith<$Res> {
       _$CategoryCopyWithImpl<$Res, Category>;
   @useResult
   $Res call(
-      {int id,
+      {String id,
       String name,
       String iconName,
       int colorValue,
       CategoryType type,
       DateTime createdAt,
-      DateTime updatedAt});
+      DateTime updatedAt,
+      SyncStatus syncStatus,
+      DateTime? syncedAt,
+      String? lastSyncError,
+      DateTime? deletedAt});
 }
 
 /// @nodoc
@@ -75,12 +84,16 @@ class _$CategoryCopyWithImpl<$Res, $Val extends Category>
     Object? type = null,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? syncStatus = null,
+    Object? syncedAt = freezed,
+    Object? lastSyncError = freezed,
+    Object? deletedAt = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -105,6 +118,22 @@ class _$CategoryCopyWithImpl<$Res, $Val extends Category>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      syncStatus: null == syncStatus
+          ? _value.syncStatus
+          : syncStatus // ignore: cast_nullable_to_non_nullable
+              as SyncStatus,
+      syncedAt: freezed == syncedAt
+          ? _value.syncedAt
+          : syncedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      lastSyncError: freezed == lastSyncError
+          ? _value.lastSyncError
+          : lastSyncError // ignore: cast_nullable_to_non_nullable
+              as String?,
+      deletedAt: freezed == deletedAt
+          ? _value.deletedAt
+          : deletedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ) as $Val);
   }
 }
@@ -118,13 +147,17 @@ abstract class _$$CategoryImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {int id,
+      {String id,
       String name,
       String iconName,
       int colorValue,
       CategoryType type,
       DateTime createdAt,
-      DateTime updatedAt});
+      DateTime updatedAt,
+      SyncStatus syncStatus,
+      DateTime? syncedAt,
+      String? lastSyncError,
+      DateTime? deletedAt});
 }
 
 /// @nodoc
@@ -147,12 +180,16 @@ class __$$CategoryImplCopyWithImpl<$Res>
     Object? type = null,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? syncStatus = null,
+    Object? syncedAt = freezed,
+    Object? lastSyncError = freezed,
+    Object? deletedAt = freezed,
   }) {
     return _then(_$CategoryImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -177,6 +214,22 @@ class __$$CategoryImplCopyWithImpl<$Res>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      syncStatus: null == syncStatus
+          ? _value.syncStatus
+          : syncStatus // ignore: cast_nullable_to_non_nullable
+              as SyncStatus,
+      syncedAt: freezed == syncedAt
+          ? _value.syncedAt
+          : syncedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      lastSyncError: freezed == lastSyncError
+          ? _value.lastSyncError
+          : lastSyncError // ignore: cast_nullable_to_non_nullable
+              as String?,
+      deletedAt: freezed == deletedAt
+          ? _value.deletedAt
+          : deletedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ));
   }
 }
@@ -191,13 +244,18 @@ class _$CategoryImpl implements _Category {
       required this.colorValue,
       this.type = CategoryType.expense,
       required this.createdAt,
-      required this.updatedAt});
+      required this.updatedAt,
+      this.syncStatus = SyncStatus.pending,
+      this.syncedAt,
+      this.lastSyncError,
+      this.deletedAt});
 
   factory _$CategoryImpl.fromJson(Map<String, dynamic> json) =>
       _$$CategoryImplFromJson(json);
 
   @override
-  final int id;
+  final String id;
+// Changed from int to String (UUID)
   @override
   final String name;
   @override
@@ -211,10 +269,19 @@ class _$CategoryImpl implements _Category {
   final DateTime createdAt;
   @override
   final DateTime updatedAt;
+  @override
+  @JsonKey()
+  final SyncStatus syncStatus;
+  @override
+  final DateTime? syncedAt;
+  @override
+  final String? lastSyncError;
+  @override
+  final DateTime? deletedAt;
 
   @override
   String toString() {
-    return 'Category(id: $id, name: $name, iconName: $iconName, colorValue: $colorValue, type: $type, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Category(id: $id, name: $name, iconName: $iconName, colorValue: $colorValue, type: $type, createdAt: $createdAt, updatedAt: $updatedAt, syncStatus: $syncStatus, syncedAt: $syncedAt, lastSyncError: $lastSyncError, deletedAt: $deletedAt)';
   }
 
   @override
@@ -232,13 +299,32 @@ class _$CategoryImpl implements _Category {
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
+                other.updatedAt == updatedAt) &&
+            (identical(other.syncStatus, syncStatus) ||
+                other.syncStatus == syncStatus) &&
+            (identical(other.syncedAt, syncedAt) ||
+                other.syncedAt == syncedAt) &&
+            (identical(other.lastSyncError, lastSyncError) ||
+                other.lastSyncError == lastSyncError) &&
+            (identical(other.deletedAt, deletedAt) ||
+                other.deletedAt == deletedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType, id, name, iconName, colorValue, type, createdAt, updatedAt);
+      runtimeType,
+      id,
+      name,
+      iconName,
+      colorValue,
+      type,
+      createdAt,
+      updatedAt,
+      syncStatus,
+      syncedAt,
+      lastSyncError,
+      deletedAt);
 
   /// Create a copy of Category
   /// with the given fields replaced by the non-null parameter values.
@@ -258,19 +344,23 @@ class _$CategoryImpl implements _Category {
 
 abstract class _Category implements Category {
   const factory _Category(
-      {required final int id,
+      {required final String id,
       required final String name,
       required final String iconName,
       required final int colorValue,
       final CategoryType type,
       required final DateTime createdAt,
-      required final DateTime updatedAt}) = _$CategoryImpl;
+      required final DateTime updatedAt,
+      final SyncStatus syncStatus,
+      final DateTime? syncedAt,
+      final String? lastSyncError,
+      final DateTime? deletedAt}) = _$CategoryImpl;
 
   factory _Category.fromJson(Map<String, dynamic> json) =
       _$CategoryImpl.fromJson;
 
   @override
-  int get id;
+  String get id; // Changed from int to String (UUID)
   @override
   String get name;
   @override
@@ -283,6 +373,14 @@ abstract class _Category implements Category {
   DateTime get createdAt;
   @override
   DateTime get updatedAt;
+  @override
+  SyncStatus get syncStatus;
+  @override
+  DateTime? get syncedAt;
+  @override
+  String? get lastSyncError;
+  @override
+  DateTime? get deletedAt;
 
   /// Create a copy of Category
   /// with the given fields replaced by the non-null parameter values.

@@ -61,7 +61,7 @@ class CategoryEditScreen extends HookConsumerWidget {
       try {
         final categoryRepo = ref.read(categoryRepositoryProvider);
         final newCategory = Category(
-          id: category?.id ?? 0,
+          id: category?.id ?? '',
           name: nameController.text,
           iconName: selectedIcon.value,
           colorValue: selectedColor.value,

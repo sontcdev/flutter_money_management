@@ -3,8 +3,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../theme/app_colors.dart';
+import '../../theme/app_spacing.dart';
 import '../../models/transaction.dart';
 import '../../utils/currency_formatter.dart';
+
+enum TransactionItemDensity {
+  normal,
+  compact,
+}
 
 class TransactionItem extends StatelessWidget {
   final Transaction transaction;
@@ -13,6 +19,10 @@ class TransactionItem extends StatelessWidget {
   final IconData? categoryIcon;
   final Color? categoryColor;
   final VoidCallback? onTap;
+  final TransactionItemDensity density;
+  final bool showDate;
+  final bool showTime;
+  final bool showChevron;
 
   const TransactionItem({
     super.key,
@@ -22,7 +32,25 @@ class TransactionItem extends StatelessWidget {
     this.categoryIcon,
     this.categoryColor,
     this.onTap,
+    this.density = TransactionItemDensity.normal,
+    this.showDate = true,
+    this.showTime = false,
+    this.showChevron = false,
   });
+
+  // Convenience constructor for compact display
+  const TransactionItem.compact({
+    super.key,
+    required this.transaction,
+    required this.categoryName,
+    this.categoryIconName,
+    this.categoryIcon,
+    this.categoryColor,
+    this.onTap,
+    this.showDate = true,
+    this.showTime = false,
+    this.showChevron = false,
+  }) : density = TransactionItemDensity.compact;
 
   @override
   Widget build(BuildContext context) {
@@ -35,21 +63,13 @@ class TransactionItem extends StatelessWidget {
         ? AppColors.expense
         : AppColors.income;
 
-    final themeColor = Theme.of(context).colorScheme.primary;
+    final isCompact = density == TransactionItemDensity.compact;
 
     return ListTile(
       onTap: onTap,
-      leading: CircleAvatar(
-        backgroundColor: categoryColor?.withOpacity(0.1) ?? themeColor.withOpacity(0.1),
-        child: categoryIconName != null && categoryIconName!.isNotEmpty
-            ? Text(
-                categoryIconName!,
-                style: const TextStyle(fontSize: 20),
-              )
-            : Icon(
-                categoryIcon ?? Icons.category,
-                color: categoryColor ?? themeColor,
-              ),
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.screenPadding,
+        vertical: isCompact ? AppSpacing.compactGap : AppSpacing.sm,
       ),
       title: Text(
         categoryName,
@@ -57,17 +77,65 @@ class TransactionItem extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
       ),
-      subtitle: transaction.note != null
-          ? Text(
-              transaction.note!,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall,
-            )
-          : null,
-      trailing: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.end,
+      subtitle: _buildSubtitle(context),
+      trailing: _buildTrailing(context, formattedAmount, color),
+    );
+  }
+
+  Widget? _buildSubtitle(BuildContext context) {
+    final hasNote = transaction.note != null && transaction.note!.isNotEmpty;
+    
+    // Show note and date together if both exist
+    if (hasNote && showDate) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            transaction.note!,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            _formatDate(),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+          ),
+        ],
+      );
+    }
+    
+    // Show only note if no date
+    if (hasNote) {
+      return Text(
+        transaction.note!,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: Theme.of(context).textTheme.bodySmall,
+      );
+    }
+    
+    // Show only date if no note
+    if (showDate) {
+      return Text(
+        _formatDate(),
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+        ),
+      );
+    }
+    
+    return null;
+  }
+
+  Widget _buildTrailing(BuildContext context, String formattedAmount, Color color) {
+    final isCompact = density == TransactionItemDensity.compact;
+
+    if (isCompact) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             '${transaction.type == TransactionType.expense ? '-' : '+'}$formattedAmount',
@@ -76,13 +144,44 @@ class TransactionItem extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
           ),
+          if (showChevron) ...[
+            const SizedBox(width: AppSpacing.xs),
+            Icon(
+              Icons.chevron_right,
+              size: AppSpacing.iconSizeSm,
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+            ),
+          ],
+        ],
+      );
+    }
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          '${transaction.type == TransactionType.expense ? '-' : '+'}$formattedAmount',
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: color,
+                fontWeight: FontWeight.w700,
+              ),
+        ),
+        if (showDate) ...[
+          const SizedBox(height: AppSpacing.xs),
           Text(
-            DateFormat('dd/MM/yyyy').format(transaction.dateTime),
+            _formatDate(),
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],
-      ),
+      ],
     );
   }
-}
 
+  String _formatDate() {
+    if (showTime) {
+      return DateFormat('dd/MM/yyyy HH:mm').format(transaction.dateTime);
+    }
+    return DateFormat('dd/MM/yyyy').format(transaction.dateTime);
+  }
+}

@@ -57,7 +57,7 @@ class MoneyManagementApp extends ConsumerWidget {
         // Apply text scaling for tablets
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(
-            textScaleFactor: textScaleFactor,
+            textScaler: TextScaler.linear(textScaleFactor),
           ),
           child: child!,
         );
@@ -65,4 +65,3 @@ class MoneyManagementApp extends ConsumerWidget {
     );
   }
 }
-

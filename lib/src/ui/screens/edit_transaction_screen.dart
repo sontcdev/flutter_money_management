@@ -1,16 +1,20 @@
 // path: lib/src/ui/screens/edit_transaction_screen.dart
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../models/transaction_attachment.dart';
 import '../../providers/providers.dart';
 import '../../models/transaction.dart' as model;
 import '../../models/category.dart';
 import '../../services/budget_service.dart';
 import '../../theme/app_spacing.dart';
+import '../../utils/app_logger.dart';
 import '../../utils/currency_formatter.dart';
 import '../../utils/vnd_input_formatter.dart';
 import '../widgets/app_button.dart';
@@ -18,7 +22,7 @@ import '../widgets/app_input.dart';
 import '../widgets/category_icon_widget.dart';
 
 class EditTransactionScreen extends HookConsumerWidget {
-  final int transactionId;
+  final String transactionId;
 
   const EditTransactionScreen({super.key, required this.transactionId});
 
@@ -32,25 +36,35 @@ class EditTransactionScreen extends HookConsumerWidget {
     final noteController = useTextEditingController();
     final selectedDate = useState(DateTime.now());
     final selectedType = useState(model.TransactionType.expense);
-    final selectedCategoryId = useState<int?>(null);
-    final receiptPath = useState<String?>(null);
+    final selectedCategoryId = useState<String?>(null);
+    final localReceiptPath = useState<String?>(null);
+    final existingReceiptAttachment = useState<TransactionAttachment?>(null);
+    final shouldRemoveReceipt = useState(false);
     final isLoading = useState(false);
     final allowOverdraft = useState(false);
+    final canManageTransactionAsync = ref.watch(transactionCanManageProvider(transactionId));
+    final receiptImageUrlAsync = ref.watch(transactionReceiptImageUrlProvider(transactionId));
+    final attachmentRepository = ref.watch(transactionAttachmentRepositoryProvider);
 
     // Load existing transaction for editing
     useEffect(() {
       Future.microtask(() async {
-        final transaction = await repository.getTransactionById(transactionId);
+        final results = await Future.wait<dynamic>([
+          repository.getTransactionById(transactionId),
+          attachmentRepository.getLatestReceiptAttachmentByTransactionId(transactionId),
+        ]);
+        final transaction = results[0] as model.Transaction;
+        final attachment = results[1] as TransactionAttachment?;
         final amount = (transaction.amountCents / 100).round();
         amountController.text = CurrencyFormatter.formatInputVND(amount.toString());
         noteController.text = transaction.note ?? '';
         selectedDate.value = transaction.dateTime;
         selectedType.value = transaction.type;
         selectedCategoryId.value = transaction.categoryId;
-        receiptPath.value = transaction.receiptPath;
+        existingReceiptAttachment.value = attachment;
       });
       return null;
-    }, [transactionId]);
+    }, [transactionId, attachmentRepository, repository]);
 
     Future<void> handleSubmit() async {
       if (amountController.text.isEmpty) {
@@ -70,9 +84,10 @@ class EditTransactionScreen extends HookConsumerWidget {
       isLoading.value = true;
 
       try {
+        final receiptService = ref.read(transactionReceiptServiceProvider);
         final amount = CurrencyFormatter.parseVND(amountController.text);
         if (amount == null) {
-          throw FormatException('Invalid amount format');
+          throw const FormatException('Invalid amount format');
         }
         final amountCents = CurrencyFormatter.toCents(amount);
 
@@ -84,20 +99,47 @@ class EditTransactionScreen extends HookConsumerWidget {
           categoryId: selectedCategoryId.value!,
           type: selectedType.value,
           note: noteController.text.isEmpty ? null : noteController.text,
-          receiptPath: receiptPath.value,
+          receiptPath: null,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         );
 
         await repository.updateTransaction(transaction);
 
+        String? receiptWarning;
+        final canManageTransaction = await ref.read(
+          transactionCanManageProvider(transactionId).future,
+        );
+        if (canManageTransaction) {
+          try {
+            if (localReceiptPath.value != null) {
+              await receiptService.attachReceipt(
+                transactionId: transactionId,
+                localFilePath: localReceiptPath.value!,
+              );
+            } else if (shouldRemoveReceipt.value) {
+              await receiptService.removeReceipt(transactionId);
+            }
+          } catch (e, stackTrace) {
+            AppLogger.error(
+              'Receipt update failed after transaction update',
+              name: 'MM.UI',
+              error: e,
+              stackTrace: stackTrace,
+            );
+            receiptWarning = 'Transaction saved, but receipt update failed.';
+          }
+        }
+
         ref.invalidate(budgetsProvider);
         ref.invalidate(budgetsWithConsumedProvider);
         ref.invalidate(transactionsProvider);
+        ref.invalidate(transactionReceiptAttachmentProvider(transactionId));
+        ref.invalidate(transactionReceiptImageUrlProvider(transactionId));
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.success)),
+            SnackBar(content: Text(receiptWarning ?? l10n.success)),
           );
           Navigator.of(context).pop(true);
         }
@@ -138,10 +180,15 @@ class EditTransactionScreen extends HookConsumerWidget {
     }
 
     Future<void> pickReceipt() async {
+      AppLogger.info('Receipt capture started', name: 'MM.UI');
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(source: ImageSource.camera);
       if (image != null) {
-        receiptPath.value = image.path;
+        localReceiptPath.value = image.path;
+        shouldRemoveReceipt.value = false;
+        AppLogger.info('Receipt attached to transaction edit', name: 'MM.UI');
+      } else {
+        AppLogger.debug('Receipt capture cancelled', name: 'MM.UI');
       }
     }
 
@@ -261,7 +308,7 @@ class EditTransactionScreen extends HookConsumerWidget {
                                 vertical: AppSpacing.sm,
                               ),
                               decoration: BoxDecoration(
-                                color: categoryColor.withOpacity(0.2),
+                                color: categoryColor.withValues(alpha: 0.2),
                                 border: Border.all(
                                   color: categoryColor,
                                   width: isSelected ? 3 : 1.5,
@@ -374,25 +421,83 @@ class EditTransactionScreen extends HookConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
 
             // Receipt Attachment - Priority 5
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    receiptPath.value == null
-                        ? l10n.attachReceipt
-                        : l10n.viewReceipt,
+                Text(
+                  l10n.receipt,
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                if (localReceiptPath.value != null)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    child: Image.file(
+                      File(localReceiptPath.value!),
+                      height: 180,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                else if (!shouldRemoveReceipt.value && existingReceiptAttachment.value != null)
+                  receiptImageUrlAsync.when(
+                    data: (imageUrl) {
+                      if (imageUrl == null) {
+                        return Text(l10n.attachReceipt);
+                      }
+                      return ClipRRect(
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        child: Image.network(
+                          imageUrl,
+                          height: 180,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      );
+                    },
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (error, _) => Text('Error: $error'),
+                  )
+                else
+                  Text(
+                    shouldRemoveReceipt.value ? 'Receipt will be removed when you save.' : l10n.attachReceipt,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
+                const SizedBox(height: AppSpacing.sm),
+                canManageTransactionAsync.when(
+                  data: (canManageTransaction) {
+                    if (!canManageTransaction) {
+                      return Text(
+                        'Only the transaction creator can change the receipt.',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      );
+                    }
+
+                    return Row(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.camera_alt),
+                          onPressed: pickReceipt,
+                        ),
+                        if (localReceiptPath.value != null || existingReceiptAttachment.value != null)
+                          IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              localReceiptPath.value = null;
+                              shouldRemoveReceipt.value =
+                                  existingReceiptAttachment.value != null;
+                              AppLogger.info(
+                                'Receipt removed from transaction edit',
+                                name: 'MM.UI',
+                              );
+                            },
+                          ),
+                      ],
+                    );
+                  },
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.camera_alt),
-                  onPressed: pickReceipt,
-                ),
-                if (receiptPath.value != null)
-                  IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () => receiptPath.value = null,
-                  ),
               ],
             ),
             const SizedBox(height: AppSpacing.sectionGap),

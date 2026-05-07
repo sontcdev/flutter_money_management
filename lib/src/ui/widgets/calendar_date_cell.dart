@@ -51,7 +51,7 @@ class CalendarDateCell extends StatelessWidget {
                     ? Colors.black // Black text on light background (selected/today)
                     : (isCurrentMonth 
                         ? Theme.of(context).textTheme.bodyLarge?.color 
-                        : Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.4)),
+                        : Theme.of(context).textTheme.bodyLarge?.color?.withValues(alpha: 0.4)),
               ),
             ),
             if (badges.isNotEmpty) ...[              const SizedBox(height: 1),
@@ -93,4 +93,3 @@ class CalendarDateCell extends StatelessWidget {
     );
   }
 }
-

@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../models/transaction.dart';
 import '../ui/widgets/calendar_grid.dart';
 import '../ui/screens/settings_screen.dart';
+import '../services/workspace_sync_helper.dart';
 import '../utils/cycle_utils.dart';
 import 'providers.dart';
 
@@ -235,12 +236,13 @@ class TransactionListNotifier extends StateNotifier<AsyncValue<void>> {
   Future<void> refresh() async {
     state = const AsyncValue.loading();
     try {
-      // Invalidate transactionsProvider first so dependent providers get fresh data
-      ref.invalidate(transactionsProvider);
+      await syncCurrentWorkspaceData(ref);
+
+      final month = ref.read(selectedMonthProvider);
       // Invalidate all report providers to force reload
-      ref.invalidate(calendarDataProvider);
-      ref.invalidate(monthlySummaryProvider);
-      ref.invalidate(transactionGroupsProvider);
+      ref.invalidate(calendarDataProvider(month));
+      ref.invalidate(monthlySummaryProvider(month));
+      ref.invalidate(transactionGroupsProvider(month));
       state = const AsyncValue.data(null);
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
@@ -251,7 +253,7 @@ class TransactionListNotifier extends StateNotifier<AsyncValue<void>> {
     ref.read(selectedDateProvider.notifier).state = date;
   }
 
-  Future<void> deleteTransaction(int transactionId) async {
+  Future<void> deleteTransaction(String transactionId) async {
     state = const AsyncValue.loading();
     try {
       final repo = ref.read(transactionRepositoryProvider);

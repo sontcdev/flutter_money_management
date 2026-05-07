@@ -10,6 +10,7 @@ import '../../models/transaction.dart';
 import '../../models/category.dart';
 import '../../models/budget.dart';
 import '../../utils/currency_formatter.dart';
+import '../../services/workspace_sync_helper.dart';
 import '../../theme/app_colors.dart';
 import '../widgets/category_icon_widget.dart';
 
@@ -26,9 +27,9 @@ class TransactionManagementScreen extends HookConsumerWidget {
     // State
     final searchController = useTextEditingController();
     final searchQuery = useState('');
-    final selectedCategoryId = useState<int?>(null);
-    final selectedBudgetId = useState<int?>(null);
-    final selectedTransactionIds = useState<Set<int>>({});
+    final selectedCategoryId = useState<String?>(null);
+    final selectedBudgetId = useState<String?>(null);
+    final selectedTransactionIds = useState<Set<String>>({});
     final isSelectionMode = useState(false);
 
     // Listen to search controller
@@ -128,61 +129,72 @@ class TransactionManagementScreen extends HookConsumerWidget {
 
           // Transactions list
           Expanded(
-            child: transactionsAsync.when(
-              data: (transactions) {
-                final filteredTransactions = _filterTransactions(
-                  transactions,
-                  searchQuery.value,
-                  selectedCategoryId.value,
-                  selectedBudgetId.value,
-                  budgetsAsync.valueOrNull ?? [],
-                );
+            child: RefreshIndicator(
+              onRefresh: () => syncCurrentWorkspaceData(ref),
+              child: transactionsAsync.when(
+                data: (transactions) {
+                  final filteredTransactions = _filterTransactions(
+                    transactions,
+                    searchQuery.value,
+                    selectedCategoryId.value,
+                    selectedBudgetId.value,
+                    budgetsAsync.valueOrNull ?? [],
+                  );
 
-                if (filteredTransactions.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                  if (filteredTransactions.isEmpty) {
+                    return ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
                       children: [
-                        Icon(Icons.receipt_long, size: 64, color: Colors.grey[400]),
-                        const SizedBox(height: 16),
-                        Text(
-                          l10n.noTransactions,
-                          style: Theme.of(context).textTheme.titleLarge,
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.5,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.receipt_long, size: 64, color: Colors.grey[400]),
+                                const SizedBox(height: 16),
+                                Text(
+                                  l10n.noTransactions,
+                                  style: Theme.of(context).textTheme.titleLarge,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
-                    ),
-                  );
-                }
+                    );
+                  }
 
-                return categoriesAsync.when(
-                  data: (categories) {
-                    return ListView.builder(
-                      itemCount: filteredTransactions.length,
-                      itemBuilder: (context, index) {
-                        final transaction = filteredTransactions[index];
-                        final category = categories.firstWhere(
-                          (c) => c.id == transaction.categoryId,
-                          orElse: () => Category(
-                            id: 0,
-                            name: 'Unknown',
-                            iconName: '📦',
-                            colorValue: Colors.grey.toARGB32(),
-                            createdAt: DateTime.now(),
-                            updatedAt: DateTime.now(),
-                          ),
-                        );
+                  return categoriesAsync.when(
+                    data: (categories) {
+                      return ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemCount: filteredTransactions.length,
+                        itemBuilder: (context, index) {
+                          final transaction = filteredTransactions[index];
+                          final category = categories.firstWhere(
+                            (c) => c.id == transaction.categoryId,
+                            orElse: () => Category(
+                              id: '',
+                              name: 'Unknown',
+                              iconName: '📦',
+                              colorValue: Colors.grey.toARGB32(),
+                              createdAt: DateTime.now(),
+                              updatedAt: DateTime.now(),
+                            ),
+                          );
 
-                        final isSelected = selectedTransactionIds.value.contains(transaction.id);
-                        final isExpense = transaction.type == TransactionType.expense;
-                        final amountColor = isExpense ? AppColors.expense : AppColors.income;
-                        final amountPrefix = isExpense ? '-' : '+';
+                          final isSelected = selectedTransactionIds.value.contains(transaction.id);
+                          final isExpense = transaction.type == TransactionType.expense;
+                          final amountColor = isExpense ? AppColors.expense : AppColors.income;
+                          final amountPrefix = isExpense ? '-' : '+';
 
-                        return ListTile(
+                          return ListTile(
                           leading: isSelectionMode.value
                               ? Checkbox(
                                   value: isSelected,
                                   onChanged: (value) {
-                                    final newSet = Set<int>.from(selectedTransactionIds.value);
+                                    final newSet = Set<String>.from(selectedTransactionIds.value);
                                     if (value == true) {
                                       newSet.add(transaction.id);
                                     } else {
@@ -224,7 +236,7 @@ class TransactionManagementScreen extends HookConsumerWidget {
                           isThreeLine: true,
                           onTap: () {
                             if (isSelectionMode.value) {
-                              final newSet = Set<int>.from(selectedTransactionIds.value);
+                              final newSet = Set<String>.from(selectedTransactionIds.value);
                               if (isSelected) {
                                 newSet.remove(transaction.id);
                               } else {
@@ -245,19 +257,20 @@ class TransactionManagementScreen extends HookConsumerWidget {
                               selectedTransactionIds.value = {transaction.id};
                             }
                           },
-                        );
-                      },
-                    );
-                  },
-                  loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (error, stack) => Center(
-                    child: Text('Error loading categories: $error'),
-                  ),
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stack) => Center(
-                child: Text('Error loading transactions: $error'),
+                          );
+                        },
+                      );
+                    },
+                    loading: () => const Center(child: CircularProgressIndicator()),
+                    error: (error, stack) => Center(
+                      child: Text('Error loading categories: $error'),
+                    ),
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (error, stack) => Center(
+                  child: Text('Error loading transactions: $error'),
+                ),
               ),
             ),
           ),
@@ -272,8 +285,8 @@ class TransactionManagementScreen extends HookConsumerWidget {
     TextEditingController searchController,
     List<Category> categories,
     List<Budget> budgets,
-    ValueNotifier<int?> selectedCategoryId,
-    ValueNotifier<int?> selectedBudgetId,
+    ValueNotifier<String?> selectedCategoryId,
+    ValueNotifier<String?> selectedBudgetId,
   ) {
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -301,8 +314,9 @@ class TransactionManagementScreen extends HookConsumerWidget {
             children: [
               // Category dropdown
               Expanded(
-                child: DropdownButtonFormField<int?>(
-                  value: selectedCategoryId.value,
+                child: DropdownButtonFormField<String?>(
+                  key: ValueKey('category-${selectedCategoryId.value}'),
+                  initialValue: selectedCategoryId.value,
                   decoration: InputDecoration(
                     labelText: l10n.category,
                     border: const OutlineInputBorder(),
@@ -310,11 +324,11 @@ class TransactionManagementScreen extends HookConsumerWidget {
                   ),
                   isExpanded: true,
                   items: [
-                    DropdownMenuItem<int?>(
+                    DropdownMenuItem<String?>(
                       value: null,
                       child: Text(l10n.allCategories),
                     ),
-                    ...categories.map((cat) => DropdownMenuItem<int?>(
+                    ...categories.map((cat) => DropdownMenuItem<String?>(
                           value: cat.id,
                           child: Text(cat.name, overflow: TextOverflow.ellipsis),
                         )),
@@ -327,8 +341,9 @@ class TransactionManagementScreen extends HookConsumerWidget {
               const SizedBox(width: 12),
               // Budget dropdown
               Expanded(
-                child: DropdownButtonFormField<int?>(
-                  value: selectedBudgetId.value,
+                child: DropdownButtonFormField<String?>(
+                  key: ValueKey('budget-${selectedBudgetId.value}'),
+                  initialValue: selectedBudgetId.value,
                   decoration: InputDecoration(
                     labelText: l10n.budget,
                     border: const OutlineInputBorder(),
@@ -336,14 +351,14 @@ class TransactionManagementScreen extends HookConsumerWidget {
                   ),
                   isExpanded: true,
                   items: [
-                    DropdownMenuItem<int?>(
+                    DropdownMenuItem<String?>(
                       value: null,
                       child: Text(l10n.allBudgets),
                     ),
                     ...budgets.map((budget) {
                       final periodStr =
                           '${DateFormat('dd/MM').format(budget.periodStart)} - ${DateFormat('dd/MM').format(budget.periodEnd)}';
-                      return DropdownMenuItem<int?>(
+                      return DropdownMenuItem<String?>(
                         value: budget.id,
                         child: Text(
                           periodStr,
@@ -367,8 +382,8 @@ class TransactionManagementScreen extends HookConsumerWidget {
   List<Transaction> _filterTransactions(
     List<Transaction> transactions,
     String searchQuery,
-    int? categoryId,
-    int? budgetId,
+    String? categoryId,
+    String? budgetId,
     List<Budget> budgets,
   ) {
     var filtered = List<Transaction>.from(transactions);
@@ -414,7 +429,7 @@ class TransactionManagementScreen extends HookConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     AppLocalizations l10n,
-    List<int> transactionIds,
+    List<String> transactionIds,
     List<Category> categories, {
     required VoidCallback onSuccess,
   }) {
@@ -453,7 +468,7 @@ class TransactionManagementScreen extends HookConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     AppLocalizations l10n,
-    List<int> transactionIds,
+    List<String> transactionIds,
     List<Category> categories, {
     required VoidCallback onSuccess,
   }) {
@@ -516,8 +531,8 @@ class TransactionManagementScreen extends HookConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     AppLocalizations l10n,
-    List<int> transactionIds,
-    int newCategoryId, {
+    List<String> transactionIds,
+    String newCategoryId, {
     required VoidCallback onSuccess,
   }) async {
     try {
@@ -556,7 +571,7 @@ class TransactionManagementScreen extends HookConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     AppLocalizations l10n,
-    List<int> transactionIds, {
+    List<String> transactionIds, {
     required VoidCallback onSuccess,
   }) async {
     final now = DateTime.now();
@@ -577,7 +592,7 @@ class TransactionManagementScreen extends HookConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     AppLocalizations l10n,
-    List<int> transactionIds,
+    List<String> transactionIds,
     DateTime newDate, {
     required VoidCallback onSuccess,
   }) async {

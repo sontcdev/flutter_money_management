@@ -1,123 +1,282 @@
 // path: lib/src/data/repositories/transaction_repository.dart
 
-import 'package:drift/drift.dart';
-import '../local/app_database.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
+
+import '../../models/budget.dart' as budget_model;
 import '../../models/transaction.dart' as model;
 import '../../services/budget_service.dart';
 
 class TransactionRepository {
-  final AppDatabase _db;
-  final BudgetService _budgetService;
+  final SupabaseClient _supabase;
+  final String? Function() _getActiveWorkspaceId;
+  final String? Function() _getCurrentUserId;
+  final _uuid = const Uuid();
 
-  TransactionRepository(this._db, this._budgetService);
+  TransactionRepository(
+    this._supabase,
+    this._getActiveWorkspaceId,
+    this._getCurrentUserId,
+  );
 
   Future<List<model.Transaction>> getAllTransactions() async {
-    final entities = await _db.transactionDao.getAllTransactions();
-    return entities.map(_entityToModel).toList();
+    final workspaceId = _requireWorkspaceId();
+    final response = await _supabase
+        .from('transactions')
+        .select()
+        .eq('workspace_id', workspaceId)
+        .isFilter('deleted_at', null)
+        .order('transaction_at', ascending: false);
+
+    return (response as List)
+        .cast<Map<String, dynamic>>()
+        .map(_mapTransaction)
+        .toList();
   }
 
   Future<List<model.Transaction>> getTransactionsByDateRange(
-      DateTime start, DateTime end) async {
-    final entities =
-        await _db.transactionDao.getTransactionsByDateRange(start, end);
-    return entities.map(_entityToModel).toList();
+    DateTime start,
+    DateTime end,
+  ) async {
+    final workspaceId = _requireWorkspaceId();
+    final response = await _supabase
+        .from('transactions')
+        .select()
+        .eq('workspace_id', workspaceId)
+        .gte('transaction_at', start.toIso8601String())
+        .lte('transaction_at', end.toIso8601String())
+        .isFilter('deleted_at', null)
+        .order('transaction_at', ascending: false);
+
+    return (response as List)
+        .cast<Map<String, dynamic>>()
+        .map(_mapTransaction)
+        .toList();
   }
 
-  Future<model.Transaction> getTransactionById(int id) async {
-    final entity = await _db.transactionDao.getTransactionById(id);
-    return _entityToModel(entity);
+  Future<model.Transaction> getTransactionById(String id) async {
+    final workspaceId = _requireWorkspaceId();
+    final response = await _supabase
+        .from('transactions')
+        .select()
+        .eq('workspace_id', workspaceId)
+        .eq('id', id)
+        .isFilter('deleted_at', null)
+        .maybeSingle();
+
+    if (response == null) {
+      throw Exception('Transaction not found: $id');
+    }
+
+    return _mapTransaction(response);
   }
 
   Future<model.Transaction> createTransaction(
     model.Transaction transaction, {
     bool allowOverdraft = false,
   }) async {
-    return await _db.transaction(() async {
-      // Insert transaction
-      final companion = _modelToCompanion(transaction);
-      final id = await _db.transactionDao.insertTransaction(companion);
+    final workspaceId = _requireWorkspaceId();
+    final userId = _requireUserId();
+    final id = transaction.id.isEmpty ? _uuid.v4() : transaction.id;
+    final transactionWithId = transaction.copyWith(id: id);
 
-      // Apply to budget (throws if exceeded)
-      final created = transaction.copyWith(id: id);
-      await _budgetService.applyTransactionToBudget(
-        created,
-        allowOverdraft: allowOverdraft,
+    await _validateBudgetImpact(
+      transaction: transactionWithId,
+      allowOverdraft: allowOverdraft,
+    );
+
+    await _supabase.from('transactions').insert({
+      'id': id,
+      'workspace_id': workspaceId,
+      'category_id': transaction.categoryId,
+      'amount_minor': transaction.amountCents,
+      'currency_code': transaction.currency,
+      'transaction_type': transaction.type.name,
+      'transaction_at': transaction.dateTime.toIso8601String(),
+      'note': transaction.note,
+      'client_reference_id': id,
+      'created_by_user_id': userId,
+      'updated_by_user_id': userId,
+      'created_at': transaction.createdAt.toIso8601String(),
+      'updated_at': transaction.updatedAt.toIso8601String(),
+    });
+
+    return getTransactionById(id);
+  }
+
+  Future<void> updateTransaction(model.Transaction transaction) async {
+    final workspaceId = _requireWorkspaceId();
+    final userId = _requireUserId();
+    final existing = await getTransactionById(transaction.id);
+
+    await _validateBudgetImpact(
+      transaction: transaction,
+      previousTransaction: existing,
+      allowOverdraft: false,
+    );
+
+    await _supabase.from('transactions').update({
+      'category_id': transaction.categoryId,
+      'amount_minor': transaction.amountCents,
+      'currency_code': transaction.currency,
+      'transaction_type': transaction.type.name,
+      'transaction_at': transaction.dateTime.toIso8601String(),
+      'note': transaction.note,
+      'updated_by_user_id': userId,
+      'updated_at': transaction.updatedAt.toIso8601String(),
+    }).eq('workspace_id', workspaceId).eq('id', transaction.id);
+  }
+
+  Future<void> deleteTransaction(String id) async {
+    final workspaceId = _requireWorkspaceId();
+    final userId = _requireUserId();
+
+    await _supabase.from('transactions').update({
+      'deleted_at': DateTime.now().toIso8601String(),
+      'deleted_by_user_id': userId,
+      'updated_by_user_id': userId,
+    }).eq('workspace_id', workspaceId).eq('id', id);
+  }
+
+  Future<bool> canCurrentUserManageTransaction(String id) async {
+    final workspaceId = _requireWorkspaceId();
+    final userId = _requireUserId();
+    final response = await _supabase
+        .from('transactions')
+        .select('created_by_user_id')
+        .eq('workspace_id', workspaceId)
+        .eq('id', id)
+        .isFilter('deleted_at', null)
+        .maybeSingle();
+
+    if (response == null) {
+      return false;
+    }
+
+    return response['created_by_user_id'] == userId;
+  }
+
+  Future<void> _validateBudgetImpact({
+    required model.Transaction transaction,
+    model.Transaction? previousTransaction,
+    required bool allowOverdraft,
+  }) async {
+    if (transaction.type != model.TransactionType.expense) {
+      return;
+    }
+
+    final budget = await _getActiveBudget(transaction.categoryId, transaction.dateTime);
+    if (budget == null) {
+      return;
+    }
+
+    final transactions = await getTransactionsByDateRange(
+      budget.periodStart,
+      budget.periodEnd,
+    );
+
+    var consumed = transactions
+        .where((item) =>
+            item.id != previousTransaction?.id &&
+            item.categoryId == budget.categoryId &&
+            item.type == model.TransactionType.expense)
+        .fold<int>(0, (sum, item) => sum + item.amountCents);
+    consumed += transaction.amountCents;
+
+    if (consumed > budget.limitCents && !allowOverdraft && !budget.allowOverdraft) {
+      final remaining = budget.limitCents - (consumed - transaction.amountCents);
+      throw BudgetExceededException(
+        message:
+            'Budget exceeded! Remaining: $remaining cents, Limit: ${budget.limitCents} cents',
+        remainingCents: remaining,
+        limitCents: budget.limitCents,
       );
-
-      return created;
-    });
+    }
   }
 
-  Future<void> updateTransaction(
-    model.Transaction transaction,
-  ) async {
-    await _db.transaction(() async {
-      // Get old transaction
-      final oldTransaction =
-          await _db.transactionDao.getTransactionById(transaction.id);
+  Future<budget_model.Budget?> _getActiveBudget(String categoryId, DateTime date) async {
+    final workspaceId = _requireWorkspaceId();
+    final response = await _supabase
+        .from('budgets')
+        .select()
+        .eq('workspace_id', workspaceId)
+        .eq('category_id', categoryId)
+        .isFilter('deleted_at', null)
+        .lte('period_start', date.toIso8601String())
+        .gte('period_end', date.toIso8601String())
+        .order('period_start')
+        .limit(1)
+        .maybeSingle();
 
-      // Update transaction
-      final companion = _modelToCompanion(transaction);
-      await _db.transactionDao.updateTransaction(companion);
+    if (response == null) {
+      return null;
+    }
 
-      // Recalculate budgets for affected category
-      final budgets = await _db.budgetDao
-          .getBudgetsByCategory(transaction.categoryId);
-      for (final budget in budgets) {
-        await _db.budgetDao.recalculateConsumed(budget.id);
-      }
-    });
+    return budget_model.Budget(
+      id: response['id'] as String,
+      categoryId: response['category_id'] as String,
+      periodType: _parsePeriodType(response['period_type'] as String),
+      periodStart: DateTime.parse(response['period_start'] as String),
+      periodEnd: DateTime.parse(response['period_end'] as String),
+      limitCents: response['limit_minor'] as int,
+      consumedCents: 0,
+      allowOverdraft: response['allow_overdraft'] as bool? ?? false,
+      overdraftCents: 0,
+      createdAt: DateTime.parse(response['created_at'] as String),
+      updatedAt: DateTime.parse(response['updated_at'] as String),
+      syncStatus: budget_model.SyncStatus.synced,
+      deletedAt: response['deleted_at'] != null
+          ? DateTime.parse(response['deleted_at'] as String)
+          : null,
+    );
   }
 
-  Future<void> deleteTransaction(int id) async {
-    await _db.transaction(() async {
-      // Get transaction
-      final transaction = await _db.transactionDao.getTransactionById(id);
-
-      // Delete transaction
-      await _db.transactionDao.deleteTransaction(id);
-
-      // Recalculate budgets for affected category
-      final budgets =
-          await _db.budgetDao.getBudgetsByCategory(transaction.categoryId);
-      for (final budget in budgets) {
-        await _db.budgetDao.recalculateConsumed(budget.id);
-      }
-    });
+  budget_model.PeriodType _parsePeriodType(String value) {
+    switch (value) {
+      case 'yearly':
+        return budget_model.PeriodType.yearly;
+      case 'custom':
+        return budget_model.PeriodType.custom;
+      case 'monthly':
+      default:
+        return budget_model.PeriodType.monthly;
+    }
   }
 
-  model.Transaction _entityToModel(TransactionEntity entity) {
+  model.Transaction _mapTransaction(Map<String, dynamic> item) {
     return model.Transaction(
-      id: entity.id,
-      amountCents: entity.amountCents,
-      currency: entity.currency,
-      dateTime: entity.transactionDate,
-      categoryId: entity.categoryId,
-      type: entity.type == 'expense'
-          ? model.TransactionType.expense
-          : model.TransactionType.income,
-      note: entity.note,
-      receiptPath: entity.receiptPath,
-      createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt,
+      id: item['id'] as String,
+      amountCents: item['amount_minor'] as int,
+      currency: item['currency_code'] as String,
+      dateTime: DateTime.parse(item['transaction_at'] as String),
+      categoryId: item['category_id'] as String,
+      type: (item['transaction_type'] as String) == 'income'
+          ? model.TransactionType.income
+          : model.TransactionType.expense,
+      note: item['note'] as String?,
+      receiptPath: item['receipt_path'] as String?,
+      createdAt: DateTime.parse(item['created_at'] as String),
+      updatedAt: DateTime.parse(item['updated_at'] as String),
+      syncStatus: model.SyncStatus.synced,
+      deletedAt: item['deleted_at'] != null
+          ? DateTime.parse(item['deleted_at'] as String)
+          : null,
     );
   }
 
-  TransactionsCompanion _modelToCompanion(model.Transaction transaction) {
-    return TransactionsCompanion(
-      id: transaction.id > 0 ? Value(transaction.id) : const Value.absent(),
-      amountCents: Value(transaction.amountCents),
-      currency: Value(transaction.currency),
-      transactionDate: Value(transaction.dateTime),
-      categoryId: Value(transaction.categoryId),
-      type: Value(transaction.type == model.TransactionType.expense
-          ? 'expense'
-          : 'income'),
-      note: Value(transaction.note),
-      receiptPath: Value(transaction.receiptPath),
-      createdAt: Value(transaction.createdAt),
-      updatedAt: Value(transaction.updatedAt),
-    );
+  String _requireWorkspaceId() {
+    final workspaceId = _getActiveWorkspaceId();
+    if (workspaceId == null || workspaceId.isEmpty) {
+      throw Exception('No active workspace selected');
+    }
+    return workspaceId;
+  }
+
+  String _requireUserId() {
+    final userId = _getCurrentUserId();
+    if (userId == null || userId.isEmpty) {
+      throw Exception('No authenticated user');
+    }
+    return userId;
   }
 }
-

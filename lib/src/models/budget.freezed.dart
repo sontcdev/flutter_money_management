@@ -20,8 +20,10 @@ Budget _$BudgetFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Budget {
-  int get id => throw _privateConstructorUsedError;
-  int get categoryId => throw _privateConstructorUsedError;
+  String get id =>
+      throw _privateConstructorUsedError; // Changed from int to String (UUID)
+  String get categoryId =>
+      throw _privateConstructorUsedError; // Changed from int to String (UUID)
   PeriodType get periodType => throw _privateConstructorUsedError;
   DateTime get periodStart => throw _privateConstructorUsedError;
   DateTime get periodEnd => throw _privateConstructorUsedError;
@@ -31,6 +33,10 @@ mixin _$Budget {
   int get overdraftCents => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
+  SyncStatus get syncStatus => throw _privateConstructorUsedError;
+  DateTime? get syncedAt => throw _privateConstructorUsedError;
+  String? get lastSyncError => throw _privateConstructorUsedError;
+  DateTime? get deletedAt => throw _privateConstructorUsedError;
 
   /// Serializes this Budget to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -47,8 +53,8 @@ abstract class $BudgetCopyWith<$Res> {
       _$BudgetCopyWithImpl<$Res, Budget>;
   @useResult
   $Res call(
-      {int id,
-      int categoryId,
+      {String id,
+      String categoryId,
       PeriodType periodType,
       DateTime periodStart,
       DateTime periodEnd,
@@ -57,7 +63,11 @@ abstract class $BudgetCopyWith<$Res> {
       bool allowOverdraft,
       int overdraftCents,
       DateTime createdAt,
-      DateTime updatedAt});
+      DateTime updatedAt,
+      SyncStatus syncStatus,
+      DateTime? syncedAt,
+      String? lastSyncError,
+      DateTime? deletedAt});
 }
 
 /// @nodoc
@@ -86,16 +96,20 @@ class _$BudgetCopyWithImpl<$Res, $Val extends Budget>
     Object? overdraftCents = null,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? syncStatus = null,
+    Object? syncedAt = freezed,
+    Object? lastSyncError = freezed,
+    Object? deletedAt = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       categoryId: null == categoryId
           ? _value.categoryId
           : categoryId // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       periodType: null == periodType
           ? _value.periodType
           : periodType // ignore: cast_nullable_to_non_nullable
@@ -132,6 +146,22 @@ class _$BudgetCopyWithImpl<$Res, $Val extends Budget>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      syncStatus: null == syncStatus
+          ? _value.syncStatus
+          : syncStatus // ignore: cast_nullable_to_non_nullable
+              as SyncStatus,
+      syncedAt: freezed == syncedAt
+          ? _value.syncedAt
+          : syncedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      lastSyncError: freezed == lastSyncError
+          ? _value.lastSyncError
+          : lastSyncError // ignore: cast_nullable_to_non_nullable
+              as String?,
+      deletedAt: freezed == deletedAt
+          ? _value.deletedAt
+          : deletedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ) as $Val);
   }
 }
@@ -144,8 +174,8 @@ abstract class _$$BudgetImplCopyWith<$Res> implements $BudgetCopyWith<$Res> {
   @override
   @useResult
   $Res call(
-      {int id,
-      int categoryId,
+      {String id,
+      String categoryId,
       PeriodType periodType,
       DateTime periodStart,
       DateTime periodEnd,
@@ -154,7 +184,11 @@ abstract class _$$BudgetImplCopyWith<$Res> implements $BudgetCopyWith<$Res> {
       bool allowOverdraft,
       int overdraftCents,
       DateTime createdAt,
-      DateTime updatedAt});
+      DateTime updatedAt,
+      SyncStatus syncStatus,
+      DateTime? syncedAt,
+      String? lastSyncError,
+      DateTime? deletedAt});
 }
 
 /// @nodoc
@@ -181,16 +215,20 @@ class __$$BudgetImplCopyWithImpl<$Res>
     Object? overdraftCents = null,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? syncStatus = null,
+    Object? syncedAt = freezed,
+    Object? lastSyncError = freezed,
+    Object? deletedAt = freezed,
   }) {
     return _then(_$BudgetImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       categoryId: null == categoryId
           ? _value.categoryId
           : categoryId // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       periodType: null == periodType
           ? _value.periodType
           : periodType // ignore: cast_nullable_to_non_nullable
@@ -227,6 +265,22 @@ class __$$BudgetImplCopyWithImpl<$Res>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      syncStatus: null == syncStatus
+          ? _value.syncStatus
+          : syncStatus // ignore: cast_nullable_to_non_nullable
+              as SyncStatus,
+      syncedAt: freezed == syncedAt
+          ? _value.syncedAt
+          : syncedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      lastSyncError: freezed == lastSyncError
+          ? _value.lastSyncError
+          : lastSyncError // ignore: cast_nullable_to_non_nullable
+              as String?,
+      deletedAt: freezed == deletedAt
+          ? _value.deletedAt
+          : deletedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ));
   }
 }
@@ -245,16 +299,22 @@ class _$BudgetImpl extends _Budget {
       required this.allowOverdraft,
       required this.overdraftCents,
       required this.createdAt,
-      required this.updatedAt})
+      required this.updatedAt,
+      this.syncStatus = SyncStatus.pending,
+      this.syncedAt,
+      this.lastSyncError,
+      this.deletedAt})
       : super._();
 
   factory _$BudgetImpl.fromJson(Map<String, dynamic> json) =>
       _$$BudgetImplFromJson(json);
 
   @override
-  final int id;
+  final String id;
+// Changed from int to String (UUID)
   @override
-  final int categoryId;
+  final String categoryId;
+// Changed from int to String (UUID)
   @override
   final PeriodType periodType;
   @override
@@ -273,10 +333,19 @@ class _$BudgetImpl extends _Budget {
   final DateTime createdAt;
   @override
   final DateTime updatedAt;
+  @override
+  @JsonKey()
+  final SyncStatus syncStatus;
+  @override
+  final DateTime? syncedAt;
+  @override
+  final String? lastSyncError;
+  @override
+  final DateTime? deletedAt;
 
   @override
   String toString() {
-    return 'Budget(id: $id, categoryId: $categoryId, periodType: $periodType, periodStart: $periodStart, periodEnd: $periodEnd, limitCents: $limitCents, consumedCents: $consumedCents, allowOverdraft: $allowOverdraft, overdraftCents: $overdraftCents, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Budget(id: $id, categoryId: $categoryId, periodType: $periodType, periodStart: $periodStart, periodEnd: $periodEnd, limitCents: $limitCents, consumedCents: $consumedCents, allowOverdraft: $allowOverdraft, overdraftCents: $overdraftCents, createdAt: $createdAt, updatedAt: $updatedAt, syncStatus: $syncStatus, syncedAt: $syncedAt, lastSyncError: $lastSyncError, deletedAt: $deletedAt)';
   }
 
   @override
@@ -304,7 +373,15 @@ class _$BudgetImpl extends _Budget {
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
+                other.updatedAt == updatedAt) &&
+            (identical(other.syncStatus, syncStatus) ||
+                other.syncStatus == syncStatus) &&
+            (identical(other.syncedAt, syncedAt) ||
+                other.syncedAt == syncedAt) &&
+            (identical(other.lastSyncError, lastSyncError) ||
+                other.lastSyncError == lastSyncError) &&
+            (identical(other.deletedAt, deletedAt) ||
+                other.deletedAt == deletedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -321,7 +398,11 @@ class _$BudgetImpl extends _Budget {
       allowOverdraft,
       overdraftCents,
       createdAt,
-      updatedAt);
+      updatedAt,
+      syncStatus,
+      syncedAt,
+      lastSyncError,
+      deletedAt);
 
   /// Create a copy of Budget
   /// with the given fields replaced by the non-null parameter values.
@@ -341,8 +422,8 @@ class _$BudgetImpl extends _Budget {
 
 abstract class _Budget extends Budget {
   const factory _Budget(
-      {required final int id,
-      required final int categoryId,
+      {required final String id,
+      required final String categoryId,
       required final PeriodType periodType,
       required final DateTime periodStart,
       required final DateTime periodEnd,
@@ -351,15 +432,19 @@ abstract class _Budget extends Budget {
       required final bool allowOverdraft,
       required final int overdraftCents,
       required final DateTime createdAt,
-      required final DateTime updatedAt}) = _$BudgetImpl;
+      required final DateTime updatedAt,
+      final SyncStatus syncStatus,
+      final DateTime? syncedAt,
+      final String? lastSyncError,
+      final DateTime? deletedAt}) = _$BudgetImpl;
   const _Budget._() : super._();
 
   factory _Budget.fromJson(Map<String, dynamic> json) = _$BudgetImpl.fromJson;
 
   @override
-  int get id;
+  String get id; // Changed from int to String (UUID)
   @override
-  int get categoryId;
+  String get categoryId; // Changed from int to String (UUID)
   @override
   PeriodType get periodType;
   @override
@@ -378,6 +463,14 @@ abstract class _Budget extends Budget {
   DateTime get createdAt;
   @override
   DateTime get updatedAt;
+  @override
+  SyncStatus get syncStatus;
+  @override
+  DateTime? get syncedAt;
+  @override
+  String? get lastSyncError;
+  @override
+  DateTime? get deletedAt;
 
   /// Create a copy of Budget
   /// with the given fields replaced by the non-null parameter values.

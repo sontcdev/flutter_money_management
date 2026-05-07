@@ -11,13 +11,15 @@ enum PeriodType {
   custom,
 }
 
+enum SyncStatus { pending, synced, error }
+
 @freezed
 class Budget with _$Budget {
   const Budget._();
 
   const factory Budget({
-    required int id,
-    required int categoryId,
+    required String id, // Changed from int to String (UUID)
+    required String categoryId, // Changed from int to String (UUID)
     required PeriodType periodType,
     required DateTime periodStart,
     required DateTime periodEnd,
@@ -27,6 +29,10 @@ class Budget with _$Budget {
     required int overdraftCents,
     required DateTime createdAt,
     required DateTime updatedAt,
+    @Default(SyncStatus.pending) SyncStatus syncStatus,
+    DateTime? syncedAt,
+    String? lastSyncError,
+    DateTime? deletedAt,
   }) = _Budget;
 
   factory Budget.fromJson(Map<String, dynamic> json) =>

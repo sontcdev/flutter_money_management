@@ -10,6 +10,7 @@ import '../../models/category.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/currency_formatter.dart';
 import '../../utils/cycle_utils.dart';
+import '../../services/workspace_sync_helper.dart';
 import '../widgets/category_icon_widget.dart';
 import 'settings_screen.dart';
 
@@ -33,11 +34,14 @@ class ReportsScreen extends HookConsumerWidget {
         title: Text(l10n.reports),
         automaticallyImplyLeading: false,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      body: RefreshIndicator(
+        onRefresh: () => syncCurrentWorkspaceData(ref),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             // Period Selector
             Card(
               child: Padding(
@@ -85,7 +89,7 @@ class ReportsScreen extends HookConsumerWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -102,7 +106,7 @@ class ReportsScreen extends HookConsumerWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -360,7 +364,7 @@ class ReportsScreen extends HookConsumerWidget {
                                             width: 40,
                                             height: 40,
                                             decoration: BoxDecoration(
-                                              color: getCategoryColor(category.colorValue).withOpacity(0.2),
+                                               color: getCategoryColor(category.colorValue).withValues(alpha: 0.2),
                                               borderRadius: BorderRadius.circular(8),
                                             ),
                                             child: Center(
@@ -399,8 +403,8 @@ class ReportsScreen extends HookConsumerWidget {
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                         decoration: BoxDecoration(
                                           color: isExceeded 
-                                              ? Colors.red.withOpacity(0.1) 
-                                              : Colors.green.withOpacity(0.1),
+                                               ? Colors.red.withValues(alpha: 0.1) 
+                                               : Colors.green.withValues(alpha: 0.1),
                                           borderRadius: BorderRadius.circular(12),
                                         ),
                                         child: Text(
@@ -546,7 +550,7 @@ class ReportsScreen extends HookConsumerWidget {
                     }
 
                     // Group by category
-                    final Map<int, int> categoryTotals = {};
+                    final Map<String, int> categoryTotals = {};
                     for (final t in filteredTransactions) {
                       categoryTotals[t.categoryId] = (categoryTotals[t.categoryId] ?? 0) + t.amountCents;
                     }
@@ -677,7 +681,8 @@ class ReportsScreen extends HookConsumerWidget {
                 ),
               ),
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -704,7 +709,7 @@ class ReportsScreen extends HookConsumerWidget {
   void _showCategoryTransactions(
     BuildContext context,
     WidgetRef ref,
-    int categoryId,
+    String categoryId,
     String categoryName,
     String categoryIcon,
     int categoryColor,
@@ -833,7 +838,7 @@ class ReportsScreen extends HookConsumerWidget {
 
 // Category Transactions Screen
 class CategoryTransactionsScreen extends ConsumerWidget {
-  final int categoryId;
+  final String categoryId;
   final String categoryName;
   final String categoryIcon;
   final int categoryColor;
@@ -907,7 +912,7 @@ class CategoryTransactionsScreen extends ConsumerWidget {
               width: 32,
               height: 32,
               decoration: BoxDecoration(
-                color: Color(categoryColor).withOpacity(0.2),
+                color: Color(categoryColor).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Center(
@@ -976,9 +981,9 @@ class CategoryTransactionsScreen extends ConsumerWidget {
                 margin: const EdgeInsets.all(16),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Color(categoryColor).withOpacity(0.1),
+                  color: Color(categoryColor).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Color(categoryColor).withOpacity(0.3)),
+                  border: Border.all(color: Color(categoryColor).withValues(alpha: 0.3)),
                 ),
                 child: Column(
                   children: [
@@ -1034,7 +1039,7 @@ class CategoryTransactionsScreen extends ConsumerWidget {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: Color(categoryColor).withOpacity(0.1),
+                                    color: Color(categoryColor).withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
@@ -1140,7 +1145,7 @@ class BudgetTransactionsScreen extends ConsumerWidget {
               // Budget summary header
               Container(
                 padding: const EdgeInsets.all(16),
-                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -1170,8 +1175,8 @@ class BudgetTransactionsScreen extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: isExceeded
-                                ? Colors.red.withOpacity(0.1)
-                                : Colors.green.withOpacity(0.1),
+                                ? Colors.red.withValues(alpha: 0.1)
+                                : Colors.green.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Text(
@@ -1291,7 +1296,7 @@ class BudgetTransactionsScreen extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
@@ -1311,7 +1316,7 @@ class BudgetTransactionsScreen extends ConsumerWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: AppColors.expense.withOpacity(0.1),
+                    color: AppColors.expense.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(
@@ -1595,7 +1600,7 @@ class _CustomPeriodPickerSheet extends HookWidget {
                     color: isCurrentSelection
                         ? Theme.of(context).colorScheme.primary
                         : isCurrentMonth
-                            ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
                             : (Theme.of(context).brightness == Brightness.dark 
                                 ? Colors.grey[800] 
                                 : Colors.grey[100]),
@@ -1644,7 +1649,7 @@ class _CustomPeriodPickerSheet extends HookWidget {
                     color: isCurrentSelection
                         ? Theme.of(context).colorScheme.primary
                         : isCurrentYear
-                            ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
                             : (Theme.of(context).brightness == Brightness.dark 
                                 ? Colors.grey[800] 
                                 : Colors.grey[100]),

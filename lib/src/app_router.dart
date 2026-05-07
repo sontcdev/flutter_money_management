@@ -22,7 +22,6 @@ import 'ui/screens/category_edit_screen.dart';
 import 'ui/screens/reports_screen.dart';
 import 'ui/screens/settings_screen.dart';
 import 'ui/screens/report_calendar_screen.dart';
-import 'ui/screens/import_export_screen.dart';
 import 'ui/screens/icon_management_screen.dart';
 import 'ui/screens/transaction_management_screen.dart';
 import 'utils/animations.dart';
@@ -51,19 +50,19 @@ class AppRouter {
       case '/transactions':
         return AppAnimations.slideRoute(const TransactionsScreen());
       case '/edit-transaction':
-        final transactionId = settings.arguments as int;
+        final transactionId = settings.arguments as String;
         return AppAnimations.slideRoute(
           EditTransactionScreen(transactionId: transactionId),
         );
       case '/transaction-detail':
-        final transactionId = settings.arguments as int;
+        final transactionId = settings.arguments as String;
         return AppAnimations.slideRoute(
           TransactionDetailScreen(transactionId: transactionId),
         );
       case '/budgets':
         return AppAnimations.slideRoute(const BudgetsScreen());
       case '/budget-detail':
-        final budgetId = settings.arguments as int;
+        final budgetId = settings.arguments as String;
         return AppAnimations.slideRoute(
           BudgetDetailScreen(budgetId: budgetId),
         );
@@ -93,8 +92,6 @@ class AppRouter {
         return AppAnimations.slideRoute(const ReportCalendarScreen());
       case '/settings':
         return AppAnimations.slideRoute(const SettingsScreen());
-      case '/import-export':
-        return AppAnimations.slideRoute(const ImportExportScreen());
       case '/icon-management':
         return AppAnimations.slideRoute(const IconManagementScreen());
       case '/transaction-management':
@@ -110,4 +107,3 @@ class AppRouter {
     }
   }
 }
-

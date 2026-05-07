@@ -12,7 +12,7 @@ class AppTheme {
       brightness: Brightness.light,
       colorScheme: ColorScheme.light(
         primary: primary,
-        secondary: primary.withOpacity(0.8),
+        secondary: primary.withValues(alpha: 0.8),
         error: AppColors.error,
         surface: AppColors.surface,
         onPrimary: AppColors.textLight,
@@ -36,8 +36,8 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: AppColors.surface,
-        elevation: 3,
-        shadowColor: AppColors.shadow.withOpacity(0.15),
+        elevation: 2,
+        shadowColor: AppColors.shadow.withValues(alpha: 0.1),
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -64,7 +64,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: primary,
-          side: BorderSide(color: primary.withOpacity(0.5), width: 1.5),
+          side: BorderSide(color: primary.withValues(alpha: 0.5), width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -106,30 +106,35 @@ class AppTheme {
         ),
       ),
       textTheme: const TextTheme(
+        // Large amount display - for hero sections
         displayLarge: TextStyle(
-          fontSize: 56,
+          fontSize: 48,
           fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
           letterSpacing: -1.5,
-          height: 1.2,
+          height: 1.1,
+          fontFeatures: [FontFeature.tabularFigures()],
         ),
         displayMedium: TextStyle(
-          fontSize: 44,
+          fontSize: 36,
           fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
           letterSpacing: -1.0,
           height: 1.2,
+          fontFeatures: [FontFeature.tabularFigures()],
         ),
         displaySmall: TextStyle(
-          fontSize: 32,
+          fontSize: 28,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
           letterSpacing: -0.5,
           height: 1.3,
+          fontFeatures: [FontFeature.tabularFigures()],
         ),
+        // Section headers
         headlineLarge: TextStyle(
           fontSize: 24,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
           letterSpacing: -0.5,
           height: 1.3,
@@ -169,6 +174,7 @@ class AppTheme {
           letterSpacing: 0.3,
           height: 1.5,
         ),
+        // Status labels and supporting text
         labelLarge: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
@@ -177,8 +183,15 @@ class AppTheme {
         ),
         labelMedium: TextStyle(
           fontSize: 12,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
+          letterSpacing: 0.5,
+          textBaseline: TextBaseline.alphabetic,
+        ),
+        labelSmall: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+          color: AppColors.textSecondary,
           letterSpacing: 0.5,
         ),
       ),
@@ -229,7 +242,7 @@ class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.border,
-        selectedColor: primary.withOpacity(0.15),
+        selectedColor: primary.withValues(alpha: 0.15),
         labelStyle: const TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w500,
@@ -250,7 +263,7 @@ class AppTheme {
       brightness: Brightness.dark,
       colorScheme: ColorScheme.dark(
         primary: primary,
-        secondary: primary.withOpacity(0.8),
+        secondary: primary.withValues(alpha: 0.8),
         error: AppColors.error,
         surface: AppColors.surfaceDark,
         onPrimary: AppColors.textLight,
@@ -301,7 +314,7 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: primary,
-          side: BorderSide(color: primary.withOpacity(0.5), width: 1.5),
+          side: BorderSide(color: primary.withValues(alpha: 0.5), width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -343,30 +356,35 @@ class AppTheme {
         ),
       ),
       textTheme: const TextTheme(
+        // Large amount display - for hero sections
         displayLarge: TextStyle(
-          fontSize: 56,
+          fontSize: 48,
           fontWeight: FontWeight.w700,
           color: AppColors.textLight,
           letterSpacing: -1.5,
-          height: 1.2,
+          height: 1.1,
+          fontFeatures: [FontFeature.tabularFigures()],
         ),
         displayMedium: TextStyle(
-          fontSize: 44,
+          fontSize: 36,
           fontWeight: FontWeight.w700,
           color: AppColors.textLight,
           letterSpacing: -1.0,
           height: 1.2,
+          fontFeatures: [FontFeature.tabularFigures()],
         ),
         displaySmall: TextStyle(
-          fontSize: 32,
+          fontSize: 28,
           fontWeight: FontWeight.w600,
           color: AppColors.textLight,
           letterSpacing: -0.5,
           height: 1.3,
+          fontFeatures: [FontFeature.tabularFigures()],
         ),
+        // Section headers
         headlineLarge: TextStyle(
           fontSize: 24,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
           color: AppColors.textLight,
           letterSpacing: -0.5,
           height: 1.3,
@@ -406,6 +424,7 @@ class AppTheme {
           letterSpacing: 0.3,
           height: 1.5,
         ),
+        // Status labels and supporting text
         labelLarge: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
@@ -414,8 +433,15 @@ class AppTheme {
         ),
         labelMedium: TextStyle(
           fontSize: 12,
-          fontWeight: FontWeight.w500,
+          fontWeight: FontWeight.w600,
           color: AppColors.textLight,
+          letterSpacing: 0.5,
+          textBaseline: TextBaseline.alphabetic,
+        ),
+        labelSmall: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w500,
+          color: AppColors.textSecondary,
           letterSpacing: 0.5,
         ),
       ),
@@ -466,7 +492,7 @@ class AppTheme {
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.borderDark,
-        selectedColor: primary.withOpacity(0.2),
+        selectedColor: primary.withValues(alpha: 0.2),
         labelStyle: const TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w500,
@@ -479,4 +505,3 @@ class AppTheme {
     );
   }
 }
-

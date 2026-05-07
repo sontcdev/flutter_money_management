@@ -5,11 +5,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../providers/providers.dart';
 import '../../models/transaction.dart' as model;
-import '../../models/category.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../utils/currency_formatter.dart';
 import '../../utils/cycle_utils.dart';
+import '../../services/workspace_sync_helper.dart';
 import '../widgets/app_metric_card.dart';
 import '../widgets/app_section_header.dart';
 import '../widgets/transaction_item.dart';
@@ -29,7 +29,7 @@ class DashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.dashboard ?? 'Dashboard'),
+        title: Text(l10n.dashboard),
         automaticallyImplyLeading: false,
         actions: const [
           WorkspaceSwitcher(),
@@ -37,10 +37,7 @@ class DashboardScreen extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          ref.invalidate(transactionsProvider);
-          ref.invalidate(budgetsProvider);
-          ref.invalidate(budgetsWithConsumedProvider);
-          await Future.delayed(const Duration(milliseconds: 500));
+          await syncCurrentWorkspaceData(ref);
         },
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
@@ -154,7 +151,7 @@ class DashboardScreen extends ConsumerWidget {
     return Column(
       children: [
         AppSectionHeader(
-          title: l10n.quickActions ?? 'Quick Actions',
+          title: l10n.quickActions,
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
@@ -163,7 +160,7 @@ class DashboardScreen extends ConsumerWidget {
               Expanded(
                 child: _QuickActionButton(
                   icon: Icons.add_circle,
-                  label: l10n.addExpense ?? 'Add Expense',
+                  label: l10n.addExpense,
                   color: AppColors.expense,
                   onTap: () {
                     Navigator.pushNamed(
@@ -178,7 +175,7 @@ class DashboardScreen extends ConsumerWidget {
               Expanded(
                 child: _QuickActionButton(
                   icon: Icons.add_circle,
-                  label: l10n.addIncome ?? 'Add Income',
+                  label: l10n.addIncome,
                   color: AppColors.income,
                   onTap: () {
                     Navigator.pushNamed(
@@ -405,7 +402,7 @@ class DashboardScreen extends ConsumerWidget {
         return Column(
           children: [
             AppSectionHeader(
-              title: l10n.recentTransactions ?? 'Recent Transactions',
+               title: l10n.recentTransactions,
               trailing: TextButton(
                 onPressed: () {
                   // Will navigate to transactions tab
@@ -498,7 +495,7 @@ class _QuickActionButton extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(

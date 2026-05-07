@@ -20,16 +20,22 @@ Transaction _$TransactionFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Transaction {
-  int get id => throw _privateConstructorUsedError;
+  String get id =>
+      throw _privateConstructorUsedError; // Changed from int to String (UUID)
   int get amountCents => throw _privateConstructorUsedError;
   String get currency => throw _privateConstructorUsedError;
   DateTime get dateTime => throw _privateConstructorUsedError;
-  int get categoryId => throw _privateConstructorUsedError;
+  String get categoryId =>
+      throw _privateConstructorUsedError; // Changed from int to String (UUID)
   TransactionType get type => throw _privateConstructorUsedError;
   String? get note => throw _privateConstructorUsedError;
   String? get receiptPath => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
+  SyncStatus get syncStatus => throw _privateConstructorUsedError;
+  DateTime? get syncedAt => throw _privateConstructorUsedError;
+  String? get lastSyncError => throw _privateConstructorUsedError;
+  DateTime? get deletedAt => throw _privateConstructorUsedError;
 
   /// Serializes this Transaction to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -48,16 +54,20 @@ abstract class $TransactionCopyWith<$Res> {
       _$TransactionCopyWithImpl<$Res, Transaction>;
   @useResult
   $Res call(
-      {int id,
+      {String id,
       int amountCents,
       String currency,
       DateTime dateTime,
-      int categoryId,
+      String categoryId,
       TransactionType type,
       String? note,
       String? receiptPath,
       DateTime createdAt,
-      DateTime updatedAt});
+      DateTime updatedAt,
+      SyncStatus syncStatus,
+      DateTime? syncedAt,
+      String? lastSyncError,
+      DateTime? deletedAt});
 }
 
 /// @nodoc
@@ -85,12 +95,16 @@ class _$TransactionCopyWithImpl<$Res, $Val extends Transaction>
     Object? receiptPath = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? syncStatus = null,
+    Object? syncedAt = freezed,
+    Object? lastSyncError = freezed,
+    Object? deletedAt = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       amountCents: null == amountCents
           ? _value.amountCents
           : amountCents // ignore: cast_nullable_to_non_nullable
@@ -106,7 +120,7 @@ class _$TransactionCopyWithImpl<$Res, $Val extends Transaction>
       categoryId: null == categoryId
           ? _value.categoryId
           : categoryId // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       type: null == type
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
@@ -127,6 +141,22 @@ class _$TransactionCopyWithImpl<$Res, $Val extends Transaction>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      syncStatus: null == syncStatus
+          ? _value.syncStatus
+          : syncStatus // ignore: cast_nullable_to_non_nullable
+              as SyncStatus,
+      syncedAt: freezed == syncedAt
+          ? _value.syncedAt
+          : syncedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      lastSyncError: freezed == lastSyncError
+          ? _value.lastSyncError
+          : lastSyncError // ignore: cast_nullable_to_non_nullable
+              as String?,
+      deletedAt: freezed == deletedAt
+          ? _value.deletedAt
+          : deletedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ) as $Val);
   }
 }
@@ -140,16 +170,20 @@ abstract class _$$TransactionImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {int id,
+      {String id,
       int amountCents,
       String currency,
       DateTime dateTime,
-      int categoryId,
+      String categoryId,
       TransactionType type,
       String? note,
       String? receiptPath,
       DateTime createdAt,
-      DateTime updatedAt});
+      DateTime updatedAt,
+      SyncStatus syncStatus,
+      DateTime? syncedAt,
+      String? lastSyncError,
+      DateTime? deletedAt});
 }
 
 /// @nodoc
@@ -175,12 +209,16 @@ class __$$TransactionImplCopyWithImpl<$Res>
     Object? receiptPath = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
+    Object? syncStatus = null,
+    Object? syncedAt = freezed,
+    Object? lastSyncError = freezed,
+    Object? deletedAt = freezed,
   }) {
     return _then(_$TransactionImpl(
       id: null == id
           ? _value.id
           : id // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       amountCents: null == amountCents
           ? _value.amountCents
           : amountCents // ignore: cast_nullable_to_non_nullable
@@ -196,7 +234,7 @@ class __$$TransactionImplCopyWithImpl<$Res>
       categoryId: null == categoryId
           ? _value.categoryId
           : categoryId // ignore: cast_nullable_to_non_nullable
-              as int,
+              as String,
       type: null == type
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
@@ -217,6 +255,22 @@ class __$$TransactionImplCopyWithImpl<$Res>
           ? _value.updatedAt
           : updatedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      syncStatus: null == syncStatus
+          ? _value.syncStatus
+          : syncStatus // ignore: cast_nullable_to_non_nullable
+              as SyncStatus,
+      syncedAt: freezed == syncedAt
+          ? _value.syncedAt
+          : syncedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      lastSyncError: freezed == lastSyncError
+          ? _value.lastSyncError
+          : lastSyncError // ignore: cast_nullable_to_non_nullable
+              as String?,
+      deletedAt: freezed == deletedAt
+          ? _value.deletedAt
+          : deletedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ));
   }
 }
@@ -234,13 +288,18 @@ class _$TransactionImpl implements _Transaction {
       this.note,
       this.receiptPath,
       required this.createdAt,
-      required this.updatedAt});
+      required this.updatedAt,
+      this.syncStatus = SyncStatus.pending,
+      this.syncedAt,
+      this.lastSyncError,
+      this.deletedAt});
 
   factory _$TransactionImpl.fromJson(Map<String, dynamic> json) =>
       _$$TransactionImplFromJson(json);
 
   @override
-  final int id;
+  final String id;
+// Changed from int to String (UUID)
   @override
   final int amountCents;
   @override
@@ -248,7 +307,8 @@ class _$TransactionImpl implements _Transaction {
   @override
   final DateTime dateTime;
   @override
-  final int categoryId;
+  final String categoryId;
+// Changed from int to String (UUID)
   @override
   final TransactionType type;
   @override
@@ -259,10 +319,19 @@ class _$TransactionImpl implements _Transaction {
   final DateTime createdAt;
   @override
   final DateTime updatedAt;
+  @override
+  @JsonKey()
+  final SyncStatus syncStatus;
+  @override
+  final DateTime? syncedAt;
+  @override
+  final String? lastSyncError;
+  @override
+  final DateTime? deletedAt;
 
   @override
   String toString() {
-    return 'Transaction(id: $id, amountCents: $amountCents, currency: $currency, dateTime: $dateTime, categoryId: $categoryId, type: $type, note: $note, receiptPath: $receiptPath, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Transaction(id: $id, amountCents: $amountCents, currency: $currency, dateTime: $dateTime, categoryId: $categoryId, type: $type, note: $note, receiptPath: $receiptPath, createdAt: $createdAt, updatedAt: $updatedAt, syncStatus: $syncStatus, syncedAt: $syncedAt, lastSyncError: $lastSyncError, deletedAt: $deletedAt)';
   }
 
   @override
@@ -286,13 +355,35 @@ class _$TransactionImpl implements _Transaction {
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt));
+                other.updatedAt == updatedAt) &&
+            (identical(other.syncStatus, syncStatus) ||
+                other.syncStatus == syncStatus) &&
+            (identical(other.syncedAt, syncedAt) ||
+                other.syncedAt == syncedAt) &&
+            (identical(other.lastSyncError, lastSyncError) ||
+                other.lastSyncError == lastSyncError) &&
+            (identical(other.deletedAt, deletedAt) ||
+                other.deletedAt == deletedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, amountCents, currency,
-      dateTime, categoryId, type, note, receiptPath, createdAt, updatedAt);
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      amountCents,
+      currency,
+      dateTime,
+      categoryId,
+      type,
+      note,
+      receiptPath,
+      createdAt,
+      updatedAt,
+      syncStatus,
+      syncedAt,
+      lastSyncError,
+      deletedAt);
 
   /// Create a copy of Transaction
   /// with the given fields replaced by the non-null parameter values.
@@ -312,22 +403,26 @@ class _$TransactionImpl implements _Transaction {
 
 abstract class _Transaction implements Transaction {
   const factory _Transaction(
-      {required final int id,
+      {required final String id,
       required final int amountCents,
       required final String currency,
       required final DateTime dateTime,
-      required final int categoryId,
+      required final String categoryId,
       required final TransactionType type,
       final String? note,
       final String? receiptPath,
       required final DateTime createdAt,
-      required final DateTime updatedAt}) = _$TransactionImpl;
+      required final DateTime updatedAt,
+      final SyncStatus syncStatus,
+      final DateTime? syncedAt,
+      final String? lastSyncError,
+      final DateTime? deletedAt}) = _$TransactionImpl;
 
   factory _Transaction.fromJson(Map<String, dynamic> json) =
       _$TransactionImpl.fromJson;
 
   @override
-  int get id;
+  String get id; // Changed from int to String (UUID)
   @override
   int get amountCents;
   @override
@@ -335,7 +430,7 @@ abstract class _Transaction implements Transaction {
   @override
   DateTime get dateTime;
   @override
-  int get categoryId;
+  String get categoryId; // Changed from int to String (UUID)
   @override
   TransactionType get type;
   @override
@@ -346,6 +441,14 @@ abstract class _Transaction implements Transaction {
   DateTime get createdAt;
   @override
   DateTime get updatedAt;
+  @override
+  SyncStatus get syncStatus;
+  @override
+  DateTime? get syncedAt;
+  @override
+  String? get lastSyncError;
+  @override
+  DateTime? get deletedAt;
 
   /// Create a copy of Transaction
   /// with the given fields replaced by the non-null parameter values.

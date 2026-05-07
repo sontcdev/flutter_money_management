@@ -3,10 +3,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
+import 'utils/app_logger.dart';
 import 'providers/providers.dart';
 import 'i18n/locale_provider.dart';
 import 'i18n/theme_provider.dart';
 import 'config/supabase_config.dart';
+import 'ui/widgets/app_lifecycle_sync_coordinator.dart';
 
 class AppBootstrap extends StatefulWidget {
   const AppBootstrap({super.key});
@@ -18,7 +20,6 @@ class AppBootstrap extends StatefulWidget {
 class _AppBootstrapState extends State<AppBootstrap> {
   SharedPreferences? _sharedPreferences;
   bool _minDurationPassed = false;
-  Color _themeColor = const Color(0xFF4CAF50); // Default green
   ThemeMode _themeMode = ThemeMode.light; // Default light mode
 
   @override
@@ -29,9 +30,12 @@ class _AppBootstrapState extends State<AppBootstrap> {
   }
 
   Future<void> _init() async {
+    AppLogger.info('App bootstrap started', name: 'MM.App');
+
     // Initialize Supabase if configured
     if (SupabaseConfig.isConfigured) {
       try {
+        AppLogger.info('Supabase initialization started', name: 'MM.App');
         await Supabase.initialize(
           url: SupabaseConfig.supabaseUrl,
           anonKey: SupabaseConfig.supabaseAnonKey,
@@ -40,25 +44,29 @@ class _AppBootstrapState extends State<AppBootstrap> {
           ),
           debug: true, // Enable debug logging for API calls
         );
-        debugPrint('✅ Supabase initialized: ${SupabaseConfig.supabaseUrl}');
-      } catch (e) {
+        AppLogger.info('Supabase initialization succeeded', name: 'MM.App');
+      } catch (e, stackTrace) {
         // Log error but continue - app can work in local-only mode
-        debugPrint('❌ Supabase initialization failed: $e');
+        AppLogger.warn(
+          'Supabase initialization failed, continuing in local-only mode',
+          name: 'MM.App',
+          error: e,
+          stackTrace: stackTrace,
+        );
       }
+    } else {
+      AppLogger.warn('Supabase is not configured', name: 'MM.App');
     }
-    
+
     final prefs = await SharedPreferences.getInstance();
+    AppLogger.debug('SharedPreferences loaded', name: 'MM.App');
+
     if (mounted) {
-      // Load theme color from preferences
-      final colorValue = prefs.getInt('theme_color');
       // Load theme mode from preferences
       final themeModeIndex = prefs.getInt('theme_mode');
-      
+
       setState(() {
         _sharedPreferences = prefs;
-        if (colorValue != null) {
-          _themeColor = Color(colorValue);
-        }
         if (themeModeIndex != null) {
           _themeMode = ThemeMode.values[themeModeIndex];
         }
@@ -70,6 +78,7 @@ class _AppBootstrapState extends State<AppBootstrap> {
     // Ensure splash screen is shown for at least 1.5 seconds
     await Future.delayed(const Duration(milliseconds: 1500));
     if (mounted) {
+      AppLogger.debug('Minimum splash duration elapsed', name: 'MM.App');
       setState(() {
         _minDurationPassed = true;
       });
@@ -132,7 +141,9 @@ class _AppBootstrapState extends State<AppBootstrap> {
         themeModeProvider.overrideWith((ref) => ThemeNotifier(_sharedPreferences!)),
         themeColorProvider.overrideWith((ref) => ThemeColorNotifier(_sharedPreferences!)),
       ],
-      child: const MoneyManagementApp(),
+      child: const AppLifecycleSyncCoordinator(
+        child: MoneyManagementApp(),
+      ),
     );
   }
 }

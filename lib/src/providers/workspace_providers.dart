@@ -3,6 +3,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../models/workspace.dart';
 import 'auth_providers.dart';
+import '../utils/app_logger.dart';
 
 /// Provider for Supabase client (re-exported for convenience)
 final supabaseProvider = supabaseClientProvider;
@@ -13,10 +14,12 @@ final workspaceListProvider = FutureProvider<List<Workspace>>((ref) async {
   final session = ref.watch(currentSessionProvider);
 
   if (session == null) {
+    AppLogger.debug('No session, returning empty workspace list', name: 'MM.Workspace');
     return [];
   }
 
   try {
+    AppLogger.info('Workspace fetch started', name: 'MM.Workspace');
     // Fetch workspaces where user is a member
     final response = await supabase
         .from('workspace_members')
@@ -47,8 +50,18 @@ final workspaceListProvider = FutureProvider<List<Workspace>>((ref) async {
       ));
     }
 
+    AppLogger.info(
+      'Workspace fetch completed: ${workspaces.length} workspaces',
+      name: 'MM.Workspace',
+    );
     return workspaces;
-  } catch (e) {
+  } catch (e, stackTrace) {
+    AppLogger.error(
+      'Workspace fetch failed',
+      name: 'MM.Workspace',
+      error: e,
+      stackTrace: stackTrace,
+    );
     throw Exception('Failed to fetch workspaces: $e');
   }
 });
@@ -103,33 +116,6 @@ final workspaceRoleProvider = Provider<String?>((ref) {
   final workspace = ref.watch(activeWorkspaceProvider);
   return workspace?.role;
 });
-
-/// Helper to create a default workspace for a user
-final createDefaultWorkspaceProvider = FutureProvider.family<String, String>(
-  (ref, workspaceName) async {
-    final supabase = ref.watch(supabaseClientProvider);
-    final session = ref.watch(currentSessionProvider);
-
-    if (session == null) {
-      throw Exception('User must be authenticated to create workspace');
-    }
-
-    try {
-      final response = await supabase.from('workspaces').insert({
-        'name': workspaceName,
-        'type': 'personal',
-        'owner_user_id': session.user.id,
-      }).select('id').single();
-
-      // Refresh workspace list after creation
-      ref.invalidate(workspaceListProvider);
-
-      return response['id'] as String;
-    } catch (e) {
-      throw Exception('Failed to create workspace: $e');
-    }
-  },
-);
 
 /// Helper to clear active workspace (for sign out)
 void clearActiveWorkspace(WidgetRef ref) {

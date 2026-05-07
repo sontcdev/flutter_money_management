@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../providers/workspace_providers.dart';
-import '../../providers/auth_providers.dart';
 
 /// Widget to display current workspace and allow switching
 class WorkspaceSwitcher extends ConsumerWidget {

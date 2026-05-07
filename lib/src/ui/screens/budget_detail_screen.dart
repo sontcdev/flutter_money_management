@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../l10n/app_localizations.dart';
 
 class BudgetDetailScreen extends ConsumerWidget {
-  final int budgetId;
+  final String budgetId;
 
   const BudgetDetailScreen({super.key, required this.budgetId});
 

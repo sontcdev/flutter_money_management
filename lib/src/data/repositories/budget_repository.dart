@@ -1,141 +1,217 @@
 // path: lib/src/data/repositories/budget_repository.dart
 
-import 'package:drift/drift.dart';
-import '../local/app_database.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
+
 import '../../models/budget.dart' as model;
 import '../../services/budget_service.dart';
 
 class BudgetRepository {
-  final AppDatabase _db;
-  final BudgetService _budgetService;
+  final SupabaseClient _supabase;
+  final String? Function() _getActiveWorkspaceId;
+  final String? Function() _getCurrentUserId;
+  final _uuid = const Uuid();
 
-  BudgetRepository(this._db, this._budgetService);
+  BudgetRepository(
+    this._supabase,
+    this._getActiveWorkspaceId,
+    this._getCurrentUserId,
+  );
 
   Future<List<model.Budget>> getAllBudgets() async {
-    final entities = await _db.budgetDao.getAllBudgets();
-    
-    // Recalculate consumed for all budgets to ensure up-to-date data
-    for (final entity in entities) {
-      await _db.budgetDao.recalculateConsumed(entity.id);
+    final workspaceId = _requireWorkspaceId();
+    final response = await _supabase
+        .from('budgets')
+        .select()
+        .eq('workspace_id', workspaceId)
+        .isFilter('deleted_at', null)
+        .order('period_start');
+
+    return (response as List)
+        .cast<Map<String, dynamic>>()
+        .map(_mapBudget)
+        .toList();
+  }
+
+  Future<model.Budget> getBudgetById(String id) async {
+    final workspaceId = _requireWorkspaceId();
+    final response = await _supabase
+        .from('budgets')
+        .select()
+        .eq('workspace_id', workspaceId)
+        .eq('id', id)
+        .isFilter('deleted_at', null)
+        .maybeSingle();
+
+    if (response == null) {
+      throw Exception('Budget not found: $id');
     }
-    
-    // Re-fetch to get updated consumed values
-    final updatedEntities = await _db.budgetDao.getAllBudgets();
-    return updatedEntities.map(_entityToModel).toList();
+
+    return _mapBudget(response);
   }
 
-  Future<model.Budget> getBudgetById(int id) async {
-    final entity = await _db.budgetDao.getBudgetById(id);
-    return _entityToModel(entity);
-  }
+  Future<List<model.Budget>> getBudgetsByCategory(String categoryId) async {
+    final workspaceId = _requireWorkspaceId();
+    final response = await _supabase
+        .from('budgets')
+        .select()
+        .eq('workspace_id', workspaceId)
+        .eq('category_id', categoryId)
+        .isFilter('deleted_at', null)
+        .order('period_start');
 
-  Future<List<model.Budget>> getBudgetsByCategory(int categoryId) async {
-    final entities = await _db.budgetDao.getBudgetsByCategory(categoryId);
-    return entities.map(_entityToModel).toList();
+    return (response as List)
+        .cast<Map<String, dynamic>>()
+        .map(_mapBudget)
+        .toList();
   }
 
   Future<model.Budget?> getActiveBudgetForCategoryAndDate(
-      int categoryId, DateTime date) async {
-    final entity = await _db.budgetDao
-        .getActiveBudgetForCategoryAndDate(categoryId, date);
-    return entity != null ? _entityToModel(entity) : null;
+    String categoryId,
+    DateTime date,
+  ) async {
+    final budgets = await getBudgetsByCategory(categoryId);
+    for (final budget in budgets) {
+      final isWithinPeriod = !date.isBefore(budget.periodStart) &&
+          !date.isAfter(budget.periodEnd);
+      if (isWithinPeriod) {
+        return budget;
+      }
+    }
+    return null;
   }
 
   Future<model.Budget> createBudget(model.Budget budget) async {
-    // Validate no overlap
-    await _budgetService.validateBudgetPeriod(
-      budget.categoryId,
-      budget.periodStart,
-      budget.periodEnd,
+    final workspaceId = _requireWorkspaceId();
+    final userId = _requireUserId();
+    await _validateBudgetPeriod(
+      categoryId: budget.categoryId,
+      start: budget.periodStart,
+      end: budget.periodEnd,
     );
 
-    final companion = _modelToCompanion(budget);
-    final id = await _db.budgetDao.insertBudget(companion);
-
-    // Recalculate consumed from existing transactions
-    await _db.budgetDao.recalculateConsumed(id);
+    final id = budget.id.isEmpty ? _uuid.v4() : budget.id;
+    await _supabase.from('budgets').insert({
+      'id': id,
+      'workspace_id': workspaceId,
+      'category_id': budget.categoryId,
+      'period_type': budget.periodType.name,
+      'period_start': budget.periodStart.toIso8601String(),
+      'period_end': budget.periodEnd.toIso8601String(),
+      'limit_minor': budget.limitCents,
+      'currency_code': 'VND',
+      'allow_overdraft': budget.allowOverdraft,
+      'created_by_user_id': userId,
+      'updated_by_user_id': userId,
+      'created_at': budget.createdAt.toIso8601String(),
+      'updated_at': budget.updatedAt.toIso8601String(),
+    });
 
     return getBudgetById(id);
   }
 
   Future<void> updateBudget(model.Budget budget) async {
-    // Validate no overlap (excluding this budget)
-    await _budgetService.validateBudgetPeriod(
-      budget.categoryId,
-      budget.periodStart,
-      budget.periodEnd,
+    final workspaceId = _requireWorkspaceId();
+    final userId = _requireUserId();
+    await _validateBudgetPeriod(
+      categoryId: budget.categoryId,
+      start: budget.periodStart,
+      end: budget.periodEnd,
       excludeId: budget.id,
     );
 
-    final companion = _modelToCompanion(budget);
-    await _db.budgetDao.updateBudget(companion);
-
-    // Recalculate consumed
-    await _db.budgetDao.recalculateConsumed(budget.id);
+    await _supabase.from('budgets').update({
+      'category_id': budget.categoryId,
+      'period_type': budget.periodType.name,
+      'period_start': budget.periodStart.toIso8601String(),
+      'period_end': budget.periodEnd.toIso8601String(),
+      'limit_minor': budget.limitCents,
+      'allow_overdraft': budget.allowOverdraft,
+      'updated_by_user_id': userId,
+      'updated_at': budget.updatedAt.toIso8601String(),
+    }).eq('workspace_id', workspaceId).eq('id', budget.id);
   }
 
-  Future<void> deleteBudget(int id) async {
-    await _db.budgetDao.deleteBudget(id);
+  Future<void> deleteBudget(String id) async {
+    final workspaceId = _requireWorkspaceId();
+    final userId = _requireUserId();
+    await _supabase.from('budgets').update({
+      'deleted_at': DateTime.now().toIso8601String(),
+      'deleted_by_user_id': userId,
+      'updated_by_user_id': userId,
+    }).eq('workspace_id', workspaceId).eq('id', id);
   }
 
-  Future<void> recalculateConsumed(int budgetId) async {
-    await _db.budgetDao.recalculateConsumed(budgetId);
+  Future<void> recalculateConsumed(String budgetId) async {
+    await getBudgetById(budgetId);
   }
 
-  model.Budget _entityToModel(BudgetEntity entity) {
+  Future<void> _validateBudgetPeriod({
+    required String categoryId,
+    required DateTime start,
+    required DateTime end,
+    String? excludeId,
+  }) async {
+    final budgets = await getBudgetsByCategory(categoryId);
+    final hasOverlap = budgets.any((budget) {
+      if (excludeId != null && budget.id == excludeId) {
+        return false;
+      }
+      return !end.isBefore(budget.periodStart) && !start.isAfter(budget.periodEnd);
+    });
+
+    if (hasOverlap) {
+      throw BudgetOverlapException(
+        'Budget period overlaps with existing budget for this category',
+      );
+    }
+  }
+
+  model.Budget _mapBudget(Map<String, dynamic> item) {
     return model.Budget(
-      id: entity.id,
-      categoryId: entity.categoryId,
-      periodType: _stringToPeriodType(entity.periodType),
-      periodStart: entity.periodStart,
-      periodEnd: entity.periodEnd,
-      limitCents: entity.limitCents,
-      consumedCents: entity.consumedCents,
-      allowOverdraft: entity.allowOverdraft,
-      overdraftCents: entity.overdraftCents,
-      createdAt: entity.createdAt,
-      updatedAt: entity.updatedAt,
+      id: item['id'] as String,
+      categoryId: item['category_id'] as String,
+      periodType: _parsePeriodType(item['period_type'] as String),
+      periodStart: DateTime.parse(item['period_start'] as String),
+      periodEnd: DateTime.parse(item['period_end'] as String),
+      limitCents: item['limit_minor'] as int,
+      consumedCents: 0,
+      allowOverdraft: item['allow_overdraft'] as bool? ?? false,
+      overdraftCents: 0,
+      createdAt: DateTime.parse(item['created_at'] as String),
+      updatedAt: DateTime.parse(item['updated_at'] as String),
+      syncStatus: model.SyncStatus.synced,
+      deletedAt: item['deleted_at'] != null
+          ? DateTime.parse(item['deleted_at'] as String)
+          : null,
     );
   }
 
-  BudgetsCompanion _modelToCompanion(model.Budget budget) {
-    return BudgetsCompanion(
-      id: budget.id > 0 ? Value(budget.id) : const Value.absent(),
-      categoryId: Value(budget.categoryId),
-      periodType: Value(_periodTypeToString(budget.periodType)),
-      periodStart: Value(budget.periodStart),
-      periodEnd: Value(budget.periodEnd),
-      limitCents: Value(budget.limitCents),
-      consumedCents: Value(budget.consumedCents),
-      allowOverdraft: Value(budget.allowOverdraft),
-      overdraftCents: Value(budget.overdraftCents),
-      createdAt: Value(budget.createdAt),
-      updatedAt: Value(budget.updatedAt),
-    );
-  }
-
-  model.PeriodType _stringToPeriodType(String type) {
-    switch (type) {
-      case 'monthly':
-        return model.PeriodType.monthly;
+  model.PeriodType _parsePeriodType(String value) {
+    switch (value) {
       case 'yearly':
         return model.PeriodType.yearly;
       case 'custom':
         return model.PeriodType.custom;
+      case 'monthly':
       default:
         return model.PeriodType.monthly;
     }
   }
 
-  String _periodTypeToString(model.PeriodType type) {
-    switch (type) {
-      case model.PeriodType.monthly:
-        return 'monthly';
-      case model.PeriodType.yearly:
-        return 'yearly';
-      case model.PeriodType.custom:
-        return 'custom';
+  String _requireWorkspaceId() {
+    final workspaceId = _getActiveWorkspaceId();
+    if (workspaceId == null || workspaceId.isEmpty) {
+      throw Exception('No active workspace selected');
     }
+    return workspaceId;
+  }
+
+  String _requireUserId() {
+    final userId = _getCurrentUserId();
+    if (userId == null || userId.isEmpty) {
+      throw Exception('No authenticated user');
+    }
+    return userId;
   }
 }
-

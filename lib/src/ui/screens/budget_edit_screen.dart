@@ -29,7 +29,7 @@ class BudgetEditScreen extends HookConsumerWidget {
         ? CurrencyFormatter.formatInputVND((budget!.limitCents / 100).round().toString())
         : '',
     );
-    final selectedCategoryId = useState<int?>(budget?.categoryId);
+    final selectedCategoryId = useState<String?>(budget?.categoryId);
     final selectedPeriodType = useState<PeriodType>(budget?.periodType ?? PeriodType.monthly);
     final allowOverdraft = useState(budget?.allowOverdraft ?? false);
     final isLoading = useState(false);
@@ -39,7 +39,7 @@ class BudgetEditScreen extends HookConsumerWidget {
     final customEndDate = useState<DateTime>(budget?.periodEnd ?? DateTime.now().add(const Duration(days: 30)));
     
     // Selected transactions to include in budget
-    final selectedTransactionIds = useState<Set<int>>({});
+    final selectedTransactionIds = useState<Set<String>>({});
     final showTransactionSelector = useState(false);
 
     // Get transactions for selected category within period
@@ -140,7 +140,7 @@ class BudgetEditScreen extends HookConsumerWidget {
         }
 
         final newBudget = Budget(
-          id: budget?.id ?? 0,
+          id: budget?.id ?? '',
           categoryId: selectedCategoryId.value!,
           periodType: selectedPeriodType.value,
           periodStart: periodStart,
@@ -231,42 +231,13 @@ class BudgetEditScreen extends HookConsumerWidget {
             const SizedBox(height: 8),
             categoriesAsync.when(
               data: (categories) {
-                // Filter categories by expense type only (budgets are for expenses)
-                final filteredCategories = categories.where((c) => 
-                  c.type == CategoryType.expense
-                ).toList();
-                
-                if (filteredCategories.isEmpty) {
-                  return Card(
-                    color: Colors.grey[100],
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.info_outline, color: Colors.grey),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              l10n.noCategoryYet,
-                              style: const TextStyle(color: Colors.grey),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-
-                return DropdownButtonFormField<int>(
-                  value: selectedCategoryId.value,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    hintText: l10n.selectCategory,
-                  ),
-                  items: filteredCategories.map((category) {
-                    return DropdownMenuItem(
+                final expenseCategories = categories.where((c) => c.type == CategoryType.expense).toList();
+                return DropdownButtonFormField<String>(
+                  key: ValueKey(selectedCategoryId.value),
+                  decoration: InputDecoration(labelText: l10n.category),
+                  initialValue: selectedCategoryId.value,
+                  items: expenseCategories.map((category) {
+                    return DropdownMenuItem<String>(
                       value: category.id,
                       child: Row(
                         children: [
@@ -493,7 +464,7 @@ class BudgetEditScreen extends HookConsumerWidget {
                             return CheckboxListTile(
                               value: isSelected,
                               onChanged: (value) {
-                                final newSet = Set<int>.from(selectedTransactionIds.value);
+                                final newSet = Set<String>.from(selectedTransactionIds.value);
                                 if (value == true) {
                                   newSet.add(t.id);
                                 } else {
@@ -570,7 +541,7 @@ class _PeriodOptionButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
           color: isSelected 
-              ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
               : Colors.grey[100],
           border: Border.all(
             color: isSelected 
@@ -656,4 +627,3 @@ class _DatePickerField extends StatelessWidget {
     );
   }
 }
-

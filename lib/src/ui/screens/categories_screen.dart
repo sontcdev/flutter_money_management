@@ -8,6 +8,7 @@ import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
 import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
 import 'package:flutter_money_management/src/services/budget_service.dart';
 import 'package:flutter_money_management/src/models/category.dart';
+import 'package:flutter_money_management/src/services/workspace_sync_helper.dart';
 import '../../../l10n/app_localizations.dart';
 
 class CategoriesScreen extends HookConsumerWidget {
@@ -83,74 +84,89 @@ class CategoriesScreen extends HookConsumerWidget {
                 }
 
                 if (filteredCategories.isEmpty) {
-                  return EmptyState(
-                    icon: Icons.category,
-                    title: l10n.noCategories,
-                    message: l10n.createFirst,
-                    actionLabel: 'Add Category',
-                    onAction: () async {
-                      final result = await Navigator.pushNamed(context, '/category-edit');
-                      if (result == true) {
-                        ref.invalidate(categoriesProvider);
-                      }
-                    },
+                  return RefreshIndicator(
+                    onRefresh: () => syncCurrentWorkspaceData(ref),
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.6,
+                          child: EmptyState(
+                            icon: Icons.category,
+                            title: l10n.noCategories,
+                            message: l10n.createFirst,
+                            actionLabel: 'Add Category',
+                            onAction: () async {
+                              final result = await Navigator.pushNamed(context, '/category-edit');
+                              if (result == true) {
+                                ref.invalidate(categoriesProvider);
+                              }
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 }
 
-                return ListView.builder(
-                  itemCount: filteredCategories.length,
-                  itemBuilder: (context, index) {
-                    final category = filteredCategories[index];
-                    return CategoryItem(
-                      category: category,
-                      onEdit: () async {
-                        final result = await Navigator.pushNamed(
-                          context,
-                          '/category-edit',
-                          arguments: category,
-                        );
-                        if (result == true) {
-                          ref.invalidate(categoriesProvider);
-                        }
-                      },
-                      onDelete: () async {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: Text(l10n.confirmDelete),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: Text(l10n.no),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, true),
-                                child: Text(l10n.yes),
-                              ),
-                            ],
-                          ),
-                        );
+                return RefreshIndicator(
+                  onRefresh: () => syncCurrentWorkspaceData(ref),
+                  child: ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: filteredCategories.length,
+                    itemBuilder: (context, index) {
+                      final category = filteredCategories[index];
+                      return CategoryItem(
+                        category: category,
+                        onEdit: () async {
+                          final result = await Navigator.pushNamed(
+                            context,
+                            '/category-edit',
+                            arguments: category,
+                          );
+                          if (result == true) {
+                            ref.invalidate(categoriesProvider);
+                          }
+                        },
+                        onDelete: () async {
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text(l10n.confirmDelete),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, false),
+                                  child: Text(l10n.no),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: Text(l10n.yes),
+                                ),
+                              ],
+                            ),
+                          );
 
-                        if (confirm == true) {
-                          try {
-                            await ref.read(categoryRepositoryProvider).deleteCategory(category.id);
-                            await ref.refresh(categoriesProvider.future);
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(l10n.success)),
-                              );
-                            }
-                          } on CategoryInUseException {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(l10n.categoryInUse)),
-                              );
+                          if (confirm == true) {
+                            try {
+                              await ref.read(categoryRepositoryProvider).deleteCategory(category.id);
+                              ref.invalidate(categoriesProvider);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(l10n.success)),
+                                );
+                              }
+                            } on CategoryInUseException {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(l10n.categoryInUse)),
+                                );
+                              }
                             }
                           }
-                        }
-                      },
-                    );
-                  },
+                        },
+                      );
+                    },
+                  ),
                 );
               },
               loading: () => ListView.builder(
@@ -203,4 +219,3 @@ class _TabButton extends StatelessWidget {
     );
   }
 }
-

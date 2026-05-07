@@ -2,12 +2,16 @@
 
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../utils/app_logger.dart';
+
 /// Supabase cloud authentication service
 /// Handles user signup, login, logout, and session management
 class SupabaseAuthService {
   final SupabaseClient _client;
 
   SupabaseAuthService(this._client);
+
+  static const _logName = 'MM.Auth';
 
   /// Get current user
   User? get currentUser => _client.auth.currentUser;
@@ -24,11 +28,26 @@ class SupabaseAuthService {
     required String password,
     String? displayName,
   }) async {
-    return await _client.auth.signUp(
-      email: email,
-      password: password,
-      data: displayName != null ? {'display_name': displayName} : null,
-    );
+    final maskedEmail = _maskEmail(email);
+    AppLogger.info('Sign up started for $maskedEmail', name: _logName);
+
+    try {
+      final response = await _client.auth.signUp(
+        email: email,
+        password: password,
+        data: displayName != null ? {'display_name': displayName} : null,
+      );
+      AppLogger.info('Sign up succeeded for $maskedEmail', name: _logName);
+      return response;
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Sign up failed for $maskedEmail',
+        name: _logName,
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
   }
 
   /// Sign in with email and password
@@ -36,20 +55,60 @@ class SupabaseAuthService {
     required String email,
     required String password,
   }) async {
-    return await _client.auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
+    final maskedEmail = _maskEmail(email);
+    AppLogger.info('Sign in started for $maskedEmail', name: _logName);
+
+    try {
+      final response = await _client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+      AppLogger.info('Sign in succeeded for $maskedEmail', name: _logName);
+      return response;
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Sign in failed for $maskedEmail',
+        name: _logName,
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
   }
 
   /// Sign out
   Future<void> signOut() async {
-    await _client.auth.signOut();
+    AppLogger.info('Sign out started', name: _logName);
+    try {
+      await _client.auth.signOut();
+      AppLogger.info('Sign out succeeded', name: _logName);
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Sign out failed',
+        name: _logName,
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
   }
 
   /// Reset password
   Future<void> resetPassword(String email) async {
-    await _client.auth.resetPasswordForEmail(email);
+    final maskedEmail = _maskEmail(email);
+    AppLogger.info('Password reset started for $maskedEmail', name: _logName);
+    try {
+      await _client.auth.resetPasswordForEmail(email);
+      AppLogger.info('Password reset request succeeded for $maskedEmail', name: _logName);
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Password reset failed for $maskedEmail',
+        name: _logName,
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
   }
 
   /// Update user profile
@@ -61,9 +120,22 @@ class SupabaseAuthService {
     if (displayName != null) data['display_name'] = displayName;
     if (avatarUrl != null) data['avatar_url'] = avatarUrl;
 
-    return await _client.auth.updateUser(
-      UserAttributes(data: data),
-    );
+    AppLogger.info('Profile update started', name: _logName);
+    try {
+      final response = await _client.auth.updateUser(
+        UserAttributes(data: data),
+      );
+      AppLogger.info('Profile update succeeded', name: _logName);
+      return response;
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Profile update failed',
+        name: _logName,
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
   }
 
   /// Listen to auth state changes
@@ -71,6 +143,37 @@ class SupabaseAuthService {
 
   /// Refresh session
   Future<AuthResponse> refreshSession() async {
-    return await _client.auth.refreshSession();
+    AppLogger.info('Session refresh started', name: _logName);
+    try {
+      final response = await _client.auth.refreshSession();
+      AppLogger.info('Session refresh succeeded', name: _logName);
+      return response;
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Session refresh failed',
+        name: _logName,
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  String _maskEmail(String email) {
+    final parts = email.split('@');
+    if (parts.length != 2) {
+      return 'masked-email';
+    }
+
+    final localPart = parts.first;
+    final domain = parts.last;
+    if (localPart.isEmpty) {
+      return '***@$domain';
+    }
+
+    final maskedLocal = localPart.length == 1
+        ? '${localPart[0]}***'
+        : '${localPart[0]}***${localPart[localPart.length - 1]}';
+    return '$maskedLocal@$domain';
   }
 }

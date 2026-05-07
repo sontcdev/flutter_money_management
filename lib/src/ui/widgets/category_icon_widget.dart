@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '../../utils/category_icons.dart';
+import '../../utils/category_color_codec.dart';
 
 /// Widget hiển thị icon của danh mục
 /// Hỗ trợ cả Material Icons (icon name) và emoji (legacy)
@@ -36,13 +37,11 @@ class CategoryIconWidget extends StatelessWidget {
   }
 }
 
-/// Default color for categories without a valid color value
-const int kDefaultCategoryColorValue = 0xFF9E9E9E; // Light gray (Colors.grey)
-
 /// Helper function to get category color with fallback to light gray
 Color getCategoryColor(int colorValue) {
-  if (colorValue <= 0) {
+  final normalizedValue = colorValue & 0xFFFFFFFF;
+  if (normalizedValue <= 0) {
     return const Color(kDefaultCategoryColorValue);
   }
-  return Color(colorValue);
+  return Color(normalizedValue);
 }

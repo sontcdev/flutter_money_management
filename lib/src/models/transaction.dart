@@ -10,19 +10,25 @@ enum TransactionType {
   income,
 }
 
+enum SyncStatus { pending, synced, error }
+
 @freezed
 class Transaction with _$Transaction {
   const factory Transaction({
-    required int id,
+    required String id, // Changed from int to String (UUID)
     required int amountCents,
     required String currency,
     required DateTime dateTime,
-    required int categoryId,
+    required String categoryId, // Changed from int to String (UUID)
     required TransactionType type,
     String? note,
     String? receiptPath,
     required DateTime createdAt,
     required DateTime updatedAt,
+    @Default(SyncStatus.pending) SyncStatus syncStatus,
+    DateTime? syncedAt,
+    String? lastSyncError,
+    DateTime? deletedAt,
   }) = _Transaction;
 
   factory Transaction.fromJson(Map<String, dynamic> json) =>

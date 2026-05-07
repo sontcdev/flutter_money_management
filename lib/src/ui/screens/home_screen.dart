@@ -5,11 +5,20 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../providers/providers.dart';
-import 'dashboard_screen.dart';
+import 'today_screen.dart';
 import 'transactions_screen.dart';
 import 'budgets_screen.dart';
 import 'reports_screen.dart';
 import 'settings_screen.dart';
+
+/// Tab navigation enum for type-safe tab management
+enum AppTab {
+  today,
+  activity,
+  plan,
+  insights,
+  profile,
+}
 
 /// Main app shell with bottom navigation and FAB
 class HomeScreen extends HookConsumerWidget {
@@ -18,43 +27,44 @@ class HomeScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final currentIndex = useState(0);
+    final currentTab = useState(AppTab.today);
     
-    final screens = [
-      const DashboardScreen(),
-      const TransactionsScreen(),
-      const BudgetsScreen(showBackButton: false),
-      const ReportsScreen(),
-      const SettingsScreen(),
-    ];
+    final screens = {
+      AppTab.today: const TodayScreen(),
+      AppTab.activity: const TransactionsScreen(),
+      AppTab.plan: const BudgetsScreen(showBackButton: false),
+      AppTab.insights: const ReportsScreen(),
+      AppTab.profile: const SettingsScreen(),
+    };
 
     // Determine if FAB should be shown
-    final showFAB = currentIndex.value != 4; // Hide on Settings
+    final showFAB = currentTab.value != AppTab.profile;
 
     return Scaffold(
       body: IndexedStack(
-        index: currentIndex.value,
-        children: screens,
+        index: currentTab.value.index,
+        children: AppTab.values.map((tab) => screens[tab]!).toList(),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: currentIndex.value,
+        currentIndex: currentTab.value.index,
         onTap: (index) {
+          final newTab = AppTab.values[index];
           // Invalidate providers when switching tabs to ensure fresh data
-          if (index != currentIndex.value) {
+          if (newTab != currentTab.value) {
             ref.invalidate(budgetsProvider);
             ref.invalidate(budgetsWithConsumedProvider);
             ref.invalidate(transactionsProvider);
           }
-          currentIndex.value = index;
+          currentTab.value = newTab;
         },
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedItemColor: Colors.grey,
         items: [
           BottomNavigationBarItem(
-            icon: const Icon(Icons.dashboard_outlined),
-            activeIcon: const Icon(Icons.dashboard),
-            label: l10n.dashboard ?? 'Dashboard',
+            icon: const Icon(Icons.today_outlined),
+            activeIcon: const Icon(Icons.today),
+            label: l10n.today,
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.receipt_long_outlined),
@@ -67,13 +77,13 @@ class HomeScreen extends HookConsumerWidget {
             label: l10n.budgets,
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.bar_chart_outlined),
-            activeIcon: const Icon(Icons.bar_chart),
+            icon: const Icon(Icons.insights_outlined),
+            activeIcon: const Icon(Icons.insights),
             label: l10n.reports,
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.settings_outlined),
-            activeIcon: const Icon(Icons.settings),
+            icon: const Icon(Icons.person_outline),
+            activeIcon: const Icon(Icons.person),
             label: l10n.settings,
           ),
         ],
@@ -98,3 +108,4 @@ class HomeScreen extends HookConsumerWidget {
     );
   }
 }
+

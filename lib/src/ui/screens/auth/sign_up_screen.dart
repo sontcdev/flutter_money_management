@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../providers/auth_providers.dart';
+import '../../../utils/app_logger.dart';
 
 class SignUpScreen extends HookConsumerWidget {
   const SignUpScreen({super.key});
@@ -53,6 +54,7 @@ class SignUpScreen extends HookConsumerWidget {
       errorMessage.value = null;
 
       try {
+        AppLogger.info('Sign-up submitted', name: 'MM.UI');
         final response = await authService.signUp(
           email: emailController.text.trim(),
           password: passwordController.text,
@@ -62,9 +64,11 @@ class SignUpScreen extends HookConsumerWidget {
         );
 
         if (response.user != null) {
+          AppLogger.info('Sign-up succeeded', name: 'MM.Auth');
           // Account created successfully
           // Since email confirmation is enabled, user needs to verify email before signing in
           if (context.mounted) {
+            AppLogger.info('Showing email verification dialog', name: 'MM.UI');
             // Show success dialog with clear instructions
             await showDialog(
               context: context,
@@ -90,7 +94,13 @@ class SignUpScreen extends HookConsumerWidget {
             );
           }
         }
-      } catch (e) {
+      } catch (e, stackTrace) {
+        AppLogger.error(
+          'Sign-up flow failed',
+          name: 'MM.Auth',
+          error: e,
+          stackTrace: stackTrace,
+        );
         errorMessage.value = _getErrorMessage(e.toString());
       } finally {
         isLoading.value = false;
@@ -261,8 +271,15 @@ class SignUpScreen extends HookConsumerWidget {
               if (errorMessage.value != null) const SizedBox(height: 16),
               
               // Sign Up Button
-              FilledButton(
+              OutlinedButton(
                 onPressed: isLoading.value ? null : handleSignUp,
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Theme.of(context).colorScheme.primary,
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: isLoading.value

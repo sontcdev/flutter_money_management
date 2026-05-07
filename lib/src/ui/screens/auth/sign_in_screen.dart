@@ -3,9 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../../providers/providers.dart';
 import '../../../providers/auth_providers.dart';
 import '../../../providers/workspace_providers.dart';
-import '../../../providers/providers.dart';
+import '../../../utils/app_logger.dart';
 import 'sign_up_screen.dart';
 
 class SignInScreen extends HookConsumerWidget {
@@ -32,114 +33,43 @@ class SignInScreen extends HookConsumerWidget {
 
     final authService = ref.read(supabaseAuthServiceProvider);
 
-    // Helper functions must be declared before use
-    Future<void> createDefaultWorkspace() async {
-      if (!context.mounted) return;
-
-      try {
-        // Show loading
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => const AlertDialog(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Creating workspace...'),
-              ],
-            ),
-          ),
-        );
-
-        // Create workspace
-        final workspaceId = await ref.read(
-          createDefaultWorkspaceProvider('My Workspace').future,
-        );
-
-        if (!context.mounted) return;
-
-        // Close loading dialog
-        Navigator.of(context).pop();
-
-        // Set active workspace
-        ref.read(activeWorkspaceIdProvider.notifier).state = workspaceId;
-
-        // Navigate to home
-        Navigator.of(context).pushReplacementNamed('/home');
-      } catch (e) {
-        if (!context.mounted) return;
-
-        // Close loading dialog
-        Navigator.of(context).pop();
-
-        // Show error
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to create workspace: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-
-    Future<void> showWorkspaceChoiceDialog() async {
-      if (!context.mounted) return;
-
-      final choice = await showDialog<String>(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => AlertDialog(
-          title: const Text('Welcome!'),
-          content: const Text(
-            'You don\'t have any workspaces yet. Would you like to create one now?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop('setup'),
-              child: const Text('Choose Setup Options'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.of(context).pop('create'),
-              child: const Text('Create My Workspace'),
-            ),
-          ],
-        ),
-      );
-
-      if (!context.mounted) return;
-
-      if (choice == 'create') {
-        // Create default workspace
-        await createDefaultWorkspace();
-      } else if (choice == 'setup') {
-        // Go to workspace selection
-        Navigator.of(context).pushReplacementNamed('/workspace-selection');
-      }
-    }
-
     Future<void> handlePostLoginFlow() async {
       if (!context.mounted) return;
 
       try {
+        AppLogger.info('Post-login workspace resolution started', name: 'MM.Auth');
+
+        // Invalidate workspace list to force refresh with new session
+        ref.invalidate(workspaceListProvider);
+        
         // Fetch user's workspaces
         final workspaces = await ref.read(workspaceListProvider.future);
+        AppLogger.info(
+          'Workspace resolution completed: ${workspaces.length} workspaces',
+          name: 'MM.Workspace',
+        );
 
         if (!context.mounted) return;
 
         if (workspaces.isNotEmpty) {
-          // User has workspaces, set active and go to home
           final activeWorkspaceId = ref.read(activeWorkspaceIdProvider);
-          if (activeWorkspaceId == null) {
-            ref.read(activeWorkspaceIdProvider.notifier).state = workspaces.first.id;
-          }
+          final workspaceId = activeWorkspaceId ?? workspaces.first.id;
+
+          ref.read(activeWorkspaceIdProvider.notifier).state = workspaceId;
+          AppLogger.info('Navigating to home after sign in', name: 'MM.UI');
+
           Navigator.of(context).pushReplacementNamed('/home');
         } else {
-          // User has no workspaces, show choice dialog
-          await showWorkspaceChoiceDialog();
+          AppLogger.info('Navigating to workspace selection after sign in', name: 'MM.UI');
+          Navigator.of(context).pushReplacementNamed('/workspace-selection');
         }
-      } catch (e) {
+      } catch (e, stackTrace) {
+        AppLogger.error(
+          'Post-login workspace resolution failed',
+          name: 'MM.Auth',
+          error: e,
+          stackTrace: stackTrace,
+        );
         errorMessage.value = 'Failed to load workspaces: $e';
       }
     }
@@ -173,19 +103,27 @@ class SignInScreen extends HookConsumerWidget {
       errorMessage.value = null;
 
       try {
+        AppLogger.info('Sign-in submitted', name: 'MM.UI');
         final response = await authService.signIn(
           email: email,
           password: password,
         );
 
         if (response.user != null && context.mounted) {
+          AppLogger.info('Sign-in succeeded, preparing post-login flow', name: 'MM.Auth');
           // Save email for next time
           await emailPersistence.saveEmail(email);
           
           // Sign in successful, now resolve post-login flow
           await handlePostLoginFlow();
         }
-      } catch (e) {
+      } catch (e, stackTrace) {
+        AppLogger.error(
+          'Sign-in flow failed',
+          name: 'MM.Auth',
+          error: e,
+          stackTrace: stackTrace,
+        );
         errorMessage.value = _getErrorMessage(e.toString());
       } finally {
         isLoading.value = false;
@@ -202,8 +140,10 @@ class SignInScreen extends HookConsumerWidget {
       errorMessage.value = null;
 
       try {
+        AppLogger.info('Forgot password submitted', name: 'MM.UI');
         await authService.resetPassword(emailController.text.trim());
-        
+        AppLogger.info('Forgot password request succeeded', name: 'MM.Auth');
+
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -212,7 +152,13 @@ class SignInScreen extends HookConsumerWidget {
             ),
           );
         }
-      } catch (e) {
+      } catch (e, stackTrace) {
+        AppLogger.error(
+          'Forgot password request failed',
+          name: 'MM.Auth',
+          error: e,
+          stackTrace: stackTrace,
+        );
         errorMessage.value = 'Failed to send reset email. Please try again.';
       } finally {
         isLoading.value = false;
@@ -390,7 +336,7 @@ class SignInScreen extends HookConsumerWidget {
               const SizedBox(height: 16),
               
               // Sign Up Link
-              OutlinedButton(
+              OutlinedButton.icon(
                 onPressed: isLoading.value 
                   ? null 
                   : () {
@@ -400,9 +346,20 @@ class SignInScreen extends HookConsumerWidget {
                         ),
                       );
                     },
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Text('Create New Account'),
+                icon: const Icon(Icons.person_add_outlined, size: 16),
+                label: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 7),
+                  child: Text(
+                     'Create New Account',
+                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Theme.of(context).colorScheme.primary,
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
               

@@ -11,8 +11,10 @@ import '../../models/category.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../utils/currency_formatter.dart';
+import '../../services/workspace_sync_helper.dart';
 import '../widgets/app_segmented_filter.dart';
 import '../widgets/category_icon_widget.dart';
+import '../widgets/transaction_item.dart';
 import '../widgets/empty_state.dart';
 
 enum TransactionFilter { all, expense, income }
@@ -38,6 +40,12 @@ class TransactionsScreen extends HookConsumerWidget {
                 decoration: InputDecoration(
                   hintText: l10n.search,
                   border: InputBorder.none,
+                  hintStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
+                ),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
                 onChanged: (value) => searchQuery.value = value,
               )
@@ -57,29 +65,35 @@ class TransactionsScreen extends HookConsumerWidget {
       ),
       body: Column(
         children: [
-          // Filter
-          AppSegmentedFilter<TransactionFilter>(
-            options: [
-              FilterOption(
-                label: l10n.all,
-                value: TransactionFilter.all,
-                icon: Icons.list,
-              ),
-              FilterOption(
-                label: l10n.expense,
-                value: TransactionFilter.expense,
-                icon: Icons.arrow_upward,
-                color: AppColors.expense,
-              ),
-              FilterOption(
-                label: l10n.income,
-                value: TransactionFilter.income,
-                icon: Icons.arrow_downward,
-                color: AppColors.income,
-              ),
-            ],
-            selectedValue: selectedFilter.value,
-            onChanged: (value) => selectedFilter.value = value,
+          // Filter with improved visual clarity
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.screenPadding,
+              vertical: AppSpacing.md,
+            ),
+            child: AppSegmentedFilter<TransactionFilter>(
+              options: [
+                FilterOption(
+                  label: l10n.all,
+                  value: TransactionFilter.all,
+                  icon: Icons.list,
+                ),
+                FilterOption(
+                  label: l10n.expense,
+                  value: TransactionFilter.expense,
+                  icon: Icons.arrow_upward,
+                  color: AppColors.expense,
+                ),
+                FilterOption(
+                  label: l10n.income,
+                  value: TransactionFilter.income,
+                  icon: Icons.arrow_downward,
+                  color: AppColors.income,
+                ),
+              ],
+              selectedValue: selectedFilter.value,
+              onChanged: (value) => selectedFilter.value = value,
+            ),
           ),
           
           // Transactions List
@@ -110,18 +124,40 @@ class TransactionsScreen extends HookConsumerWidget {
                   }).toList();
                 }
                 
+                // Handle empty states
                 if (filteredTransactions.isEmpty) {
-                  return EmptyState(
-                    icon: Icons.receipt_long,
-                    title: l10n.noTransactions,
-                    message: searchQuery.value.isNotEmpty
-                        ? 'No transactions match your search'
-                        : 'Start tracking your finances',
-                    actionLabel: l10n.addTransaction,
-                    onAction: () {
-                      Navigator.pushNamed(context, '/add-transaction');
-                    },
-                  );
+                  if (searchQuery.value.isNotEmpty) {
+                    return EmptyState.noSearchResult(
+                      icon: Icons.search_off,
+                      title: l10n.noTransactionsMatch,
+                      message: 'Try adjusting your search terms',
+                      compact: true,
+                    );
+                  } else if (selectedFilter.value != TransactionFilter.all) {
+                    return EmptyState(
+                      icon: selectedFilter.value == TransactionFilter.expense
+                          ? Icons.arrow_upward
+                          : Icons.arrow_downward,
+                      title: 'No ${selectedFilter.value == TransactionFilter.expense ? l10n.expense : l10n.income}',
+                      message: 'No ${selectedFilter.value == TransactionFilter.expense ? 'expense' : 'income'} transactions found',
+                      actionLabel: l10n.addTransaction,
+                      onAction: () {
+                        Navigator.pushNamed(context, '/add-transaction');
+                      },
+                      compact: true,
+                      type: EmptyStateType.noFilterResult,
+                    );
+                  } else {
+                    return EmptyState.firstRun(
+                      icon: Icons.receipt_long,
+                      title: l10n.startTracking,
+                      message: l10n.onboardingSubtitle,
+                      actionLabel: l10n.addTransaction,
+                      onAction: () {
+                        Navigator.pushNamed(context, '/add-transaction');
+                      },
+                    );
+                  }
                 }
                 
                 // Group by date
@@ -131,17 +167,22 @@ class TransactionsScreen extends HookConsumerWidget {
                   data: (categories) {
                     final categoryMap = {for (var c in categories) c.id: c};
                     
-                    return ListView.builder(
-                      padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
-                      itemCount: groupedTransactions.length,
-                      itemBuilder: (context, index) {
-                        final group = groupedTransactions[index];
-                        return _TransactionGroup(
-                          date: group.date,
-                          transactions: group.transactions,
-                          categoryMap: categoryMap,
-                        );
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        await syncCurrentWorkspaceData(ref);
                       },
+                      child: ListView.builder(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
+                        itemCount: groupedTransactions.length,
+                        itemBuilder: (context, index) {
+                          final group = groupedTransactions[index];
+                          return _TransactionGroup(
+                            date: group.date,
+                            transactions: group.transactions,
+                            categoryMap: categoryMap,
+                          );
+                        },
+                      ),
                     );
                   },
                   loading: () => const Center(child: CircularProgressIndicator()),
@@ -197,7 +238,7 @@ class _TransactionDateGroup {
 class _TransactionGroup extends StatelessWidget {
   final DateTime date;
   final List<Transaction> transactions;
-  final Map<int, Category> categoryMap;
+  final Map<String, Category> categoryMap;
 
   const _TransactionGroup({
     required this.date,
@@ -233,42 +274,70 @@ class _TransactionGroup extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Date Header
+        // Improved Date Header
         Container(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.screenPadding,
             vertical: AppSpacing.md,
           ),
-          color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+            border: Border(
+              bottom: BorderSide(
+                color: Theme.of(context).dividerColor,
+                width: 0.5,
+              ),
+            ),
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 dateLabel,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               Row(
                 children: [
                   if (totalIncome > 0) ...[
-                    Text(
-                      '+${CurrencyFormatter.formatVNDFromCents(totalIncome)}',
-                      style: TextStyle(
-                        color: AppColors.income,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.xs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.incomeContainer,
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                      ),
+                      child: Text(
+                        '+${CurrencyFormatter.formatVNDFromCents(totalIncome)}',
+                        style: TextStyle(
+                          color: AppColors.income,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
                   ],
                   if (totalExpense > 0)
-                    Text(
-                      '-${CurrencyFormatter.formatVNDFromCents(totalExpense)}',
-                      style: TextStyle(
-                        color: AppColors.expense,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.sm,
+                        vertical: AppSpacing.xs,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.expenseContainer,
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                      ),
+                      child: Text(
+                        '-${CurrencyFormatter.formatVNDFromCents(totalExpense)}',
+                        style: TextStyle(
+                          color: AppColors.expense,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                 ],
@@ -277,42 +346,17 @@ class _TransactionGroup extends StatelessWidget {
           ),
         ),
         
-        // Transactions
+        // Transactions using refactored TransactionItem
         ...transactions.map((transaction) {
           final category = categoryMap[transaction.categoryId];
-          final isExpense = transaction.type == TransactionType.expense;
-          final amountColor = isExpense ? AppColors.expense : AppColors.income;
-          final amountPrefix = isExpense ? '-' : '+';
           
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundColor: category != null
-                  ? getCategoryColor(category.colorValue).withOpacity(0.1)
-                  : Colors.grey[200],
-              child: category != null
-                  ? CategoryIconWidget(
-                      iconName: category.iconName,
-                      size: 20,
-                      color: getCategoryColor(category.colorValue),
-                    )
-                  : const Icon(Icons.category, size: 20),
-            ),
-            title: Text(category?.name ?? 'Unknown'),
-            subtitle: transaction.note != null && transaction.note!.isNotEmpty
-                ? Text(
-                    transaction.note!,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  )
-                : null,
-            trailing: Text(
-              '$amountPrefix${CurrencyFormatter.formatVNDFromCents(transaction.amountCents)}',
-              style: TextStyle(
-                color: amountColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
+          return TransactionItem(
+            transaction: transaction,
+            categoryName: category?.name ?? 'Unknown',
+            categoryIconName: category?.iconName,
+            categoryColor: category != null ? getCategoryColor(category.colorValue) : null,
+            showDate: true, // Show date in subtitle
+            showChevron: true,
             onTap: () {
               Navigator.pushNamed(
                 context,
