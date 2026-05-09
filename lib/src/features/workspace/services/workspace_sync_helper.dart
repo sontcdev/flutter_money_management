@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/src/features/auth/providers/auth_providers.dart';
+import 'package:flutter_money_management/src/features/budgets/providers/budget_providers.dart';
 import 'package:flutter_money_management/src/features/categories/providers/category_providers.dart';
 import 'package:flutter_money_management/src/features/transactions/providers/transaction_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
@@ -57,6 +58,8 @@ Future<String?> syncCurrentWorkspaceData(
 void invalidateCoreDataProviders(Object ref) {
   _invalidate(ref, categoriesProvider);
   _invalidate(ref, transactionsProvider);
+  _invalidate(ref, budgetsProvider);
+  _invalidate(ref, budgetsWithConsumedProvider);
 }
 
 T _read<T>(Object ref, ProviderListenable<T> provider) {
