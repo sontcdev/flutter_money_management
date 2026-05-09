@@ -1,0 +1,76 @@
+{
+  "exportDate": "2024-11-25T10:00:00.000",
+  "version": "1.0",
+  "transactions": [
+    {
+      "date": "25/11/2024",
+      "type": "expense",
+      "amount": 50000,
+      "category": "Ăn uống",
+      "note": "Ăn sáng phở"
+    },
+    {
+      "date": "25/11/2024",
+      "type": "expense",
+      "amount": 35000,
+      "category": "Ăn uống",
+      "note": "Ăn trưa cơm văn phòng"
+    },
+    {
+      "date": "25/11/2024",
+      "type": "income",
+      "amount": 15000000,
+      "category": "Lương",
+      "note": "Lương tháng 11/2024"
+    },
+    {
+      "date": "26/11/2024",
+      "type": "expense",
+      "amount": 100000,
+      "category": "Di chuyển",
+      "note": "Đổ xăng xe máy"
+    },
+    {
+      "date": "26/11/2024",
+      "type": "expense",
+      "amount": 200000,
+      "category": "Mua sắm",
+      "note": "Mua quần áo"
+    },
+    {
+      "date": "27/11/2024",
+      "type": "expense",
+      "amount": 500000,
+      "category": "Sức khỏe",
+      "note": "Khám bệnh"
+    },
+    {
+      "date": "27/11/2024",
+      "type": "expense",
+      "amount": 150000,
+      "category": "Giải trí",
+      "note": "Xem phim rạp"
+    },
+    {
+      "date": "28/11/2024",
+      "type": "income",
+      "amount": 2000000,
+      "category": "Thu nhập khác",
+      "note": "Thưởng dự án"
+    },
+    {
+      "date": "28/11/2024",
+      "type": "expense",
+      "amount": 1500000,
+      "category": "Hóa đơn",
+      "note": "Tiền điện nước tháng 11"
+    },
+    {
+      "date": "29/11/2024",
+      "type": "expense",
+      "amount": 80000,
+      "category": "Ăn uống",
+      "note": "Ăn tối với bạn bè"
+    }
+  ]
+}
