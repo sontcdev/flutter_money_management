@@ -1,0 +1,76 @@
+name: flutter_money_management
+description: MyMoney - A smart money management application with budgets and transaction tracking.
+publish_to: 'none'
+version: 1.0.7
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+flutter:
+  uses-material-design: true
+  generate: true
+  assets:
+    - assets/icon/
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  http: ^1.6.0
+
+  # State management
+  hooks_riverpod: ^2.4.9
+  flutter_hooks: ^0.20.3
+
+  # Supabase (Backend & Auth)
+  supabase_flutter: ^2.5.0
+
+  # Code generation
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.9.0
+
+  # Localization
+  intl: ^0.20.2
+
+  # Image handling
+  image_picker: ^1.0.4
+
+  # Notifications
+  flutter_local_notifications: ^18.0.1
+
+  # Charts
+  fl_chart: ^0.65.0
+
+  # Persistence
+  shared_preferences: ^2.2.2
+
+  # App info
+  package_info_plus: ^8.0.0
+  flutter_slidable: ^4.0.3
+  
+  # UUID generation
+  uuid: ^4.5.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+  # Code generation
+  build_runner: ^2.4.7
+  freezed: ^2.4.5
+  json_serializable: ^6.7.1
+
+  # Testing
+  mocktail: ^1.0.1
+
+  # App icon
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  adaptive_icon_background: "#4CAF50"
+  adaptive_icon_foreground: "assets/icon/app_icon.png"
