@@ -824,6 +824,452 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareError => 'Cannot share file';
 
   @override
+  String get appearanceSection => 'Appearance';
+
+  @override
+  String get accountSection => 'My Account';
+
+  @override
+  String get languageEnglish => 'English';
+
+  @override
+  String get languageJapanese => 'Japanese';
+
+  @override
+  String get languageVietnamese => 'Vietnamese';
+
+  @override
+  String get activeWorkspace => 'Active Workspace';
+
+  @override
+  String get notAvailable => 'Not available';
+
+  @override
+  String get logoutDesc => 'Sign out and return to login';
+
+  @override
+  String get allowOverdraftDesc => 'Budget exceeded - proceed';
+
+  @override
+  String get signIn => 'Sign In';
+
+  @override
+  String get signInDesc => 'Sign in to sync your data';
+
+  @override
+  String get signOutTitle => 'Sign Out';
+
+  @override
+  String get signOutConfirm => 'Are you sure you want to sign out?\n\nYour local data will be kept and synced when you sign in again.';
+
+  @override
+  String signOutFailed(Object error) {
+    return 'Failed to sign out: $error';
+  }
+
+  @override
+  String get switchWorkspace => 'Switch workspace';
+
+  @override
+  String get selectWorkspace => 'Select Workspace';
+
+  @override
+  String get manageWorkspaces => 'Manage Workspaces';
+
+  @override
+  String switchedWorkspace(Object name) {
+    return 'Switched to $name';
+  }
+
+  @override
+  String get joinByInviteCode => 'Join by invite code';
+
+  @override
+  String get workspaceSetupIncomplete => 'Workspace setup is incomplete';
+
+  @override
+  String get workspaceSetupIncompleteDesc => 'No workspace was created for this account.\n\nThis usually means the Supabase auth trigger `on_auth_user_created` is missing or misconfigured.\n\nPlease contact the administrator and ask them to verify:\n- trigger `on_auth_user_created`\n- function `public.handle_new_user()`\n- rows were created in `profiles`, `workspaces`, and `workspace_members`';
+
+  @override
+  String get ownerRole => 'Owner';
+
+  @override
+  String roleValue(Object role) {
+    return 'Role: $role';
+  }
+
+  @override
+  String get joinWorkspace => 'Join workspace';
+
+  @override
+  String get inviteCode => 'Invite code';
+
+  @override
+  String get pasteWorkspaceInviteCode => 'Paste workspace invite code';
+
+  @override
+  String get join => 'Join';
+
+  @override
+  String get joinedWorkspaceSuccessfully => 'Joined workspace successfully';
+
+  @override
+  String errorLoadingWorkspaces(Object error) {
+    return 'Error loading workspaces: $error';
+  }
+
+  @override
+  String get workspaceManagement => 'Workspace Management';
+
+  @override
+  String get workspaceInviteAlreadyMember => 'This email is already a workspace member';
+
+  @override
+  String get workspaceInviteInvalidEmail => 'Email format is invalid';
+
+  @override
+  String get workspaceInviteAlreadyPending => 'A pending invite already exists for this email';
+
+  @override
+  String get inviteCreated => 'Invite created';
+
+  @override
+  String shareInviteCodeWith(Object email) {
+    return 'Share this invite code with $email:';
+  }
+
+  @override
+  String get inviteRefreshed => 'Invite refreshed';
+
+  @override
+  String shareNewInviteCodeWith(Object email) {
+    return 'Share this new invite code with $email:';
+  }
+
+  @override
+  String get noActiveWorkspaceSelected => 'No active workspace selected';
+
+  @override
+  String get workspaceOwnerDescription => 'You are the owner of this workspace.';
+
+  @override
+  String get inviteMember => 'Invite member';
+
+  @override
+  String get inviteMemberDesc => 'Create an invite code for a member email. The code stays valid for 7 days.';
+
+  @override
+  String get memberEmail => 'Member email';
+
+  @override
+  String get emailExample => 'name@example.com';
+
+  @override
+  String get refreshInvite => 'Refresh invite';
+
+  @override
+  String get createInvite => 'Create invite';
+
+  @override
+  String get membersSection => 'Members';
+
+  @override
+  String get noMembersFound => 'No members found';
+
+  @override
+  String get youLabel => 'You';
+
+  @override
+  String failedToLoadMembers(Object error) {
+    return 'Failed to load members: $error';
+  }
+
+  @override
+  String get removeMember => 'Remove member';
+
+  @override
+  String removeMemberConfirm(Object name) {
+    return 'Remove $name from this workspace?';
+  }
+
+  @override
+  String memberRemoved(Object name) {
+    return '$name removed';
+  }
+
+  @override
+  String memberOwnerYouLabel(Object name) {
+    return '$name (owner, you)';
+  }
+
+  @override
+  String memberYouLabel(Object name) {
+    return '$name (you)';
+  }
+
+  @override
+  String memberOwnerLabel(Object name) {
+    return '$name (owner)';
+  }
+
+  @override
+  String get joinTimeUnavailable => 'Join time unavailable';
+
+  @override
+  String joinedAt(Object dateTime) {
+    return 'Joined $dateTime';
+  }
+
+  @override
+  String userIdValue(Object id) {
+    return 'User ID: $id';
+  }
+
+  @override
+  String statusValue(Object status) {
+    return 'Status: $status';
+  }
+
+  @override
+  String userShortLabel(Object id) {
+    return 'User $id';
+  }
+
+  @override
+  String get pendingInvites => 'Pending invites';
+
+  @override
+  String get noPendingInvites => 'No pending invites';
+
+  @override
+  String get inviteCodeCopied => 'Invite code copied';
+
+  @override
+  String get inviteRevoked => 'Invite revoked';
+
+  @override
+  String failedToLoadInvites(Object error) {
+    return 'Failed to load invites: $error';
+  }
+
+  @override
+  String get status => 'Status';
+
+  @override
+  String get invitedUserJoinHint => 'The invited user can open Workspace Selection and choose Join by invite code.';
+
+  @override
+  String get copyCode => 'Copy code';
+
+  @override
+  String get revoke => 'Revoke';
+
+  @override
+  String get expiredToday => 'Expired today';
+
+  @override
+  String get expiredOneDayAgo => 'Expired 1 day ago';
+
+  @override
+  String expiredDaysAgo(Object days) {
+    return 'Expired $days days ago';
+  }
+
+  @override
+  String get expiresToday => 'Expires today';
+
+  @override
+  String get expiresInOneDay => 'Expires in 1 day';
+
+  @override
+  String expiresInDays(Object days) {
+    return 'Expires in $days days';
+  }
+
+  @override
+  String get expiredStatus => 'Expired';
+
+  @override
+  String get urgentStatus => 'Urgent';
+
+  @override
+  String get expiringSoonStatus => 'Expiring soon';
+
+  @override
+  String get activeStatus => 'Active';
+
+  @override
+  String failedToLoadWorkspaces(Object error) {
+    return 'Failed to load workspaces: $error';
+  }
+
+  @override
+  String get enterEmail => 'Please enter your email';
+
+  @override
+  String get enterValidEmailAddress => 'Please enter a valid email address';
+
+  @override
+  String get enterPassword => 'Please enter your password';
+
+  @override
+  String get passwordMinLength => 'Password must be at least 6 characters';
+
+  @override
+  String get enterEmailResetPassword => 'Please enter your email to reset password';
+
+  @override
+  String get passwordResetEmailSent => 'Password reset email sent! Check your inbox.';
+
+  @override
+  String get failedToSendResetEmail => 'Failed to send reset email. Please try again.';
+
+  @override
+  String get signInToSyncAcrossDevices => 'Sign in to sync your data across devices';
+
+  @override
+  String get enterYourPassword => 'Enter your password';
+
+  @override
+  String get forgotPassword => 'Forgot Password?';
+
+  @override
+  String get or => 'OR';
+
+  @override
+  String get createNewAccount => 'Create New Account';
+
+  @override
+  String get invalidEmailOrPassword => 'Invalid email or password';
+
+  @override
+  String get verifyEmailBeforeSignIn => 'Please verify your email before signing in';
+
+  @override
+  String get networkErrorCheckConnection => 'Network error. Please check your connection';
+
+  @override
+  String get tooManyAttempts => 'Too many attempts. Please try again later';
+
+  @override
+  String get signInFailed => 'Sign in failed. Please try again';
+
+  @override
+  String get enterValidEmail => 'Please enter a valid email';
+
+  @override
+  String get passwordsDoNotMatch => 'Passwords do not match';
+
+  @override
+  String get accountCreatedTitle => 'Account Created!';
+
+  @override
+  String get accountCreatedMessage => 'Your account has been created successfully.\n\nPlease check your email and click the verification link to activate your account.\n\nAfter verification, you can sign in to start using the app.';
+
+  @override
+  String get goToSignIn => 'Go to Sign In';
+
+  @override
+  String get createAccount => 'Create Account';
+
+  @override
+  String get createAccountToSync => 'Create your account to sync across devices';
+
+  @override
+  String get verifyEmailBeforeSignInHint => 'You will need to verify your email before signing in';
+
+  @override
+  String get displayNameOptional => 'Display Name (Optional)';
+
+  @override
+  String get displayNameHint => 'How should we call you?';
+
+  @override
+  String get atLeastSixCharacters => 'At least 6 characters';
+
+  @override
+  String get confirmPassword => 'Confirm Password';
+
+  @override
+  String get reenterYourPassword => 'Re-enter your password';
+
+  @override
+  String get alreadyHaveAccount => 'Already have an account?';
+
+  @override
+  String get emailAlreadyRegistered => 'This email is already registered';
+
+  @override
+  String get weakPassword => 'Password is too weak. Please use a stronger password';
+
+  @override
+  String get genericTryAgainError => 'An error occurred. Please try again';
+
+  @override
+  String get transactionSavedReceiptUploadFailed => 'Transaction saved, but receipt upload failed.';
+
+  @override
+  String get transactionSavedReceiptUpdateFailed => 'Transaction saved, but receipt update failed.';
+
+  @override
+  String errorWithMessage(Object error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get yesterday => 'Yesterday';
+
+  @override
+  String get optional => 'Optional';
+
+  @override
+  String get receiptWillBeRemovedOnSave => 'Receipt will be removed when you save.';
+
+  @override
+  String get onlyCreatorCanChangeReceipt => 'Only the transaction creator can change the receipt.';
+
+  @override
+  String get confirmDeleteTransaction => 'Are you sure you want to delete this transaction?';
+
+  @override
+  String get unknown => 'Unknown';
+
+  @override
+  String get noTransactionsThisMonth => 'No transactions this month';
+
+  @override
+  String noTransactionsNearestDate(Object date) {
+    return 'No transactions. Showing nearest date: $date';
+  }
+
+  @override
+  String errorLoadingCategories(Object error) {
+    return 'Error loading categories: $error';
+  }
+
+  @override
+  String errorLoadingTransactions(Object error) {
+    return 'Error loading transactions: $error';
+  }
+
+  @override
+  String get amountRequiredError => 'Please enter amount';
+
+  @override
+  String get limitRequiredError => 'Please enter limit';
+
+  @override
+  String get selectCategoryError => 'Please select category';
+
+  @override
+  String get categoryNameRequiredError => 'Please enter category name';
+
+  @override
+  String routeNotFound(Object route) {
+    return 'No route defined for $route';
+  }
+
+  @override
   String get dashboard => 'Dashboard';
 
   @override

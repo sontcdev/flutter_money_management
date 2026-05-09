@@ -1,6 +1,7 @@
 // path: lib/src/app_router.dart
 
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 import 'models/category.dart';
 import 'models/budget.dart';
 import 'models/transaction.dart' as model;
@@ -24,6 +25,7 @@ import 'ui/screens/settings_screen.dart';
 import 'ui/screens/report_calendar_screen.dart';
 import 'ui/screens/icon_management_screen.dart';
 import 'ui/screens/transaction_management_screen.dart';
+import 'ui/screens/workspace_management_screen.dart';
 import 'utils/animations.dart';
 
 class AppRouter {
@@ -92,6 +94,8 @@ class AppRouter {
         return AppAnimations.slideRoute(const ReportCalendarScreen());
       case '/settings':
         return AppAnimations.slideRoute(const SettingsScreen());
+      case '/workspace-management':
+        return AppAnimations.slideRoute(const WorkspaceManagementScreen());
       case '/icon-management':
         return AppAnimations.slideRoute(const IconManagementScreen());
       case '/transaction-management':
@@ -99,8 +103,15 @@ class AppRouter {
       default:
         return AppAnimations.fadeRoute(
           Scaffold(
-            body: Center(
-              child: Text('No route defined for ${settings.name}'),
+            body: Builder(
+              builder: (context) => Center(
+                child: Text(
+                  AppLocalizations.of(context)?.routeNotFound(
+                        settings.name ?? '',
+                      ) ??
+                      'No route defined for ${settings.name}',
+                ),
+              ),
             ),
           ),
         );

@@ -42,21 +42,26 @@ class EditTransactionScreen extends HookConsumerWidget {
     final shouldRemoveReceipt = useState(false);
     final isLoading = useState(false);
     final allowOverdraft = useState(false);
-    final canManageTransactionAsync = ref.watch(transactionCanManageProvider(transactionId));
-    final receiptImageUrlAsync = ref.watch(transactionReceiptImageUrlProvider(transactionId));
-    final attachmentRepository = ref.watch(transactionAttachmentRepositoryProvider);
+    final canManageTransactionAsync =
+        ref.watch(transactionCanManageProvider(transactionId));
+    final receiptImageUrlAsync =
+        ref.watch(transactionReceiptImageUrlProvider(transactionId));
+    final attachmentRepository =
+        ref.watch(transactionAttachmentRepositoryProvider);
 
     // Load existing transaction for editing
     useEffect(() {
       Future.microtask(() async {
         final results = await Future.wait<dynamic>([
           repository.getTransactionById(transactionId),
-          attachmentRepository.getLatestReceiptAttachmentByTransactionId(transactionId),
+          attachmentRepository
+              .getLatestReceiptAttachmentByTransactionId(transactionId),
         ]);
         final transaction = results[0] as model.Transaction;
         final attachment = results[1] as TransactionAttachment?;
         final amount = (transaction.amountCents / 100).round();
-        amountController.text = CurrencyFormatter.formatInputVND(amount.toString());
+        amountController.text =
+            CurrencyFormatter.formatInputVND(amount.toString());
         noteController.text = transaction.note ?? '';
         selectedDate.value = transaction.dateTime;
         selectedType.value = transaction.type;
@@ -69,14 +74,14 @@ class EditTransactionScreen extends HookConsumerWidget {
     Future<void> handleSubmit() async {
       if (amountController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.error}: ${l10n.amount}')),
+          SnackBar(content: Text(l10n.amountRequiredError)),
         );
         return;
       }
 
       if (selectedCategoryId.value == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.error}: ${l10n.selectCategory}')),
+          SnackBar(content: Text(l10n.selectCategoryError)),
         );
         return;
       }
@@ -104,7 +109,10 @@ class EditTransactionScreen extends HookConsumerWidget {
           updatedAt: DateTime.now(),
         );
 
-        await repository.updateTransaction(transaction);
+        await repository.updateTransaction(
+          transaction,
+          allowOverdraft: allowOverdraft.value,
+        );
 
         String? receiptWarning;
         final canManageTransaction = await ref.read(
@@ -127,7 +135,7 @@ class EditTransactionScreen extends HookConsumerWidget {
               error: e,
               stackTrace: stackTrace,
             );
-            receiptWarning = 'Transaction saved, but receipt update failed.';
+            receiptWarning = l10n.transactionSavedReceiptUpdateFailed;
           }
         }
 
@@ -171,7 +179,7 @@ class EditTransactionScreen extends HookConsumerWidget {
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${l10n.error}: $e')),
+            SnackBar(content: Text(l10n.errorWithMessage('$e'))),
           );
         }
       } finally {
@@ -237,7 +245,8 @@ class EditTransactionScreen extends HookConsumerWidget {
               ],
               prefixIcon: const Icon(Icons.attach_money),
               suffixIcon: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.lg),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md, vertical: AppSpacing.lg),
                 child: Text(
                   '₫',
                   style: TextStyle(
@@ -260,7 +269,7 @@ class EditTransactionScreen extends HookConsumerWidget {
                     return c.type == CategoryType.income;
                   }
                 }).toList();
-                
+
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -279,7 +288,12 @@ class EditTransactionScreen extends HookConsumerWidget {
                             final result = await Navigator.pushNamed(
                               context,
                               '/category-edit',
-                              arguments: {'initialType': selectedType.value == model.TransactionType.expense ? CategoryType.expense : CategoryType.income},
+                              arguments: {
+                                'initialType': selectedType.value ==
+                                        model.TransactionType.expense
+                                    ? CategoryType.expense
+                                    : CategoryType.income
+                              },
                             );
                             if (result == true) {
                               ref.invalidate(categoriesProvider);
@@ -296,8 +310,10 @@ class EditTransactionScreen extends HookConsumerWidget {
                         spacing: AppSpacing.sm,
                         runSpacing: AppSpacing.sm,
                         children: filteredCategories.map((category) {
-                          final isSelected = selectedCategoryId.value == category.id;
-                          final categoryColor = getCategoryColor(category.colorValue);
+                          final isSelected =
+                              selectedCategoryId.value == category.id;
+                          final categoryColor =
+                              getCategoryColor(category.colorValue);
                           return GestureDetector(
                             onTap: () {
                               selectedCategoryId.value = category.id;
@@ -313,7 +329,8 @@ class EditTransactionScreen extends HookConsumerWidget {
                                   color: categoryColor,
                                   width: isSelected ? 3 : 1.5,
                                 ),
-                                borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                                borderRadius:
+                                    BorderRadius.circular(AppSpacing.radiusXl),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -328,7 +345,9 @@ class EditTransactionScreen extends HookConsumerWidget {
                                     category.name,
                                     style: TextStyle(
                                       fontSize: 14,
-                                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w600
+                                          : FontWeight.w500,
                                       color: categoryColor,
                                     ),
                                   ),
@@ -342,7 +361,7 @@ class EditTransactionScreen extends HookConsumerWidget {
                 );
               },
               loading: () => const CircularProgressIndicator(),
-              error: (err, stack) => Text('Error: $err'),
+              error: (err, stack) => Text(l10n.errorWithMessage('$err')),
             ),
             const SizedBox(height: AppSpacing.lg),
 
@@ -360,7 +379,8 @@ class EditTransactionScreen extends HookConsumerWidget {
                     IconButton(
                       icon: const Icon(Icons.chevron_left),
                       onPressed: () {
-                        selectedDate.value = selectedDate.value.subtract(const Duration(days: 1));
+                        selectedDate.value = selectedDate.value
+                            .subtract(const Duration(days: 1));
                       },
                     ),
                     Expanded(
@@ -383,7 +403,8 @@ class EditTransactionScreen extends HookConsumerWidget {
                           ),
                           decoration: BoxDecoration(
                             border: Border.all(color: Colors.grey[300]!),
-                            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                            borderRadius:
+                                BorderRadius.circular(AppSpacing.radiusMd),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -402,7 +423,8 @@ class EditTransactionScreen extends HookConsumerWidget {
                     IconButton(
                       icon: const Icon(Icons.chevron_right),
                       onPressed: () {
-                        selectedDate.value = selectedDate.value.add(const Duration(days: 1));
+                        selectedDate.value =
+                            selectedDate.value.add(const Duration(days: 1));
                       },
                     ),
                   ],
@@ -439,14 +461,16 @@ class EditTransactionScreen extends HookConsumerWidget {
                       fit: BoxFit.cover,
                     ),
                   )
-                else if (!shouldRemoveReceipt.value && existingReceiptAttachment.value != null)
+                else if (!shouldRemoveReceipt.value &&
+                    existingReceiptAttachment.value != null)
                   receiptImageUrlAsync.when(
                     data: (imageUrl) {
                       if (imageUrl == null) {
                         return Text(l10n.attachReceipt);
                       }
                       return ClipRRect(
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusMd),
                         child: Image.network(
                           imageUrl,
                           height: 180,
@@ -455,12 +479,15 @@ class EditTransactionScreen extends HookConsumerWidget {
                         ),
                       );
                     },
-                    loading: () => const Center(child: CircularProgressIndicator()),
-                    error: (error, _) => Text('Error: $error'),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (error, _) => Text(l10n.errorWithMessage('$error')),
                   )
                 else
                   Text(
-                    shouldRemoveReceipt.value ? 'Receipt will be removed when you save.' : l10n.attachReceipt,
+                    shouldRemoveReceipt.value
+                        ? l10n.receiptWillBeRemovedOnSave
+                        : l10n.attachReceipt,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 const SizedBox(height: AppSpacing.sm),
@@ -468,7 +495,7 @@ class EditTransactionScreen extends HookConsumerWidget {
                   data: (canManageTransaction) {
                     if (!canManageTransaction) {
                       return Text(
-                        'Only the transaction creator can change the receipt.',
+                        l10n.onlyCreatorCanChangeReceipt,
                         style: Theme.of(context).textTheme.bodySmall,
                       );
                     }
@@ -479,7 +506,8 @@ class EditTransactionScreen extends HookConsumerWidget {
                           icon: const Icon(Icons.camera_alt),
                           onPressed: pickReceipt,
                         ),
-                        if (localReceiptPath.value != null || existingReceiptAttachment.value != null)
+                        if (localReceiptPath.value != null ||
+                            existingReceiptAttachment.value != null)
                           IconButton(
                             icon: const Icon(Icons.clear),
                             onPressed: () {

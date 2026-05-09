@@ -33,6 +33,7 @@ class MoneyManagementApp extends ConsumerWidget {
       ],
       supportedLocales: const [
         Locale('en'),
+        Locale('ja'),
         Locale('vi'),
       ],
       onGenerateRoute: AppRouter.generateRoute,

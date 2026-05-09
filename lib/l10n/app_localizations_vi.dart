@@ -824,6 +824,452 @@ class AppLocalizationsVi extends AppLocalizations {
   String get shareError => 'Không thể chia sẻ file';
 
   @override
+  String get appearanceSection => 'Giao diện';
+
+  @override
+  String get accountSection => 'Tài khoản của tôi';
+
+  @override
+  String get languageEnglish => 'Tiếng Anh';
+
+  @override
+  String get languageJapanese => 'Tiếng Nhật';
+
+  @override
+  String get languageVietnamese => 'Tiếng Việt';
+
+  @override
+  String get activeWorkspace => 'Không gian làm việc hiện tại';
+
+  @override
+  String get notAvailable => 'Không có';
+
+  @override
+  String get logoutDesc => 'Đăng xuất và quay lại màn hình đăng nhập';
+
+  @override
+  String get allowOverdraftDesc => 'Vượt ngân sách - vẫn tiếp tục';
+
+  @override
+  String get signIn => 'Đăng nhập';
+
+  @override
+  String get signInDesc => 'Đăng nhập để đồng bộ dữ liệu của bạn';
+
+  @override
+  String get signOutTitle => 'Đăng xuất';
+
+  @override
+  String get signOutConfirm => 'Bạn có chắc muốn đăng xuất?\n\nDữ liệu cục bộ của bạn sẽ được giữ lại và đồng bộ khi bạn đăng nhập lại.';
+
+  @override
+  String signOutFailed(Object error) {
+    return 'Đăng xuất thất bại: $error';
+  }
+
+  @override
+  String get switchWorkspace => 'Chuyển workspace';
+
+  @override
+  String get selectWorkspace => 'Chọn workspace';
+
+  @override
+  String get manageWorkspaces => 'Quản lý workspace';
+
+  @override
+  String switchedWorkspace(Object name) {
+    return 'Đã chuyển sang $name';
+  }
+
+  @override
+  String get joinByInviteCode => 'Tham gia bằng mã mời';
+
+  @override
+  String get workspaceSetupIncomplete => 'Thiết lập workspace chưa hoàn tất';
+
+  @override
+  String get workspaceSetupIncompleteDesc => 'Tài khoản này chưa được tạo workspace.\n\nThông thường điều này có nghĩa trigger Supabase `on_auth_user_created` đang thiếu hoặc cấu hình sai.\n\nVui lòng liên hệ quản trị viên để kiểm tra:\n- trigger `on_auth_user_created`\n- function `public.handle_new_user()`\n- các dòng dữ liệu đã được tạo trong `profiles`, `workspaces`, và `workspace_members`';
+
+  @override
+  String get ownerRole => 'Chủ sở hữu';
+
+  @override
+  String roleValue(Object role) {
+    return 'Vai trò: $role';
+  }
+
+  @override
+  String get joinWorkspace => 'Tham gia workspace';
+
+  @override
+  String get inviteCode => 'Mã mời';
+
+  @override
+  String get pasteWorkspaceInviteCode => 'Dán mã mời workspace';
+
+  @override
+  String get join => 'Tham gia';
+
+  @override
+  String get joinedWorkspaceSuccessfully => 'Đã tham gia workspace thành công';
+
+  @override
+  String errorLoadingWorkspaces(Object error) {
+    return 'Lỗi tải danh sách workspace: $error';
+  }
+
+  @override
+  String get workspaceManagement => 'Quản lý workspace';
+
+  @override
+  String get workspaceInviteAlreadyMember => 'Email này đã là thành viên của workspace';
+
+  @override
+  String get workspaceInviteInvalidEmail => 'Định dạng email không hợp lệ';
+
+  @override
+  String get workspaceInviteAlreadyPending => 'Đã có lời mời đang chờ cho email này';
+
+  @override
+  String get inviteCreated => 'Đã tạo lời mời';
+
+  @override
+  String shareInviteCodeWith(Object email) {
+    return 'Chia sẻ mã mời này với $email:';
+  }
+
+  @override
+  String get inviteRefreshed => 'Đã làm mới lời mời';
+
+  @override
+  String shareNewInviteCodeWith(Object email) {
+    return 'Chia sẻ mã mời mới này với $email:';
+  }
+
+  @override
+  String get noActiveWorkspaceSelected => 'Chưa chọn workspace hiện tại';
+
+  @override
+  String get workspaceOwnerDescription => 'Bạn là chủ sở hữu của workspace này.';
+
+  @override
+  String get inviteMember => 'Mời thành viên';
+
+  @override
+  String get inviteMemberDesc => 'Tạo mã mời cho email thành viên. Mã có hiệu lực trong 7 ngày.';
+
+  @override
+  String get memberEmail => 'Email thành viên';
+
+  @override
+  String get emailExample => 'name@example.com';
+
+  @override
+  String get refreshInvite => 'Làm mới lời mời';
+
+  @override
+  String get createInvite => 'Tạo lời mời';
+
+  @override
+  String get membersSection => 'Thành viên';
+
+  @override
+  String get noMembersFound => 'Không tìm thấy thành viên';
+
+  @override
+  String get youLabel => 'Bạn';
+
+  @override
+  String failedToLoadMembers(Object error) {
+    return 'Tải thành viên thất bại: $error';
+  }
+
+  @override
+  String get removeMember => 'Xóa thành viên';
+
+  @override
+  String removeMemberConfirm(Object name) {
+    return 'Xóa $name khỏi workspace này?';
+  }
+
+  @override
+  String memberRemoved(Object name) {
+    return 'Đã xóa $name';
+  }
+
+  @override
+  String memberOwnerYouLabel(Object name) {
+    return '$name (chủ sở hữu, bạn)';
+  }
+
+  @override
+  String memberYouLabel(Object name) {
+    return '$name (bạn)';
+  }
+
+  @override
+  String memberOwnerLabel(Object name) {
+    return '$name (chủ sở hữu)';
+  }
+
+  @override
+  String get joinTimeUnavailable => 'Không có thời gian tham gia';
+
+  @override
+  String joinedAt(Object dateTime) {
+    return 'Tham gia lúc $dateTime';
+  }
+
+  @override
+  String userIdValue(Object id) {
+    return 'User ID: $id';
+  }
+
+  @override
+  String statusValue(Object status) {
+    return 'Trạng thái: $status';
+  }
+
+  @override
+  String userShortLabel(Object id) {
+    return 'Người dùng $id';
+  }
+
+  @override
+  String get pendingInvites => 'Lời mời đang chờ';
+
+  @override
+  String get noPendingInvites => 'Không có lời mời nào đang chờ';
+
+  @override
+  String get inviteCodeCopied => 'Đã sao chép mã mời';
+
+  @override
+  String get inviteRevoked => 'Đã thu hồi lời mời';
+
+  @override
+  String failedToLoadInvites(Object error) {
+    return 'Tải lời mời thất bại: $error';
+  }
+
+  @override
+  String get status => 'Trạng thái';
+
+  @override
+  String get invitedUserJoinHint => 'Người được mời có thể mở phần Chọn workspace và chọn Tham gia bằng mã mời.';
+
+  @override
+  String get copyCode => 'Sao chép mã';
+
+  @override
+  String get revoke => 'Thu hồi';
+
+  @override
+  String get expiredToday => 'Hết hạn hôm nay';
+
+  @override
+  String get expiredOneDayAgo => 'Đã hết hạn 1 ngày trước';
+
+  @override
+  String expiredDaysAgo(Object days) {
+    return 'Đã hết hạn $days ngày trước';
+  }
+
+  @override
+  String get expiresToday => 'Hết hạn hôm nay';
+
+  @override
+  String get expiresInOneDay => 'Hết hạn sau 1 ngày';
+
+  @override
+  String expiresInDays(Object days) {
+    return 'Hết hạn sau $days ngày';
+  }
+
+  @override
+  String get expiredStatus => 'Hết hạn';
+
+  @override
+  String get urgentStatus => 'Khẩn cấp';
+
+  @override
+  String get expiringSoonStatus => 'Sắp hết hạn';
+
+  @override
+  String get activeStatus => 'Đang hiệu lực';
+
+  @override
+  String failedToLoadWorkspaces(Object error) {
+    return 'Tải workspace thất bại: $error';
+  }
+
+  @override
+  String get enterEmail => 'Vui lòng nhập email';
+
+  @override
+  String get enterValidEmailAddress => 'Vui lòng nhập địa chỉ email hợp lệ';
+
+  @override
+  String get enterPassword => 'Vui lòng nhập mật khẩu';
+
+  @override
+  String get passwordMinLength => 'Mật khẩu phải có ít nhất 6 ký tự';
+
+  @override
+  String get enterEmailResetPassword => 'Vui lòng nhập email để đặt lại mật khẩu';
+
+  @override
+  String get passwordResetEmailSent => 'Đã gửi email đặt lại mật khẩu. Hãy kiểm tra hộp thư của bạn.';
+
+  @override
+  String get failedToSendResetEmail => 'Gửi email đặt lại mật khẩu thất bại. Vui lòng thử lại.';
+
+  @override
+  String get signInToSyncAcrossDevices => 'Đăng nhập để đồng bộ dữ liệu trên nhiều thiết bị';
+
+  @override
+  String get enterYourPassword => 'Nhập mật khẩu của bạn';
+
+  @override
+  String get forgotPassword => 'Quên mật khẩu?';
+
+  @override
+  String get or => 'HOẶC';
+
+  @override
+  String get createNewAccount => 'Tạo tài khoản mới';
+
+  @override
+  String get invalidEmailOrPassword => 'Email hoặc mật khẩu không đúng';
+
+  @override
+  String get verifyEmailBeforeSignIn => 'Vui lòng xác minh email trước khi đăng nhập';
+
+  @override
+  String get networkErrorCheckConnection => 'Lỗi mạng. Vui lòng kiểm tra kết nối của bạn';
+
+  @override
+  String get tooManyAttempts => 'Quá nhiều lần thử. Vui lòng thử lại sau';
+
+  @override
+  String get signInFailed => 'Đăng nhập thất bại. Vui lòng thử lại';
+
+  @override
+  String get enterValidEmail => 'Vui lòng nhập email hợp lệ';
+
+  @override
+  String get passwordsDoNotMatch => 'Mật khẩu không khớp';
+
+  @override
+  String get accountCreatedTitle => 'Đã tạo tài khoản!';
+
+  @override
+  String get accountCreatedMessage => 'Tài khoản của bạn đã được tạo thành công.\n\nVui lòng kiểm tra email và nhấn vào liên kết xác minh để kích hoạt tài khoản.\n\nSau khi xác minh, bạn có thể đăng nhập để bắt đầu sử dụng ứng dụng.';
+
+  @override
+  String get goToSignIn => 'Đi tới đăng nhập';
+
+  @override
+  String get createAccount => 'Tạo tài khoản';
+
+  @override
+  String get createAccountToSync => 'Tạo tài khoản để đồng bộ trên nhiều thiết bị';
+
+  @override
+  String get verifyEmailBeforeSignInHint => 'Bạn cần xác minh email trước khi đăng nhập';
+
+  @override
+  String get displayNameOptional => 'Tên hiển thị (không bắt buộc)';
+
+  @override
+  String get displayNameHint => 'Bạn muốn chúng tôi gọi bạn là gì?';
+
+  @override
+  String get atLeastSixCharacters => 'Ít nhất 6 ký tự';
+
+  @override
+  String get confirmPassword => 'Xác nhận mật khẩu';
+
+  @override
+  String get reenterYourPassword => 'Nhập lại mật khẩu của bạn';
+
+  @override
+  String get alreadyHaveAccount => 'Đã có tài khoản?';
+
+  @override
+  String get emailAlreadyRegistered => 'Email này đã được đăng ký';
+
+  @override
+  String get weakPassword => 'Mật khẩu quá yếu. Vui lòng dùng mật khẩu mạnh hơn';
+
+  @override
+  String get genericTryAgainError => 'Đã xảy ra lỗi. Vui lòng thử lại';
+
+  @override
+  String get transactionSavedReceiptUploadFailed => 'Đã lưu giao dịch nhưng tải ảnh hóa đơn lên thất bại.';
+
+  @override
+  String get transactionSavedReceiptUpdateFailed => 'Đã lưu giao dịch nhưng cập nhật hóa đơn thất bại.';
+
+  @override
+  String errorWithMessage(Object error) {
+    return 'Lỗi: $error';
+  }
+
+  @override
+  String get yesterday => 'Hôm qua';
+
+  @override
+  String get optional => 'Tùy chọn';
+
+  @override
+  String get receiptWillBeRemovedOnSave => 'Hóa đơn sẽ bị xóa khi bạn lưu.';
+
+  @override
+  String get onlyCreatorCanChangeReceipt => 'Chỉ người tạo giao dịch mới có thể thay đổi hóa đơn.';
+
+  @override
+  String get confirmDeleteTransaction => 'Bạn có chắc chắn muốn xóa giao dịch này?';
+
+  @override
+  String get unknown => 'Không xác định';
+
+  @override
+  String get noTransactionsThisMonth => 'Không có giao dịch trong tháng này';
+
+  @override
+  String noTransactionsNearestDate(Object date) {
+    return 'Không có giao dịch. Hiển thị ngày gần nhất: $date';
+  }
+
+  @override
+  String errorLoadingCategories(Object error) {
+    return 'Lỗi tải danh mục: $error';
+  }
+
+  @override
+  String errorLoadingTransactions(Object error) {
+    return 'Lỗi tải giao dịch: $error';
+  }
+
+  @override
+  String get amountRequiredError => 'Vui lòng nhập số tiền';
+
+  @override
+  String get limitRequiredError => 'Vui lòng nhập hạn mức';
+
+  @override
+  String get selectCategoryError => 'Vui lòng chọn danh mục';
+
+  @override
+  String get categoryNameRequiredError => 'Vui lòng nhập tên danh mục';
+
+  @override
+  String routeNotFound(Object route) {
+    return 'Không tìm thấy route cho $route';
+  }
+
+  @override
   String get dashboard => 'Tổng quan';
 
   @override

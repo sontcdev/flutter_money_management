@@ -4,131 +4,73 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a8babec7-963b-454c-9a79-5d682db73e7c" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/deploymentTargetSelector.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/flutter_money_management.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/kotlinc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SUPABASE_SYNC_IMPLEMENTATION.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/SYNC_IMPLEMENTATION_STATUS.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/src/data/repositories/transaction_attachment_repository.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/src/models/sync_queue_item.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/src/models/sync_queue_item.freezed.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/src/models/sync_queue_item.g.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/src/models/transaction_attachment.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/src/services/transaction_receipt_service.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/src/services/workspace_sync_helper.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/src/ui/screens/today_screen.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/src/ui/widgets/app_lifecycle_sync_coordinator.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/src/utils/app_logger.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/lib/src/utils/category_color_codec.dart" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/supabase/migrations/026_add_receipt_path_and_category_color_hex.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/supabase/migrations/027_storage_transaction_receipts.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/test/category_color_codec_test.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.agent.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.ask.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.ask2agent.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.edit.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/deviceManager.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_Packages.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Dart_SDK.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/KotlinJavaRuntime.xml" beforeDir="false" />
+    <list default="true" id="a8babec7-963b-454c-9a79-5d682db73e7c" name="Changes" comment="feat: update data models to use String IDs and add sync status management">
+      <change afterPath="$PROJECT_DIR$/.idea/AndroidProjectSystem.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/runConfigurations.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations/main_dart.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AGENTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/AGENTS.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/build.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/build.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/settings.gradle.kts" beforeDir="false" afterPath="$PROJECT_DIR$/android/settings.gradle.kts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/l10n/app_en.arb" beforeDir="false" afterPath="$PROJECT_DIR$/lib/l10n/app_en.arb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/l10n/app_localizations.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/l10n/app_localizations.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/l10n/app_localizations_en.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/l10n/app_localizations_en.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/l10n/app_localizations_vi.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/l10n/app_localizations_vi.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/l10n/app_vi.arb" beforeDir="false" afterPath="$PROJECT_DIR$/lib/l10n/app_vi.arb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/app.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/app.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/app_bootstrap.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/app_bootstrap.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/app_router.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/app_router.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/data/local/app_database.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/data/local/app_database.g.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/data/local/daos/budget_dao.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/data/local/daos/budget_dao.g.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/data/local/daos/category_dao.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/data/local/daos/category_dao.g.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/data/local/daos/transaction_dao.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/data/local/daos/transaction_dao.g.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/data/local/tables/budgets_table.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/data/local/tables/budgets_table_v5.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/data/local/tables/categories_table.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/data/local/tables/categories_table_v5.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/data/local/tables/profiles_table.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/data/local/tables/sync_queue_table.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/data/local/tables/sync_state_table.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/data/local/tables/transactions_table.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/data/local/tables/transactions_table_v5.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/data/local/tables/workspace_members_table.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/data/local/tables/workspaces_table.dart" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/data/repositories/budget_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/data/repositories/budget_repository.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/data/repositories/category_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/data/repositories/category_repository.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/data/repositories/transaction_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/data/repositories/transaction_repository.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/i18n/theme_provider.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/i18n/theme_provider.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/models/budget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/models/budget.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/models/budget.freezed.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/models/budget.freezed.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/models/budget.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/models/budget.g.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/models/category.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/models/category.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/models/category.freezed.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/models/category.freezed.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/models/category.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/models/category.g.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/models/transaction.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/models/transaction.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/models/transaction.freezed.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/models/transaction.freezed.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/models/transaction.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/models/transaction.g.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/providers/migration_providers.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/providers/providers.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/providers/providers.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/providers/report_providers.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/providers/report_providers.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/providers/workspace_providers.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/providers/workspace_providers.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/services/budget_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/services/budget_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/services/import_export_service.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/services/local_to_cloud_migration_service.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/services/supabase_auth_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/services/supabase_auth_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/theme/app_colors.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/theme/app_colors.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/theme/app_spacing.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/theme/app_spacing.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/theme/app_theme.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/theme/app_theme.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/add_transaction_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/screens/add_transaction_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/auth/sign_in_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/screens/auth/sign_in_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/auth/sign_up_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/screens/auth/sign_up_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/budget_detail_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/screens/budget_detail_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/budget_edit_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/screens/budget_edit_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/budgets_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/screens/budgets_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/categories_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/screens/categories_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/category_edit_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/screens/category_edit_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/dashboard_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/screens/dashboard_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/edit_transaction_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/screens/edit_transaction_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/home_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/screens/home_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/import_export_screen.dart" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/report_calendar_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/screens/report_calendar_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/reports_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/screens/reports_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/settings_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/screens/settings_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/splash_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/screens/splash_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/today_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/screens/today_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/transaction_detail_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/screens/transaction_detail_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/transaction_management_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/screens/transaction_management_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/transactions_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/screens/transactions_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/ui/screens/workspace_selection_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/screens/workspace_selection_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/ui/widgets/app_button.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/widgets/app_button.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/ui/widgets/app_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/widgets/app_card.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/ui/widgets/app_metric_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/widgets/app_metric_card.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/ui/widgets/app_section_header.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/widgets/app_section_header.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/ui/widgets/app_status_chip.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/widgets/app_status_chip.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/ui/widgets/calendar_date_cell.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/widgets/calendar_date_cell.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/ui/widgets/category_icon_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/widgets/category_icon_widget.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/ui/widgets/empty_state.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/widgets/empty_state.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/ui/widgets/transaction_item.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/widgets/transaction_item.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/ui/widgets/chart_widget.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/widgets/chart_widget.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/ui/widgets/confirm_delete_dialog.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/widgets/confirm_delete_dialog.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/ui/widgets/workspace_switcher.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/widgets/workspace_switcher.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/utils/api_logger.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/utils/api_logger.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/add_transaction_widget_test.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/budget_create_test.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/budget_service_test.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/budget_transaction_update_test.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/report_calendar_widget_test.dart" beforeDir="false" afterPath="$PROJECT_DIR$/test/report_calendar_widget_test.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/transaction_budget_integration_test.dart" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/widget_test.dart" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/001_extensions_and_helpers.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/002_create_profiles.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/003_create_workspaces.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/004_create_workspace_members.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/005_create_workspace_invites.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/006_create_categories.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/007_create_transactions.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/008_create_transaction_attachments.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/009_create_budgets.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/010_create_activity_logs.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/011_create_user_workspace_preferences.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/012_create_rls_helpers.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/013_enable_rls.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/014_rls_profiles.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/015_rls_workspaces.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/016_rls_workspace_members.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/017_rls_workspace_invites.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/018_rls_categories.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/019_rls_transactions.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/020_rls_transaction_attachments.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/021_rls_budgets.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/022_rls_activity_logs.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/023_rls_user_workspace_preferences.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/024_auth_triggers.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/025_rpc_functions.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/026_add_receipt_path_and_category_color_hex.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/migrations/027_storage_transaction_receipts.sql" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -171,41 +113,42 @@
     <commands />
     <urls />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 3
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 3
+}</component>
   <component name="ProjectId" id="3DOPvO6sTKR4J1D7v7opp5Qp9pz" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Flutter.main.dart.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "main",
-    "io.flutter.reload.alreadyRun": "true",
-    "junie.onboarding.icon.badge.shown": "true",
-    "kotlin-language-version-configured": "true",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "show.migrate.to.gradle.popup": "false",
-    "to.speed.mode.migration.done": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Flutter.main.dart.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;io.flutter.reload.alreadyRun&quot;: &quot;true&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;emulator&quot;,
+    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Flutter.main.dart">
     <configuration name="android.app" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false">
       <module name="android.app" />
@@ -399,12 +342,27 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1778150373518</updated>
-      <workItem from="1778150375549" duration="3093000" />
+      <workItem from="1778150375549" duration="17684000" />
+      <workItem from="1778234871461" duration="56000" />
+      <workItem from="1778234936387" duration="9204000" />
     </task>
+    <task id="LOCAL-00001" summary="feat: update data models to use String IDs and add sync status management">
+      <option name="closed" value="true" />
+      <created>1778153608906</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1778153608906</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="feat: update data models to use String IDs and add sync status management" />
+    <option name="LAST_COMMIT_MESSAGE" value="feat: update data models to use String IDs and add sync status management" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>

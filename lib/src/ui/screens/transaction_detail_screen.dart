@@ -96,7 +96,7 @@ class TransactionDetailScreen extends ConsumerWidget {
                           context: context,
                           builder: (context) => AlertDialog(
                             title: Text(l10n.confirmDelete),
-                            content: const Text('Are you sure you want to delete this transaction?'),
+                            content: Text(l10n.confirmDeleteTransaction),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context, false),
@@ -199,7 +199,7 @@ class TransactionDetailScreen extends ConsumerWidget {
                       
                       // Category Name
                       Text(
-                        category?.name ?? 'Unknown',
+                        category?.name ?? l10n.unknown,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                     ],
@@ -228,7 +228,10 @@ class TransactionDetailScreen extends ConsumerWidget {
                               _DetailRow(
                                 icon: Icons.calendar_today,
                                 label: l10n.date,
-                                value: DateFormat('EEEE, dd MMMM yyyy').format(transaction.dateTime),
+                                value: DateFormat(
+                                  'EEEE, dd MMMM yyyy',
+                                  l10n.localeName,
+                                ).format(transaction.dateTime),
                               ),
                               if (transaction.note != null && transaction.note!.isNotEmpty) ...[
                                 const Divider(height: AppSpacing.lg),
@@ -298,13 +301,13 @@ class TransactionDetailScreen extends ConsumerWidget {
                                     child: CircularProgressIndicator(),
                                   ),
                                 ),
-                                error: (error, _) => Text('Error: $error'),
+                                error: (error, _) => Text(l10n.errorWithMessage('$error')),
                               ),
                             ],
                           );
                         },
                         loading: () => const SizedBox.shrink(),
-                        error: (error, _) => Text('Error: $error'),
+                        error: (error, _) => Text(l10n.errorWithMessage('$error')),
                       ),
                     ],
                   ),

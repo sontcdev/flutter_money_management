@@ -142,7 +142,7 @@ class DashboardScreen extends ConsumerWidget {
       ),
       error: (error, _) => Padding(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
-        child: Text('${l10n.error}: $error'),
+        child: Text(l10n.errorWithMessage('$error')),
       ),
     );
   }
@@ -425,7 +425,7 @@ class DashboardScreen extends ConsumerWidget {
       ),
       error: (error, _) => Padding(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
-        child: Text('${l10n.error}: $error'),
+        child: Text(l10n.errorWithMessage('$error')),
       ),
     );
   }
@@ -442,6 +442,7 @@ class _RecentTransactionItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final categoryAsync = ref.watch(categoryProvider(transaction.categoryId));
     
     return categoryAsync.when(
@@ -450,7 +451,7 @@ class _RecentTransactionItem extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
           child: TransactionItem(
             transaction: transaction,
-            categoryName: category?.name ?? 'Unknown',
+            categoryName: category?.name ?? l10n.unknown,
             categoryIconName: category?.iconName,
             categoryColor: category != null ? getCategoryColor(category.colorValue) : null,
             onTap: () {

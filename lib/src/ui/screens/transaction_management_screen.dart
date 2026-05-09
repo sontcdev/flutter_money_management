@@ -176,7 +176,7 @@ class TransactionManagementScreen extends HookConsumerWidget {
                             (c) => c.id == transaction.categoryId,
                             orElse: () => Category(
                               id: '',
-                              name: 'Unknown',
+                              name: l10n.unknown,
                               iconName: '📦',
                               colorValue: Colors.grey.toARGB32(),
                               createdAt: DateTime.now(),
@@ -263,13 +263,13 @@ class TransactionManagementScreen extends HookConsumerWidget {
                     },
                     loading: () => const Center(child: CircularProgressIndicator()),
                     error: (error, stack) => Center(
-                      child: Text('Error loading categories: $error'),
+                      child: Text(l10n.errorLoadingCategories('$error')),
                     ),
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (error, stack) => Center(
-                  child: Text('Error loading transactions: $error'),
+                  child: Text(l10n.errorLoadingTransactions('$error')),
                 ),
               ),
             ),
@@ -561,7 +561,7 @@ class TransactionManagementScreen extends HookConsumerWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.error}: $e')),
+          SnackBar(content: Text(l10n.errorWithMessage('$e'))),
         );
       }
     }
@@ -621,7 +621,7 @@ class TransactionManagementScreen extends HookConsumerWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.error}: $e')),
+          SnackBar(content: Text(l10n.errorWithMessage('$e'))),
         );
       }
     }

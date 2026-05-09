@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../providers/workspace_management_providers.dart';
 import '../../providers/workspace_providers.dart';
 import '../../providers/auth_providers.dart';
 
@@ -9,24 +11,21 @@ import '../../providers/auth_providers.dart';
 class WorkspaceSelectionScreen extends ConsumerWidget {
   const WorkspaceSelectionScreen({super.key});
 
-  static const _backendMisconfigurationMessage =
-      'No workspace was created for this account.\n\n'
-      'This usually means the Supabase auth trigger `on_auth_user_created` '
-      'is missing or misconfigured.\n\n'
-      'Please contact the administrator and ask them to verify:\n'
-      '- trigger `on_auth_user_created`\n'
-      '- function `public.handle_new_user()`\n'
-      '- rows were created in `profiles`, `workspaces`, and `workspace_members`';
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final workspacesAsync = ref.watch(workspaceListProvider);
     final currentUser = ref.watch(currentUserProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select Workspace'),
+        title: Text(l10n.selectWorkspace),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.key_outlined),
+            tooltip: l10n.joinByInviteCode,
+            onPressed: () => _showJoinInviteDialog(context, ref),
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
@@ -58,42 +57,50 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
                         size: 72,
                         color: Colors.orange,
                       ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Workspace setup is incomplete',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        _backendMisconfigurationMessage,
-                        textAlign: TextAlign.left,
-                      ),
+                       const SizedBox(height: 16),
+                       Text(
+                         l10n.workspaceSetupIncomplete,
+                         textAlign: TextAlign.center,
+                         style: const TextStyle(
+                           fontSize: 20,
+                           fontWeight: FontWeight.bold,
+                         ),
+                       ),
+                       const SizedBox(height: 12),
+                       Text(
+                         l10n.workspaceSetupIncompleteDesc,
+                         textAlign: TextAlign.left,
+                       ),
                       const SizedBox(height: 24),
                       Wrap(
                         spacing: 12,
                         runSpacing: 12,
                         alignment: WrapAlignment.center,
                         children: [
+                          OutlinedButton.icon(
+                            onPressed: () =>
+                                _showJoinInviteDialog(context, ref),
+                            icon: const Icon(Icons.key_outlined),
+                            label: Text(l10n.joinByInviteCode),
+                          ),
                           OutlinedButton(
                             onPressed: () {
                               ref.invalidate(workspaceListProvider);
                             },
-                            child: const Text('Retry'),
+                            child: Text(l10n.retry),
                           ),
                           FilledButton(
                             onPressed: () async {
-                              final supabaseAuth = ref.read(supabaseAuthServiceProvider);
+                              final supabaseAuth =
+                                  ref.read(supabaseAuthServiceProvider);
                               await supabaseAuth.signOut();
                               clearActiveWorkspace(ref);
                               if (context.mounted) {
-                                Navigator.of(context).pushReplacementNamed('/sign-in');
+                                Navigator.of(context)
+                                    .pushReplacementNamed('/sign-in');
                               }
                             },
-                            child: const Text('Sign out'),
+                            child: Text(l10n.signOutTitle),
                           ),
                         ],
                       ),
@@ -118,7 +125,9 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
                   ),
                   title: Text(workspace.name),
                   subtitle: Text(
-                    isOwner ? 'Owner' : 'Role: ${workspace.role}',
+                    isOwner
+                        ? l10n.ownerRole
+                        : l10n.roleValue(workspace.role),
                     style: TextStyle(
                       fontSize: 12,
                       color: isOwner ? Colors.green : Colors.blue,
@@ -143,13 +152,13 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
             children: [
               const Icon(Icons.error_outline, size: 64, color: Colors.red),
               const SizedBox(height: 16),
-              Text('Error loading workspaces: $error'),
+              Text(l10n.errorLoadingWorkspaces('$error')),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
                   ref.invalidate(workspaceListProvider);
                 },
-                child: const Text('Retry'),
+                child: Text(l10n.retry),
               ),
             ],
           ),
@@ -157,5 +166,126 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
       ),
       floatingActionButton: null,
     );
+  }
+
+  Future<void> _showJoinInviteDialog(
+      BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final parentContext = context;
+    final controller = TextEditingController();
+    var isSubmitting = false;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) => AlertDialog(
+            title: Text(l10n.joinWorkspace),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              textInputAction: TextInputAction.done,
+              decoration: InputDecoration(
+                labelText: l10n.inviteCode,
+                hintText: l10n.pasteWorkspaceInviteCode,
+                border: const OutlineInputBorder(),
+              ),
+              onSubmitted: (_) async {
+                await _acceptInvite(
+                  dialogContext: context,
+                  parentContext: parentContext,
+                  ref: ref,
+                  controller: controller,
+                  isSubmitting: isSubmitting,
+                  setSubmitting: (value) =>
+                      setState(() => isSubmitting = value),
+                );
+              },
+            ),
+            actions: [
+              TextButton(
+                onPressed: isSubmitting
+                    ? null
+                    : () => Navigator.of(dialogContext).pop(),
+                child: Text(l10n.cancel),
+              ),
+              FilledButton(
+                onPressed: isSubmitting
+                    ? null
+                    : () => _acceptInvite(
+                          dialogContext: context,
+                          parentContext: parentContext,
+                          ref: ref,
+                          controller: controller,
+                          isSubmitting: isSubmitting,
+                          setSubmitting: (value) =>
+                              setState(() => isSubmitting = value),
+                        ),
+                child: isSubmitting
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(l10n.join),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    controller.dispose();
+  }
+
+  Future<void> _acceptInvite({
+    required BuildContext dialogContext,
+    required BuildContext parentContext,
+    required WidgetRef ref,
+    required TextEditingController controller,
+    required bool isSubmitting,
+    required void Function(bool value) setSubmitting,
+  }) async {
+    final token = controller.text.trim();
+    if (token.isEmpty || isSubmitting) {
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      final workspaceId = await ref
+          .read(workspaceManagementServiceProvider)
+          .acceptInvite(token);
+      ref.read(activeWorkspaceIdProvider.notifier).state = workspaceId;
+      ref.invalidate(workspaceListProvider);
+
+      if (!dialogContext.mounted || !parentContext.mounted) {
+        return;
+      }
+
+      Navigator.of(dialogContext).pop();
+      ScaffoldMessenger.of(parentContext).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(parentContext)!.joinedWorkspaceSuccessfully)),
+      );
+      Navigator.of(parentContext).pushReplacementNamed('/home');
+    } catch (e) {
+      if (!dialogContext.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(dialogContext).showSnackBar(
+        SnackBar(content: Text(_formatInviteError(e))),
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  String _formatInviteError(Object error) {
+    final message = error.toString();
+    if (message.startsWith('Bad state: ')) {
+      return message.substring('Bad state: '.length);
+    }
+    return message;
   }
 }

@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import '../../models/category.dart' as model;
 import '../../services/budget_service.dart';
 import '../../utils/category_color_codec.dart';
+import 'supabase_error_mapper.dart';
 
 class CategoryRepository {
   final SupabaseClient _supabase;
@@ -35,7 +36,8 @@ class CategoryRepository {
         .toList();
   }
 
-  Future<List<model.Category>> getCategoriesByType(model.CategoryType type) async {
+  Future<List<model.Category>> getCategoriesByType(
+      model.CategoryType type) async {
     final workspaceId = _requireWorkspaceId();
     final response = await _supabase
         .from('categories')
@@ -71,46 +73,48 @@ class CategoryRepository {
 
   Future<model.Category> createCategory(model.Category category) async {
     final workspaceId = _requireWorkspaceId();
-    final userId = _requireUserId();
+    _requireUserId();
     final id = category.id.isEmpty ? _uuid.v4() : category.id;
 
-    await _supabase.from('categories').insert({
-      'id': id,
-      'workspace_id': workspaceId,
-      'name': category.name.trim(),
-      'type': category.type.name,
-      'icon_name': category.iconName,
-      'color_value': encodeCategoryColor(category.colorValue),
-      'created_by_user_id': userId,
-      'updated_by_user_id': userId,
-      'created_at': category.createdAt.toIso8601String(),
-      'updated_at': category.updatedAt.toIso8601String(),
-    });
-
-    final created = await getCategoryById(id);
-    if (created == null) {
-      throw Exception('Failed to load created category: $id');
+    try {
+      final response = await _supabase.rpc('create_category_rpc', params: {
+        'p_workspace_id': workspaceId,
+        'p_name': category.name.trim(),
+        'p_type': category.type.name,
+        'p_icon_name': category.iconName,
+        'p_color_value': encodeCategoryColor(category.colorValue),
+        'p_id': id,
+        'p_created_at': category.createdAt.toIso8601String(),
+        'p_updated_at': category.updatedAt.toIso8601String(),
+      });
+      return _mapCategory((response as Map<String, dynamic>));
+    } on PostgrestException catch (e) {
+      throw mapSupabaseException(e);
     }
-    return created;
   }
 
   Future<void> updateCategory(model.Category category) async {
     final workspaceId = _requireWorkspaceId();
-    final userId = _requireUserId();
+    _requireUserId();
 
-    await _supabase.from('categories').update({
-      'name': category.name.trim(),
-      'type': category.type.name,
-      'icon_name': category.iconName,
-      'color_value': encodeCategoryColor(category.colorValue),
-      'updated_by_user_id': userId,
-      'updated_at': category.updatedAt.toIso8601String(),
-    }).eq('workspace_id', workspaceId).eq('id', category.id);
+    try {
+      await _supabase.rpc('update_category_rpc', params: {
+        'p_category_id': category.id,
+        'p_workspace_id': workspaceId,
+        'p_name': category.name.trim(),
+        'p_type': category.type.name,
+        'p_icon_name': category.iconName,
+        'p_color_value': encodeCategoryColor(category.colorValue),
+        'p_updated_at': category.updatedAt.toIso8601String(),
+      });
+    } on PostgrestException catch (e) {
+      throw mapSupabaseException(e);
+    }
   }
 
   Future<void> deleteCategory(String id) async {
     final workspaceId = _requireWorkspaceId();
-    final userId = _requireUserId();
+    _requireUserId();
 
     final transactionInUse = await _supabase
         .from('transactions')
@@ -136,11 +140,14 @@ class CategoryRepository {
       throw CategoryInUseException('Category is in use and cannot be deleted');
     }
 
-    await _supabase.from('categories').update({
-      'deleted_at': DateTime.now().toIso8601String(),
-      'deleted_by_user_id': userId,
-      'updated_by_user_id': userId,
-    }).eq('workspace_id', workspaceId).eq('id', id);
+    try {
+      await _supabase.rpc('soft_delete_category_rpc', params: {
+        'p_category_id': id,
+        'p_workspace_id': workspaceId,
+      });
+    } on PostgrestException catch (e) {
+      throw mapSupabaseException(e);
+    }
   }
 
   model.Category _mapCategory(Map<String, dynamic> item) {

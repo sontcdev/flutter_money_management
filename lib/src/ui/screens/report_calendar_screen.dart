@@ -23,7 +23,7 @@ class ReportCalendarScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final selectedMonth = ref.watch(selectedMonthProvider);
     final monthStartDay = ref.watch(monthStartDayProvider);
     final calendarData = ref.watch(calendarDataProvider(selectedMonth));
@@ -104,9 +104,9 @@ class ReportCalendarScreen extends HookConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: Text(l10n?.calendar ?? 'Lịch'),
+        title: Text(l10n.calendar),
         centerTitle: true,
         automaticallyImplyLeading: false,
         actions: [
@@ -144,7 +144,7 @@ class ReportCalendarScreen extends HookConsumerWidget {
                   ),
                   error: (e, s) => SizedBox(
                     height: 280,
-                    child: Center(child: Text('Error: $e')),
+                    child: Center(child: Text(l10n.errorWithMessage('$e'))),
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -171,12 +171,12 @@ class ReportCalendarScreen extends HookConsumerWidget {
               child: groups.isEmpty
                   ? ListView(
                       // Empty ListView để RefreshIndicator hoạt động
-                      children: const [
-                        SizedBox(height: 100),
+                      children: [
+                        const SizedBox(height: 100),
                         Center(
                           child: Text(
-                            'Không có giao dịch trong tháng này',
-                            style: TextStyle(color: Colors.grey),
+                            l10n.noTransactionsThisMonth,
+                            style: const TextStyle(color: Colors.grey),
                           ),
                         ),
                       ],
@@ -227,7 +227,7 @@ class ReportCalendarScreen extends HookConsumerWidget {
   }
 
   Widget _buildMonthSelector(BuildContext context, WidgetRef ref, DateTime month) {
-    final monthLabel = _formatMonthLabel(month);
+    final monthLabel = _formatMonthLabel(context, month);
     final monthStartDay = ref.watch(monthStartDayProvider);
     final cycleRange = CycleUtils.getCycleRangeForMonth(month, monthStartDay);
     final cycleLabel = CycleUtils.getCycleLabel(cycleRange.start, cycleRange.end);
@@ -317,8 +317,11 @@ class ReportCalendarScreen extends HookConsumerWidget {
     );
   }
 
-  String _formatMonthLabel(DateTime month) {
-    return 'Tháng ${month.month.toString().padLeft(2, '0')}/${month.year}';
+  String _formatMonthLabel(BuildContext context, DateTime month) {
+    return AppLocalizations.of(context)!.monthFormat(
+      month.month.toString().padLeft(2, '0'),
+      month.year,
+    );
   }
 
   void _showTransactionActions(BuildContext context, WidgetRef ref, TransactionWithCategory txnWithCat) {
@@ -331,7 +334,7 @@ class ReportCalendarScreen extends HookConsumerWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.edit),
-              title: const Text('Edit'),
+              title: Text(AppLocalizations.of(context)!.edit),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.pushNamed(
@@ -343,7 +346,10 @@ class ReportCalendarScreen extends HookConsumerWidget {
             ),
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text('Delete', style: TextStyle(color: Colors.red)),
+              title: Text(
+                AppLocalizations.of(context)!.delete,
+                style: const TextStyle(color: Colors.red),
+              ),
               onTap: () async {
                 Navigator.pop(context);
                 final confirmed = await showDialog<bool>(
@@ -357,7 +363,7 @@ class ReportCalendarScreen extends HookConsumerWidget {
             ),
             ListTile(
               leading: const Icon(Icons.share),
-              title: const Text('Share'),
+              title: Text(AppLocalizations.of(context)!.share),
               onTap: () {
                 Navigator.pop(context);
                 // TODO: Implement share
@@ -371,22 +377,24 @@ class ReportCalendarScreen extends HookConsumerWidget {
 }
 
 void _showNoTransactionsMessage(BuildContext context) {
+  final l10n = AppLocalizations.of(context)!;
   ScaffoldMessenger.of(context).clearSnackBars();
   ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text('Không có giao dịch'),
-      duration: Duration(seconds: 2),
+    SnackBar(
+      content: Text(l10n.noTransactions),
+      duration: const Duration(seconds: 2),
       behavior: SnackBarBehavior.floating,
     ),
   );
 }
 
 void _showScrollingToNearestMessage(BuildContext context, DateTime nearestDate) {
+  final l10n = AppLocalizations.of(context)!;
   final dateStr = '${nearestDate.day}/${nearestDate.month}';
   ScaffoldMessenger.of(context).clearSnackBars();
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
-      content: Text('Không có giao dịch. Hiển thị ngày gần nhất: $dateStr'),
+      content: Text(l10n.noTransactionsNearestDate(dateStr)),
       duration: const Duration(seconds: 2),
       behavior: SnackBarBehavior.floating,
     ),

@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import '../../models/budget.dart' as budget_model;
 import '../../models/transaction.dart' as model;
 import '../../services/budget_service.dart';
+import 'supabase_error_mapper.dart';
 
 class TransactionRepository {
   final SupabaseClient _supabase;
@@ -76,7 +77,7 @@ class TransactionRepository {
     bool allowOverdraft = false,
   }) async {
     final workspaceId = _requireWorkspaceId();
-    final userId = _requireUserId();
+    _requireUserId();
     final id = transaction.id.isEmpty ? _uuid.v4() : transaction.id;
     final transactionWithId = transaction.copyWith(id: id);
 
@@ -85,57 +86,72 @@ class TransactionRepository {
       allowOverdraft: allowOverdraft,
     );
 
-    await _supabase.from('transactions').insert({
-      'id': id,
-      'workspace_id': workspaceId,
-      'category_id': transaction.categoryId,
-      'amount_minor': transaction.amountCents,
-      'currency_code': transaction.currency,
-      'transaction_type': transaction.type.name,
-      'transaction_at': transaction.dateTime.toIso8601String(),
-      'note': transaction.note,
-      'client_reference_id': id,
-      'created_by_user_id': userId,
-      'updated_by_user_id': userId,
-      'created_at': transaction.createdAt.toIso8601String(),
-      'updated_at': transaction.updatedAt.toIso8601String(),
-    });
-
-    return getTransactionById(id);
+    try {
+      final response = await _supabase.rpc('create_transaction_rpc', params: {
+        'p_workspace_id': workspaceId,
+        'p_category_id': transaction.categoryId,
+        'p_amount_minor': transaction.amountCents,
+        'p_currency_code': transaction.currency,
+        'p_transaction_type': transaction.type.name,
+        'p_transaction_at': transaction.dateTime.toIso8601String(),
+        'p_note': transaction.note,
+        'p_client_reference_id': id,
+        'p_allow_overdraft_override': allowOverdraft,
+        'p_id': id,
+        'p_created_at': transaction.createdAt.toIso8601String(),
+        'p_updated_at': transaction.updatedAt.toIso8601String(),
+      });
+      return _mapTransaction((response as Map<String, dynamic>));
+    } on PostgrestException catch (e) {
+      throw mapSupabaseException(e);
+    }
   }
 
-  Future<void> updateTransaction(model.Transaction transaction) async {
+  Future<void> updateTransaction(
+    model.Transaction transaction, {
+    bool allowOverdraft = false,
+  }) async {
     final workspaceId = _requireWorkspaceId();
-    final userId = _requireUserId();
+    _requireUserId();
     final existing = await getTransactionById(transaction.id);
 
     await _validateBudgetImpact(
       transaction: transaction,
       previousTransaction: existing,
-      allowOverdraft: false,
+      allowOverdraft: allowOverdraft,
     );
 
-    await _supabase.from('transactions').update({
-      'category_id': transaction.categoryId,
-      'amount_minor': transaction.amountCents,
-      'currency_code': transaction.currency,
-      'transaction_type': transaction.type.name,
-      'transaction_at': transaction.dateTime.toIso8601String(),
-      'note': transaction.note,
-      'updated_by_user_id': userId,
-      'updated_at': transaction.updatedAt.toIso8601String(),
-    }).eq('workspace_id', workspaceId).eq('id', transaction.id);
+    try {
+      await _supabase.rpc('update_transaction_rpc', params: {
+        'p_transaction_id': transaction.id,
+        'p_workspace_id': workspaceId,
+        'p_category_id': transaction.categoryId,
+        'p_amount_minor': transaction.amountCents,
+        'p_currency_code': transaction.currency,
+        'p_transaction_type': transaction.type.name,
+        'p_transaction_at': transaction.dateTime.toIso8601String(),
+        'p_note': transaction.note,
+        'p_allow_overdraft_override': allowOverdraft,
+        'p_updated_at': transaction.updatedAt.toIso8601String(),
+      });
+    } on PostgrestException catch (e) {
+      throw mapSupabaseException(e);
+    }
   }
 
   Future<void> deleteTransaction(String id) async {
     final workspaceId = _requireWorkspaceId();
-    final userId = _requireUserId();
 
-    await _supabase.from('transactions').update({
-      'deleted_at': DateTime.now().toIso8601String(),
-      'deleted_by_user_id': userId,
-      'updated_by_user_id': userId,
-    }).eq('workspace_id', workspaceId).eq('id', id);
+    _requireUserId();
+
+    try {
+      await _supabase.rpc('soft_delete_transaction_rpc', params: {
+        'p_transaction_id': id,
+        'p_workspace_id': workspaceId,
+      });
+    } on PostgrestException catch (e) {
+      throw mapSupabaseException(e);
+    }
   }
 
   Future<bool> canCurrentUserManageTransaction(String id) async {
@@ -165,7 +181,8 @@ class TransactionRepository {
       return;
     }
 
-    final budget = await _getActiveBudget(transaction.categoryId, transaction.dateTime);
+    final budget =
+        await _getActiveBudget(transaction.categoryId, transaction.dateTime);
     if (budget == null) {
       return;
     }
@@ -183,8 +200,11 @@ class TransactionRepository {
         .fold<int>(0, (sum, item) => sum + item.amountCents);
     consumed += transaction.amountCents;
 
-    if (consumed > budget.limitCents && !allowOverdraft && !budget.allowOverdraft) {
-      final remaining = budget.limitCents - (consumed - transaction.amountCents);
+    if (consumed > budget.limitCents &&
+        !allowOverdraft &&
+        !budget.allowOverdraft) {
+      final remaining =
+          budget.limitCents - (consumed - transaction.amountCents);
       throw BudgetExceededException(
         message:
             'Budget exceeded! Remaining: $remaining cents, Limit: ${budget.limitCents} cents',
@@ -194,7 +214,8 @@ class TransactionRepository {
     }
   }
 
-  Future<budget_model.Budget?> _getActiveBudget(String categoryId, DateTime date) async {
+  Future<budget_model.Budget?> _getActiveBudget(
+      String categoryId, DateTime date) async {
     final workspaceId = _requireWorkspaceId();
     final response = await _supabase
         .from('budgets')

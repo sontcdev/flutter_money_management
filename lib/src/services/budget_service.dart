@@ -33,3 +33,38 @@ class CategoryInUseException implements Exception {
   String toString() => message;
 }
 
+class DuplicateCategoryException implements Exception {
+  final String message;
+
+  DuplicateCategoryException(this.message);
+
+  @override
+  String toString() => message;
+}
+
+class InvalidCategoryException implements Exception {
+  final String message;
+
+  InvalidCategoryException(this.message);
+
+  @override
+  String toString() => message;
+}
+
+class CategoryTypeMismatchException implements Exception {
+  final String message;
+
+  CategoryTypeMismatchException(this.message);
+
+  @override
+  String toString() => message;
+}
+
+class RepositoryOperationException implements Exception {
+  final String message;
+
+  RepositoryOperationException(this.message);
+
+  @override
+  String toString() => message;
+}

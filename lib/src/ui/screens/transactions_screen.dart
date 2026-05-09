@@ -186,11 +186,11 @@ class TransactionsScreen extends HookConsumerWidget {
                     );
                   },
                   loading: () => const Center(child: CircularProgressIndicator()),
-                  error: (error, _) => Center(child: Text('Error: $error')),
+                  error: (error, _) => Center(child: Text(l10n.errorWithMessage('$error'))),
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => Center(child: Text('Error: $error')),
+              error: (error, _) => Center(child: Text(l10n.errorWithMessage('$error'))),
             ),
           ),
         ],
@@ -352,7 +352,7 @@ class _TransactionGroup extends StatelessWidget {
           
           return TransactionItem(
             transaction: transaction,
-            categoryName: category?.name ?? 'Unknown',
+            categoryName: category?.name ?? l10n.unknown,
             categoryIconName: category?.iconName,
             categoryColor: category != null ? getCategoryColor(category.colorValue) : null,
             showDate: true, // Show date in subtitle

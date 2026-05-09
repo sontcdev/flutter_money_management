@@ -93,14 +93,14 @@ class BudgetEditScreen extends HookConsumerWidget {
     Future<void> handleSave() async {
       if (limitController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.error}: ${l10n.limit} ${l10n.noData}')),
+          SnackBar(content: Text(l10n.limitRequiredError)),
         );
         return;
       }
 
       if (selectedCategoryId.value == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.error}: ${l10n.selectCategory}')),
+          SnackBar(content: Text(l10n.selectCategoryError)),
         );
         return;
       }
@@ -173,7 +173,7 @@ class BudgetEditScreen extends HookConsumerWidget {
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${l10n.error}: $e')),
+            SnackBar(content: Text(l10n.errorWithMessage('$e'))),
           );
         }
       } finally {
@@ -256,7 +256,7 @@ class BudgetEditScreen extends HookConsumerWidget {
                 );
               },
               loading: () => const CircularProgressIndicator(),
-              error: (err, stack) => Text('${l10n.error}: $err'),
+              error: (err, stack) => Text(l10n.errorWithMessage('$err')),
             ),
             const SizedBox(height: 16),
             AppInput(
@@ -502,7 +502,7 @@ class BudgetEditScreen extends HookConsumerWidget {
             const SizedBox(height: 16),
             SwitchListTile(
               title: Text(l10n.allowOverdraft),
-              subtitle: Text('${l10n.budgetExceeded} - ${l10n.proceed}'),
+              subtitle: Text(l10n.allowOverdraftDesc),
               value: allowOverdraft.value,
               onChanged: (value) => allowOverdraft.value = value,
             ),

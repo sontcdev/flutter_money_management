@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:intl/intl.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../providers/providers.dart';
 import '../../models/transaction.dart';
@@ -199,7 +200,7 @@ class ReportsScreen extends HookConsumerWidget {
               error: (err, _) => Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: Text('${l10n.error}: $err'),
+                  child: Text(l10n.errorWithMessage('$err')),
                 ),
               ),
             ),
@@ -471,7 +472,7 @@ class ReportsScreen extends HookConsumerWidget {
                       error: (err, _) => Card(
                         child: Padding(
                           padding: const EdgeInsets.all(16),
-                          child: Text('Error: $err'),
+                          child: Text(l10n.errorWithMessage('$err')),
                         ),
                       ),
                     );
@@ -485,7 +486,7 @@ class ReportsScreen extends HookConsumerWidget {
                   error: (err, _) => Card(
                     child: Padding(
                       padding: const EdgeInsets.all(16),
-                      child: Text('Error: $err'),
+                      child: Text(l10n.errorWithMessage('$err')),
                     ),
                   ),
                 );
@@ -499,7 +500,7 @@ class ReportsScreen extends HookConsumerWidget {
               error: (err, _) => Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: Text('Lỗi: $err'),
+                  child: Text(l10n.errorWithMessage('$err')),
                 ),
               ),
             ),
@@ -663,7 +664,7 @@ class ReportsScreen extends HookConsumerWidget {
                   error: (err, _) => Card(
                     child: Padding(
                       padding: const EdgeInsets.all(16),
-                      child: Text('Lỗi: $err'),
+                      child: Text(l10n.errorWithMessage('$err')),
                     ),
                   ),
                 );
@@ -677,7 +678,7 @@ class ReportsScreen extends HookConsumerWidget {
               error: (err, _) => Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: Text('Lỗi: $err'),
+                  child: Text(l10n.errorWithMessage('$err')),
                 ),
               ),
             ),
@@ -1081,7 +1082,7 @@ class CategoryTransactionsScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('Lỗi: $err')),
+        error: (err, _) => Center(child: Text(l10n.errorWithMessage('$err'))),
       ),
     );
   }
@@ -1242,7 +1243,7 @@ class BudgetTransactionsScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, _) => Center(child: Text('${l10n.error}: $err')),
+        error: (err, _) => Center(child: Text(l10n.errorWithMessage('$err'))),
       ),
     );
   }
@@ -1290,7 +1291,7 @@ class BudgetTransactionsScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      _formatDate(date),
+                      _formatDate(context, date),
                       style: const TextStyle(fontWeight: FontWeight.w600),
                     ),
                     Container(
@@ -1358,10 +1359,9 @@ class BudgetTransactionsScreen extends ConsumerWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
-    final weekdayNames = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
-    final weekday = weekdayNames[date.weekday % 7];
-    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year} - $weekday';
+  String _formatDate(BuildContext context, DateTime date) {
+    final l10n = AppLocalizations.of(context)!;
+    return DateFormat('dd/MM/yyyy - EEEE', l10n.localeName).format(date);
   }
 }
 

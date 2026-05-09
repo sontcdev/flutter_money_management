@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../providers/auth_providers.dart';
 import '../../../utils/app_logger.dart';
 
@@ -11,6 +12,7 @@ class SignUpScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final emailController = useTextEditingController();
     final passwordController = useTextEditingController();
     final confirmPasswordController = useTextEditingController();
@@ -26,27 +28,27 @@ class SignUpScreen extends HookConsumerWidget {
     Future<void> handleSignUp() async {
       // Validation
       if (emailController.text.trim().isEmpty) {
-        errorMessage.value = 'Please enter your email';
+          errorMessage.value = l10n.enterEmail;
         return;
       }
       
       if (!_isValidEmail(emailController.text.trim())) {
-        errorMessage.value = 'Please enter a valid email';
+         errorMessage.value = l10n.enterValidEmail;
         return;
       }
 
       if (passwordController.text.isEmpty) {
-        errorMessage.value = 'Please enter a password';
+         errorMessage.value = l10n.enterPassword;
         return;
       }
 
       if (passwordController.text.length < 6) {
-        errorMessage.value = 'Password must be at least 6 characters';
+         errorMessage.value = l10n.passwordMinLength;
         return;
       }
 
       if (passwordController.text != confirmPasswordController.text) {
-        errorMessage.value = 'Passwords do not match';
+         errorMessage.value = l10n.passwordsDoNotMatch;
         return;
       }
 
@@ -74,12 +76,8 @@ class SignUpScreen extends HookConsumerWidget {
               context: context,
               barrierDismissible: false,
               builder: (context) => AlertDialog(
-                title: const Text('Account Created!'),
-                content: const Text(
-                  'Your account has been created successfully.\n\n'
-                  'Please check your email and click the verification link to activate your account.\n\n'
-                  'After verification, you can sign in to start using the app.',
-                ),
+                title: Text(l10n.accountCreatedTitle),
+                content: Text(l10n.accountCreatedMessage),
                 actions: [
                   ElevatedButton(
                     onPressed: () {
@@ -87,7 +85,7 @@ class SignUpScreen extends HookConsumerWidget {
                       // Navigate back to sign in
                       Navigator.of(context).pop();
                     },
-                    child: const Text('Go to Sign In'),
+                    child: Text(l10n.goToSignIn),
                   ),
                 ],
               ),
@@ -101,7 +99,7 @@ class SignUpScreen extends HookConsumerWidget {
           error: e,
           stackTrace: stackTrace,
         );
-        errorMessage.value = _getErrorMessage(e.toString());
+        errorMessage.value = _getErrorMessage(l10n, e.toString());
       } finally {
         isLoading.value = false;
       }
@@ -109,7 +107,7 @@ class SignUpScreen extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Account'),
+        title: Text(l10n.createAccount),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -131,7 +129,7 @@ class SignUpScreen extends HookConsumerWidget {
               const SizedBox(height: 16),
               
               Text(
-                'Money Wise',
+                l10n.appTitle,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -141,7 +139,7 @@ class SignUpScreen extends HookConsumerWidget {
               const SizedBox(height: 8),
               
               Text(
-                'Create your account to sync across devices',
+                l10n.createAccountToSync,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.grey[600],
                 ),
@@ -151,7 +149,7 @@ class SignUpScreen extends HookConsumerWidget {
               const SizedBox(height: 8),
               
               Text(
-                'You will need to verify your email before signing in',
+                l10n.verifyEmailBeforeSignInHint,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Colors.grey[500],
                   fontStyle: FontStyle.italic,
@@ -164,11 +162,11 @@ class SignUpScreen extends HookConsumerWidget {
               // Display Name Field
               TextField(
                 controller: displayNameController,
-                decoration: const InputDecoration(
-                  labelText: 'Display Name (Optional)',
-                  hintText: 'How should we call you?',
-                  prefixIcon: Icon(Icons.person_outline),
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.displayNameOptional,
+                  hintText: l10n.displayNameHint,
+                  prefixIcon: const Icon(Icons.person_outline),
+                  border: const OutlineInputBorder(),
                 ),
                 textInputAction: TextInputAction.next,
                 enabled: !isLoading.value,
@@ -179,11 +177,11 @@ class SignUpScreen extends HookConsumerWidget {
               // Email Field
               TextField(
                 controller: emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  hintText: 'your@email.com',
-                  prefixIcon: Icon(Icons.email_outlined),
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: l10n.email,
+                  hintText: l10n.emailExample,
+                  prefixIcon: const Icon(Icons.email_outlined),
+                  border: const OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
@@ -196,8 +194,8 @@ class SignUpScreen extends HookConsumerWidget {
               TextField(
                 controller: passwordController,
                 decoration: InputDecoration(
-                  labelText: 'Password',
-                  hintText: 'At least 6 characters',
+                  labelText: l10n.password,
+                  hintText: l10n.atLeastSixCharacters,
                   prefixIcon: const Icon(Icons.lock_outline),
                   border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
@@ -222,8 +220,8 @@ class SignUpScreen extends HookConsumerWidget {
               TextField(
                 controller: confirmPasswordController,
                 decoration: InputDecoration(
-                  labelText: 'Confirm Password',
-                  hintText: 'Re-enter your password',
+                  labelText: l10n.confirmPassword,
+                  hintText: l10n.reenterYourPassword,
                   prefixIcon: const Icon(Icons.lock_outline),
                   border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
@@ -288,7 +286,7 @@ class SignUpScreen extends HookConsumerWidget {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Create Account'),
+                    : Text(l10n.createAccount),
                 ),
               ),
               
@@ -298,12 +296,12 @@ class SignUpScreen extends HookConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Already have an account?'),
+                  Text(l10n.alreadyHaveAccount),
                   TextButton(
                     onPressed: isLoading.value 
                       ? null 
                       : () => Navigator.of(context).pop(),
-                    child: const Text('Sign In'),
+                    child: Text(l10n.signIn),
                   ),
                 ],
               ),
@@ -318,16 +316,16 @@ class SignUpScreen extends HookConsumerWidget {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
   }
 
-  String _getErrorMessage(String error) {
+  String _getErrorMessage(AppLocalizations l10n, String error) {
     if (error.contains('already registered')) {
-      return 'This email is already registered';
+      return l10n.emailAlreadyRegistered;
     } else if (error.contains('invalid email')) {
-      return 'Please enter a valid email address';
+      return l10n.enterValidEmailAddress;
     } else if (error.contains('weak password')) {
-      return 'Password is too weak. Please use a stronger password';
+      return l10n.weakPassword;
     } else if (error.contains('network')) {
-      return 'Network error. Please check your connection';
+      return l10n.networkErrorCheckConnection;
     }
-    return 'An error occurred. Please try again';
+    return l10n.genericTryAgainError;
   }
 }

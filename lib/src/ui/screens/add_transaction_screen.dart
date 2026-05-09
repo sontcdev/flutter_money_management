@@ -46,14 +46,14 @@ class AddTransactionScreen extends HookConsumerWidget {
     Future<void> handleSubmit() async {
       if (amountController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.error}: ${l10n.amount}')),
+          SnackBar(content: Text(l10n.amountRequiredError)),
         );
         return;
       }
 
       if (selectedCategoryId.value == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.error}: ${l10n.selectCategory}')),
+          SnackBar(content: Text(l10n.selectCategoryError)),
         );
         return;
       }
@@ -101,7 +101,7 @@ class AddTransactionScreen extends HookConsumerWidget {
               error: e,
               stackTrace: stackTrace,
             );
-            receiptWarning = 'Transaction saved, but receipt upload failed.';
+            receiptWarning = l10n.transactionSavedReceiptUploadFailed;
           }
         }
 
@@ -145,7 +145,7 @@ class AddTransactionScreen extends HookConsumerWidget {
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${l10n.error}: $e')),
+            SnackBar(content: Text(l10n.errorWithMessage('$e'))),
           );
         }
       } finally {
@@ -317,7 +317,7 @@ class AddTransactionScreen extends HookConsumerWidget {
                 );
               },
               loading: () => const CircularProgressIndicator(),
-              error: (err, stack) => Text('Error: $err'),
+               error: (err, stack) => Text(l10n.errorWithMessage('$err')),
             ),
             const SizedBox(height: AppSpacing.lg),
 
@@ -360,7 +360,7 @@ class AddTransactionScreen extends HookConsumerWidget {
                                ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
                               : null,
                         ),
-                        child: Text(l10n.lastMonth.split(' ').last), // "Yesterday" - using lastMonth as placeholder
+                         child: Text(l10n.yesterday),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
@@ -417,7 +417,7 @@ class AddTransactionScreen extends HookConsumerWidget {
                 style: Theme.of(context).textTheme.labelLarge,
               ),
               subtitle: Text(
-                'Optional',
+                l10n.optional,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               initiallyExpanded: false,

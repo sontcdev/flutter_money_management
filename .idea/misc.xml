@@ -1,7 +1,17 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="FrameworkDetectionExcludesConfiguration">
+    <file type="web" url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/app_links-7.0.0/android" />
+    <file type="web" url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_local_notifications-18.0.1/android" />
+    <file type="web" url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.34/android" />
+    <file type="web" url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/image_picker_android-0.8.13+17/android" />
+    <file type="web" url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/jni-1.0.0/android" />
+    <file type="web" url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/jni_flutter-1.0.1/android" />
+    <file type="web" url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/package_info_plus-8.3.1/android" />
+    <file type="web" url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/shared_preferences_android-2.4.23/android" />
+    <file type="web" url="file://$USER_HOME$/.pub-cache/hosted/pub.dev/url_launcher_android-6.3.29/android" />
+    <file type="web" url="file://$PROJECT_DIR$/../../../Library/flutter/packages/flutter_tools/gradle" />
+    <file type="web" url="file://$PROJECT_DIR$/android" />
     <type id="android" />
   </component>
   <component name="ProjectRootManager" version="2">

@@ -1,6 +1,7 @@
 // path: lib/src/ui/screens/budgets_screen.dart
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../providers/providers.dart';
 import '../../models/budget.dart';
@@ -91,7 +92,7 @@ class BudgetsScreen extends ConsumerWidget {
               itemCount: 3,
               itemBuilder: (context, index) => const ShimmerCard(),
             ),
-            error: (error, stack) => Center(child: Text('Lỗi: $error')),
+            error: (error, stack) => Center(child: Text(l10n.errorWithMessage('$error'))),
           );
         },
         loading: () => ListView.builder(
@@ -100,7 +101,7 @@ class BudgetsScreen extends ConsumerWidget {
           itemBuilder: (context, index) => const ShimmerCard(),
         ),
         error: (error, stack) => Center(
-          child: Text('Lỗi: $error'),
+          child: Text(l10n.errorWithMessage('$error')),
         ),
         ),
       ),
@@ -538,8 +539,8 @@ class _SwipeableBudgetCard extends ConsumerWidget {
     AsyncValue<Category?> categoryAsync,
   ) async {
     final categoryName = categoryAsync.maybeWhen(
-      data: (category) => category?.name ?? 'Unknown',
-      orElse: () => 'Unknown',
+      data: (category) => category?.name ?? l10n.unknown,
+      orElse: () => l10n.unknown,
     );
 
     return await showDialog<bool>(
@@ -579,7 +580,7 @@ class _SwipeableBudgetCard extends ConsumerWidget {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.error}: $e')),
+          SnackBar(content: Text(l10n.errorWithMessage('$e'))),
         );
       }
     }
@@ -631,7 +632,7 @@ class _BudgetCard extends ConsumerWidget {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              category?.name ?? 'Unknown',
+                              category?.name ?? l10n.unknown,
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -639,8 +640,8 @@ class _BudgetCard extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      loading: () => const Text('...'),
-                      error: (_, __) => const Text('Unknown'),
+                      loading: () => Text(l10n.loading),
+                      error: (_, __) => Text(l10n.unknown),
                     ),
                   ),
                   Text(
@@ -678,7 +679,7 @@ class _BudgetCard extends ConsumerWidget {
               categoryAsync.when(
                 data: (category) => BudgetProgress(
                   budget: budget,
-                  categoryName: category?.name ?? 'Unknown',
+                  categoryName: category?.name ?? l10n.unknown,
                   currency: 'VND',
                 ),
                 loading: () => const SizedBox(
@@ -687,7 +688,7 @@ class _BudgetCard extends ConsumerWidget {
                 ),
                 error: (_, __) => BudgetProgress(
                   budget: budget,
-                  categoryName: 'Unknown',
+                  categoryName: l10n.unknown,
                   currency: 'VND',
                 ),
               ),
@@ -726,10 +727,11 @@ class _BudgetCard extends ConsumerWidget {
   }
 
   void _showBudgetTransactions(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final categoryAsync = ref.read(categoryProvider(budget.categoryId));
     final categoryName = categoryAsync.maybeWhen(
-      data: (category) => category?.name ?? 'Unknown',
-      orElse: () => 'Unknown',
+      data: (category) => category?.name ?? l10n.unknown,
+      orElse: () => l10n.unknown,
     );
 
     Navigator.push(
@@ -984,7 +986,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  _formatDate(date),
+                                  _formatDate(context, date),
                                   style: const TextStyle(fontWeight: FontWeight.w600),
                                 ),
                                 Container(
@@ -1054,7 +1056,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) => Center(child: Text('${l10n.error}: $err')),
+              error: (err, _) => Center(child: Text(l10n.errorWithMessage('$err'))),
             ),
           ),
         ],
@@ -1062,9 +1064,12 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
-    final weekdayNames = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
-    final weekday = weekdayNames[date.weekday % 7];
-    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year} - $weekday';
+  String _formatDate(BuildContext context, DateTime date) {
+    final l10n = AppLocalizations.of(context)!;
+    final formattedDate = DateFormat(
+      'dd/MM/yyyy - EEEE',
+      l10n.localeName,
+    ).format(date);
+    return formattedDate;
   }
 }

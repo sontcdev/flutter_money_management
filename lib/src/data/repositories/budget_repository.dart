@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../models/budget.dart' as model;
 import '../../services/budget_service.dart';
+import 'supabase_error_mapper.dart';
 
 class BudgetRepository {
   final SupabaseClient _supabase;
@@ -72,8 +73,8 @@ class BudgetRepository {
   ) async {
     final budgets = await getBudgetsByCategory(categoryId);
     for (final budget in budgets) {
-      final isWithinPeriod = !date.isBefore(budget.periodStart) &&
-          !date.isAfter(budget.periodEnd);
+      final isWithinPeriod =
+          !date.isBefore(budget.periodStart) && !date.isAfter(budget.periodEnd);
       if (isWithinPeriod) {
         return budget;
       }
@@ -83,7 +84,7 @@ class BudgetRepository {
 
   Future<model.Budget> createBudget(model.Budget budget) async {
     final workspaceId = _requireWorkspaceId();
-    final userId = _requireUserId();
+    _requireUserId();
     await _validateBudgetPeriod(
       categoryId: budget.categoryId,
       start: budget.periodStart,
@@ -91,28 +92,29 @@ class BudgetRepository {
     );
 
     final id = budget.id.isEmpty ? _uuid.v4() : budget.id;
-    await _supabase.from('budgets').insert({
-      'id': id,
-      'workspace_id': workspaceId,
-      'category_id': budget.categoryId,
-      'period_type': budget.periodType.name,
-      'period_start': budget.periodStart.toIso8601String(),
-      'period_end': budget.periodEnd.toIso8601String(),
-      'limit_minor': budget.limitCents,
-      'currency_code': 'VND',
-      'allow_overdraft': budget.allowOverdraft,
-      'created_by_user_id': userId,
-      'updated_by_user_id': userId,
-      'created_at': budget.createdAt.toIso8601String(),
-      'updated_at': budget.updatedAt.toIso8601String(),
-    });
-
-    return getBudgetById(id);
+    try {
+      final response = await _supabase.rpc('create_budget_rpc', params: {
+        'p_workspace_id': workspaceId,
+        'p_category_id': budget.categoryId,
+        'p_period_type': budget.periodType.name,
+        'p_period_start': budget.periodStart.toIso8601String(),
+        'p_period_end': budget.periodEnd.toIso8601String(),
+        'p_limit_minor': budget.limitCents,
+        'p_currency_code': 'VND',
+        'p_allow_overdraft': budget.allowOverdraft,
+        'p_id': id,
+        'p_created_at': budget.createdAt.toIso8601String(),
+        'p_updated_at': budget.updatedAt.toIso8601String(),
+      });
+      return _mapBudget((response as Map<String, dynamic>));
+    } on PostgrestException catch (e) {
+      throw mapSupabaseException(e);
+    }
   }
 
   Future<void> updateBudget(model.Budget budget) async {
     final workspaceId = _requireWorkspaceId();
-    final userId = _requireUserId();
+    _requireUserId();
     await _validateBudgetPeriod(
       categoryId: budget.categoryId,
       start: budget.periodStart,
@@ -120,26 +122,35 @@ class BudgetRepository {
       excludeId: budget.id,
     );
 
-    await _supabase.from('budgets').update({
-      'category_id': budget.categoryId,
-      'period_type': budget.periodType.name,
-      'period_start': budget.periodStart.toIso8601String(),
-      'period_end': budget.periodEnd.toIso8601String(),
-      'limit_minor': budget.limitCents,
-      'allow_overdraft': budget.allowOverdraft,
-      'updated_by_user_id': userId,
-      'updated_at': budget.updatedAt.toIso8601String(),
-    }).eq('workspace_id', workspaceId).eq('id', budget.id);
+    try {
+      await _supabase.rpc('update_budget_rpc', params: {
+        'p_budget_id': budget.id,
+        'p_workspace_id': workspaceId,
+        'p_category_id': budget.categoryId,
+        'p_period_type': budget.periodType.name,
+        'p_period_start': budget.periodStart.toIso8601String(),
+        'p_period_end': budget.periodEnd.toIso8601String(),
+        'p_limit_minor': budget.limitCents,
+        'p_currency_code': 'VND',
+        'p_allow_overdraft': budget.allowOverdraft,
+        'p_updated_at': budget.updatedAt.toIso8601String(),
+      });
+    } on PostgrestException catch (e) {
+      throw mapSupabaseException(e);
+    }
   }
 
   Future<void> deleteBudget(String id) async {
     final workspaceId = _requireWorkspaceId();
-    final userId = _requireUserId();
-    await _supabase.from('budgets').update({
-      'deleted_at': DateTime.now().toIso8601String(),
-      'deleted_by_user_id': userId,
-      'updated_by_user_id': userId,
-    }).eq('workspace_id', workspaceId).eq('id', id);
+    _requireUserId();
+    try {
+      await _supabase.rpc('soft_delete_budget_rpc', params: {
+        'p_budget_id': id,
+        'p_workspace_id': workspaceId,
+      });
+    } on PostgrestException catch (e) {
+      throw mapSupabaseException(e);
+    }
   }
 
   Future<void> recalculateConsumed(String budgetId) async {
@@ -157,7 +168,8 @@ class BudgetRepository {
       if (excludeId != null && budget.id == excludeId) {
         return false;
       }
-      return !end.isBefore(budget.periodStart) && !start.isAfter(budget.periodEnd);
+      return !end.isBefore(budget.periodStart) &&
+          !start.isAfter(budget.periodEnd);
     });
 
     if (hasOverlap) {

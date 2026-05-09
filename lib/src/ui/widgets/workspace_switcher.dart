@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../providers/workspace_providers.dart';
 
 /// Widget to display current workspace and allow switching
@@ -10,6 +11,7 @@ class WorkspaceSwitcher extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final activeWorkspace = ref.watch(activeWorkspaceProvider);
     final workspacesAsync = ref.watch(workspaceListProvider);
 
@@ -20,7 +22,7 @@ class WorkspaceSwitcher extends ConsumerWidget {
         }
 
         return PopupMenuButton<String>(
-          tooltip: 'Switch workspace',
+          tooltip: l10n.switchWorkspace,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
@@ -33,10 +35,10 @@ class WorkspaceSwitcher extends ConsumerWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  activeWorkspace?.name ?? 'Select Workspace',
+                  activeWorkspace?.name ?? l10n.selectWorkspace,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                        fontWeight: FontWeight.w600,
+                      ),
                 ),
                 const SizedBox(width: 4),
                 const Icon(Icons.arrow_drop_down, size: 20),
@@ -54,9 +56,9 @@ class WorkspaceSwitcher extends ConsumerWidget {
                     Icon(
                       isActive ? Icons.check_circle : Icons.circle_outlined,
                       size: 20,
-                      color: isActive 
-                        ? Theme.of(context).colorScheme.primary 
-                        : Colors.grey,
+                      color: isActive
+                          ? Theme.of(context).colorScheme.primary
+                          : Colors.grey,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -66,14 +68,17 @@ class WorkspaceSwitcher extends ConsumerWidget {
                           Text(
                             workspace.name,
                             style: TextStyle(
-                              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                              fontWeight: isActive
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                             ),
                           ),
                           Text(
                             workspace.role,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.grey,
-                            ),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Colors.grey,
+                                    ),
                           ),
                         ],
                       ),
@@ -82,34 +87,37 @@ class WorkspaceSwitcher extends ConsumerWidget {
                 ),
               );
             }),
-            
+
             const PopupMenuDivider(),
-            
+
             // Manage workspaces
-            const PopupMenuItem<String>(
+            PopupMenuItem<String>(
               value: 'manage',
               child: Row(
                 children: [
-                  Icon(Icons.settings, size: 20),
-                  SizedBox(width: 12),
-                  Text('Manage Workspaces'),
+                  const Icon(Icons.settings, size: 20),
+                  const SizedBox(width: 12),
+                  Text(l10n.manageWorkspaces),
                 ],
               ),
             ),
           ],
           onSelected: (value) {
             if (value == 'manage') {
-              Navigator.of(context).pushNamed('/workspace-selection');
+              Navigator.of(context).pushNamed('/workspace-management');
             } else {
               // Switch to selected workspace
               ref.read(activeWorkspaceIdProvider.notifier).state = value;
-              
+
               // Refresh data after switching
               ref.invalidate(workspaceListProvider);
-              
+
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Switched to ${workspaces.firstWhere((w) => w.id == value).name}'),
+                  content: Text(
+                      l10n.switchedWorkspace(
+                        workspaces.firstWhere((w) => w.id == value).name,
+                      )),
                   duration: const Duration(seconds: 2),
                   behavior: SnackBarBehavior.floating,
                 ),

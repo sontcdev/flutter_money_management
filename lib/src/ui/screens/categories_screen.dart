@@ -173,7 +173,7 @@ class CategoriesScreen extends HookConsumerWidget {
                 itemCount: 5,
                 itemBuilder: (context, index) => const ShimmerListItem(),
               ),
-              error: (error, stack) => Center(child: Text('Error: $error')),
+              error: (error, stack) => Center(child: Text(l10n.errorWithMessage('$error'))),
             ),
           ),
         ],

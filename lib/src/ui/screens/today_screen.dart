@@ -80,7 +80,7 @@ class TodayScreen extends ConsumerWidget {
           error: (error, _) => Center(
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.screenPadding),
-              child: Text('${l10n.error}: $error'),
+              child: Text(l10n.errorWithMessage('$error')),
             ),
           ),
         ),

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../../../l10n/app_localizations.dart';
 
 class PieChartWidget extends StatelessWidget {
   final List<ChartData> data;
@@ -16,8 +17,8 @@ class PieChartWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (data.isEmpty) {
-      return const Center(
-        child: Text('No data available'),
+      return Center(
+        child: Text(AppLocalizations.of(context)!.noData),
       );
     }
 
@@ -59,8 +60,8 @@ class BarChartWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (data.isEmpty) {
-      return const Center(
-        child: Text('No data available'),
+      return Center(
+        child: Text(AppLocalizations.of(context)!.noData),
       );
     }
 
@@ -145,4 +146,3 @@ class ChartData {
   })  : percentage = percentage ?? value,
         color = color ?? Colors.blue;
 }
-

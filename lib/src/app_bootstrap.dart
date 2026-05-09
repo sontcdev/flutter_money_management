@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
 import 'utils/app_logger.dart';
+import 'utils/supabase_logging_http_client.dart';
 import 'providers/providers.dart';
 import 'i18n/locale_provider.dart';
 import 'i18n/theme_provider.dart';
@@ -39,6 +40,7 @@ class _AppBootstrapState extends State<AppBootstrap> {
         await Supabase.initialize(
           url: SupabaseConfig.supabaseUrl,
           anonKey: SupabaseConfig.supabaseAnonKey,
+          httpClient: SupabaseLoggingHttpClient(),
           authOptions: const FlutterAuthClientOptions(
             authFlowType: AuthFlowType.pkce,
           ),

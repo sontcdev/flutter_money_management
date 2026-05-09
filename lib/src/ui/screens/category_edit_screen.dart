@@ -51,7 +51,7 @@ class CategoryEditScreen extends HookConsumerWidget {
     Future<void> save() async {
       if (nameController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${l10n.error}: ${l10n.categoryName} ${l10n.noData}')),
+          SnackBar(content: Text(l10n.categoryNameRequiredError)),
         );
         return;
       }
@@ -85,7 +85,7 @@ class CategoryEditScreen extends HookConsumerWidget {
       } catch (e) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${l10n.error}: $e')),
+            SnackBar(content: Text(l10n.errorWithMessage('$e'))),
           );
         }
       } finally {

@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
+import 'app_localizations_ja.dart';
 import 'app_localizations_vi.dart';
 
 // ignore_for_file: type=lint
@@ -92,6 +93,7 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
+    Locale('ja'),
     Locale('vi')
   ];
 
@@ -1685,6 +1687,798 @@ abstract class AppLocalizations {
   /// **'Cannot share file'**
   String get shareError;
 
+  /// No description provided for @appearanceSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get appearanceSection;
+
+  /// No description provided for @accountSection.
+  ///
+  /// In en, this message translates to:
+  /// **'My Account'**
+  String get accountSection;
+
+  /// No description provided for @languageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// No description provided for @languageJapanese.
+  ///
+  /// In en, this message translates to:
+  /// **'Japanese'**
+  String get languageJapanese;
+
+  /// No description provided for @languageVietnamese.
+  ///
+  /// In en, this message translates to:
+  /// **'Vietnamese'**
+  String get languageVietnamese;
+
+  /// No description provided for @activeWorkspace.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Workspace'**
+  String get activeWorkspace;
+
+  /// No description provided for @notAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Not available'**
+  String get notAvailable;
+
+  /// No description provided for @logoutDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out and return to login'**
+  String get logoutDesc;
+
+  /// No description provided for @allowOverdraftDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget exceeded - proceed'**
+  String get allowOverdraftDesc;
+
+  /// No description provided for @signIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign In'**
+  String get signIn;
+
+  /// No description provided for @signInDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to sync your data'**
+  String get signInDesc;
+
+  /// No description provided for @signOutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign Out'**
+  String get signOutTitle;
+
+  /// No description provided for @signOutConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to sign out?\n\nYour local data will be kept and synced when you sign in again.'**
+  String get signOutConfirm;
+
+  /// No description provided for @signOutFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to sign out: {error}'**
+  String signOutFailed(Object error);
+
+  /// No description provided for @switchWorkspace.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch workspace'**
+  String get switchWorkspace;
+
+  /// No description provided for @selectWorkspace.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Workspace'**
+  String get selectWorkspace;
+
+  /// No description provided for @manageWorkspaces.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Workspaces'**
+  String get manageWorkspaces;
+
+  /// No description provided for @switchedWorkspace.
+  ///
+  /// In en, this message translates to:
+  /// **'Switched to {name}'**
+  String switchedWorkspace(Object name);
+
+  /// No description provided for @joinByInviteCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Join by invite code'**
+  String get joinByInviteCode;
+
+  /// No description provided for @workspaceSetupIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Workspace setup is incomplete'**
+  String get workspaceSetupIncomplete;
+
+  /// No description provided for @workspaceSetupIncompleteDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'No workspace was created for this account.\n\nThis usually means the Supabase auth trigger `on_auth_user_created` is missing or misconfigured.\n\nPlease contact the administrator and ask them to verify:\n- trigger `on_auth_user_created`\n- function `public.handle_new_user()`\n- rows were created in `profiles`, `workspaces`, and `workspace_members`'**
+  String get workspaceSetupIncompleteDesc;
+
+  /// No description provided for @ownerRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner'**
+  String get ownerRole;
+
+  /// No description provided for @roleValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Role: {role}'**
+  String roleValue(Object role);
+
+  /// No description provided for @joinWorkspace.
+  ///
+  /// In en, this message translates to:
+  /// **'Join workspace'**
+  String get joinWorkspace;
+
+  /// No description provided for @inviteCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite code'**
+  String get inviteCode;
+
+  /// No description provided for @pasteWorkspaceInviteCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste workspace invite code'**
+  String get pasteWorkspaceInviteCode;
+
+  /// No description provided for @join.
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get join;
+
+  /// No description provided for @joinedWorkspaceSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined workspace successfully'**
+  String get joinedWorkspaceSuccessfully;
+
+  /// No description provided for @errorLoadingWorkspaces.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading workspaces: {error}'**
+  String errorLoadingWorkspaces(Object error);
+
+  /// No description provided for @workspaceManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Workspace Management'**
+  String get workspaceManagement;
+
+  /// No description provided for @workspaceInviteAlreadyMember.
+  ///
+  /// In en, this message translates to:
+  /// **'This email is already a workspace member'**
+  String get workspaceInviteAlreadyMember;
+
+  /// No description provided for @workspaceInviteInvalidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email format is invalid'**
+  String get workspaceInviteInvalidEmail;
+
+  /// No description provided for @workspaceInviteAlreadyPending.
+  ///
+  /// In en, this message translates to:
+  /// **'A pending invite already exists for this email'**
+  String get workspaceInviteAlreadyPending;
+
+  /// No description provided for @inviteCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite created'**
+  String get inviteCreated;
+
+  /// No description provided for @shareInviteCodeWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this invite code with {email}:'**
+  String shareInviteCodeWith(Object email);
+
+  /// No description provided for @inviteRefreshed.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite refreshed'**
+  String get inviteRefreshed;
+
+  /// No description provided for @shareNewInviteCodeWith.
+  ///
+  /// In en, this message translates to:
+  /// **'Share this new invite code with {email}:'**
+  String shareNewInviteCodeWith(Object email);
+
+  /// No description provided for @noActiveWorkspaceSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'No active workspace selected'**
+  String get noActiveWorkspaceSelected;
+
+  /// No description provided for @workspaceOwnerDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'You are the owner of this workspace.'**
+  String get workspaceOwnerDescription;
+
+  /// No description provided for @inviteMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite member'**
+  String get inviteMember;
+
+  /// No description provided for @inviteMemberDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Create an invite code for a member email. The code stays valid for 7 days.'**
+  String get inviteMemberDesc;
+
+  /// No description provided for @memberEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Member email'**
+  String get memberEmail;
+
+  /// No description provided for @emailExample.
+  ///
+  /// In en, this message translates to:
+  /// **'name@example.com'**
+  String get emailExample;
+
+  /// No description provided for @refreshInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh invite'**
+  String get refreshInvite;
+
+  /// No description provided for @createInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'Create invite'**
+  String get createInvite;
+
+  /// No description provided for @membersSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Members'**
+  String get membersSection;
+
+  /// No description provided for @noMembersFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No members found'**
+  String get noMembersFound;
+
+  /// No description provided for @youLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get youLabel;
+
+  /// No description provided for @failedToLoadMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load members: {error}'**
+  String failedToLoadMembers(Object error);
+
+  /// No description provided for @removeMember.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove member'**
+  String get removeMember;
+
+  /// No description provided for @removeMemberConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name} from this workspace?'**
+  String removeMemberConfirm(Object name);
+
+  /// No description provided for @memberRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} removed'**
+  String memberRemoved(Object name);
+
+  /// No description provided for @memberOwnerYouLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} (owner, you)'**
+  String memberOwnerYouLabel(Object name);
+
+  /// No description provided for @memberYouLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} (you)'**
+  String memberYouLabel(Object name);
+
+  /// No description provided for @memberOwnerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} (owner)'**
+  String memberOwnerLabel(Object name);
+
+  /// No description provided for @joinTimeUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Join time unavailable'**
+  String get joinTimeUnavailable;
+
+  /// No description provided for @joinedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Joined {dateTime}'**
+  String joinedAt(Object dateTime);
+
+  /// No description provided for @userIdValue.
+  ///
+  /// In en, this message translates to:
+  /// **'User ID: {id}'**
+  String userIdValue(Object id);
+
+  /// No description provided for @statusValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Status: {status}'**
+  String statusValue(Object status);
+
+  /// No description provided for @userShortLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'User {id}'**
+  String userShortLabel(Object id);
+
+  /// No description provided for @pendingInvites.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending invites'**
+  String get pendingInvites;
+
+  /// No description provided for @noPendingInvites.
+  ///
+  /// In en, this message translates to:
+  /// **'No pending invites'**
+  String get noPendingInvites;
+
+  /// No description provided for @inviteCodeCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite code copied'**
+  String get inviteCodeCopied;
+
+  /// No description provided for @inviteRevoked.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite revoked'**
+  String get inviteRevoked;
+
+  /// No description provided for @failedToLoadInvites.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load invites: {error}'**
+  String failedToLoadInvites(Object error);
+
+  /// No description provided for @status.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get status;
+
+  /// No description provided for @invitedUserJoinHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The invited user can open Workspace Selection and choose Join by invite code.'**
+  String get invitedUserJoinHint;
+
+  /// No description provided for @copyCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy code'**
+  String get copyCode;
+
+  /// No description provided for @revoke.
+  ///
+  /// In en, this message translates to:
+  /// **'Revoke'**
+  String get revoke;
+
+  /// No description provided for @expiredToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired today'**
+  String get expiredToday;
+
+  /// No description provided for @expiredOneDayAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired 1 day ago'**
+  String get expiredOneDayAgo;
+
+  /// No description provided for @expiredDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired {days} days ago'**
+  String expiredDaysAgo(Object days);
+
+  /// No description provided for @expiresToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires today'**
+  String get expiresToday;
+
+  /// No description provided for @expiresInOneDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires in 1 day'**
+  String get expiresInOneDay;
+
+  /// No description provided for @expiresInDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires in {days} days'**
+  String expiresInDays(Object days);
+
+  /// No description provided for @expiredStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get expiredStatus;
+
+  /// No description provided for @urgentStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Urgent'**
+  String get urgentStatus;
+
+  /// No description provided for @expiringSoonStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Expiring soon'**
+  String get expiringSoonStatus;
+
+  /// No description provided for @activeStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get activeStatus;
+
+  /// No description provided for @failedToLoadWorkspaces.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load workspaces: {error}'**
+  String failedToLoadWorkspaces(Object error);
+
+  /// No description provided for @enterEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your email'**
+  String get enterEmail;
+
+  /// No description provided for @enterValidEmailAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email address'**
+  String get enterValidEmailAddress;
+
+  /// No description provided for @enterPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your password'**
+  String get enterPassword;
+
+  /// No description provided for @passwordMinLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 6 characters'**
+  String get passwordMinLength;
+
+  /// No description provided for @enterEmailResetPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your email to reset password'**
+  String get enterEmailResetPassword;
+
+  /// No description provided for @passwordResetEmailSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset email sent! Check your inbox.'**
+  String get passwordResetEmailSent;
+
+  /// No description provided for @failedToSendResetEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send reset email. Please try again.'**
+  String get failedToSendResetEmail;
+
+  /// No description provided for @signInToSyncAcrossDevices.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to sync your data across devices'**
+  String get signInToSyncAcrossDevices;
+
+  /// No description provided for @enterYourPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your password'**
+  String get enterYourPassword;
+
+  /// No description provided for @forgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot Password?'**
+  String get forgotPassword;
+
+  /// No description provided for @or.
+  ///
+  /// In en, this message translates to:
+  /// **'OR'**
+  String get or;
+
+  /// No description provided for @createNewAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create New Account'**
+  String get createNewAccount;
+
+  /// No description provided for @invalidEmailOrPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email or password'**
+  String get invalidEmailOrPassword;
+
+  /// No description provided for @verifyEmailBeforeSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Please verify your email before signing in'**
+  String get verifyEmailBeforeSignIn;
+
+  /// No description provided for @networkErrorCheckConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Network error. Please check your connection'**
+  String get networkErrorCheckConnection;
+
+  /// No description provided for @tooManyAttempts.
+  ///
+  /// In en, this message translates to:
+  /// **'Too many attempts. Please try again later'**
+  String get tooManyAttempts;
+
+  /// No description provided for @signInFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in failed. Please try again'**
+  String get signInFailed;
+
+  /// No description provided for @enterValidEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid email'**
+  String get enterValidEmail;
+
+  /// No description provided for @passwordsDoNotMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get passwordsDoNotMatch;
+
+  /// No description provided for @accountCreatedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Created!'**
+  String get accountCreatedTitle;
+
+  /// No description provided for @accountCreatedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account has been created successfully.\n\nPlease check your email and click the verification link to activate your account.\n\nAfter verification, you can sign in to start using the app.'**
+  String get accountCreatedMessage;
+
+  /// No description provided for @goToSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Sign In'**
+  String get goToSignIn;
+
+  /// No description provided for @createAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Account'**
+  String get createAccount;
+
+  /// No description provided for @createAccountToSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your account to sync across devices'**
+  String get createAccountToSync;
+
+  /// No description provided for @verifyEmailBeforeSignInHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You will need to verify your email before signing in'**
+  String get verifyEmailBeforeSignInHint;
+
+  /// No description provided for @displayNameOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Display Name (Optional)'**
+  String get displayNameOptional;
+
+  /// No description provided for @displayNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'How should we call you?'**
+  String get displayNameHint;
+
+  /// No description provided for @atLeastSixCharacters.
+  ///
+  /// In en, this message translates to:
+  /// **'At least 6 characters'**
+  String get atLeastSixCharacters;
+
+  /// No description provided for @confirmPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Password'**
+  String get confirmPassword;
+
+  /// No description provided for @reenterYourPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-enter your password'**
+  String get reenterYourPassword;
+
+  /// No description provided for @alreadyHaveAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account?'**
+  String get alreadyHaveAccount;
+
+  /// No description provided for @emailAlreadyRegistered.
+  ///
+  /// In en, this message translates to:
+  /// **'This email is already registered'**
+  String get emailAlreadyRegistered;
+
+  /// No description provided for @weakPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password is too weak. Please use a stronger password'**
+  String get weakPassword;
+
+  /// No description provided for @genericTryAgainError.
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred. Please try again'**
+  String get genericTryAgainError;
+
+  /// No description provided for @transactionSavedReceiptUploadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction saved, but receipt upload failed.'**
+  String get transactionSavedReceiptUploadFailed;
+
+  /// No description provided for @transactionSavedReceiptUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction saved, but receipt update failed.'**
+  String get transactionSavedReceiptUpdateFailed;
+
+  /// No description provided for @errorWithMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String errorWithMessage(Object error);
+
+  /// No description provided for @yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
+  /// No description provided for @optional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get optional;
+
+  /// No description provided for @receiptWillBeRemovedOnSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt will be removed when you save.'**
+  String get receiptWillBeRemovedOnSave;
+
+  /// No description provided for @onlyCreatorCanChangeReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the transaction creator can change the receipt.'**
+  String get onlyCreatorCanChangeReceipt;
+
+  /// No description provided for @confirmDeleteTransaction.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this transaction?'**
+  String get confirmDeleteTransaction;
+
+  /// No description provided for @unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get unknown;
+
+  /// No description provided for @noTransactionsThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions this month'**
+  String get noTransactionsThisMonth;
+
+  /// No description provided for @noTransactionsNearestDate.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions. Showing nearest date: {date}'**
+  String noTransactionsNearestDate(Object date);
+
+  /// No description provided for @errorLoadingCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading categories: {error}'**
+  String errorLoadingCategories(Object error);
+
+  /// No description provided for @errorLoadingTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading transactions: {error}'**
+  String errorLoadingTransactions(Object error);
+
+  /// No description provided for @amountRequiredError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter amount'**
+  String get amountRequiredError;
+
+  /// No description provided for @limitRequiredError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter limit'**
+  String get limitRequiredError;
+
+  /// No description provided for @selectCategoryError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select category'**
+  String get selectCategoryError;
+
+  /// No description provided for @categoryNameRequiredError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter category name'**
+  String get categoryNameRequiredError;
+
+  /// No description provided for @routeNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No route defined for {route}'**
+  String routeNotFound(Object route);
+
   /// No description provided for @dashboard.
   ///
   /// In en, this message translates to:
@@ -1797,7 +2591,7 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'vi'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'ja', 'vi'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -1809,6 +2603,7 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
     case 'en': return AppLocalizationsEn();
+    case 'ja': return AppLocalizationsJa();
     case 'vi': return AppLocalizationsVi();
   }
 

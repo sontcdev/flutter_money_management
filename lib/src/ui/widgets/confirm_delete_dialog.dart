@@ -1,6 +1,7 @@
 // path: lib/src/ui/widgets/confirm_delete_dialog.dart
 
 import 'package:flutter/material.dart';
+import '../../../l10n/app_localizations.dart';
 
 class ConfirmDeleteDialog extends StatelessWidget {
   final String? title;
@@ -14,9 +15,10 @@ class ConfirmDeleteDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
-      title: Text(title ?? 'Xác nhận xóa'),
-      content: Text(message ?? 'Bạn có chắc chắn muốn xóa giao dịch này?'),
+      title: Text(title ?? l10n.confirmDelete),
+      content: Text(message ?? l10n.confirmDeleteTransaction),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -24,7 +26,7 @@ class ConfirmDeleteDialog extends StatelessWidget {
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
           child: Text(
-            'Hủy',
+            l10n.cancel,
             style: TextStyle(color: Colors.grey[600]),
           ),
         ),
@@ -33,10 +35,9 @@ class ConfirmDeleteDialog extends StatelessWidget {
           style: TextButton.styleFrom(
             foregroundColor: Colors.red,
           ),
-          child: const Text('Xóa'),
+          child: Text(l10n.delete),
         ),
       ],
     );
   }
 }
-

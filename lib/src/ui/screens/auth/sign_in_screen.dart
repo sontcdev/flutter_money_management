@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../../../l10n/app_localizations.dart';
 import '../../../providers/providers.dart';
 import '../../../providers/auth_providers.dart';
 import '../../../providers/workspace_providers.dart';
@@ -14,6 +15,7 @@ class SignInScreen extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final emailController = useTextEditingController();
     final passwordController = useTextEditingController();
     final emailPersistence = ref.read(emailPersistenceServiceProvider);
@@ -70,7 +72,7 @@ class SignInScreen extends HookConsumerWidget {
           error: e,
           stackTrace: stackTrace,
         );
-        errorMessage.value = 'Failed to load workspaces: $e';
+        errorMessage.value = l10n.failedToLoadWorkspaces('$e');
       }
     }
 
@@ -80,22 +82,22 @@ class SignInScreen extends HookConsumerWidget {
 
       // Validation
       if (email.isEmpty) {
-        errorMessage.value = 'Please enter your email';
+        errorMessage.value = l10n.enterEmail;
         return;
       }
 
       if (!_isValidEmail(email)) {
-        errorMessage.value = 'Please enter a valid email address';
+        errorMessage.value = l10n.enterValidEmailAddress;
         return;
       }
 
       if (password.isEmpty) {
-        errorMessage.value = 'Please enter your password';
+        errorMessage.value = l10n.enterPassword;
         return;
       }
 
       if (password.length < 6) {
-        errorMessage.value = 'Password must be at least 6 characters';
+        errorMessage.value = l10n.passwordMinLength;
         return;
       }
 
@@ -124,7 +126,7 @@ class SignInScreen extends HookConsumerWidget {
           error: e,
           stackTrace: stackTrace,
         );
-        errorMessage.value = _getErrorMessage(e.toString());
+        errorMessage.value = _getErrorMessage(l10n, e.toString());
       } finally {
         isLoading.value = false;
       }
@@ -132,7 +134,7 @@ class SignInScreen extends HookConsumerWidget {
 
     Future<void> handleForgotPassword() async {
       if (emailController.text.trim().isEmpty) {
-        errorMessage.value = 'Please enter your email to reset password';
+        errorMessage.value = l10n.enterEmailResetPassword;
         return;
       }
 
@@ -146,8 +148,8 @@ class SignInScreen extends HookConsumerWidget {
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Password reset email sent! Check your inbox.'),
+            SnackBar(
+              content: Text(l10n.passwordResetEmailSent),
               backgroundColor: Colors.green,
             ),
           );
@@ -159,7 +161,7 @@ class SignInScreen extends HookConsumerWidget {
           error: e,
           stackTrace: stackTrace,
         );
-        errorMessage.value = 'Failed to send reset email. Please try again.';
+        errorMessage.value = l10n.failedToSendResetEmail;
       } finally {
         isLoading.value = false;
       }
@@ -167,7 +169,7 @@ class SignInScreen extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sign In'),
+        title: Text(l10n.signIn),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -189,7 +191,7 @@ class SignInScreen extends HookConsumerWidget {
               const SizedBox(height: 16),
               
               Text(
-                'Money Wise',
+                l10n.appTitle,
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -199,7 +201,7 @@ class SignInScreen extends HookConsumerWidget {
               const SizedBox(height: 8),
               
               Text(
-                'Sign in to sync your data across devices',
+                l10n.signInToSyncAcrossDevices,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.grey[600],
                 ),
@@ -215,8 +217,8 @@ class SignInScreen extends HookConsumerWidget {
                   return TextField(
                     controller: emailController,
                     decoration: InputDecoration(
-                      labelText: 'Email',
-                      hintText: 'your@email.com',
+                      labelText: l10n.email,
+                      hintText: l10n.emailExample,
                       prefixIcon: const Icon(Icons.email_outlined),
                       border: const OutlineInputBorder(),
                       suffixIcon: value.text.isNotEmpty
@@ -242,8 +244,8 @@ class SignInScreen extends HookConsumerWidget {
               TextField(
                 controller: passwordController,
                 decoration: InputDecoration(
-                  labelText: 'Password',
-                  hintText: 'Enter your password',
+                  labelText: l10n.password,
+                  hintText: l10n.enterYourPassword,
                   prefixIcon: const Icon(Icons.lock_outline),
                   border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
@@ -270,7 +272,7 @@ class SignInScreen extends HookConsumerWidget {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: isLoading.value ? null : handleForgotPassword,
-                  child: const Text('Forgot Password?'),
+                  child: Text(l10n.forgotPassword),
                 ),
               ),
               
@@ -312,7 +314,7 @@ class SignInScreen extends HookConsumerWidget {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('Sign In'),
+                    : Text(l10n.signIn),
                 ),
               ),
               
@@ -325,7 +327,7 @@ class SignInScreen extends HookConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
-                      'OR',
+                      l10n.or,
                       style: TextStyle(color: Colors.grey[600]),
                     ),
                   ),
@@ -347,12 +349,12 @@ class SignInScreen extends HookConsumerWidget {
                       );
                     },
                 icon: const Icon(Icons.person_add_outlined, size: 16),
-                label: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 7),
-                  child: Text(
-                     'Create New Account',
-                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                  ),
+                label: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 7),
+                   child: Text(
+                     l10n.createNewAccount,
+                     style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                   ),
                 ),
                 style: OutlinedButton.styleFrom(
                   backgroundColor: Colors.white,
@@ -370,17 +372,17 @@ class SignInScreen extends HookConsumerWidget {
     );
   }
 
-  String _getErrorMessage(String error) {
+  String _getErrorMessage(AppLocalizations l10n, String error) {
     if (error.contains('Invalid login credentials')) {
-      return 'Invalid email or password';
+      return l10n.invalidEmailOrPassword;
     } else if (error.contains('Email not confirmed')) {
-      return 'Please verify your email before signing in';
+      return l10n.verifyEmailBeforeSignIn;
     } else if (error.contains('network')) {
-      return 'Network error. Please check your connection';
+      return l10n.networkErrorCheckConnection;
     } else if (error.contains('too many requests')) {
-      return 'Too many attempts. Please try again later';
+      return l10n.tooManyAttempts;
     }
-    return 'Sign in failed. Please try again';
+    return l10n.signInFailed;
   }
 
   bool _isValidEmail(String email) {
