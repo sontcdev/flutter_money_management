@@ -7,6 +7,7 @@ import 'package:flutter_money_management/src/features/auth/providers/auth_provid
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_management_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/models/workspace_management_models.dart';
+import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
 final _inviteEmailPattern = RegExp(
   r'^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$',
@@ -98,13 +99,23 @@ class WorkspaceManagementScreen extends HookConsumerWidget {
           title: l10n.inviteCreated,
           message: l10n.shareInviteCodeWith(invite.email),
         );
-      } catch (e) {
+      } catch (e, stackTrace) {
         if (!context.mounted) {
           return;
         }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_formatErrorMessage(e))),
+        await ErrorReportHelper.handleApiError(
+          context: context,
+          ref: ref,
+          error: e,
+          stackTrace: stackTrace,
+          feature: 'workspace',
+          action: 'create_invite',
+          screen: 'workspace_management_screen',
+          extraContext: {
+            'workspace_id': workspace.id,
+            'email_masked': ErrorReportHelper.maskEmail(email),
+          },
         );
       } finally {
         isSubmitting.value = false;
@@ -133,13 +144,22 @@ class WorkspaceManagementScreen extends HookConsumerWidget {
           title: l10n.inviteRefreshed,
           message: l10n.shareNewInviteCodeWith(refreshedInvite.email),
         );
-      } catch (e) {
+      } catch (e, stackTrace) {
         if (!context.mounted) {
           return;
         }
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_formatErrorMessage(e))),
+        await ErrorReportHelper.handleApiError(
+          context: context,
+          ref: ref,
+          error: e,
+          stackTrace: stackTrace,
+          feature: 'workspace',
+          action: 'refresh_invite',
+          screen: 'workspace_management_screen',
+          extraContext: {
+            'invite_id': invite.id,
+          },
         );
       } finally {
         isSubmitting.value = false;
@@ -390,10 +410,20 @@ class _MemberSection extends ConsumerWidget {
           ),
         );
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_formatErrorMessage(e))),
+        await ErrorReportHelper.handleApiError(
+          context: context,
+          ref: ref,
+          error: e,
+          stackTrace: stackTrace,
+          feature: 'workspace',
+          action: 'remove_member',
+          screen: 'workspace_management_screen',
+          extraContext: {
+            'workspace_id': workspaceId,
+            'member_user_id': member.userId,
+          },
         );
       }
     }
@@ -518,10 +548,19 @@ class _InviteSection extends ConsumerWidget {
                                 ),
                               );
                             }
-                          } catch (e) {
+                          } catch (e, stackTrace) {
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(_formatErrorMessage(e))),
+                              await ErrorReportHelper.handleApiError(
+                                context: context,
+                                ref: ref,
+                                error: e,
+                                stackTrace: stackTrace,
+                                feature: 'workspace',
+                                action: 'refresh_invite',
+                                screen: 'workspace_management_screen',
+                                extraContext: {
+                                  'invite_id': invite.id,
+                                },
                               );
                             }
                           }
@@ -538,10 +577,19 @@ class _InviteSection extends ConsumerWidget {
                               SnackBar(content: Text(l10n.inviteRevoked)),
                             );
                           }
-                        } catch (e) {
+                        } catch (e, stackTrace) {
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(_formatErrorMessage(e))),
+                            await ErrorReportHelper.handleApiError(
+                              context: context,
+                              ref: ref,
+                              error: e,
+                              stackTrace: stackTrace,
+                              feature: 'workspace',
+                              action: 'revoke_invite',
+                              screen: 'workspace_management_screen',
+                              extraContext: {
+                                'invite_id': invite.id,
+                              },
                             );
                           }
                         }

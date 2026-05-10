@@ -9,28 +9,46 @@ class WorkspaceManagementService {
   Future<List<WorkspaceMemberSummary>> getWorkspaceMembers(
     String workspaceId,
   ) async {
-    final response = await _supabase.rpc(
-      'get_workspace_members_with_profiles',
-      params: {'p_workspace_id': workspaceId},
-    );
+    try {
+      final response = await _supabase.rpc(
+        'get_workspace_members_with_profiles',
+        params: {'p_workspace_id': workspaceId},
+      );
 
-    return (response as List)
-        .cast<Map<String, dynamic>>()
-        .map(WorkspaceMemberSummary.fromMap)
-        .toList();
+      return (response as List)
+          .cast<Map<String, dynamic>>()
+          .map(WorkspaceMemberSummary.fromMap)
+          .toList();
+    } on PostgrestException catch (e) {
+      if (e.code == 'PGRST202') {
+        // Function not found in database - return empty list as fallback
+        print('Warning: get_workspace_members_with_profiles function not found in database');
+        return [];
+      }
+      rethrow;
+    }
   }
 
   Future<List<WorkspaceInviteSummary>> getPendingInvites(
       String workspaceId) async {
-    final response = await _supabase.rpc(
-      'get_workspace_pending_invites_with_profiles',
-      params: {'p_workspace_id': workspaceId},
-    );
+    try {
+      final response = await _supabase.rpc(
+        'get_workspace_pending_invites_with_profiles',
+        params: {'p_workspace_id': workspaceId},
+      );
 
-    return (response as List)
-        .cast<Map<String, dynamic>>()
-        .map(WorkspaceInviteSummary.fromMap)
-        .toList();
+      return (response as List)
+          .cast<Map<String, dynamic>>()
+          .map(WorkspaceInviteSummary.fromMap)
+          .toList();
+    } on PostgrestException catch (e) {
+      if (e.code == 'PGRST202') {
+        // Function not found in database - return empty list as fallback
+        print('Warning: get_workspace_pending_invites_with_profiles function not found in database');
+        return [];
+      }
+      rethrow;
+    }
   }
 
   Future<WorkspaceInviteSummary> createInvite({

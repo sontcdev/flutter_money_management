@@ -1,16 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
-import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
-import 'package:flutter_money_management/src/features/workspace/services/workspace_sync_helper.dart';
-import 'package:flutter_money_management/src/features/budgets/models/budget.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
-import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
+import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
 class TransactionManagementScreen extends HookConsumerWidget {
   const TransactionManagementScreen({super.key});
@@ -583,10 +579,20 @@ class TransactionManagementScreen extends HookConsumerWidget {
           SnackBar(content: Text(l10n.updateSuccess)),
         );
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.errorWithMessage('$e'))),
+        await ErrorReportHelper.handleApiError(
+          context: context,
+          ref: ref,
+          error: e,
+          stackTrace: stackTrace,
+          feature: 'transaction',
+          action: 'bulk_update_category',
+          screen: 'transaction_management_screen',
+          extraContext: {
+            'transaction_count': transactionIds.length,
+            'new_category_id': newCategoryId,
+          },
         );
       }
     }
@@ -644,10 +650,20 @@ class TransactionManagementScreen extends HookConsumerWidget {
           SnackBar(content: Text(l10n.updateSuccess)),
         );
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.errorWithMessage('$e'))),
+        await ErrorReportHelper.handleApiError(
+          context: context,
+          ref: ref,
+          error: e,
+          stackTrace: stackTrace,
+          feature: 'transaction',
+          action: 'bulk_update_date',
+          screen: 'transaction_management_screen',
+          extraContext: {
+            'transaction_count': transactionIds.length,
+            'new_date': newDate.toIso8601String(),
+          },
         );
       }
     }

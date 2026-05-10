@@ -4,6 +4,7 @@ import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/auth/providers/auth_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_management_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
+import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
 /// Screen to select or create a workspace after authentication
 class WorkspaceSelectionScreen extends ConsumerWidget {
@@ -266,13 +267,22 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
                 .joinedWorkspaceSuccessfully)),
       );
       Navigator.of(parentContext).pushReplacementNamed('/home');
-    } catch (e) {
+    } catch (e, stackTrace) {
       if (!dialogContext.mounted) {
         return;
       }
 
-      ScaffoldMessenger.of(dialogContext).showSnackBar(
-        SnackBar(content: Text(_formatInviteError(e))),
+      await ErrorReportHelper.handleApiError(
+        context: dialogContext,
+        ref: ref,
+        error: e,
+        stackTrace: stackTrace,
+        feature: 'workspace',
+        action: 'accept_invite',
+        screen: 'workspace_selection_screen',
+        extraContext: {
+          'token_length': token.length,
+        },
       );
     } finally {
       setSubmitting(false);

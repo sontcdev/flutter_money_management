@@ -8,6 +8,7 @@ import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
 import 'package:flutter_money_management/src/utils/category_icons.dart';
+import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
 class CategoryEditScreen extends HookConsumerWidget {
   final Category? category;
@@ -106,10 +107,21 @@ class CategoryEditScreen extends HookConsumerWidget {
             SnackBar(content: Text(l10n.success)),
           );
         }
-      } catch (e) {
+      } catch (e, stackTrace) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.errorWithMessage('$e'))),
+          await ErrorReportHelper.handleApiError(
+            context: context,
+            ref: ref,
+            error: e,
+            stackTrace: stackTrace,
+            feature: 'category',
+            action: category == null ? 'create_category' : 'update_category',
+            screen: 'category_edit_screen',
+            extraContext: {
+              if (category != null) 'category_id': category!.id,
+              'category_type': selectedType.value.toString(),
+              'icon_name': selectedIcon.value,
+            },
           );
         }
       } finally {
