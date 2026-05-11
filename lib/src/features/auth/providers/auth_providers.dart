@@ -17,6 +17,10 @@ final supabaseAuthServiceProvider = Provider<SupabaseAuthService>((ref) {
   return SupabaseAuthService(client);
 });
 
+/// Suppresses callback-specific UX during manual sign-in.
+final suppressAuthCallbackFeedbackProvider =
+    StateProvider<bool>((ref) => false);
+
 /// Auth state stream provider
 /// Emits auth state changes (signed in, signed out, etc.)
 final authStateProvider = StreamProvider<AuthState>((ref) {

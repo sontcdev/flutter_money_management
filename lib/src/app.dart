@@ -8,6 +8,7 @@ import 'app_router.dart';
 import 'theme/app_theme.dart';
 import 'i18n/locale_provider.dart';
 import 'i18n/theme_provider.dart';
+import 'ui/widgets/auth_callback_feedback_listener.dart';
 import 'utils/responsive.dart';
 
 class MoneyManagementApp extends ConsumerWidget {
@@ -60,7 +61,7 @@ class MoneyManagementApp extends ConsumerWidget {
           data: MediaQuery.of(context).copyWith(
             textScaler: TextScaler.linear(textScaleFactor),
           ),
-          child: child!,
+          child: AuthCallbackFeedbackListener(child: child!),
         );
       },
     );

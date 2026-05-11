@@ -59,7 +59,6 @@ High-signal guidance for working in `flutter_money_management`.
 
 ## iOS Build
 
-- Recommended local iOS build helper: `./ios_build_all.sh`
 - Manual builds:
   - Device: `flutter build ios --release --no-codesign`
   - Simulator: `flutter build ios --debug --simulator`

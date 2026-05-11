@@ -293,6 +293,21 @@
   "pasteWorkspaceInviteCode": "ワークスペースの招待コードを貼り付け",
   "join": "参加",
   "joinedWorkspaceSuccessfully": "ワークスペースに参加しました",
+  "workspaceInviteMessage": "{workspaceName} への招待があります",
+  "@workspaceInviteMessage": {
+    "placeholders": {
+      "workspaceName": {}
+    }
+  },
+  "workspaceInviteFrom": "招待者: {inviter}",
+  "@workspaceInviteFrom": {
+    "placeholders": {
+      "inviter": {}
+    }
+  },
+  "declineInvite": "辞退",
+  "inviteDeclined": "招待を辞退しました",
+  "noWorkspaceInviteNotifications": "現在、ワークスペース招待はありません",
   "errorLoadingWorkspaces": "ワークスペースの読み込みエラー: {error}",
   "workspaceManagement": "ワークスペース管理",
   "workspaceInviteAlreadyMember": "このメールはすでにワークスペースのメンバーです",
@@ -327,10 +342,35 @@
   "userShortLabel": "ユーザー {id}",
   "pendingInvites": "保留中の招待",
   "noPendingInvites": "保留中の招待はありません",
+  "declinedInvites": "辞退された招待",
+  "noDeclinedInvites": "辞退された招待はありません",
+  "revokedInvites": "取り消された招待",
+  "noRevokedInvites": "取り消された招待はありません",
   "inviteCodeCopied": "招待コードをコピーしました",
   "inviteRevoked": "招待を取り消しました",
   "failedToLoadInvites": "招待の読み込みに失敗しました: {error}",
   "status": "状態",
+  "declinedStatus": "辞退済み",
+  "declinedAt": "辞退日時: {dateTime}",
+  "@declinedAt": {
+    "placeholders": {
+      "dateTime": {}
+    }
+  },
+  "revokedStatus": "取り消し済み",
+  "revokedAt": "取り消し日時: {dateTime}",
+  "@revokedAt": {
+    "placeholders": {
+      "dateTime": {}
+    }
+  },
+  "filterInvitesByEmail": "メールで絞り込み",
+  "filterInvitesByEmailHint": "招待メールを検索",
+  "clearFilter": "絞り込みをクリア",
+  "sortInvites": "招待を並び替え",
+  "sortByNewest": "新しい順",
+  "sortByOldest": "古い順",
+  "sortByEmail": "メール A-Z",
   "invitedUserJoinHint": "招待されたユーザーはワークスペース選択を開き、招待コードで参加を選べます。",
   "copyCode": "コードをコピー",
   "revoke": "取り消す",
@@ -367,9 +407,16 @@
   "accountCreatedTitle": "アカウントを作成しました!",
   "accountCreatedMessage": "アカウントが正常に作成されました。\n\nメールを確認し、認証リンクをクリックしてアカウントを有効化してください。\n\n認証後、サインインしてアプリを使い始めることができます。",
   "goToSignIn": "サインインへ",
+  "emailVerifiedTitle": "メール認証が完了しました",
+  "emailVerifiedMessage": "メール認証が正常に完了しました。引き続きアプリをご利用いただけます。",
   "createAccount": "アカウントを作成",
   "createAccountToSync": "複数の端末で同期するためにアカウントを作成してください",
   "verifyEmailBeforeSignInHint": "サインインする前にメール認証が必要です",
+  "resetPasswordTitle": "パスワードを再設定",
+  "resetPasswordCallbackMessage": "パスワード再設定リンクは有効です。新しいパスワードを入力して回復を完了してください。",
+  "resetPasswordAction": "パスワードを更新",
+  "passwordResetCompleteTitle": "パスワードを更新しました",
+  "passwordResetCompleteMessage": "パスワードが正常に更新されました。",
   "displayNameOptional": "表示名 (任意)",
   "displayNameHint": "どのようにお呼びすればよいですか？",
   "atLeastSixCharacters": "6文字以上",

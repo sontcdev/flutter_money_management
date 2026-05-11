@@ -1855,6 +1855,36 @@ abstract class AppLocalizations {
   /// **'Joined workspace successfully'**
   String get joinedWorkspaceSuccessfully;
 
+  /// No description provided for @workspaceInviteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You were invited to {workspaceName}'**
+  String workspaceInviteMessage(Object workspaceName);
+
+  /// No description provided for @workspaceInviteFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Invited by {inviter}'**
+  String workspaceInviteFrom(Object inviter);
+
+  /// No description provided for @declineInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'Decline'**
+  String get declineInvite;
+
+  /// No description provided for @inviteDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite declined'**
+  String get inviteDeclined;
+
+  /// No description provided for @noWorkspaceInviteNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'No workspace invites right now'**
+  String get noWorkspaceInviteNotifications;
+
   /// No description provided for @errorLoadingWorkspaces.
   ///
   /// In en, this message translates to:
@@ -2059,6 +2089,30 @@ abstract class AppLocalizations {
   /// **'No pending invites'**
   String get noPendingInvites;
 
+  /// No description provided for @declinedInvites.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined invites'**
+  String get declinedInvites;
+
+  /// No description provided for @noDeclinedInvites.
+  ///
+  /// In en, this message translates to:
+  /// **'No declined invites'**
+  String get noDeclinedInvites;
+
+  /// No description provided for @revokedInvites.
+  ///
+  /// In en, this message translates to:
+  /// **'Revoked invites'**
+  String get revokedInvites;
+
+  /// No description provided for @noRevokedInvites.
+  ///
+  /// In en, this message translates to:
+  /// **'No revoked invites'**
+  String get noRevokedInvites;
+
   /// No description provided for @inviteCodeCopied.
   ///
   /// In en, this message translates to:
@@ -2082,6 +2136,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Status'**
   String get status;
+
+  /// No description provided for @declinedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined'**
+  String get declinedStatus;
+
+  /// No description provided for @declinedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Declined at {dateTime}'**
+  String declinedAt(Object dateTime);
+
+  /// No description provided for @revokedStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Revoked'**
+  String get revokedStatus;
+
+  /// No description provided for @revokedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Revoked at {dateTime}'**
+  String revokedAt(Object dateTime);
+
+  /// No description provided for @filterInvitesByEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter by email'**
+  String get filterInvitesByEmail;
+
+  /// No description provided for @filterInvitesByEmailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search invite email'**
+  String get filterInvitesByEmailHint;
+
+  /// No description provided for @clearFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear filter'**
+  String get clearFilter;
+
+  /// No description provided for @sortInvites.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort invites'**
+  String get sortInvites;
+
+  /// No description provided for @sortByNewest.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest first'**
+  String get sortByNewest;
+
+  /// No description provided for @sortByOldest.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest first'**
+  String get sortByOldest;
+
+  /// No description provided for @sortByEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email A-Z'**
+  String get sortByEmail;
 
   /// No description provided for @invitedUserJoinHint.
   ///
@@ -2299,6 +2419,18 @@ abstract class AppLocalizations {
   /// **'Go to Sign In'**
   String get goToSignIn;
 
+  /// No description provided for @emailVerifiedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verified'**
+  String get emailVerifiedTitle;
+
+  /// No description provided for @emailVerifiedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your email has been verified successfully. You can continue using the app now.'**
+  String get emailVerifiedMessage;
+
   /// No description provided for @createAccount.
   ///
   /// In en, this message translates to:
@@ -2316,6 +2448,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You will need to verify your email before signing in'**
   String get verifyEmailBeforeSignInHint;
+
+  /// No description provided for @resetPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset password'**
+  String get resetPasswordTitle;
+
+  /// No description provided for @resetPasswordCallbackMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your reset link is valid. Enter a new password to complete the recovery process.'**
+  String get resetPasswordCallbackMessage;
+
+  /// No description provided for @resetPasswordAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Update password'**
+  String get resetPasswordAction;
+
+  /// No description provided for @passwordResetCompleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Password updated'**
+  String get passwordResetCompleteTitle;
+
+  /// No description provided for @passwordResetCompleteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your password has been updated successfully.'**
+  String get passwordResetCompleteMessage;
 
   /// No description provided for @displayNameOptional.
   ///

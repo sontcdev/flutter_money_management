@@ -1,12 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/budgets/models/budget.dart';
+import 'package:flutter_money_management/src/features/budgets/presentation/widgets/budget_progress.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
+import 'package:flutter_money_management/src/features/settings/providers/settings_preferences_providers.dart';
+import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
+import 'package:flutter_money_management/src/features/workspace/services/workspace_sync_helper.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
-import 'package:flutter_money_management/src/ui/widgets/shimmer_list_item.dart';
+import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_metric_card.dart';
+import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
+import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
+import 'package:flutter_money_management/src/utils/cycle_utils.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
@@ -184,7 +194,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
         // Summary section
         SliverToBoxAdapter(
           child: Container(
-            padding: EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.all(AppSpacing.md),
             color: Theme.of(context)
                 .colorScheme
                 .surfaceContainerHighest
@@ -198,7 +208,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
                         fontWeight: FontWeight.w600,
                       ),
                 ),
-                SizedBox(height: AppSpacing.sm),
+                const SizedBox(height: AppSpacing.sm),
                 Row(
                   children: [
                     Expanded(
@@ -210,7 +220,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
                         icon: Icons.trending_up,
                       ),
                     ),
-                    SizedBox(width: AppSpacing.sm),
+                    const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: AppMetricCard(
                         label: l10n.remaining,
@@ -225,7 +235,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
                     ),
                   ],
                 ),
-                SizedBox(height: AppSpacing.sm),
+                const SizedBox(height: AppSpacing.sm),
                 Row(
                   children: [
                     Expanded(
@@ -236,7 +246,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
                         icon: Icons.check_circle_outline,
                       ),
                     ),
-                    SizedBox(width: AppSpacing.sm),
+                    const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: _StatusCard(
                         label: l10n.exceeded,
@@ -255,7 +265,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
         // Filter & Sort bar
         SliverToBoxAdapter(
           child: Container(
-            padding: EdgeInsets.symmetric(
+            padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.md,
               vertical: AppSpacing.sm,
             ),
@@ -273,7 +283,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
                           onTap: () =>
                               setState(() => _filter = BudgetFilter.all),
                         ),
-                        SizedBox(width: AppSpacing.xs),
+                        const SizedBox(width: AppSpacing.xs),
                         _FilterChip(
                           label: l10n.onTrack,
                           count: onTrackCount,
@@ -281,7 +291,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
                           onTap: () =>
                               setState(() => _filter = BudgetFilter.onTrack),
                         ),
-                        SizedBox(width: AppSpacing.xs),
+                        const SizedBox(width: AppSpacing.xs),
                         _FilterChip(
                           label: l10n.nearLimit,
                           count: widget.budgets.where((b) {
@@ -294,7 +304,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
                           onTap: () =>
                               setState(() => _filter = BudgetFilter.nearLimit),
                         ),
-                        SizedBox(width: AppSpacing.xs),
+                        const SizedBox(width: AppSpacing.xs),
                         _FilterChip(
                           label: l10n.exceeded,
                           count: exceededCount,
@@ -306,7 +316,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
                     ),
                   ),
                 ),
-                SizedBox(width: AppSpacing.sm),
+                const SizedBox(width: AppSpacing.sm),
                 PopupMenuButton<BudgetSort>(
                   icon: const Icon(Icons.sort),
                   onSelected: (sort) => setState(() => _sort = sort),
@@ -375,7 +385,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
                 children: [
                   Icon(Icons.filter_list_off,
                       size: 64, color: Colors.grey[400]),
-                  SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: AppSpacing.md),
                   Text(
                     l10n.noBudgetsMatchFilter,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -388,7 +398,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
           )
         else
           SliverPadding(
-            padding: EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.all(AppSpacing.md),
             sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
@@ -426,7 +436,7 @@ class _StatusCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(AppSpacing.sm),
+      padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
@@ -435,7 +445,7 @@ class _StatusCard extends StatelessWidget {
       child: Row(
         children: [
           Icon(icon, color: color, size: 20),
-          SizedBox(width: AppSpacing.xs),
+          const SizedBox(width: AppSpacing.xs),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -481,7 +491,7 @@ class _FilterChip extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
       child: Container(
-        padding: EdgeInsets.symmetric(
+        padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.sm,
           vertical: AppSpacing.xs,
         ),
@@ -819,7 +829,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                 child: Row(
                   children: [
                     const Icon(Icons.edit, size: 20),
-                    SizedBox(width: AppSpacing.sm),
+                    const SizedBox(width: AppSpacing.sm),
                     Text(l10n.editBudgetAction),
                   ],
                 ),
@@ -846,7 +856,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
         children: [
           // Hero summary card with gradient
           Container(
-            padding: EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
@@ -876,7 +886,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                                       fontWeight: FontWeight.w500,
                                     ),
                           ),
-                          SizedBox(height: AppSpacing.xs),
+                          const SizedBox(height: AppSpacing.xs),
                           Text(
                             CurrencyFormatter.formatVNDFromCents(
                                 budget.consumedCents,
@@ -892,7 +902,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                       ),
                     ),
                     Container(
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                         horizontal: AppSpacing.sm,
                         vertical: AppSpacing.xs,
                       ),
@@ -916,7 +926,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.md),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                   child: LinearProgressIndicator(
@@ -932,7 +942,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: AppSpacing.sm),
+                const SizedBox(height: AppSpacing.sm),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -977,7 +987,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                       children: [
                         Icon(Icons.receipt_long,
                             size: 64, color: Colors.grey[400]),
-                        SizedBox(height: AppSpacing.md),
+                        const SizedBox(height: AppSpacing.md),
                         Text(
                           l10n.noTransactions,
                           style:
@@ -1004,7 +1014,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                   ..sort((a, b) => b.compareTo(a));
 
                 return ListView.builder(
-                  padding: EdgeInsets.all(AppSpacing.md),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   itemCount: sortedDates.length,
                   itemBuilder: (context, index) {
                     final date = sortedDates[index];
@@ -1013,15 +1023,15 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                         0, (sum, t) => sum + t.amountCents);
 
                     return Card(
-                      margin: EdgeInsets.only(bottom: AppSpacing.sm),
+                      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            padding: EdgeInsets.all(AppSpacing.sm),
+                            padding: const EdgeInsets.all(AppSpacing.sm),
                             decoration: BoxDecoration(
                               color: Colors.grey[100],
-                              borderRadius: BorderRadius.vertical(
+                              borderRadius: const BorderRadius.vertical(
                                 top: Radius.circular(AppSpacing.radiusMd),
                               ),
                             ),
@@ -1034,7 +1044,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                                       fontWeight: FontWeight.w600),
                                 ),
                                 Container(
-                                  padding: EdgeInsets.symmetric(
+                                  padding: const EdgeInsets.symmetric(
                                     horizontal: AppSpacing.xs,
                                     vertical: 4,
                                   ),

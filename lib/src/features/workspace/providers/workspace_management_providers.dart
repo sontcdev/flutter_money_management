@@ -31,5 +31,24 @@ final workspacePendingInvitesProvider =
   }
 
   final service = ref.watch(workspaceManagementServiceProvider);
-  return service.getPendingInvites(activeWorkspace.id);
+  return service.getWorkspaceInvites(activeWorkspace.id);
+});
+
+final myWorkspaceInviteNotificationsProvider =
+    FutureProvider<List<WorkspaceInviteNotification>>((ref) async {
+  final currentUser = ref.watch(currentUserProvider);
+  if (currentUser == null) {
+    return [];
+  }
+
+  final service = ref.watch(workspaceManagementServiceProvider);
+  return service.getMyPendingInvites();
+});
+
+final myWorkspaceInviteCountProvider = Provider<int>((ref) {
+  final invitesAsync = ref.watch(myWorkspaceInviteNotificationsProvider);
+  return invitesAsync.maybeWhen(
+    data: (invites) => invites.length,
+    orElse: () => 0,
+  );
 });

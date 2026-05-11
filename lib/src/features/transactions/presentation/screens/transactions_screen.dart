@@ -329,7 +329,7 @@ class _TransactionGroup extends StatelessWidget {
                       ),
                       child: Text(
                         '+${CurrencyFormatter.formatVNDFromCents(totalIncome, locale: l10n.localeName)}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppColors.income,
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -351,7 +351,7 @@ class _TransactionGroup extends StatelessWidget {
                       ),
                       child: Text(
                         '-${CurrencyFormatter.formatVNDFromCents(totalExpense, locale: l10n.localeName)}',
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppColors.expense,
                           fontSize: 12,
                           fontWeight: FontWeight.w700,

@@ -293,6 +293,21 @@
   "pasteWorkspaceInviteCode": "Dán mã mời workspace",
   "join": "Tham gia",
   "joinedWorkspaceSuccessfully": "Đã tham gia workspace thành công",
+  "workspaceInviteMessage": "Bạn được mời vào workspace {workspaceName}",
+  "@workspaceInviteMessage": {
+    "placeholders": {
+      "workspaceName": {}
+    }
+  },
+  "workspaceInviteFrom": "Được mời bởi {inviter}",
+  "@workspaceInviteFrom": {
+    "placeholders": {
+      "inviter": {}
+    }
+  },
+  "declineInvite": "Từ chối",
+  "inviteDeclined": "Đã từ chối lời mời",
+  "noWorkspaceInviteNotifications": "Hiện chưa có lời mời workspace nào",
   "errorLoadingWorkspaces": "Lỗi tải danh sách workspace: {error}",
   "workspaceManagement": "Quản lý workspace",
   "workspaceInviteAlreadyMember": "Email này đã là thành viên của workspace",
@@ -327,10 +342,35 @@
   "userShortLabel": "Người dùng {id}",
   "pendingInvites": "Lời mời đang chờ",
   "noPendingInvites": "Không có lời mời nào đang chờ",
+  "declinedInvites": "Lời mời đã bị từ chối",
+  "noDeclinedInvites": "Không có lời mời nào bị từ chối",
+  "revokedInvites": "Lời mời đã thu hồi",
+  "noRevokedInvites": "Không có lời mời nào đã thu hồi",
   "inviteCodeCopied": "Đã sao chép mã mời",
   "inviteRevoked": "Đã thu hồi lời mời",
   "failedToLoadInvites": "Tải lời mời thất bại: {error}",
   "status": "Trạng thái",
+  "declinedStatus": "Đã từ chối",
+  "declinedAt": "Từ chối lúc {dateTime}",
+  "@declinedAt": {
+    "placeholders": {
+      "dateTime": {}
+    }
+  },
+  "revokedStatus": "Đã thu hồi",
+  "revokedAt": "Thu hồi lúc {dateTime}",
+  "@revokedAt": {
+    "placeholders": {
+      "dateTime": {}
+    }
+  },
+  "filterInvitesByEmail": "Lọc theo email",
+  "filterInvitesByEmailHint": "Tìm email lời mời",
+  "clearFilter": "Xóa bộ lọc",
+  "sortInvites": "Sắp xếp lời mời",
+  "sortByNewest": "Mới nhất trước",
+  "sortByOldest": "Cũ nhất trước",
+  "sortByEmail": "Email A-Z",
   "invitedUserJoinHint": "Người được mời có thể mở phần Chọn workspace và chọn Tham gia bằng mã mời.",
   "copyCode": "Sao chép mã",
   "revoke": "Thu hồi",
@@ -367,9 +407,16 @@
   "accountCreatedTitle": "Đã tạo tài khoản!",
   "accountCreatedMessage": "Tài khoản của bạn đã được tạo thành công.\n\nVui lòng kiểm tra email và nhấn vào liên kết xác minh để kích hoạt tài khoản.\n\nSau khi xác minh, bạn có thể đăng nhập để bắt đầu sử dụng ứng dụng.",
   "goToSignIn": "Đi tới đăng nhập",
+  "emailVerifiedTitle": "Email đã được xác minh",
+  "emailVerifiedMessage": "Email của bạn đã được xác minh thành công. Bạn có thể tiếp tục sử dụng ứng dụng.",
   "createAccount": "Tạo tài khoản",
   "createAccountToSync": "Tạo tài khoản để đồng bộ trên nhiều thiết bị",
   "verifyEmailBeforeSignInHint": "Bạn cần xác minh email trước khi đăng nhập",
+  "resetPasswordTitle": "Đặt lại mật khẩu",
+  "resetPasswordCallbackMessage": "Liên kết đặt lại mật khẩu hợp lệ. Hãy nhập mật khẩu mới để hoàn tất quá trình khôi phục.",
+  "resetPasswordAction": "Cập nhật mật khẩu",
+  "passwordResetCompleteTitle": "Đã cập nhật mật khẩu",
+  "passwordResetCompleteMessage": "Mật khẩu của bạn đã được cập nhật thành công.",
   "displayNameOptional": "Tên hiển thị (không bắt buộc)",
   "displayNameHint": "Bạn muốn chúng tôi gọi bạn là gì?",
   "atLeastSixCharacters": "Ít nhất 6 ký tự",

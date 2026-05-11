@@ -293,6 +293,21 @@
   "pasteWorkspaceInviteCode": "Paste workspace invite code",
   "join": "Join",
   "joinedWorkspaceSuccessfully": "Joined workspace successfully",
+  "workspaceInviteMessage": "You were invited to {workspaceName}",
+  "@workspaceInviteMessage": {
+    "placeholders": {
+      "workspaceName": {}
+    }
+  },
+  "workspaceInviteFrom": "Invited by {inviter}",
+  "@workspaceInviteFrom": {
+    "placeholders": {
+      "inviter": {}
+    }
+  },
+  "declineInvite": "Decline",
+  "inviteDeclined": "Invite declined",
+  "noWorkspaceInviteNotifications": "No workspace invites right now",
   "errorLoadingWorkspaces": "Error loading workspaces: {error}",
   "workspaceManagement": "Workspace Management",
   "workspaceInviteAlreadyMember": "This email is already a workspace member",
@@ -327,10 +342,35 @@
   "userShortLabel": "User {id}",
   "pendingInvites": "Pending invites",
   "noPendingInvites": "No pending invites",
+  "declinedInvites": "Declined invites",
+  "noDeclinedInvites": "No declined invites",
+  "revokedInvites": "Revoked invites",
+  "noRevokedInvites": "No revoked invites",
   "inviteCodeCopied": "Invite code copied",
   "inviteRevoked": "Invite revoked",
   "failedToLoadInvites": "Failed to load invites: {error}",
   "status": "Status",
+  "declinedStatus": "Declined",
+  "declinedAt": "Declined at {dateTime}",
+  "@declinedAt": {
+    "placeholders": {
+      "dateTime": {}
+    }
+  },
+  "revokedStatus": "Revoked",
+  "revokedAt": "Revoked at {dateTime}",
+  "@revokedAt": {
+    "placeholders": {
+      "dateTime": {}
+    }
+  },
+  "filterInvitesByEmail": "Filter by email",
+  "filterInvitesByEmailHint": "Search invite email",
+  "clearFilter": "Clear filter",
+  "sortInvites": "Sort invites",
+  "sortByNewest": "Newest first",
+  "sortByOldest": "Oldest first",
+  "sortByEmail": "Email A-Z",
   "invitedUserJoinHint": "The invited user can open Workspace Selection and choose Join by invite code.",
   "copyCode": "Copy code",
   "revoke": "Revoke",
@@ -367,9 +407,16 @@
   "accountCreatedTitle": "Account Created!",
   "accountCreatedMessage": "Your account has been created successfully.\n\nPlease check your email and click the verification link to activate your account.\n\nAfter verification, you can sign in to start using the app.",
   "goToSignIn": "Go to Sign In",
+  "emailVerifiedTitle": "Email verified",
+  "emailVerifiedMessage": "Your email has been verified successfully. You can continue using the app now.",
   "createAccount": "Create Account",
   "createAccountToSync": "Create your account to sync across devices",
   "verifyEmailBeforeSignInHint": "You will need to verify your email before signing in",
+  "resetPasswordTitle": "Reset password",
+  "resetPasswordCallbackMessage": "Your reset link is valid. Enter a new password to complete the recovery process.",
+  "resetPasswordAction": "Update password",
+  "passwordResetCompleteTitle": "Password updated",
+  "passwordResetCompleteMessage": "Your password has been updated successfully.",
   "displayNameOptional": "Display Name (Optional)",
   "displayNameHint": "How should we call you?",
   "atLeastSixCharacters": "At least 6 characters",

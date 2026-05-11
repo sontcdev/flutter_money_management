@@ -139,34 +139,19 @@ flutter build ios --debug --simulator
 flutter build ios --release --no-codesign
 ```
 
-Recommended helper on macOS:
-
-```bash
-./scripts/ios_build_all.sh
-```
-
 ## Scripts
 
 Project helper scripts are organized under `scripts/`.
 
-Expected helpers:
+Available helpers:
 
-- `scripts/setup.sh`
-- `scripts/build_and_install.sh`
-- `scripts/build_and_install.bat`
-- `scripts/build_and_install.ps1`
-- `scripts/quick_build.bat`
-- `scripts/quick_build.ps1`
-- `scripts/reinstall.sh`
-- `scripts/ios_build_all.sh`
+- `scripts/build_play_store_aab.sh`
+- `scripts/build_release_apk.sh`
 
 Guidance:
 
-- Use `setup.sh` for clean bootstrap and verification.
-- Use `quick_build.*` for faster day-to-day builds.
-- Use `build_and_install.*` when you want interactive checks and install flows.
-- Use `reinstall.sh` for Android uninstall/reinstall workflows.
-- Use `ios_build_all.sh` on macOS for iOS simulator/device build flows.
+- Use `build_play_store_aab.sh` to produce the signed release AAB for Google Play.
+- Use `build_release_apk.sh` to produce the signed release APK.
 
 ## Localization
 

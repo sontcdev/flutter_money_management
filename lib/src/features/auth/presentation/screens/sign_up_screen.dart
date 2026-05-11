@@ -66,29 +66,42 @@ class SignUpScreen extends HookConsumerWidget {
 
         if (response.user != null) {
           AppLogger.info('Sign-up succeeded', name: 'MM.Auth');
-          // Account created successfully
-          // Since email confirmation is enabled, user needs to verify email before signing in
-          if (context.mounted) {
-            AppLogger.info('Showing email verification dialog', name: 'MM.UI');
-            // Show success dialog with clear instructions
-            await showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (context) => AlertDialog(
-                title: Text(l10n.accountCreatedTitle),
-                content: Text(l10n.accountCreatedMessage),
-                actions: [
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      // Navigate back to sign in
-                      Navigator.of(context).pop();
-                    },
-                    child: Text(l10n.goToSignIn),
-                  ),
-                ],
-              ),
-            );
+          
+          final session = response.session;
+          
+          // Check if user has valid session (email already confirmed)
+          if (session != null && session.user.emailConfirmedAt != null) {
+            // Email verification is disabled -> user is already authenticated
+            // Navigate to '/' to let SplashScreen handle routing
+            if (context.mounted) {
+              AppLogger.info('Auto-login after sign-up', name: 'MM.Auth');
+              Navigator.of(context).pushNamedAndRemoveUntil('/', (_) => false);
+            }
+          } else {
+            // Email verification is enabled, user needs to verify email
+            // This case should not happen since email verification is disabled
+            // But keep it for compatibility if re-enabled later
+            if (context.mounted) {
+              AppLogger.info('Showing email verification dialog', name: 'MM.UI');
+              await showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => AlertDialog(
+                  title: Text(l10n.accountCreatedTitle),
+                  content: Text(l10n.accountCreatedMessage),
+                  actions: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        // Navigate back to sign in
+                        Navigator.of(context).pop();
+                      },
+                      child: Text(l10n.goToSignIn),
+                    ),
+                  ],
+                ),
+              );
+            }
           }
         }
       } catch (e, stackTrace) {
@@ -99,7 +112,7 @@ class SignUpScreen extends HookConsumerWidget {
           stackTrace: stackTrace,
         );
         errorMessage.value = _getErrorMessage(l10n, e.toString());
-        
+
         if (context.mounted) {
           await ErrorReportHelper.handleApiError(
             context: context,
@@ -110,7 +123,8 @@ class SignUpScreen extends HookConsumerWidget {
             action: 'sign_up',
             screen: 'sign_up_screen',
             extraContext: {
-              'email_masked': ErrorReportHelper.maskEmail(emailController.text.trim()),
+              'email_masked':
+                  ErrorReportHelper.maskEmail(emailController.text.trim()),
               'has_display_name': displayNameController.text.trim().isNotEmpty,
             },
           );
@@ -285,24 +299,31 @@ class SignUpScreen extends HookConsumerWidget {
               if (errorMessage.value != null) const SizedBox(height: 16),
 
               // Sign Up Button
-              OutlinedButton(
+              OutlinedButton.icon(
                 onPressed: isLoading.value ? null : handleSignUp,
+                icon: isLoading.value
+                    ? const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.person_add_outlined, size: 16),
+                label: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 7),
+                  child: Text(
+                    l10n.createAccount,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
                 style: OutlinedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: Theme.of(context).colorScheme.primary,
                   side: BorderSide(
                     color: Theme.of(context).colorScheme.primary,
                   ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: isLoading.value
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text(l10n.createAccount),
                 ),
               ),
 

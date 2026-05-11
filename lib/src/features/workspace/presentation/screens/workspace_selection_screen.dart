@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/auth/providers/auth_providers.dart';
+import 'package:flutter_money_management/src/features/workspace/presentation/widgets/workspace_invite_notification_section.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_management_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
@@ -15,13 +16,18 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final workspacesAsync = ref.watch(workspaceListProvider);
     final currentUser = ref.watch(currentUserProvider);
+    final inviteCount = ref.watch(myWorkspaceInviteCountProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.selectWorkspace),
         actions: [
           IconButton(
-            icon: const Icon(Icons.key_outlined),
+            icon: Badge(
+              isLabelVisible: inviteCount > 0,
+              label: Text('$inviteCount'),
+              child: const Icon(Icons.key_outlined),
+            ),
             tooltip: l10n.joinByInviteCode,
             onPressed: () => _showJoinInviteDialog(context, ref),
           ),
@@ -42,7 +48,7 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
       body: workspacesAsync.when(
         data: (workspaces) {
           if (workspaces.isEmpty) {
-            return Padding(
+            return SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Center(
                 child: ConstrainedBox(
@@ -85,6 +91,9 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
                           OutlinedButton(
                             onPressed: () {
                               ref.invalidate(workspaceListProvider);
+                              ref.invalidate(
+                                myWorkspaceInviteNotificationsProvider,
+                              );
                             },
                             child: Text(l10n.retry),
                           ),
@@ -102,6 +111,10 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
                             child: Text(l10n.signOutTitle),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 32),
+                      const WorkspaceInviteNotificationSection(
+                        padding: EdgeInsets.zero,
                       ),
                     ],
                   ),
@@ -287,13 +300,5 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
     } finally {
       setSubmitting(false);
     }
-  }
-
-  String _formatInviteError(Object error) {
-    final message = error.toString();
-    if (message.startsWith('Bad state: ')) {
-      return message.substring('Bad state: '.length);
-    }
-    return message;
   }
 }

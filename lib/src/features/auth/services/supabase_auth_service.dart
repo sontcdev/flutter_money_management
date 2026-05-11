@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:flutter_money_management/src/config/supabase_config.dart';
 import 'package:flutter_money_management/src/utils/app_logger.dart';
 
 /// Supabase cloud authentication service
@@ -34,6 +35,7 @@ class SupabaseAuthService {
         email: email,
         password: password,
         data: displayName != null ? {'display_name': displayName} : null,
+        emailRedirectTo: SupabaseConfig.mobileAuthCallbackUrl,
       );
       AppLogger.info('Sign up succeeded for $maskedEmail', name: _logName);
       return response;
@@ -96,12 +98,35 @@ class SupabaseAuthService {
     final maskedEmail = _maskEmail(email);
     AppLogger.info('Password reset started for $maskedEmail', name: _logName);
     try {
-      await _client.auth.resetPasswordForEmail(email);
+      await _client.auth.resetPasswordForEmail(
+        email,
+        redirectTo: SupabaseConfig.mobileAuthCallbackUrl,
+      );
       AppLogger.info('Password reset request succeeded for $maskedEmail',
           name: _logName);
     } catch (e, stackTrace) {
       AppLogger.error(
         'Password reset failed for $maskedEmail',
+        name: _logName,
+        error: e,
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  /// Update the password for the current authenticated or recovery session.
+  Future<UserResponse> updatePassword(String password) async {
+    AppLogger.info('Password update started', name: _logName);
+    try {
+      final response = await _client.auth.updateUser(
+        UserAttributes(password: password),
+      );
+      AppLogger.info('Password update succeeded', name: _logName);
+      return response;
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Password update failed',
         name: _logName,
         error: e,
         stackTrace: stackTrace,

@@ -43,14 +43,17 @@ class WorkspaceManagementScreen extends HookConsumerWidget {
       data: (invites) =>
           normalizedEmail.isNotEmpty &&
           invites.any(
-            (invite) => invite.email.trim().toLowerCase() == normalizedEmail,
+            (invite) =>
+                invite.status == 'pending' &&
+                invite.email.trim().toLowerCase() == normalizedEmail,
           ),
       orElse: () => false,
     );
     final existingInvite = invitesAsync.maybeWhen(
       data: (invites) {
         for (final invite in invites) {
-          if (invite.email.trim().toLowerCase() == normalizedEmail) {
+          if (invite.status == 'pending' &&
+              invite.email.trim().toLowerCase() == normalizedEmail) {
             return invite;
           }
         }
@@ -486,7 +489,7 @@ class _MemberSection extends ConsumerWidget {
   }
 }
 
-class _InviteSection extends ConsumerWidget {
+class _InviteSection extends HookConsumerWidget {
   const _InviteSection({required this.invitesAsync});
 
   final AsyncValue<List<WorkspaceInviteSummary>> invitesAsync;
@@ -494,129 +497,274 @@ class _InviteSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final selectedStatus = useState('pending');
+    final emailFilterController = useTextEditingController();
+    final emailFilter = useState('');
+    final sortOption = useState('newest');
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: invitesAsync.when(
-          data: (invites) => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.pendingInvites,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 12),
-              if (invites.isEmpty)
-                Text(l10n.noPendingInvites)
-              else
-                ...invites.map(
-                  (invite) => ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: CircleAvatar(
-                      foregroundImage: _inviteAvatarImage(invite),
-                      child: Text(_inviteAvatarLabel(invite)),
-                    ),
-                    title: Text(_inviteTitle(invite)),
-                    subtitle: _InviteSubtitle(invite: invite),
-                    isThreeLine: true,
-                    trailing: PopupMenuButton<String>(
-                      onSelected: (value) async {
-                        if (value == 'copy') {
-                          await Clipboard.setData(
-                              ClipboardData(text: invite.token));
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(l10n.inviteCodeCopied)),
-                            );
-                          }
-                          return;
-                        }
+          data: (invites) {
+            final pendingInvites =
+                invites.where((invite) => invite.status == 'pending').toList();
+            final declinedInvites =
+                invites.where((invite) => invite.status == 'declined').toList();
+            final revokedInvites =
+                invites.where((invite) => invite.status == 'revoked').toList();
+            final visibleInvites = switch (selectedStatus.value) {
+              'declined' => declinedInvites,
+              'revoked' => revokedInvites,
+              _ => pendingInvites,
+            };
+            final normalizedFilter = emailFilter.value.trim().toLowerCase();
+            final filteredInvites = visibleInvites.where((invite) {
+              if (normalizedFilter.isEmpty) {
+                return true;
+              }
 
-                        if (value == 'refresh') {
-                          try {
-                            final refreshedInvite = await ref
-                                .read(workspaceManagementServiceProvider)
-                                .refreshInvite(invite.id);
-                            ref.invalidate(workspacePendingInvitesProvider);
-                            if (context.mounted) {
-                              await _showInviteCodeDialog(
-                                context: context,
-                                invite: refreshedInvite,
-                                title: l10n.inviteRefreshed,
-                                message: l10n.shareNewInviteCodeWith(
-                                  refreshedInvite.email,
-                                ),
-                              );
-                            }
-                          } catch (e, stackTrace) {
-                            if (context.mounted) {
-                              await ErrorReportHelper.handleApiError(
-                                context: context,
-                                ref: ref,
-                                error: e,
-                                stackTrace: stackTrace,
-                                feature: 'workspace',
-                                action: 'refresh_invite',
-                                screen: 'workspace_management_screen',
-                                extraContext: {
-                                  'invite_id': invite.id,
-                                },
-                              );
-                            }
-                          }
-                          return;
-                        }
+              return invite.email.toLowerCase().contains(normalizedFilter);
+            }).toList()
+              ..sort((a, b) {
+                switch (sortOption.value) {
+                  case 'oldest':
+                    return a.createdAt.compareTo(b.createdAt);
+                  case 'email':
+                    return a.email
+                        .toLowerCase()
+                        .compareTo(b.email.toLowerCase());
+                  default:
+                    return b.createdAt.compareTo(a.createdAt);
+                }
+              });
+            final sectionTitle = switch (selectedStatus.value) {
+              'declined' => l10n.declinedInvites,
+              'revoked' => l10n.revokedInvites,
+              _ => l10n.pendingInvites,
+            };
+            final emptyLabel = switch (selectedStatus.value) {
+              'declined' => l10n.noDeclinedInvites,
+              'revoked' => l10n.noRevokedInvites,
+              _ => l10n.noPendingInvites,
+            };
 
-                        try {
-                          await ref
-                              .read(workspaceManagementServiceProvider)
-                              .revokeInvite(invite.id);
-                          ref.invalidate(workspacePendingInvitesProvider);
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(l10n.inviteRevoked)),
-                            );
-                          }
-                        } catch (e, stackTrace) {
-                          if (context.mounted) {
-                            await ErrorReportHelper.handleApiError(
-                              context: context,
-                              ref: ref,
-                              error: e,
-                              stackTrace: stackTrace,
-                              feature: 'workspace',
-                              action: 'revoke_invite',
-                              screen: 'workspace_management_screen',
-                              extraContext: {
-                                'invite_id': invite.id,
-                              },
-                            );
-                          }
-                        }
-                      },
-                      itemBuilder: (context) => [
-                        PopupMenuItem<String>(
-                          value: 'copy',
-                          child: Text(l10n.copyCode),
-                        ),
-                        PopupMenuItem<String>(
-                          value: 'refresh',
-                          child: Text(l10n.refreshInvite),
-                        ),
-                        PopupMenuItem<String>(
-                          value: 'revoke',
-                          child: Text(l10n.revoke),
-                        ),
-                      ],
-                    ),
+            return DefaultTabController(
+              length: 3,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TabBar(
+                    onTap: (index) {
+                      selectedStatus.value = switch (index) {
+                        1 => 'declined',
+                        2 => 'revoked',
+                        _ => 'pending',
+                      };
+                    },
+                    tabs: [
+                      Tab(
+                        text:
+                            '${l10n.pendingInvites} (${pendingInvites.length})',
+                      ),
+                      Tab(
+                        text:
+                            '${l10n.declinedInvites} (${declinedInvites.length})',
+                      ),
+                      Tab(
+                        text:
+                            '${l10n.revokedInvites} (${revokedInvites.length})',
+                      ),
+                    ],
                   ),
-                ),
-            ],
-          ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: emailFilterController,
+                          decoration: InputDecoration(
+                            prefixIcon: const Icon(Icons.search),
+                            labelText: l10n.filterInvitesByEmail,
+                            hintText: l10n.filterInvitesByEmailHint,
+                            suffixIcon: emailFilter.value.isEmpty
+                                ? null
+                                : IconButton(
+                                    tooltip: l10n.clearFilter,
+                                    onPressed: () {
+                                      emailFilterController.clear();
+                                      emailFilter.value = '';
+                                    },
+                                    icon: const Icon(Icons.clear),
+                                  ),
+                            border: const OutlineInputBorder(),
+                          ),
+                          onChanged: (value) {
+                            emailFilter.value = value;
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: DropdownMenu<String>(
+                          width: double.infinity,
+                          initialSelection: sortOption.value,
+                          label: Text(l10n.sortInvites),
+                          dropdownMenuEntries: [
+                            DropdownMenuEntry(
+                              value: 'newest',
+                              label: l10n.sortByNewest,
+                            ),
+                            DropdownMenuEntry(
+                              value: 'oldest',
+                              label: l10n.sortByOldest,
+                            ),
+                            DropdownMenuEntry(
+                              value: 'email',
+                              label: l10n.sortByEmail,
+                            ),
+                          ],
+                          onSelected: (value) {
+                            if (value != null) {
+                              sortOption.value = value;
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    sectionTitle,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  if (filteredInvites.isEmpty)
+                    Text(emptyLabel)
+                  else
+                    ...filteredInvites.map(
+                      (invite) => _InviteListTile(invite: invite),
+                    ),
+                ],
+              ),
+            );
+          },
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, _) => Text(l10n.failedToLoadInvites('$error')),
         ),
       ),
+    );
+  }
+}
+
+class _InviteListTile extends ConsumerWidget {
+  const _InviteListTile({required this.invite});
+
+  final WorkspaceInviteSummary invite;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: CircleAvatar(
+        foregroundImage: _inviteAvatarImage(invite),
+        child: Text(_inviteAvatarLabel(invite)),
+      ),
+      title: Text(_inviteTitle(invite)),
+      subtitle: _InviteSubtitle(invite: invite),
+      isThreeLine: true,
+      trailing: invite.status != 'pending'
+          ? null
+          : PopupMenuButton<String>(
+              onSelected: (value) async {
+                if (value == 'copy') {
+                  await Clipboard.setData(ClipboardData(text: invite.token));
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(l10n.inviteCodeCopied)),
+                    );
+                  }
+                  return;
+                }
+
+                if (value == 'refresh') {
+                  try {
+                    final refreshedInvite = await ref
+                        .read(workspaceManagementServiceProvider)
+                        .refreshInvite(invite.id);
+                    ref.invalidate(workspacePendingInvitesProvider);
+                    if (context.mounted) {
+                      await _showInviteCodeDialog(
+                        context: context,
+                        invite: refreshedInvite,
+                        title: l10n.inviteRefreshed,
+                        message: l10n.shareNewInviteCodeWith(
+                          refreshedInvite.email,
+                        ),
+                      );
+                    }
+                  } catch (e, stackTrace) {
+                    if (context.mounted) {
+                      await ErrorReportHelper.handleApiError(
+                        context: context,
+                        ref: ref,
+                        error: e,
+                        stackTrace: stackTrace,
+                        feature: 'workspace',
+                        action: 'refresh_invite',
+                        screen: 'workspace_management_screen',
+                        extraContext: {
+                          'invite_id': invite.id,
+                        },
+                      );
+                    }
+                  }
+                  return;
+                }
+
+                try {
+                  await ref
+                      .read(workspaceManagementServiceProvider)
+                      .revokeInvite(invite.id);
+                  ref.invalidate(workspacePendingInvitesProvider);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(l10n.inviteRevoked)),
+                    );
+                  }
+                } catch (e, stackTrace) {
+                  if (context.mounted) {
+                    await ErrorReportHelper.handleApiError(
+                      context: context,
+                      ref: ref,
+                      error: e,
+                      stackTrace: stackTrace,
+                      feature: 'workspace',
+                      action: 'revoke_invite',
+                      screen: 'workspace_management_screen',
+                      extraContext: {
+                        'invite_id': invite.id,
+                      },
+                    );
+                  }
+                }
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem<String>(
+                  value: 'copy',
+                  child: Text(l10n.copyCode),
+                ),
+                PopupMenuItem<String>(
+                  value: 'refresh',
+                  child: Text(l10n.refreshInvite),
+                ),
+                PopupMenuItem<String>(
+                  value: 'revoke',
+                  child: Text(l10n.revoke),
+                ),
+              ],
+            ),
     );
   }
 }
@@ -629,6 +777,26 @@ class _InviteSubtitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    if (invite.status == 'declined') {
+      final declinedAt = invite.updatedAt ?? invite.createdAt;
+      return _InviteStatusSubtitle(
+        email: invite.email,
+        statusLabel: l10n.declinedStatus,
+        detailLabel: l10n.declinedAt(_formatInviteDateTime(declinedAt)),
+        color: Colors.grey,
+      );
+    }
+
+    if (invite.status == 'revoked') {
+      final revokedAt = invite.updatedAt ?? invite.createdAt;
+      return _InviteStatusSubtitle(
+        email: invite.email,
+        statusLabel: l10n.revokedStatus,
+        detailLabel: l10n.revokedAt(_formatInviteDateTime(revokedAt)),
+        color: Colors.grey,
+      );
+    }
+
     final expiryStatus = _inviteExpiryStatus(l10n, invite.expiresAt);
 
     return Text.rich(
@@ -656,6 +824,58 @@ class _InviteSubtitle extends StatelessWidget {
       ),
     );
   }
+}
+
+class _InviteStatusSubtitle extends StatelessWidget {
+  const _InviteStatusSubtitle({
+    required this.email,
+    required this.statusLabel,
+    required this.detailLabel,
+    required this.color,
+  });
+
+  final String email;
+  final String statusLabel;
+  final String detailLabel;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Text.rich(
+      TextSpan(
+        style: Theme.of(context).textTheme.bodyMedium,
+        children: [
+          TextSpan(text: '$email\n'),
+          TextSpan(text: '${l10n.status}: '),
+          TextSpan(
+            text: '$statusLabel\n',
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          TextSpan(
+            text: detailLabel,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _formatInviteDateTime(DateTime dateTime) {
+  final local = dateTime.toLocal();
+  final month = local.month.toString().padLeft(2, '0');
+  final day = local.day.toString().padLeft(2, '0');
+  final hour = local.hour.toString().padLeft(2, '0');
+  final minute = local.minute.toString().padLeft(2, '0');
+  return '${local.year}-$month-$day $hour:$minute';
 }
 
 class _InviteExpiryStatus {
@@ -810,15 +1030,4 @@ String _shortId(String value) {
     return value;
   }
   return '${value.substring(0, 8)}...';
-}
-
-String _formatErrorMessage(Object error) {
-  final message = error.toString();
-  if (message.startsWith('Bad state: ')) {
-    return message.substring('Bad state: '.length);
-  }
-  if (message.startsWith('Invalid argument(s): ')) {
-    return message.substring('Invalid argument(s): '.length);
-  }
-  return message;
 }
