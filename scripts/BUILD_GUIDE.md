@@ -1,9 +1,11 @@
 # Build Guide
 
-`scripts/` hiện chỉ giữ 2 script build Android:
+`scripts/` hiện giữ 2 script build Android, mỗi script có cả bản shell và batch cho Windows:
 
 - `scripts/build_play_store_aab.sh`: build AAB release để upload Google Play
 - `scripts/build_release_apk.sh`: build APK release
+- `scripts/build_play_store_aab.bat`: bản Windows của script build AAB release
+- `scripts/build_release_apk.bat`: bản Windows của script build APK release
 
 ## Cách dùng
 
@@ -11,6 +13,13 @@
 chmod +x scripts/build_play_store_aab.sh scripts/build_release_apk.sh
 ./scripts/build_play_store_aab.sh
 ./scripts/build_release_apk.sh
+```
+
+Windows Command Prompt:
+
+```bat
+scripts\build_play_store_aab.bat
+scripts\build_release_apk.bat
 ```
 
 ## Những gì script sẽ chạy
