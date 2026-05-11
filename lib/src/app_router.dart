@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 import 'app/presentation/screens/splash_screen.dart';
+import 'features/auth/presentation/screens/reset_password_screen.dart';
 import 'features/auth/presentation/screens/sign_in_screen.dart';
 import 'features/auth/presentation/screens/sign_up_screen.dart';
 import 'features/budgets/presentation/screens/budget_detail_screen.dart';
@@ -37,6 +38,8 @@ class AppRouter {
         return AppAnimations.fadeRoute(const SignInScreen());
       case '/sign-up':
         return AppAnimations.slideRoute(const SignUpScreen());
+      case '/reset-password':
+        return AppAnimations.slideRoute(const ResetPasswordScreen());
       case '/workspace-selection':
         return AppAnimations.fadeRoute(const WorkspaceSelectionScreen());
       case '/home':

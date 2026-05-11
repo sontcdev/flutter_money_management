@@ -262,7 +262,7 @@ class BudgetEditScreen extends HookConsumerWidget {
                 return DropdownButtonFormField<String>(
                   key: ValueKey(selectedCategoryId.value),
                   decoration: InputDecoration(labelText: l10n.category),
-                  value: selectedCategoryId.value,
+                  initialValue: selectedCategoryId.value,
                   items: expenseCategories.map((category) {
                     return DropdownMenuItem<String>(
                       value: category.id,
@@ -298,10 +298,10 @@ class BudgetEditScreen extends HookConsumerWidget {
               ],
               hint: '0',
               suffixIcon: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                 child: Text(
                   CurrencyFormatter.getCurrencySymbol('VND'),
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),

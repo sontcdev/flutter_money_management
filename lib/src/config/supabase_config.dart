@@ -17,6 +17,11 @@ class SupabaseConfig {
   static const String supabaseAnonKey =
       'sb_publishable_1zD9ijsIW0Vq6MptK1ljdw_6ot8DKof';
 
+  // Mobile auth callback URI.
+  // Add this exact value to Supabase Auth -> URL Configuration -> Additional Redirect URLs.
+  static const String mobileAuthCallbackUrl =
+      'com.sontc.financeappv1://login-callback';
+
   /// Check if Supabase is configured
   static bool get isConfigured {
     return supabaseUrl != 'YOUR_SUPABASE_URL' &&

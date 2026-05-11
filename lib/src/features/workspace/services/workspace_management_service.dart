@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_money_management/src/features/workspace/models/workspace_management_models.dart';
 
@@ -22,7 +23,9 @@ class WorkspaceManagementService {
     } on PostgrestException catch (e) {
       if (e.code == 'PGRST202') {
         // Function not found in database - return empty list as fallback
-        print('Warning: get_workspace_members_with_profiles function not found in database');
+        debugPrint(
+          'Warning: get_workspace_members_with_profiles function not found in database',
+        );
         return [];
       }
       rethrow;
@@ -44,7 +47,9 @@ class WorkspaceManagementService {
     } on PostgrestException catch (e) {
       if (e.code == 'PGRST202') {
         // Function not found in database - return empty list as fallback
-        print('Warning: get_workspace_pending_invites_with_profiles function not found in database');
+        debugPrint(
+          'Warning: get_workspace_pending_invites_with_profiles function not found in database',
+        );
         return [];
       }
       rethrow;

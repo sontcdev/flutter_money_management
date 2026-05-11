@@ -1170,6 +1170,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get goToSignIn => 'サインインへ';
 
   @override
+  String get emailVerifiedTitle => 'メール認証が完了しました';
+
+  @override
+  String get emailVerifiedMessage => 'メール認証が正常に完了しました。引き続きアプリをご利用いただけます。';
+
+  @override
   String get createAccount => 'アカウントを作成';
 
   @override
@@ -1177,6 +1183,21 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get verifyEmailBeforeSignInHint => 'サインインする前にメール認証が必要です';
+
+  @override
+  String get resetPasswordTitle => 'パスワードを再設定';
+
+  @override
+  String get resetPasswordCallbackMessage => 'パスワード再設定リンクは有効です。新しいパスワードを入力して回復を完了してください。';
+
+  @override
+  String get resetPasswordAction => 'パスワードを更新';
+
+  @override
+  String get passwordResetCompleteTitle => 'パスワードを更新しました';
+
+  @override
+  String get passwordResetCompleteMessage => 'パスワードが正常に更新されました。';
 
   @override
   String get displayNameOptional => '表示名 (任意)';

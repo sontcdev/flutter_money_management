@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_money_management/src/services/error_report_service.dart';
 import 'package:flutter_money_management/src/shared/providers/app_service_providers.dart';
 import 'package:flutter_money_management/src/ui/widgets/error_report_dialog.dart';
 import 'package:flutter_money_management/src/utils/app_logger.dart';

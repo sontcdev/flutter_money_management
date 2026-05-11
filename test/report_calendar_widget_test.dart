@@ -37,15 +37,15 @@ void main() {
           ),
           transactionGroupsProvider(testMonth).overrideWith((ref) => []),
         ],
-        child: MaterialApp(
-          localizationsDelegates: const [
+        child: const MaterialApp(
+          localizationsDelegates: [
             AppLocalizations.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          supportedLocales: const [Locale('en'), Locale('vi')],
-          home: const ReportCalendarScreen(),
+          supportedLocales: [Locale('en'), Locale('vi')],
+          home: ReportCalendarScreen(),
         ),
       ),
     );

@@ -74,7 +74,7 @@ class SignInScreen extends HookConsumerWidget {
           stackTrace: stackTrace,
         );
         errorMessage.value = l10n.failedToLoadWorkspaces('$e');
-        
+
         if (context.mounted) {
           await ErrorReportHelper.handleApiError(
             context: context,
@@ -119,6 +119,7 @@ class SignInScreen extends HookConsumerWidget {
 
       isLoading.value = true;
       errorMessage.value = null;
+      ref.read(suppressAuthCallbackFeedbackProvider.notifier).state = true;
 
       try {
         AppLogger.info('Sign-in submitted', name: 'MM.UI');
@@ -144,7 +145,7 @@ class SignInScreen extends HookConsumerWidget {
           stackTrace: stackTrace,
         );
         errorMessage.value = _getErrorMessage(l10n, e.toString());
-        
+
         if (context.mounted) {
           await ErrorReportHelper.handleApiError(
             context: context,
@@ -160,6 +161,7 @@ class SignInScreen extends HookConsumerWidget {
           );
         }
       } finally {
+        ref.read(suppressAuthCallbackFeedbackProvider.notifier).state = false;
         isLoading.value = false;
       }
     }
@@ -194,7 +196,7 @@ class SignInScreen extends HookConsumerWidget {
           stackTrace: stackTrace,
         );
         errorMessage.value = l10n.failedToSendResetEmail;
-        
+
         if (context.mounted) {
           await ErrorReportHelper.handleApiError(
             context: context,
@@ -205,7 +207,8 @@ class SignInScreen extends HookConsumerWidget {
             action: 'forgot_password',
             screen: 'sign_in_screen',
             extraContext: {
-              'email_masked': ErrorReportHelper.maskEmail(emailController.text.trim()),
+              'email_masked':
+                  ErrorReportHelper.maskEmail(emailController.text.trim()),
             },
           );
         }

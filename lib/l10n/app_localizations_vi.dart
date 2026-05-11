@@ -1170,6 +1170,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get goToSignIn => 'Đi tới đăng nhập';
 
   @override
+  String get emailVerifiedTitle => 'Email đã được xác minh';
+
+  @override
+  String get emailVerifiedMessage => 'Email của bạn đã được xác minh thành công. Bạn có thể tiếp tục sử dụng ứng dụng.';
+
+  @override
   String get createAccount => 'Tạo tài khoản';
 
   @override
@@ -1177,6 +1183,21 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get verifyEmailBeforeSignInHint => 'Bạn cần xác minh email trước khi đăng nhập';
+
+  @override
+  String get resetPasswordTitle => 'Đặt lại mật khẩu';
+
+  @override
+  String get resetPasswordCallbackMessage => 'Liên kết đặt lại mật khẩu hợp lệ. Hãy nhập mật khẩu mới để hoàn tất quá trình khôi phục.';
+
+  @override
+  String get resetPasswordAction => 'Cập nhật mật khẩu';
+
+  @override
+  String get passwordResetCompleteTitle => 'Đã cập nhật mật khẩu';
+
+  @override
+  String get passwordResetCompleteMessage => 'Mật khẩu của bạn đã được cập nhật thành công.';
 
   @override
   String get displayNameOptional => 'Tên hiển thị (không bắt buộc)';

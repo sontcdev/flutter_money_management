@@ -1170,6 +1170,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goToSignIn => 'Go to Sign In';
 
   @override
+  String get emailVerifiedTitle => 'Email verified';
+
+  @override
+  String get emailVerifiedMessage => 'Your email has been verified successfully. You can continue using the app now.';
+
+  @override
   String get createAccount => 'Create Account';
 
   @override
@@ -1177,6 +1183,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get verifyEmailBeforeSignInHint => 'You will need to verify your email before signing in';
+
+  @override
+  String get resetPasswordTitle => 'Reset password';
+
+  @override
+  String get resetPasswordCallbackMessage => 'Your reset link is valid. Enter a new password to complete the recovery process.';
+
+  @override
+  String get resetPasswordAction => 'Update password';
+
+  @override
+  String get passwordResetCompleteTitle => 'Password updated';
+
+  @override
+  String get passwordResetCompleteMessage => 'Your password has been updated successfully.';
 
   @override
   String get displayNameOptional => 'Display Name (Optional)';

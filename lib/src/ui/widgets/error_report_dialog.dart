@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_money_management/src/models/error_report.dart';
 import 'package:flutter_money_management/src/services/error_report_service.dart';
 
 class ErrorReportDialog extends StatefulWidget {
@@ -17,6 +16,27 @@ class ErrorReportDialog extends StatefulWidget {
   final String? errorType;
   final Map<String, dynamic>? context;
   final ErrorReportService errorReportService;
+
+  static Future<bool?> show({
+    required BuildContext context,
+    required Object error,
+    StackTrace? stackTrace,
+    String? errorType,
+    Map<String, dynamic>? errorContext,
+    required ErrorReportService errorReportService,
+  }) {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => ErrorReportDialog(
+        error: error,
+        stackTrace: stackTrace,
+        errorType: errorType,
+        context: errorContext,
+        errorReportService: errorReportService,
+      ),
+    );
+  }
 
   @override
   State<ErrorReportDialog> createState() => _ErrorReportDialogState();
@@ -114,24 +134,4 @@ class _ErrorReportDialogState extends State<ErrorReportDialog> {
     );
   }
 
-  static Future<bool?> show({
-    required BuildContext context,
-    required Object error,
-    StackTrace? stackTrace,
-    String? errorType,
-    Map<String, dynamic>? errorContext,
-    required ErrorReportService errorReportService,
-  }) {
-    return showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => ErrorReportDialog(
-        error: error,
-        stackTrace: stackTrace,
-        errorType: errorType,
-        context: errorContext,
-        errorReportService: errorReportService,
-      ),
-    );
-  }
 }

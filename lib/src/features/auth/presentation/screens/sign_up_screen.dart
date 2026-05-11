@@ -99,7 +99,7 @@ class SignUpScreen extends HookConsumerWidget {
           stackTrace: stackTrace,
         );
         errorMessage.value = _getErrorMessage(l10n, e.toString());
-        
+
         if (context.mounted) {
           await ErrorReportHelper.handleApiError(
             context: context,
@@ -110,7 +110,8 @@ class SignUpScreen extends HookConsumerWidget {
             action: 'sign_up',
             screen: 'sign_up_screen',
             extraContext: {
-              'email_masked': ErrorReportHelper.maskEmail(emailController.text.trim()),
+              'email_masked':
+                  ErrorReportHelper.maskEmail(emailController.text.trim()),
               'has_display_name': displayNameController.text.trim().isNotEmpty,
             },
           );
@@ -285,24 +286,31 @@ class SignUpScreen extends HookConsumerWidget {
               if (errorMessage.value != null) const SizedBox(height: 16),
 
               // Sign Up Button
-              OutlinedButton(
+              OutlinedButton.icon(
                 onPressed: isLoading.value ? null : handleSignUp,
+                icon: isLoading.value
+                    ? const SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.person_add_outlined, size: 16),
+                label: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 7),
+                  child: Text(
+                    l10n.createAccount,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
                 style: OutlinedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: Theme.of(context).colorScheme.primary,
                   side: BorderSide(
                     color: Theme.of(context).colorScheme.primary,
                   ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: isLoading.value
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text(l10n.createAccount),
                 ),
               ),
 

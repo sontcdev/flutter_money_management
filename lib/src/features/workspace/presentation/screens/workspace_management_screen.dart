@@ -811,14 +811,3 @@ String _shortId(String value) {
   }
   return '${value.substring(0, 8)}...';
 }
-
-String _formatErrorMessage(Object error) {
-  final message = error.toString();
-  if (message.startsWith('Bad state: ')) {
-    return message.substring('Bad state: '.length);
-  }
-  if (message.startsWith('Invalid argument(s): ')) {
-    return message.substring('Invalid argument(s): '.length);
-  }
-  return message;
-}

@@ -2299,6 +2299,18 @@ abstract class AppLocalizations {
   /// **'Go to Sign In'**
   String get goToSignIn;
 
+  /// No description provided for @emailVerifiedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verified'**
+  String get emailVerifiedTitle;
+
+  /// No description provided for @emailVerifiedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your email has been verified successfully. You can continue using the app now.'**
+  String get emailVerifiedMessage;
+
   /// No description provided for @createAccount.
   ///
   /// In en, this message translates to:
@@ -2316,6 +2328,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You will need to verify your email before signing in'**
   String get verifyEmailBeforeSignInHint;
+
+  /// No description provided for @resetPasswordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset password'**
+  String get resetPasswordTitle;
+
+  /// No description provided for @resetPasswordCallbackMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your reset link is valid. Enter a new password to complete the recovery process.'**
+  String get resetPasswordCallbackMessage;
+
+  /// No description provided for @resetPasswordAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Update password'**
+  String get resetPasswordAction;
+
+  /// No description provided for @passwordResetCompleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Password updated'**
+  String get passwordResetCompleteTitle;
+
+  /// No description provided for @passwordResetCompleteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your password has been updated successfully.'**
+  String get passwordResetCompleteMessage;
 
   /// No description provided for @displayNameOptional.
   ///

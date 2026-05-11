@@ -288,12 +288,4 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
       setSubmitting(false);
     }
   }
-
-  String _formatInviteError(Object error) {
-    final message = error.toString();
-    if (message.startsWith('Bad state: ')) {
-      return message.substring('Bad state: '.length);
-    }
-    return message;
-  }
 }
