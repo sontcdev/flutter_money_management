@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
+import 'package:flutter_money_management/src/features/workspace/providers/workspace_management_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 
 /// Widget to display current workspace and allow switching
@@ -12,6 +13,7 @@ class WorkspaceSwitcher extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final activeWorkspace = ref.watch(activeWorkspaceProvider);
     final workspacesAsync = ref.watch(workspaceListProvider);
+    final inviteCount = ref.watch(myWorkspaceInviteCountProvider);
 
     return workspacesAsync.when(
       data: (workspaces) {
@@ -31,6 +33,14 @@ class WorkspaceSwitcher extends ConsumerWidget {
                   size: 20,
                   color: Theme.of(context).colorScheme.primary,
                 ),
+                if (inviteCount > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Badge(
+                      label: Text('$inviteCount'),
+                      child: const SizedBox(width: 1, height: 1),
+                    ),
+                  ),
                 const SizedBox(width: 8),
                 Text(
                   activeWorkspace?.name ?? l10n.selectWorkspace,

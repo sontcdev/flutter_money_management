@@ -914,6 +914,25 @@ class AppLocalizationsVi extends AppLocalizations {
   String get joinedWorkspaceSuccessfully => 'Đã tham gia workspace thành công';
 
   @override
+  String workspaceInviteMessage(Object workspaceName) {
+    return 'Bạn được mời vào workspace $workspaceName';
+  }
+
+  @override
+  String workspaceInviteFrom(Object inviter) {
+    return 'Được mời bởi $inviter';
+  }
+
+  @override
+  String get declineInvite => 'Từ chối';
+
+  @override
+  String get inviteDeclined => 'Đã từ chối lời mời';
+
+  @override
+  String get noWorkspaceInviteNotifications => 'Hiện chưa có lời mời workspace nào';
+
+  @override
   String errorLoadingWorkspaces(Object error) {
     return 'Lỗi tải danh sách workspace: $error';
   }
@@ -1042,6 +1061,18 @@ class AppLocalizationsVi extends AppLocalizations {
   String get noPendingInvites => 'Không có lời mời nào đang chờ';
 
   @override
+  String get declinedInvites => 'Lời mời đã bị từ chối';
+
+  @override
+  String get noDeclinedInvites => 'Không có lời mời nào bị từ chối';
+
+  @override
+  String get revokedInvites => 'Lời mời đã thu hồi';
+
+  @override
+  String get noRevokedInvites => 'Không có lời mời nào đã thu hồi';
+
+  @override
   String get inviteCodeCopied => 'Đã sao chép mã mời';
 
   @override
@@ -1054,6 +1085,43 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get status => 'Trạng thái';
+
+  @override
+  String get declinedStatus => 'Đã từ chối';
+
+  @override
+  String declinedAt(Object dateTime) {
+    return 'Từ chối lúc $dateTime';
+  }
+
+  @override
+  String get revokedStatus => 'Đã thu hồi';
+
+  @override
+  String revokedAt(Object dateTime) {
+    return 'Thu hồi lúc $dateTime';
+  }
+
+  @override
+  String get filterInvitesByEmail => 'Lọc theo email';
+
+  @override
+  String get filterInvitesByEmailHint => 'Tìm email lời mời';
+
+  @override
+  String get clearFilter => 'Xóa bộ lọc';
+
+  @override
+  String get sortInvites => 'Sắp xếp lời mời';
+
+  @override
+  String get sortByNewest => 'Mới nhất trước';
+
+  @override
+  String get sortByOldest => 'Cũ nhất trước';
+
+  @override
+  String get sortByEmail => 'Email A-Z';
 
   @override
   String get invitedUserJoinHint => 'Người được mời có thể mở phần Chọn workspace và chọn Tham gia bằng mã mời.';

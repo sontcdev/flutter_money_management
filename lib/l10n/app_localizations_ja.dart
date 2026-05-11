@@ -914,6 +914,25 @@ class AppLocalizationsJa extends AppLocalizations {
   String get joinedWorkspaceSuccessfully => 'ワークスペースに参加しました';
 
   @override
+  String workspaceInviteMessage(Object workspaceName) {
+    return '$workspaceName への招待があります';
+  }
+
+  @override
+  String workspaceInviteFrom(Object inviter) {
+    return '招待者: $inviter';
+  }
+
+  @override
+  String get declineInvite => '辞退';
+
+  @override
+  String get inviteDeclined => '招待を辞退しました';
+
+  @override
+  String get noWorkspaceInviteNotifications => '現在、ワークスペース招待はありません';
+
+  @override
   String errorLoadingWorkspaces(Object error) {
     return 'ワークスペースの読み込みエラー: $error';
   }
@@ -1042,6 +1061,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get noPendingInvites => '保留中の招待はありません';
 
   @override
+  String get declinedInvites => '辞退された招待';
+
+  @override
+  String get noDeclinedInvites => '辞退された招待はありません';
+
+  @override
+  String get revokedInvites => '取り消された招待';
+
+  @override
+  String get noRevokedInvites => '取り消された招待はありません';
+
+  @override
   String get inviteCodeCopied => '招待コードをコピーしました';
 
   @override
@@ -1054,6 +1085,43 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get status => '状態';
+
+  @override
+  String get declinedStatus => '辞退済み';
+
+  @override
+  String declinedAt(Object dateTime) {
+    return '辞退日時: $dateTime';
+  }
+
+  @override
+  String get revokedStatus => '取り消し済み';
+
+  @override
+  String revokedAt(Object dateTime) {
+    return '取り消し日時: $dateTime';
+  }
+
+  @override
+  String get filterInvitesByEmail => 'メールで絞り込み';
+
+  @override
+  String get filterInvitesByEmailHint => '招待メールを検索';
+
+  @override
+  String get clearFilter => '絞り込みをクリア';
+
+  @override
+  String get sortInvites => '招待を並び替え';
+
+  @override
+  String get sortByNewest => '新しい順';
+
+  @override
+  String get sortByOldest => '古い順';
+
+  @override
+  String get sortByEmail => 'メール A-Z';
 
   @override
   String get invitedUserJoinHint => '招待されたユーザーはワークスペース選択を開き、招待コードで参加を選べます。';

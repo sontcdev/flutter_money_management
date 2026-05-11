@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter_money_management/src/services/error_report_service.dart';
 
 class ErrorReportDialog extends StatefulWidget {
@@ -74,7 +77,7 @@ class _ErrorReportDialogState extends State<ErrorReportDialog> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Không thể gửi báo cáo: $e'),
+            content: Text(_buildSubmitErrorMessage(e)),
             backgroundColor: Colors.red,
           ),
         );
@@ -132,6 +135,23 @@ class _ErrorReportDialogState extends State<ErrorReportDialog> {
         ),
       ],
     );
+  }
+
+  String _buildSubmitErrorMessage(Object error) {
+    if (error is SocketException) {
+      return 'Không thể gửi báo cáo vì thiết bị chưa kết nối mạng hoặc DNS không phân giải được máy chủ.';
+    }
+
+    if (error is http.ClientException) {
+      final message = error.message.toLowerCase();
+      if (message.contains('failed host lookup') ||
+          message.contains('socketexception') ||
+          message.contains('no address associated with hostname')) {
+        return 'Không thể gửi báo cáo vì không kết nối được tới máy chủ Supabase. Hãy kiểm tra mạng hoặc cấu hình máy chủ.';
+      }
+    }
+
+    return 'Không thể gửi báo cáo lúc này. Vui lòng thử lại sau.';
   }
 
 }

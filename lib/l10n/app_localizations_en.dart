@@ -914,6 +914,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get joinedWorkspaceSuccessfully => 'Joined workspace successfully';
 
   @override
+  String workspaceInviteMessage(Object workspaceName) {
+    return 'You were invited to $workspaceName';
+  }
+
+  @override
+  String workspaceInviteFrom(Object inviter) {
+    return 'Invited by $inviter';
+  }
+
+  @override
+  String get declineInvite => 'Decline';
+
+  @override
+  String get inviteDeclined => 'Invite declined';
+
+  @override
+  String get noWorkspaceInviteNotifications => 'No workspace invites right now';
+
+  @override
   String errorLoadingWorkspaces(Object error) {
     return 'Error loading workspaces: $error';
   }
@@ -1042,6 +1061,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noPendingInvites => 'No pending invites';
 
   @override
+  String get declinedInvites => 'Declined invites';
+
+  @override
+  String get noDeclinedInvites => 'No declined invites';
+
+  @override
+  String get revokedInvites => 'Revoked invites';
+
+  @override
+  String get noRevokedInvites => 'No revoked invites';
+
+  @override
   String get inviteCodeCopied => 'Invite code copied';
 
   @override
@@ -1054,6 +1085,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get status => 'Status';
+
+  @override
+  String get declinedStatus => 'Declined';
+
+  @override
+  String declinedAt(Object dateTime) {
+    return 'Declined at $dateTime';
+  }
+
+  @override
+  String get revokedStatus => 'Revoked';
+
+  @override
+  String revokedAt(Object dateTime) {
+    return 'Revoked at $dateTime';
+  }
+
+  @override
+  String get filterInvitesByEmail => 'Filter by email';
+
+  @override
+  String get filterInvitesByEmailHint => 'Search invite email';
+
+  @override
+  String get clearFilter => 'Clear filter';
+
+  @override
+  String get sortInvites => 'Sort invites';
+
+  @override
+  String get sortByNewest => 'Newest first';
+
+  @override
+  String get sortByOldest => 'Oldest first';
+
+  @override
+  String get sortByEmail => 'Email A-Z';
 
   @override
   String get invitedUserJoinHint => 'The invited user can open Workspace Selection and choose Join by invite code.';

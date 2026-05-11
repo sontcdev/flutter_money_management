@@ -32,11 +32,11 @@ class WorkspaceManagementService {
     }
   }
 
-  Future<List<WorkspaceInviteSummary>> getPendingInvites(
+  Future<List<WorkspaceInviteSummary>> getWorkspaceInvites(
       String workspaceId) async {
     try {
       final response = await _supabase.rpc(
-        'get_workspace_pending_invites_with_profiles',
+        'get_workspace_invites_with_profiles',
         params: {'p_workspace_id': workspaceId},
       );
 
@@ -46,9 +46,8 @@ class WorkspaceManagementService {
           .toList();
     } on PostgrestException catch (e) {
       if (e.code == 'PGRST202') {
-        // Function not found in database - return empty list as fallback
         debugPrint(
-          'Warning: get_workspace_pending_invites_with_profiles function not found in database',
+          'Warning: get_workspace_invites_with_profiles function not found in database',
         );
         return [];
       }
@@ -78,10 +77,33 @@ class WorkspaceManagementService {
     );
   }
 
+  Future<List<WorkspaceInviteNotification>> getMyPendingInvites() async {
+    final response = await _supabase.rpc('get_my_pending_workspace_invites');
+
+    return (response as List)
+        .cast<Map<String, dynamic>>()
+        .map(WorkspaceInviteNotification.fromMap)
+        .toList();
+  }
+
   Future<void> revokeInvite(String inviteId) async {
     await _supabase.rpc('revoke_workspace_invite', params: {
       'invite_id': inviteId,
     });
+  }
+
+  Future<void> declineInvite(String token) async {
+    final response = await _supabase.rpc('decline_workspace_invite', params: {
+      'invite_token': token.trim(),
+    });
+
+    final payload = response as Map<String, dynamic>;
+    final success = payload['success'] == true;
+    if (!success) {
+      throw StateError(
+        payload['error']?.toString() ?? 'Unable to decline workspace invite',
+      );
+    }
   }
 
   Future<WorkspaceInviteSummary> refreshInvite(String inviteId) async {

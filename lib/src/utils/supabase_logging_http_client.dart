@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+import '../config/build_flags.dart';
 import 'app_logger.dart';
 
 class SupabaseLoggingHttpClient extends http.BaseClient {
@@ -27,21 +29,20 @@ class SupabaseLoggingHttpClient extends http.BaseClient {
 
   @override
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
-    if (!kDebugMode) {
+    if (!kDebugMode && !BuildFlags.enableReleaseNetworkLogging) {
       return _inner.send(request);
     }
 
     final stopwatch = Stopwatch()..start();
     final requestLog = _buildRequestLog(request);
-    AppLogger.debug(requestLog, name: _logName);
+    _emitLog(requestLog);
 
     try {
       final response = await _inner.send(request);
       stopwatch.stop();
-      AppLogger.debug(
+      _emitLog(
         'Supabase response ${request.method} ${request.url} '
         'status=${response.statusCode} elapsed=${stopwatch.elapsedMilliseconds}ms',
-        name: _logName,
       );
       return response;
     } catch (error, stackTrace) {
@@ -60,6 +61,21 @@ class SupabaseLoggingHttpClient extends http.BaseClient {
   @override
   void close() {
     _inner.close();
+  }
+
+  void _emitLog(String message, {Object? error, StackTrace? stackTrace}) {
+    developer.log(
+      message,
+      name: _logName,
+      level: AppLogLevel.debug.value,
+      error: error,
+      stackTrace: stackTrace,
+      time: DateTime.now(),
+    );
+
+    if (kDebugMode) {
+      AppLogger.debug(message, name: _logName, error: error, stackTrace: stackTrace);
+    }
   }
 
   String _buildRequestLog(http.BaseRequest request) {

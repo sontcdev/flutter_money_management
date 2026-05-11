@@ -4,6 +4,7 @@ import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
 import 'package:flutter_money_management/src/features/settings/providers/settings_preferences_providers.dart';
 import 'package:flutter_money_management/src/features/transactions/presentation/widgets/transaction_item.dart';
+import 'package:flutter_money_management/src/features/workspace/presentation/widgets/workspace_invite_notification_section.dart';
 import 'package:flutter_money_management/src/features/workspace/presentation/widgets/workspace_switcher.dart';
 import 'package:flutter_money_management/src/features/workspace/services/workspace_sync_helper.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart'
@@ -44,7 +45,17 @@ class TodayScreen extends ConsumerWidget {
         child: transactionsAsync.when(
           data: (transactions) {
             if (transactions.isEmpty) {
-              return _buildFirstRunEmptyState(context, l10n);
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const WorkspaceInviteNotificationSection(),
+                    _buildFirstRunEmptyState(context, l10n),
+                  ],
+                ),
+              );
             }
 
             return SingleChildScrollView(
@@ -60,6 +71,10 @@ class TodayScreen extends ConsumerWidget {
 
                   // Quick Actions
                   _buildQuickActions(context, l10n),
+
+                  const SizedBox(height: AppSpacing.sectionGap),
+
+                  const WorkspaceInviteNotificationSection(),
 
                   const SizedBox(height: AppSpacing.sectionGap),
 

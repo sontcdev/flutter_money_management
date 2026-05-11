@@ -66,29 +66,42 @@ class SignUpScreen extends HookConsumerWidget {
 
         if (response.user != null) {
           AppLogger.info('Sign-up succeeded', name: 'MM.Auth');
-          // Account created successfully
-          // Since email confirmation is enabled, user needs to verify email before signing in
-          if (context.mounted) {
-            AppLogger.info('Showing email verification dialog', name: 'MM.UI');
-            // Show success dialog with clear instructions
-            await showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (context) => AlertDialog(
-                title: Text(l10n.accountCreatedTitle),
-                content: Text(l10n.accountCreatedMessage),
-                actions: [
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      // Navigate back to sign in
-                      Navigator.of(context).pop();
-                    },
-                    child: Text(l10n.goToSignIn),
-                  ),
-                ],
-              ),
-            );
+          
+          final session = response.session;
+          
+          // Check if user has valid session (email already confirmed)
+          if (session != null && session.user.emailConfirmedAt != null) {
+            // Email verification is disabled -> user is already authenticated
+            // Navigate to '/' to let SplashScreen handle routing
+            if (context.mounted) {
+              AppLogger.info('Auto-login after sign-up', name: 'MM.Auth');
+              Navigator.of(context).pushNamedAndRemoveUntil('/', (_) => false);
+            }
+          } else {
+            // Email verification is enabled, user needs to verify email
+            // This case should not happen since email verification is disabled
+            // But keep it for compatibility if re-enabled later
+            if (context.mounted) {
+              AppLogger.info('Showing email verification dialog', name: 'MM.UI');
+              await showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => AlertDialog(
+                  title: Text(l10n.accountCreatedTitle),
+                  content: Text(l10n.accountCreatedMessage),
+                  actions: [
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        // Navigate back to sign in
+                        Navigator.of(context).pop();
+                      },
+                      child: Text(l10n.goToSignIn),
+                    ),
+                  ],
+                ),
+              );
+            }
           }
         }
       } catch (e, stackTrace) {

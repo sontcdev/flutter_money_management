@@ -293,6 +293,21 @@
   "pasteWorkspaceInviteCode": "Paste workspace invite code",
   "join": "Join",
   "joinedWorkspaceSuccessfully": "Joined workspace successfully",
+  "workspaceInviteMessage": "You were invited to {workspaceName}",
+  "@workspaceInviteMessage": {
+    "placeholders": {
+      "workspaceName": {}
+    }
+  },
+  "workspaceInviteFrom": "Invited by {inviter}",
+  "@workspaceInviteFrom": {
+    "placeholders": {
+      "inviter": {}
+    }
+  },
+  "declineInvite": "Decline",
+  "inviteDeclined": "Invite declined",
+  "noWorkspaceInviteNotifications": "No workspace invites right now",
   "errorLoadingWorkspaces": "Error loading workspaces: {error}",
   "workspaceManagement": "Workspace Management",
   "workspaceInviteAlreadyMember": "This email is already a workspace member",
@@ -327,10 +342,35 @@
   "userShortLabel": "User {id}",
   "pendingInvites": "Pending invites",
   "noPendingInvites": "No pending invites",
+  "declinedInvites": "Declined invites",
+  "noDeclinedInvites": "No declined invites",
+  "revokedInvites": "Revoked invites",
+  "noRevokedInvites": "No revoked invites",
   "inviteCodeCopied": "Invite code copied",
   "inviteRevoked": "Invite revoked",
   "failedToLoadInvites": "Failed to load invites: {error}",
   "status": "Status",
+  "declinedStatus": "Declined",
+  "declinedAt": "Declined at {dateTime}",
+  "@declinedAt": {
+    "placeholders": {
+      "dateTime": {}
+    }
+  },
+  "revokedStatus": "Revoked",
+  "revokedAt": "Revoked at {dateTime}",
+  "@revokedAt": {
+    "placeholders": {
+      "dateTime": {}
+    }
+  },
+  "filterInvitesByEmail": "Filter by email",
+  "filterInvitesByEmailHint": "Search invite email",
+  "clearFilter": "Clear filter",
+  "sortInvites": "Sort invites",
+  "sortByNewest": "Newest first",
+  "sortByOldest": "Oldest first",
+  "sortByEmail": "Email A-Z",
   "invitedUserJoinHint": "The invited user can open Workspace Selection and choose Join by invite code.",
   "copyCode": "Copy code",
   "revoke": "Revoke",

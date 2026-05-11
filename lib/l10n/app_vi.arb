@@ -293,6 +293,21 @@
   "pasteWorkspaceInviteCode": "Dán mã mời workspace",
   "join": "Tham gia",
   "joinedWorkspaceSuccessfully": "Đã tham gia workspace thành công",
+  "workspaceInviteMessage": "Bạn được mời vào workspace {workspaceName}",
+  "@workspaceInviteMessage": {
+    "placeholders": {
+      "workspaceName": {}
+    }
+  },
+  "workspaceInviteFrom": "Được mời bởi {inviter}",
+  "@workspaceInviteFrom": {
+    "placeholders": {
+      "inviter": {}
+    }
+  },
+  "declineInvite": "Từ chối",
+  "inviteDeclined": "Đã từ chối lời mời",
+  "noWorkspaceInviteNotifications": "Hiện chưa có lời mời workspace nào",
   "errorLoadingWorkspaces": "Lỗi tải danh sách workspace: {error}",
   "workspaceManagement": "Quản lý workspace",
   "workspaceInviteAlreadyMember": "Email này đã là thành viên của workspace",
@@ -327,10 +342,35 @@
   "userShortLabel": "Người dùng {id}",
   "pendingInvites": "Lời mời đang chờ",
   "noPendingInvites": "Không có lời mời nào đang chờ",
+  "declinedInvites": "Lời mời đã bị từ chối",
+  "noDeclinedInvites": "Không có lời mời nào bị từ chối",
+  "revokedInvites": "Lời mời đã thu hồi",
+  "noRevokedInvites": "Không có lời mời nào đã thu hồi",
   "inviteCodeCopied": "Đã sao chép mã mời",
   "inviteRevoked": "Đã thu hồi lời mời",
   "failedToLoadInvites": "Tải lời mời thất bại: {error}",
   "status": "Trạng thái",
+  "declinedStatus": "Đã từ chối",
+  "declinedAt": "Từ chối lúc {dateTime}",
+  "@declinedAt": {
+    "placeholders": {
+      "dateTime": {}
+    }
+  },
+  "revokedStatus": "Đã thu hồi",
+  "revokedAt": "Thu hồi lúc {dateTime}",
+  "@revokedAt": {
+    "placeholders": {
+      "dateTime": {}
+    }
+  },
+  "filterInvitesByEmail": "Lọc theo email",
+  "filterInvitesByEmailHint": "Tìm email lời mời",
+  "clearFilter": "Xóa bộ lọc",
+  "sortInvites": "Sắp xếp lời mời",
+  "sortByNewest": "Mới nhất trước",
+  "sortByOldest": "Cũ nhất trước",
+  "sortByEmail": "Email A-Z",
   "invitedUserJoinHint": "Người được mời có thể mở phần Chọn workspace và chọn Tham gia bằng mã mời.",
   "copyCode": "Sao chép mã",
   "revoke": "Thu hồi",
