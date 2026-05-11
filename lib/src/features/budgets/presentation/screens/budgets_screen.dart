@@ -1,23 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
-import 'package:flutter_money_management/src/features/budgets/presentation/widgets/budget_progress.dart';
-import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
-import 'package:flutter_money_management/src/features/settings/providers/settings_preferences_providers.dart';
-import 'package:flutter_money_management/src/features/workspace/services/workspace_sync_helper.dart';
 import 'package:flutter_money_management/src/features/budgets/models/budget.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
-import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
+import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
-import 'package:flutter_money_management/src/theme/app_colors.dart';
-import 'package:flutter_money_management/src/theme/app_spacing.dart';
-import 'package:flutter_money_management/src/ui/widgets/app_metric_card.dart';
-import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
-import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
+import 'package:flutter_money_management/src/ui/widgets/shimmer_list_item.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
-import 'package:flutter_money_management/src/utils/cycle_utils.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
+import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
 enum BudgetFilter { all, onTrack, nearLimit, exceeded }
 
@@ -603,10 +594,19 @@ class _SwipeableBudgetCard extends ConsumerWidget {
           SnackBar(content: Text(l10n.budgetDeleted)),
         );
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.errorWithMessage('$e'))),
+        await ErrorReportHelper.handleApiError(
+          context: context,
+          ref: ref,
+          error: e,
+          stackTrace: stackTrace,
+          feature: 'budget',
+          action: 'delete_budget',
+          screen: 'budgets_screen',
+          extraContext: {
+            'budget_id': budget.id,
+          },
         );
       }
     }

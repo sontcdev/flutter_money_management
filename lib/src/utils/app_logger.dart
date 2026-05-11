@@ -95,5 +95,18 @@ class AppLogger {
       stackTrace: stackTrace,
       time: DateTime.now(),
     );
+
+    // Also print to console for easy copying
+    final timestamp = DateTime.now().toIso8601String();
+    final levelStr = level.name.toUpperCase();
+    debugPrint('[$timestamp] [$levelStr] [$name] $message');
+    
+    if (error != null) {
+      debugPrint('Error: $error');
+    }
+    
+    if (stackTrace != null) {
+      debugPrint('StackTrace:\n$stackTrace');
+    }
   }
 }

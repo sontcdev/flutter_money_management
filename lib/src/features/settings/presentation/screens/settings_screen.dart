@@ -8,6 +8,7 @@ import 'package:flutter_money_management/src/features/workspace/providers/worksp
 import 'package:flutter_money_management/src/i18n/locale_provider.dart';
 import 'package:flutter_money_management/src/i18n/theme_provider.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
+import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
 class SettingsScreen extends HookConsumerWidget {
   const SettingsScreen({super.key});
@@ -229,13 +230,16 @@ class SettingsScreen extends HookConsumerWidget {
             (route) => false,
           );
         }
-      } catch (e) {
+      } catch (e, stackTrace) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(AppLocalizations.of(context)!.signOutFailed('$e')),
-              backgroundColor: Colors.red,
-            ),
+          await ErrorReportHelper.handleApiError(
+            context: context,
+            ref: ref,
+            error: e,
+            stackTrace: stackTrace,
+            feature: 'settings',
+            action: 'sign_out',
+            screen: 'settings_screen',
           );
         }
       }

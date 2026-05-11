@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/auth/providers/auth_providers.dart';
 import 'package:flutter_money_management/src/utils/app_logger.dart';
+import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
 class SignUpScreen extends HookConsumerWidget {
   const SignUpScreen({super.key});
@@ -98,6 +99,22 @@ class SignUpScreen extends HookConsumerWidget {
           stackTrace: stackTrace,
         );
         errorMessage.value = _getErrorMessage(l10n, e.toString());
+        
+        if (context.mounted) {
+          await ErrorReportHelper.handleApiError(
+            context: context,
+            ref: ref,
+            error: e,
+            stackTrace: stackTrace,
+            feature: 'auth',
+            action: 'sign_up',
+            screen: 'sign_up_screen',
+            extraContext: {
+              'email_masked': ErrorReportHelper.maskEmail(emailController.text.trim()),
+              'has_display_name': displayNameController.text.trim().isNotEmpty,
+            },
+          );
+        }
       } finally {
         isLoading.value = false;
       }

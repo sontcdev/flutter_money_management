@@ -8,6 +8,7 @@ import 'package:flutter_money_management/src/features/categories/models/category
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
 import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
+import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 import 'package:flutter_money_management/src/features/budgets/services/budget_service.dart';
 
 class CategoriesScreen extends HookConsumerWidget {
@@ -167,6 +168,21 @@ class CategoriesScreen extends HookConsumerWidget {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(content: Text(l10n.categoryInUse)),
+                                );
+                              }
+                            } catch (e, stackTrace) {
+                              if (context.mounted) {
+                                await ErrorReportHelper.handleApiError(
+                                  context: context,
+                                  ref: ref,
+                                  error: e,
+                                  stackTrace: stackTrace,
+                                  feature: 'category',
+                                  action: 'delete_category',
+                                  screen: 'categories_screen',
+                                  extraContext: {
+                                    'category_id': category.id,
+                                  },
                                 );
                               }
                             }

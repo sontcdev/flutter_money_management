@@ -20,6 +20,7 @@ import 'package:flutter_money_management/src/utils/app_logger.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 import 'package:flutter_money_management/src/utils/vnd_input_formatter.dart';
+import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
 class EditTransactionScreen extends HookConsumerWidget {
   final String transactionId;
@@ -176,10 +177,22 @@ class EditTransactionScreen extends HookConsumerWidget {
             handleSubmit();
           }
         }
-      } catch (e) {
+      } catch (e, stackTrace) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.errorWithMessage('$e'))),
+          await ErrorReportHelper.handleApiError(
+            context: context,
+            ref: ref,
+            error: e,
+            stackTrace: stackTrace,
+            feature: 'transaction',
+            action: 'update_transaction',
+            screen: 'edit_transaction_screen',
+            extraContext: {
+              'transaction_id': transactionId,
+              'category_id': selectedCategoryId.value!,
+              'has_local_receipt': localReceiptPath.value != null,
+              'should_remove_receipt': shouldRemoveReceipt.value,
+            },
           );
         }
       } finally {

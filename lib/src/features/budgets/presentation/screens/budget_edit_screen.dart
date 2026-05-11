@@ -13,6 +13,7 @@ import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 import 'package:flutter_money_management/src/utils/vnd_input_formatter.dart';
+import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
 class BudgetEditScreen extends HookConsumerWidget {
   final Budget? budget;
@@ -181,10 +182,22 @@ class BudgetEditScreen extends HookConsumerWidget {
             SnackBar(content: Text(l10n.success)),
           );
         }
-      } catch (e) {
+      } catch (e, stackTrace) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.errorWithMessage('$e'))),
+          await ErrorReportHelper.handleApiError(
+            context: context,
+            ref: ref,
+            error: e,
+            stackTrace: stackTrace,
+            feature: 'budget',
+            action: budget == null ? 'create_budget' : 'update_budget',
+            screen: 'budget_edit_screen',
+            extraContext: {
+              if (budget != null) 'budget_id': budget!.id,
+              'category_id': selectedCategoryId.value!,
+              'period_type': selectedPeriodType.value.toString(),
+              'allow_overdraft': allowOverdraft.value,
+            },
           );
         }
       } finally {

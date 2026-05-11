@@ -6,6 +6,7 @@ import 'package:flutter_money_management/src/features/auth/providers/auth_provid
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/utils/app_logger.dart';
+import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 import 'sign_up_screen.dart';
 
 class SignInScreen extends HookConsumerWidget {
@@ -73,6 +74,21 @@ class SignInScreen extends HookConsumerWidget {
           stackTrace: stackTrace,
         );
         errorMessage.value = l10n.failedToLoadWorkspaces('$e');
+        
+        if (context.mounted) {
+          await ErrorReportHelper.handleApiError(
+            context: context,
+            ref: ref,
+            error: e,
+            stackTrace: stackTrace,
+            feature: 'auth',
+            action: 'post_login_workspace_resolution',
+            screen: 'sign_in_screen',
+            extraContext: {
+              'source': 'workspaceListProvider.future',
+            },
+          );
+        }
       }
     }
 
@@ -128,6 +144,21 @@ class SignInScreen extends HookConsumerWidget {
           stackTrace: stackTrace,
         );
         errorMessage.value = _getErrorMessage(l10n, e.toString());
+        
+        if (context.mounted) {
+          await ErrorReportHelper.handleApiError(
+            context: context,
+            ref: ref,
+            error: e,
+            stackTrace: stackTrace,
+            feature: 'auth',
+            action: 'sign_in',
+            screen: 'sign_in_screen',
+            extraContext: {
+              'email_masked': ErrorReportHelper.maskEmail(email),
+            },
+          );
+        }
       } finally {
         isLoading.value = false;
       }
@@ -163,6 +194,21 @@ class SignInScreen extends HookConsumerWidget {
           stackTrace: stackTrace,
         );
         errorMessage.value = l10n.failedToSendResetEmail;
+        
+        if (context.mounted) {
+          await ErrorReportHelper.handleApiError(
+            context: context,
+            ref: ref,
+            error: e,
+            stackTrace: stackTrace,
+            feature: 'auth',
+            action: 'forgot_password',
+            screen: 'sign_in_screen',
+            extraContext: {
+              'email_masked': ErrorReportHelper.maskEmail(emailController.text.trim()),
+            },
+          );
+        }
       } finally {
         isLoading.value = false;
       }
