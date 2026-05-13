@@ -339,11 +339,18 @@ class AddTransactionScreen extends HookConsumerWidget {
                                 'initialType': selectedType.value ==
                                         model.TransactionType.expense
                                     ? CategoryType.expense
-                                    : CategoryType.income
+                                    : CategoryType.income,
+                                'workspaceId': selectedWorkspaceId.value,
                               },
                             );
                             if (result == true) {
                               ref.invalidate(categoriesProvider);
+                              final workspaceId = selectedWorkspaceId.value;
+                              if (workspaceId != null) {
+                                ref.invalidate(
+                                  categoriesForWorkspaceProvider(workspaceId),
+                                );
+                              }
                             }
                           },
                         ),

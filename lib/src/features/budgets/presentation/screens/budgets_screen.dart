@@ -72,21 +72,30 @@ class BudgetsScreen extends ConsumerWidget {
                 }).toList();
 
                 if (filteredBudgets.isEmpty) {
-                  return EmptyState(
-                    icon: Icons.account_balance_wallet_outlined,
-                    title: l10n.noBudgets,
-                    message: l10n.createFirstBudget,
-                    actionLabel: canManageContent ? l10n.addBudgetAction : null,
-                    onAction: canManageContent
-                        ? () async {
-                            final result = await Navigator.pushNamed(
-                                context, '/budget-edit');
-                            if (result == true) {
-                              ref.invalidate(budgetsProvider);
-                              ref.invalidate(budgetsWithConsumedProvider);
-                            }
-                          }
-                        : null,
+                  return ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.6,
+                        child: EmptyState(
+                          icon: Icons.account_balance_wallet_outlined,
+                          title: l10n.noBudgets,
+                          message: l10n.createFirstBudget,
+                          actionLabel:
+                              canManageContent ? l10n.addBudgetAction : null,
+                          onAction: canManageContent
+                              ? () async {
+                                  final result = await Navigator.pushNamed(
+                                      context, '/budget-edit');
+                                  if (result == true) {
+                                    ref.invalidate(budgetsProvider);
+                                    ref.invalidate(budgetsWithConsumedProvider);
+                                  }
+                                }
+                              : null,
+                        ),
+                      ),
+                    ],
                   );
                 }
 

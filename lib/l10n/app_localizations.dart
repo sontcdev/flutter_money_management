@@ -2503,6 +2503,138 @@ abstract class AppLocalizations {
   /// **'Active'**
   String get activeStatus;
 
+  /// No description provided for @activity.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get activity;
+
+  /// No description provided for @manageMembers.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage members'**
+  String get manageMembers;
+
+  /// No description provided for @noCategoriesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories yet'**
+  String get noCategoriesYet;
+
+  /// No description provided for @noCategoriesYetDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Create categories to organize workspace transactions.'**
+  String get noCategoriesYetDesc;
+
+  /// No description provided for @noTransactionsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No transactions yet'**
+  String get noTransactionsYet;
+
+  /// No description provided for @noTransactionsYetDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the first transaction to start tracking this workspace.'**
+  String get noTransactionsYetDesc;
+
+  /// No description provided for @noMembersFoundDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite members to collaborate in this workspace.'**
+  String get noMembersFoundDesc;
+
+  /// No description provided for @memberCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} members'**
+  String memberCount(Object count);
+
+  /// No description provided for @workspaceTypeValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{type} workspace'**
+  String workspaceTypeValue(Object type);
+
+  /// No description provided for @updatedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {dateTime}'**
+  String updatedAt(Object dateTime);
+
+  /// No description provided for @budgetProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget progress'**
+  String get budgetProgress;
+
+  /// No description provided for @budgetUsage.
+  ///
+  /// In en, this message translates to:
+  /// **'{consumed} of {limit}'**
+  String budgetUsage(Object consumed, Object limit);
+
+  /// No description provided for @overBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Over budget'**
+  String get overBudget;
+
+  /// No description provided for @dangerZone.
+  ///
+  /// In en, this message translates to:
+  /// **'Danger zone'**
+  String get dangerZone;
+
+  /// No description provided for @leaveWorkspace.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave workspace'**
+  String get leaveWorkspace;
+
+  /// No description provided for @leaveWorkspaceDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You will lose access to shared categories, budgets, and transactions.'**
+  String get leaveWorkspaceDesc;
+
+  /// No description provided for @leaveWorkspaceConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to leave this workspace? You will no longer see shared data after leaving.'**
+  String get leaveWorkspaceConfirm;
+
+  /// No description provided for @leave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get leave;
+
+  /// No description provided for @noInvitesForCurrentFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'Try changing the status tab or clearing the email filter.'**
+  String get noInvitesForCurrentFilter;
+
+  /// No description provided for @noActivityYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No activity yet'**
+  String get noActivityYet;
+
+  /// No description provided for @noActivityYetDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Workspace changes will appear here after members start collaborating.'**
+  String get noActivityYetDesc;
+
+  /// No description provided for @activityByActorAt.
+  ///
+  /// In en, this message translates to:
+  /// **'{actor} • {dateTime}'**
+  String activityByActorAt(Object actor, Object dateTime);
+
   /// No description provided for @failedToLoadWorkspaces.
   ///
   /// In en, this message translates to:
@@ -2704,14 +2836,20 @@ abstract class AppLocalizations {
   /// No description provided for @displayNameOptional.
   ///
   /// In en, this message translates to:
-  /// **'Display Name (Optional)'**
+  /// **'Username'**
   String get displayNameOptional;
 
   /// No description provided for @displayNameHint.
   ///
   /// In en, this message translates to:
-  /// **'How should we call you?'**
+  /// **'Choose a unique username'**
   String get displayNameHint;
+
+  /// No description provided for @enterUsername.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a username'**
+  String get enterUsername;
 
   /// No description provided for @atLeastSixCharacters.
   ///
@@ -2742,6 +2880,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This email is already registered'**
   String get emailAlreadyRegistered;
+
+  /// No description provided for @usernameAlreadyRegistered.
+  ///
+  /// In en, this message translates to:
+  /// **'This username is already registered'**
+  String get usernameAlreadyRegistered;
 
   /// No description provided for @weakPassword.
   ///

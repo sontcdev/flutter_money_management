@@ -51,140 +51,158 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: workspacesAsync.when(
-        data: (workspaces) {
-          if (workspaces.isEmpty) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 520),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(workspaceListProvider);
+          ref.invalidate(myWorkspaceInviteNotificationsProvider);
+          await ref.read(workspaceListProvider.future);
+        },
+        child: workspacesAsync.when(
+          data: (workspaces) {
+            if (workspaces.isEmpty) {
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(24),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 520),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          size: 72,
+                          color: Colors.orange,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          l10n.workspaceSetupIncomplete,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          l10n.workspaceSetupIncompleteDesc,
+                          textAlign: TextAlign.left,
+                        ),
+                        const SizedBox(height: 24),
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          alignment: WrapAlignment.center,
+                          children: [
+                            OutlinedButton.icon(
+                              onPressed: () =>
+                                  _showJoinInviteDialog(context, ref),
+                              icon: const Icon(Icons.key_outlined),
+                              label: Text(l10n.joinByInviteCode),
+                            ),
+                            OutlinedButton(
+                              onPressed: () {
+                                ref.invalidate(workspaceListProvider);
+                                ref.invalidate(
+                                  myWorkspaceInviteNotificationsProvider,
+                                );
+                              },
+                              child: Text(l10n.retry),
+                            ),
+                            FilledButton(
+                              onPressed: () {
+                                Navigator.of(context)
+                                    .pushNamed('/workspace-create');
+                              },
+                              child: const Text('Create workspace'),
+                            ),
+                            FilledButton(
+                              onPressed: () async {
+                                final supabaseAuth =
+                                    ref.read(supabaseAuthServiceProvider);
+                                await supabaseAuth.signOut();
+                                clearActiveWorkspace(ref);
+                                if (context.mounted) {
+                                  Navigator.of(context)
+                                      .pushReplacementNamed('/sign-in');
+                                }
+                              },
+                              child: Text(l10n.signOutTitle),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 32),
+                        const WorkspaceInviteNotificationSection(
+                          padding: EdgeInsets.zero,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            return ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              itemCount: workspaces.length,
+              itemBuilder: (context, index) {
+                final workspace = workspaces[index];
+                final isOwner = workspace.ownerId == currentUser?.id;
+
+                return Card(
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      child: Text(workspace.name[0].toUpperCase()),
+                    ),
+                    title: Text(workspace.name),
+                    subtitle: Text(
+                      isOwner ? l10n.ownerRole : l10n.roleValue(workspace.role),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: isOwner ? Colors.green : Colors.blue,
+                      ),
+                    ),
+                    trailing: const Icon(Icons.arrow_forward_ios),
+                    onTap: () {
+                      // Set active workspace and navigate to home
+                      ref.read(activeWorkspaceIdProvider.notifier).state =
+                          workspace.id;
+                      Navigator.of(context).pushReplacementNamed(
+                        '/workspace-detail',
+                        arguments: workspace.id,
+                      );
+                    },
+                  ),
+                );
+              },
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stack) => ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            children: [
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.7,
+                child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Icon(
-                        Icons.error_outline,
-                        size: 72,
-                        color: Colors.orange,
-                      ),
+                      const Icon(Icons.error_outline,
+                          size: 64, color: Colors.red),
                       const SizedBox(height: 16),
-                      Text(
-                        l10n.workspaceSetupIncomplete,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        l10n.workspaceSetupIncompleteDesc,
-                        textAlign: TextAlign.left,
-                      ),
-                      const SizedBox(height: 24),
-                      Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        alignment: WrapAlignment.center,
-                        children: [
-                          OutlinedButton.icon(
-                            onPressed: () =>
-                                _showJoinInviteDialog(context, ref),
-                            icon: const Icon(Icons.key_outlined),
-                            label: Text(l10n.joinByInviteCode),
-                          ),
-                          OutlinedButton(
-                            onPressed: () {
-                              ref.invalidate(workspaceListProvider);
-                              ref.invalidate(
-                                myWorkspaceInviteNotificationsProvider,
-                              );
-                            },
-                            child: Text(l10n.retry),
-                          ),
-                          FilledButton(
-                            onPressed: () {
-                              Navigator.of(context)
-                                  .pushNamed('/workspace-create');
-                            },
-                            child: const Text('Create workspace'),
-                          ),
-                          FilledButton(
-                            onPressed: () async {
-                              final supabaseAuth =
-                                  ref.read(supabaseAuthServiceProvider);
-                              await supabaseAuth.signOut();
-                              clearActiveWorkspace(ref);
-                              if (context.mounted) {
-                                Navigator.of(context)
-                                    .pushReplacementNamed('/sign-in');
-                              }
-                            },
-                            child: Text(l10n.signOutTitle),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 32),
-                      const WorkspaceInviteNotificationSection(
-                        padding: EdgeInsets.zero,
+                      Text(l10n.errorLoadingWorkspaces('$error')),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          ref.invalidate(workspaceListProvider);
+                        },
+                        child: Text(l10n.retry),
                       ),
                     ],
                   ),
                 ),
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: workspaces.length,
-            itemBuilder: (context, index) {
-              final workspace = workspaces[index];
-              final isOwner = workspace.ownerId == currentUser?.id;
-
-              return Card(
-                child: ListTile(
-                  leading: CircleAvatar(
-                    child: Text(workspace.name[0].toUpperCase()),
-                  ),
-                  title: Text(workspace.name),
-                  subtitle: Text(
-                    isOwner ? l10n.ownerRole : l10n.roleValue(workspace.role),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isOwner ? Colors.green : Colors.blue,
-                    ),
-                  ),
-                  trailing: const Icon(Icons.arrow_forward_ios),
-                  onTap: () {
-                    // Set active workspace and navigate to home
-                    ref.read(activeWorkspaceIdProvider.notifier).state =
-                        workspace.id;
-                    Navigator.of(context).pushReplacementNamed(
-                      '/workspace-detail',
-                      arguments: workspace.id,
-                    );
-                  },
-                ),
-              );
-            },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 64, color: Colors.red),
-              const SizedBox(height: 16),
-              Text(l10n.errorLoadingWorkspaces('$error')),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  ref.invalidate(workspaceListProvider);
-                },
-                child: Text(l10n.retry),
               ),
             ],
           ),

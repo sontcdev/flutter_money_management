@@ -130,15 +130,16 @@ class TransactionsScreen extends HookConsumerWidget {
 
                 // Handle empty states
                 if (filteredTransactions.isEmpty) {
+                  Widget emptyState;
                   if (searchQuery.value.isNotEmpty) {
-                    return EmptyState.noSearchResult(
+                    emptyState = EmptyState.noSearchResult(
                       icon: Icons.search_off,
                       title: l10n.noTransactionsMatch,
                       message: l10n.adjustSearchTerms,
                       compact: true,
                     );
                   } else if (selectedFilter.value != TransactionFilter.all) {
-                    return EmptyState(
+                    emptyState = EmptyState(
                       icon: selectedFilter.value == TransactionFilter.expense
                           ? Icons.arrow_upward
                           : Icons.arrow_downward,
@@ -156,7 +157,7 @@ class TransactionsScreen extends HookConsumerWidget {
                       type: EmptyStateType.noFilterResult,
                     );
                   } else {
-                    return EmptyState.firstRun(
+                    emptyState = EmptyState.firstRun(
                       icon: Icons.receipt_long,
                       title: l10n.startTracking,
                       message: l10n.onboardingSubtitle,
@@ -166,6 +167,19 @@ class TransactionsScreen extends HookConsumerWidget {
                       },
                     );
                   }
+
+                  return RefreshIndicator(
+                    onRefresh: () => syncCurrentWorkspaceData(ref),
+                    child: ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.6,
+                          child: emptyState,
+                        ),
+                      ],
+                    ),
+                  );
                 }
 
                 // Group by date

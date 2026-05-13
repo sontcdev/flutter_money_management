@@ -1278,6 +1278,82 @@ class AppLocalizationsJa extends AppLocalizations {
   String get activeStatus => '有効';
 
   @override
+  String get activity => 'アクティビティ';
+
+  @override
+  String get manageMembers => 'メンバーを管理';
+
+  @override
+  String get noCategoriesYet => 'まだカテゴリがありません';
+
+  @override
+  String get noCategoriesYetDesc => 'ワークスペースの取引を整理するカテゴリを作成します。';
+
+  @override
+  String get noTransactionsYet => 'まだ取引がありません';
+
+  @override
+  String get noTransactionsYetDesc => '最初の取引を追加して、このワークスペースの記録を始めましょう。';
+
+  @override
+  String get noMembersFoundDesc => 'メンバーを招待して、このワークスペースで共同作業しましょう。';
+
+  @override
+  String memberCount(Object count) {
+    return '$count 人のメンバー';
+  }
+
+  @override
+  String workspaceTypeValue(Object type) {
+    return '$type ワークスペース';
+  }
+
+  @override
+  String updatedAt(Object dateTime) {
+    return '更新: $dateTime';
+  }
+
+  @override
+  String get budgetProgress => '予算の進捗';
+
+  @override
+  String budgetUsage(Object consumed, Object limit) {
+    return '$consumed / $limit';
+  }
+
+  @override
+  String get overBudget => '予算超過';
+
+  @override
+  String get dangerZone => '危険な操作';
+
+  @override
+  String get leaveWorkspace => 'ワークスペースを退出';
+
+  @override
+  String get leaveWorkspaceDesc => '共有カテゴリ、予算、取引にアクセスできなくなります。';
+
+  @override
+  String get leaveWorkspaceConfirm => 'このワークスペースを退出しますか？退出後は共有データを表示できなくなります。';
+
+  @override
+  String get leave => '退出';
+
+  @override
+  String get noInvitesForCurrentFilter => 'ステータスタブを変更するか、メールフィルターをクリアしてください。';
+
+  @override
+  String get noActivityYet => 'まだアクティビティがありません';
+
+  @override
+  String get noActivityYetDesc => 'メンバーが共同作業を始めると、ワークスペースの変更がここに表示されます。';
+
+  @override
+  String activityByActorAt(Object actor, Object dateTime) {
+    return '$actor • $dateTime';
+  }
+
+  @override
   String failedToLoadWorkspaces(Object error) {
     return 'ワークスペースの読み込みに失敗しました: $error';
   }
@@ -1379,10 +1455,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get passwordResetCompleteMessage => 'パスワードが正常に更新されました。';
 
   @override
-  String get displayNameOptional => '表示名 (任意)';
+  String get displayNameOptional => 'ユーザー名';
 
   @override
-  String get displayNameHint => 'どのようにお呼びすればよいですか？';
+  String get displayNameHint => '一意のユーザー名を選択してください';
+
+  @override
+  String get enterUsername => 'ユーザー名を入力してください';
 
   @override
   String get atLeastSixCharacters => '6文字以上';
@@ -1398,6 +1477,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get emailAlreadyRegistered => 'このメールアドレスはすでに登録されています';
+
+  @override
+  String get usernameAlreadyRegistered => 'このユーザー名はすでに登録されています';
 
   @override
   String get weakPassword => 'パスワードが弱すぎます。より強いパスワードを使用してください';

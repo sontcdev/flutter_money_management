@@ -105,6 +105,16 @@ class SupabaseErrorMapper {
           'Đã có lời mời đang chờ cho email này.',
           source: exception,
         );
+      case 'SIGNUP_EMAIL_ALREADY_EXISTS':
+        return SupabaseOperationException(
+          'Email này đã được đăng ký.',
+          source: exception,
+        );
+      case 'SIGNUP_USERNAME_ALREADY_EXISTS':
+        return SupabaseOperationException(
+          'Tên người dùng này đã tồn tại.',
+          source: exception,
+        );
     }
 
     if (exception.code == '23505') {

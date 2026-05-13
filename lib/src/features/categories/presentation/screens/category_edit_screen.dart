@@ -20,8 +20,14 @@ import 'package:flutter/services.dart';
 class CategoryEditScreen extends HookConsumerWidget {
   final Category? category;
   final CategoryType? initialType;
+  final String? workspaceId;
 
-  const CategoryEditScreen({super.key, this.category, this.initialType});
+  const CategoryEditScreen({
+    super.key,
+    this.category,
+    this.initialType,
+    this.workspaceId,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -107,8 +113,10 @@ class CategoryEditScreen extends HookConsumerWidget {
         );
 
         if (category == null) {
-          final createdCategory =
-              await categoryRepo.createCategory(newCategory);
+          final createdCategory = await categoryRepo.createCategory(
+            newCategory,
+            workspaceIdOverride: workspaceId,
+          );
           if (createBudget.value &&
               selectedType.value == CategoryType.expense) {
             final amount =
@@ -147,10 +155,23 @@ class CategoryEditScreen extends HookConsumerWidget {
                     createdAt: DateTime.now(),
                     updatedAt: DateTime.now(),
                   ),
+                  workspaceIdOverride: workspaceId,
                 );
           }
         } else {
-          await categoryRepo.updateCategory(newCategory);
+          await categoryRepo.updateCategory(
+            newCategory,
+            workspaceIdOverride: workspaceId,
+          );
+        }
+
+        ref.invalidate(categoriesProvider);
+        ref.invalidate(categoriesByTypeProvider);
+        ref.invalidate(budgetsProvider);
+        ref.invalidate(budgetsWithConsumedProvider);
+        if (workspaceId != null && workspaceId!.isNotEmpty) {
+          ref.invalidate(categoriesForWorkspaceProvider(workspaceId!));
+          ref.invalidate(categoriesByTypeForWorkspaceProvider);
         }
 
         if (context.mounted) {

@@ -255,6 +255,7 @@ create table public.recurring_transaction_occurrences (
 );
 
 create index profiles_email_idx on public.profiles(email);
+create unique index profiles_display_name_unique_idx on public.profiles(lower(display_name));
 create index workspaces_owner_user_id_idx on public.workspaces(owner_user_id);
 create index workspace_members_workspace_id_idx on public.workspace_members(workspace_id);
 create index workspace_members_user_id_idx on public.workspace_members(user_id);
@@ -427,6 +428,23 @@ begin
   insert into public.workspace_members(workspace_id, user_id, role, membership_status, joined_at)
   values (new_workspace_id, target_user_id, 'owner', 'active', now())
   on conflict (workspace_id, user_id) do update set role = 'owner', membership_status = 'active', removed_at = null, updated_at = now();
+end;
+$$ language plpgsql security definer set search_path = public;
+
+create or replace function public.check_signup_uniqueness(p_email text, p_display_name text)
+returns jsonb as $$
+declare
+  normalized_email text := lower(trim(p_email));
+  normalized_display_name text := lower(trim(coalesce(p_display_name, '')));
+begin
+  return jsonb_build_object(
+    'email_exists', exists(
+      select 1 from public.profiles p where lower(p.email) = normalized_email
+    ),
+    'display_name_exists', normalized_display_name <> '' and exists(
+      select 1 from public.profiles p where lower(p.display_name) = normalized_display_name
+    )
+  );
 end;
 $$ language plpgsql security definer set search_path = public;
 

@@ -1278,6 +1278,82 @@ class AppLocalizationsVi extends AppLocalizations {
   String get activeStatus => 'Đang hiệu lực';
 
   @override
+  String get activity => 'Hoạt động';
+
+  @override
+  String get manageMembers => 'Quản lý thành viên';
+
+  @override
+  String get noCategoriesYet => 'Chưa có danh mục nào';
+
+  @override
+  String get noCategoriesYetDesc => 'Tạo danh mục để sắp xếp giao dịch trong workspace.';
+
+  @override
+  String get noTransactionsYet => 'Chưa có giao dịch nào';
+
+  @override
+  String get noTransactionsYetDesc => 'Thêm giao dịch đầu tiên để bắt đầu theo dõi workspace này.';
+
+  @override
+  String get noMembersFoundDesc => 'Mời thành viên để cùng quản lý workspace này.';
+
+  @override
+  String memberCount(Object count) {
+    return '$count thành viên';
+  }
+
+  @override
+  String workspaceTypeValue(Object type) {
+    return 'Workspace $type';
+  }
+
+  @override
+  String updatedAt(Object dateTime) {
+    return 'Cập nhật $dateTime';
+  }
+
+  @override
+  String get budgetProgress => 'Tiến độ ngân sách';
+
+  @override
+  String budgetUsage(Object consumed, Object limit) {
+    return '$consumed / $limit';
+  }
+
+  @override
+  String get overBudget => 'Vượt ngân sách';
+
+  @override
+  String get dangerZone => 'Khu vực nguy hiểm';
+
+  @override
+  String get leaveWorkspace => 'Rời workspace';
+
+  @override
+  String get leaveWorkspaceDesc => 'Bạn sẽ mất quyền truy cập vào danh mục, ngân sách và giao dịch dùng chung.';
+
+  @override
+  String get leaveWorkspaceConfirm => 'Bạn có chắc muốn rời workspace này? Sau khi rời, bạn sẽ không còn thấy dữ liệu dùng chung.';
+
+  @override
+  String get leave => 'Rời';
+
+  @override
+  String get noInvitesForCurrentFilter => 'Thử đổi tab trạng thái hoặc xoá bộ lọc email.';
+
+  @override
+  String get noActivityYet => 'Chưa có hoạt động nào';
+
+  @override
+  String get noActivityYetDesc => 'Các thay đổi trong workspace sẽ xuất hiện ở đây khi thành viên bắt đầu cộng tác.';
+
+  @override
+  String activityByActorAt(Object actor, Object dateTime) {
+    return '$actor • $dateTime';
+  }
+
+  @override
   String failedToLoadWorkspaces(Object error) {
     return 'Tải workspace thất bại: $error';
   }
@@ -1379,10 +1455,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String get passwordResetCompleteMessage => 'Mật khẩu của bạn đã được cập nhật thành công.';
 
   @override
-  String get displayNameOptional => 'Tên hiển thị (không bắt buộc)';
+  String get displayNameOptional => 'Tên người dùng';
 
   @override
-  String get displayNameHint => 'Bạn muốn chúng tôi gọi bạn là gì?';
+  String get displayNameHint => 'Chọn tên người dùng duy nhất';
+
+  @override
+  String get enterUsername => 'Vui lòng nhập tên người dùng';
 
   @override
   String get atLeastSixCharacters => 'Ít nhất 6 ký tự';
@@ -1398,6 +1477,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get emailAlreadyRegistered => 'Email này đã được đăng ký';
+
+  @override
+  String get usernameAlreadyRegistered => 'Tên người dùng này đã được đăng ký';
 
   @override
   String get weakPassword => 'Mật khẩu quá yếu. Vui lòng dùng mật khẩu mạnh hơn';

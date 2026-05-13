@@ -26,6 +26,11 @@ class SignUpScreen extends HookConsumerWidget {
 
     Future<void> handleSignUp() async {
       // Validation
+      if (displayNameController.text.trim().isEmpty) {
+        errorMessage.value = l10n.enterUsername;
+        return;
+      }
+
       if (emailController.text.trim().isEmpty) {
         errorMessage.value = l10n.enterEmail;
         return;
@@ -59,16 +64,14 @@ class SignUpScreen extends HookConsumerWidget {
         final response = await authService.signUp(
           email: emailController.text.trim(),
           password: passwordController.text,
-          displayName: displayNameController.text.trim().isEmpty
-              ? null
-              : displayNameController.text.trim(),
+          displayName: displayNameController.text.trim(),
         );
 
         if (response.user != null) {
           AppLogger.info('Sign-up succeeded', name: 'MM.Auth');
-          
+
           final session = response.session;
-          
+
           // Check if user has valid session (email already confirmed)
           if (session != null && session.user.emailConfirmedAt != null) {
             // Email verification is disabled -> user is already authenticated
@@ -82,7 +85,8 @@ class SignUpScreen extends HookConsumerWidget {
             // This case should not happen since email verification is disabled
             // But keep it for compatibility if re-enabled later
             if (context.mounted) {
-              AppLogger.info('Showing email verification dialog', name: 'MM.UI');
+              AppLogger.info('Showing email verification dialog',
+                  name: 'MM.UI');
               await showDialog(
                 context: context,
                 barrierDismissible: false,
@@ -125,7 +129,7 @@ class SignUpScreen extends HookConsumerWidget {
             extraContext: {
               'email_masked':
                   ErrorReportHelper.maskEmail(emailController.text.trim()),
-              'has_display_name': displayNameController.text.trim().isNotEmpty,
+              'has_display_name': true,
             },
           );
         }
@@ -188,7 +192,7 @@ class SignUpScreen extends HookConsumerWidget {
 
               const SizedBox(height: 32),
 
-              // Display Name Field
+              // Username Field
               TextField(
                 controller: displayNameController,
                 decoration: InputDecoration(
@@ -354,13 +358,19 @@ class SignUpScreen extends HookConsumerWidget {
   }
 
   String _getErrorMessage(AppLocalizations l10n, String error) {
-    if (error.contains('already registered')) {
+    final lower = error.toLowerCase();
+    if (lower.contains('tên người dùng') ||
+        lower.contains('username') ||
+        lower.contains('display_name')) {
+      return l10n.usernameAlreadyRegistered;
+    } else if (lower.contains('already registered') ||
+        lower.contains('email này đã được đăng ký')) {
       return l10n.emailAlreadyRegistered;
-    } else if (error.contains('invalid email')) {
+    } else if (lower.contains('invalid email')) {
       return l10n.enterValidEmailAddress;
-    } else if (error.contains('weak password')) {
+    } else if (lower.contains('weak password')) {
       return l10n.weakPassword;
-    } else if (error.contains('network')) {
+    } else if (lower.contains('network')) {
       return l10n.networkErrorCheckConnection;
     }
     return l10n.genericTryAgainError;

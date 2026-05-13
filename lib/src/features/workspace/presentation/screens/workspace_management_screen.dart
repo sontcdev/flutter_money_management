@@ -7,7 +7,13 @@ import 'package:flutter_money_management/src/features/auth/providers/auth_provid
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_management_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/models/workspace_management_models.dart';
+import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_status_chip.dart';
+import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
+import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 
 final _inviteEmailPattern = RegExp(
   r'^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$',
@@ -189,156 +195,125 @@ class WorkspaceManagementScreen extends HookConsumerWidget {
                 ]);
               },
               child: ListView(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppSpacing.screenPadding),
                 children: [
-                  Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.workspace_premium_outlined),
-                      title: Text(activeWorkspace.name),
-                      subtitle: Text(
-                        isOwner
-                            ? l10n.workspaceOwnerDescription
-                            : l10n.roleValue(activeWorkspace.role),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  if (canManageMembers) ...[
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.inviteMember,
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              l10n.inviteMemberDesc,
-                            ),
-                            const SizedBox(height: 12),
-                            TextField(
-                              controller: emailController,
-                              keyboardType: TextInputType.emailAddress,
-                              textInputAction: TextInputAction.done,
-                              onChanged: (value) {
-                                draftEmail.value = value;
-                              },
-                              decoration: InputDecoration(
-                                labelText: l10n.memberEmail,
-                                hintText: l10n.emailExample,
-                                border: const OutlineInputBorder(),
-                                errorText: inviteErrorText,
+                  AppCard(
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          child: Text(
+                            activeWorkspace.name.substring(0, 1).toUpperCase(),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.lg),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                activeWorkspace.name,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.w700),
                               ),
-                              onSubmitted: (_) => submitInvite(),
-                            ),
-                            const SizedBox(height: 12),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: Wrap(
-                                spacing: 12,
-                                runSpacing: 12,
-                                alignment: WrapAlignment.end,
+                              const SizedBox(height: AppSpacing.sm),
+                              Wrap(
+                                spacing: AppSpacing.sm,
+                                runSpacing: AppSpacing.xs,
                                 children: [
-                                  if (existingInvite != null &&
-                                      !duplicateMember)
-                                    OutlinedButton.icon(
-                                      onPressed: isSubmitting.value
-                                          ? null
-                                          : () => refreshInvite(existingInvite),
-                                      icon: const Icon(Icons.refresh),
-                                      label: Text(l10n.refreshInvite),
+                                  AppStatusChip.info(
+                                    label: isOwner
+                                        ? l10n.ownerRole
+                                        : l10n.roleValue(activeWorkspace.role),
+                                  ),
+                                  AppStatusChip(
+                                    label: l10n.workspaceTypeValue(
+                                      activeWorkspace.type,
                                     ),
-                                  FilledButton.icon(
-                                    onPressed: isSubmitting.value ||
-                                            inviteErrorText != null
-                                        ? null
-                                        : submitInvite,
-                                    icon: isSubmitting.value
-                                        ? const SizedBox(
-                                            width: 16,
-                                            height: 16,
-                                            child: CircularProgressIndicator(
-                                                strokeWidth: 2),
-                                          )
-                                        : const Icon(Icons.person_add_alt_1),
-                                    label: Text(l10n.createInvite),
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    _InviteSection(invitesAsync: invitesAsync),
-                    const SizedBox(height: 16),
-                  ],
-                  if (canLeaveWorkspace)
-                    Card(
-                      child: ListTile(
-                        leading: const Icon(Icons.logout),
-                        title: const Text('Leave workspace'),
-                        subtitle: const Text(
-                          'You will lose access to shared categories, budgets, and transactions.',
-                        ),
-                        onTap: () async {
-                          final confirmed = await showDialog<bool>(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              title: const Text('Leave workspace'),
-                              content: const Text(
-                                'Are you sure you want to leave this workspace?',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(false),
-                                  child: Text(l10n.cancel),
-                                ),
-                                FilledButton(
-                                  onPressed: () =>
-                                      Navigator.of(context).pop(true),
-                                  child: const Text('Leave'),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  if (canManageMembers) ...[
+                    AppCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.inviteMember,
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w700),
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(l10n.inviteMemberDesc),
+                          const SizedBox(height: AppSpacing.md),
+                          TextField(
+                            controller: emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.done,
+                            onChanged: (value) {
+                              draftEmail.value = value;
+                            },
+                            decoration: InputDecoration(
+                              labelText: l10n.memberEmail,
+                              hintText: l10n.emailExample,
+                              border: const OutlineInputBorder(),
+                              errorText: inviteErrorText,
+                            ),
+                            onSubmitted: (_) => submitInvite(),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Wrap(
+                              spacing: AppSpacing.md,
+                              runSpacing: AppSpacing.md,
+                              alignment: WrapAlignment.end,
+                              children: [
+                                if (existingInvite != null && !duplicateMember)
+                                  OutlinedButton.icon(
+                                    onPressed: isSubmitting.value
+                                        ? null
+                                        : () => refreshInvite(existingInvite),
+                                    icon: const Icon(Icons.refresh),
+                                    label: Text(l10n.refreshInvite),
+                                  ),
+                                FilledButton.icon(
+                                  onPressed: isSubmitting.value ||
+                                          inviteErrorText != null
+                                      ? null
+                                      : submitInvite,
+                                  icon: isSubmitting.value
+                                      ? const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2),
+                                        )
+                                      : const Icon(Icons.person_add_alt_1),
+                                  label: Text(l10n.createInvite),
                                 ),
                               ],
                             ),
-                          );
-                          if (confirmed != true || !context.mounted) {
-                            return;
-                          }
-                          try {
-                            await ref
-                                .read(workspaceManagementServiceProvider)
-                                .leaveWorkspace(activeWorkspace.id);
-                            ref.invalidate(workspaceListProvider);
-                            clearActiveWorkspace(ref);
-                            if (context.mounted) {
-                              Navigator.of(context).pushNamedAndRemoveUntil(
-                                '/workspace-selection',
-                                (route) => false,
-                              );
-                            }
-                          } catch (e, stackTrace) {
-                            if (!context.mounted) {
-                              return;
-                            }
-                            await ErrorReportHelper.handleApiError(
-                              context: context,
-                              ref: ref,
-                              error: e,
-                              stackTrace: stackTrace,
-                              feature: 'workspace',
-                              action: 'leave_workspace',
-                              screen: 'workspace_management_screen',
-                            );
-                          }
-                        },
+                          ),
+                        ],
                       ),
                     ),
+                    const SizedBox(height: AppSpacing.lg),
+                    _InviteSection(invitesAsync: invitesAsync),
+                    const SizedBox(height: AppSpacing.lg),
+                  ],
                   _MemberSection(
                     workspaceId: activeWorkspace.id,
                     canManageMembers: canManageMembers,
@@ -347,9 +322,105 @@ class WorkspaceManagementScreen extends HookConsumerWidget {
                     ownerId: activeWorkspace.ownerId,
                     isOwner: isOwner,
                   ),
+                  if (canLeaveWorkspace) ...[
+                    const SizedBox(height: AppSpacing.lg),
+                    _DangerZoneCard(
+                      onLeaveWorkspace: () async {
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: Text(l10n.leaveWorkspace),
+                            content: Text(l10n.leaveWorkspaceConfirm),
+                            actions: [
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(context).pop(false),
+                                child: Text(l10n.cancel),
+                              ),
+                              FilledButton(
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.error,
+                                ),
+                                onPressed: () =>
+                                    Navigator.of(context).pop(true),
+                                child: Text(l10n.leave),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirmed != true || !context.mounted) {
+                          return;
+                        }
+                        try {
+                          await ref
+                              .read(workspaceManagementServiceProvider)
+                              .leaveWorkspace(activeWorkspace.id);
+                          ref.invalidate(workspaceListProvider);
+                          clearActiveWorkspace(ref);
+                          if (context.mounted) {
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                              '/workspace-selection',
+                              (route) => false,
+                            );
+                          }
+                        } catch (e, stackTrace) {
+                          if (!context.mounted) {
+                            return;
+                          }
+                          await ErrorReportHelper.handleApiError(
+                            context: context,
+                            ref: ref,
+                            error: e,
+                            stackTrace: stackTrace,
+                            feature: 'workspace',
+                            action: 'leave_workspace',
+                            screen: 'workspace_management_screen',
+                          );
+                        }
+                      },
+                    ),
+                  ],
                 ],
               ),
             ),
+    );
+  }
+}
+
+class _DangerZoneCard extends StatelessWidget {
+  const _DangerZoneCard({required this.onLeaveWorkspace});
+
+  final VoidCallback onLeaveWorkspace;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return AppCard(
+      color: AppColors.expenseContainer.withValues(alpha: 0.45),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.dangerZone,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: AppColors.error,
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(l10n.leaveWorkspaceDesc),
+          const SizedBox(height: AppSpacing.md),
+          OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.error,
+              side: const BorderSide(color: AppColors.error),
+            ),
+            onPressed: onLeaveWorkspace,
+            icon: const Icon(Icons.logout),
+            label: Text(l10n.leaveWorkspace),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -374,42 +445,68 @@ class _MemberSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: membersAsync.when(
-          data: (members) => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.membersSection,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 12),
-              if (members.isEmpty)
-                Text(l10n.noMembersFound)
-              else
-                ...members.map(
-                  (member) => ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: CircleAvatar(
-                      foregroundImage: _avatarImage(member),
-                      child: Text(_avatarLabel(context, member)),
-                    ),
-                    title: Text(
-                        _memberTitle(context, member, ownerId, currentUserId)),
-                    subtitle: Text(_memberSubtitle(context, member)),
-                    isThreeLine: true,
-                    trailing: member.userId == currentUserId
-                        ? Chip(label: Text(l10n.youLabel))
-                        : _buildMemberActions(context, ref, member),
+    return AppCard(
+      child: membersAsync.when(
+        data: (members) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.membersSection,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
                   ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            if (members.isEmpty)
+              EmptyState.compact(
+                icon: Icons.group_outlined,
+                title: l10n.noMembersFound,
+                message: l10n.noMembersFoundDesc,
+              )
+            else
+              ...members.map(
+                (member) => ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: CircleAvatar(
+                    foregroundImage: _avatarImage(member),
+                    child: Text(_avatarLabel(context, member)),
+                  ),
+                  title: Text(_memberLabel(context, member)),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(_memberEmailLine(context, member)),
+                      const SizedBox(height: AppSpacing.xs),
+                      Wrap(
+                        spacing: AppSpacing.xs,
+                        runSpacing: AppSpacing.xs,
+                        children: [
+                          if (member.userId == currentUserId)
+                            AppStatusChip.info(label: l10n.youLabel),
+                          if (member.userId == ownerId)
+                            AppStatusChip.warning(label: l10n.ownerRole),
+                          AppStatusChip.info(
+                              label: l10n.roleValue(member.role)),
+                          AppStatusChip.success(
+                            label: l10n.statusValue(member.membershipStatus),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        _memberJoinedLabel(context, member),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                  isThreeLine: true,
+                  trailing: _buildMemberActions(context, ref, member),
                 ),
-            ],
-          ),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Text(l10n.failedToLoadMembers('$error')),
+              ),
+          ],
         ),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => Text(l10n.failedToLoadMembers('$error')),
       ),
     );
   }
@@ -452,6 +549,7 @@ class _MemberSection extends ConsumerWidget {
             child: Text(AppLocalizations.of(context)!.cancel),
           ),
           FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
             onPressed: () => Navigator.of(context).pop(true),
             child: Text(AppLocalizations.of(context)!.removeMember),
           ),
@@ -499,31 +597,21 @@ class _MemberSection extends ConsumerWidget {
     }
   }
 
-  String _memberTitle(
-    BuildContext context,
-    WorkspaceMemberSummary member,
-    String ownerId,
-    String? currentUserId,
-  ) {
+  String _memberEmailLine(BuildContext context, WorkspaceMemberSummary member) {
     final l10n = AppLocalizations.of(context)!;
-    final label = _memberLabel(context, member);
-    if (member.userId == currentUserId) {
-      return member.userId == ownerId
-          ? l10n.memberOwnerYouLabel(label)
-          : l10n.memberYouLabel(label);
-    }
-    return member.userId == ownerId ? l10n.memberOwnerLabel(label) : label;
-  }
-
-  String _memberSubtitle(BuildContext context, WorkspaceMemberSummary member) {
-    final l10n = AppLocalizations.of(context)!;
-    final joinedLabel = member.joinedAt == null
-        ? l10n.joinTimeUnavailable
-        : l10n.joinedAt(member.joinedAt!.toLocal().toString());
-    final emailLine = member.email?.trim().isNotEmpty == true
+    return member.email?.trim().isNotEmpty == true
         ? member.email!
         : l10n.userIdValue(_shortId(member.userId));
-    return '$emailLine\n${l10n.roleValue(member.role)} • ${l10n.statusValue(member.membershipStatus)}\n$joinedLabel';
+  }
+
+  String _memberJoinedLabel(
+      BuildContext context, WorkspaceMemberSummary member) {
+    final l10n = AppLocalizations.of(context)!;
+    return member.joinedAt == null
+        ? l10n.joinTimeUnavailable
+        : l10n.joinedAt(
+            formatLocalizedDateTime(context, member.joinedAt!.toLocal()),
+          );
   }
 
   String _memberLabel(BuildContext context, WorkspaceMemberSummary member) {
@@ -568,156 +656,165 @@ class _InviteSection extends HookConsumerWidget {
     final emailFilterController = useTextEditingController();
     final emailFilter = useState('');
     final sortOption = useState('newest');
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: invitesAsync.when(
-          data: (invites) {
-            final pendingInvites =
-                invites.where((invite) => invite.status == 'pending').toList();
-            final declinedInvites =
-                invites.where((invite) => invite.status == 'declined').toList();
-            final revokedInvites =
-                invites.where((invite) => invite.status == 'revoked').toList();
-            final visibleInvites = switch (selectedStatus.value) {
-              'declined' => declinedInvites,
-              'revoked' => revokedInvites,
-              _ => pendingInvites,
-            };
-            final normalizedFilter = emailFilter.value.trim().toLowerCase();
-            final filteredInvites = visibleInvites.where((invite) {
-              if (normalizedFilter.isEmpty) {
-                return true;
+    return AppCard(
+      child: invitesAsync.when(
+        data: (invites) {
+          final pendingInvites =
+              invites.where((invite) => invite.status == 'pending').toList();
+          final declinedInvites =
+              invites.where((invite) => invite.status == 'declined').toList();
+          final revokedInvites =
+              invites.where((invite) => invite.status == 'revoked').toList();
+          final visibleInvites = switch (selectedStatus.value) {
+            'declined' => declinedInvites,
+            'revoked' => revokedInvites,
+            _ => pendingInvites,
+          };
+          final normalizedFilter = emailFilter.value.trim().toLowerCase();
+          final filteredInvites = visibleInvites.where((invite) {
+            if (normalizedFilter.isEmpty) {
+              return true;
+            }
+
+            return invite.email.toLowerCase().contains(normalizedFilter);
+          }).toList()
+            ..sort((a, b) {
+              switch (sortOption.value) {
+                case 'oldest':
+                  return a.createdAt.compareTo(b.createdAt);
+                case 'email':
+                  return a.email.toLowerCase().compareTo(b.email.toLowerCase());
+                default:
+                  return b.createdAt.compareTo(a.createdAt);
               }
+            });
+          final sectionTitle = switch (selectedStatus.value) {
+            'declined' => l10n.declinedInvites,
+            'revoked' => l10n.revokedInvites,
+            _ => l10n.pendingInvites,
+          };
+          final emptyLabel = switch (selectedStatus.value) {
+            'declined' => l10n.noDeclinedInvites,
+            'revoked' => l10n.noRevokedInvites,
+            _ => l10n.noPendingInvites,
+          };
 
-              return invite.email.toLowerCase().contains(normalizedFilter);
-            }).toList()
-              ..sort((a, b) {
-                switch (sortOption.value) {
-                  case 'oldest':
-                    return a.createdAt.compareTo(b.createdAt);
-                  case 'email':
-                    return a.email
-                        .toLowerCase()
-                        .compareTo(b.email.toLowerCase());
-                  default:
-                    return b.createdAt.compareTo(a.createdAt);
-                }
-              });
-            final sectionTitle = switch (selectedStatus.value) {
-              'declined' => l10n.declinedInvites,
-              'revoked' => l10n.revokedInvites,
-              _ => l10n.pendingInvites,
-            };
-            final emptyLabel = switch (selectedStatus.value) {
-              'declined' => l10n.noDeclinedInvites,
-              'revoked' => l10n.noRevokedInvites,
-              _ => l10n.noPendingInvites,
-            };
-
-            return DefaultTabController(
-              length: 3,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TabBar(
-                    onTap: (index) {
-                      selectedStatus.value = switch (index) {
-                        1 => 'declined',
-                        2 => 'revoked',
-                        _ => 'pending',
-                      };
-                    },
-                    tabs: [
-                      Tab(
-                        text:
-                            '${l10n.pendingInvites} (${pendingInvites.length})',
-                      ),
-                      Tab(
-                        text:
-                            '${l10n.declinedInvites} (${declinedInvites.length})',
-                      ),
-                      Tab(
-                        text:
-                            '${l10n.revokedInvites} (${revokedInvites.length})',
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: emailFilterController,
-                          decoration: InputDecoration(
-                            prefixIcon: const Icon(Icons.search),
-                            labelText: l10n.filterInvitesByEmail,
-                            hintText: l10n.filterInvitesByEmailHint,
-                            suffixIcon: emailFilter.value.isEmpty
-                                ? null
-                                : IconButton(
-                                    tooltip: l10n.clearFilter,
-                                    onPressed: () {
-                                      emailFilterController.clear();
-                                      emailFilter.value = '';
-                                    },
-                                    icon: const Icon(Icons.clear),
-                                  ),
-                            border: const OutlineInputBorder(),
-                          ),
-                          onChanged: (value) {
-                            emailFilter.value = value;
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: DropdownMenu<String>(
-                          width: double.infinity,
-                          initialSelection: sortOption.value,
-                          label: Text(l10n.sortInvites),
-                          dropdownMenuEntries: [
-                            DropdownMenuEntry(
-                              value: 'newest',
-                              label: l10n.sortByNewest,
-                            ),
-                            DropdownMenuEntry(
-                              value: 'oldest',
-                              label: l10n.sortByOldest,
-                            ),
-                            DropdownMenuEntry(
-                              value: 'email',
-                              label: l10n.sortByEmail,
-                            ),
-                          ],
-                          onSelected: (value) {
-                            if (value != null) {
-                              sortOption.value = value;
-                            }
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    sectionTitle,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 12),
-                  if (filteredInvites.isEmpty)
-                    Text(emptyLabel)
-                  else
-                    ...filteredInvites.map(
-                      (invite) => _InviteListTile(invite: invite),
+          return DefaultTabController(
+            length: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TabBar(
+                  onTap: (index) {
+                    selectedStatus.value = switch (index) {
+                      1 => 'declined',
+                      2 => 'revoked',
+                      _ => 'pending',
+                    };
+                  },
+                  tabs: [
+                    Tab(
+                      text: '${l10n.pendingInvites} (${pendingInvites.length})',
                     ),
-                ],
-              ),
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Text(l10n.failedToLoadInvites('$error')),
-        ),
+                    Tab(
+                      text:
+                          '${l10n.declinedInvites} (${declinedInvites.length})',
+                    ),
+                    Tab(
+                      text: '${l10n.revokedInvites} (${revokedInvites.length})',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isWide = constraints.maxWidth >= 560;
+                    final filterField = TextField(
+                      controller: emailFilterController,
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.search),
+                        labelText: l10n.filterInvitesByEmail,
+                        hintText: l10n.filterInvitesByEmailHint,
+                        suffixIcon: emailFilter.value.isEmpty
+                            ? null
+                            : IconButton(
+                                tooltip: l10n.clearFilter,
+                                onPressed: () {
+                                  emailFilterController.clear();
+                                  emailFilter.value = '';
+                                },
+                                icon: const Icon(Icons.clear),
+                              ),
+                        border: const OutlineInputBorder(),
+                      ),
+                      onChanged: (value) {
+                        emailFilter.value = value;
+                      },
+                    );
+                    final sortMenu = DropdownMenu<String>(
+                      width: double.infinity,
+                      initialSelection: sortOption.value,
+                      label: Text(l10n.sortInvites),
+                      dropdownMenuEntries: [
+                        DropdownMenuEntry(
+                          value: 'newest',
+                          label: l10n.sortByNewest,
+                        ),
+                        DropdownMenuEntry(
+                          value: 'oldest',
+                          label: l10n.sortByOldest,
+                        ),
+                        DropdownMenuEntry(
+                          value: 'email',
+                          label: l10n.sortByEmail,
+                        ),
+                      ],
+                      onSelected: (value) {
+                        if (value != null) {
+                          sortOption.value = value;
+                        }
+                      },
+                    );
+                    if (isWide) {
+                      return Row(
+                        children: [
+                          Expanded(child: filterField),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(child: sortMenu),
+                        ],
+                      );
+                    }
+                    return Column(
+                      children: [
+                        filterField,
+                        const SizedBox(height: AppSpacing.md),
+                        sortMenu,
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  sectionTitle,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                if (filteredInvites.isEmpty)
+                  EmptyState.compact(
+                    icon: Icons.mark_email_unread_outlined,
+                    title: emptyLabel,
+                    message: l10n.noInvitesForCurrentFilter,
+                  )
+                else
+                  ...filteredInvites.map(
+                    (invite) => _InviteListTile(invite: invite),
+                  ),
+              ],
+            ),
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, _) => Text(l10n.failedToLoadInvites('$error')),
       ),
     );
   }

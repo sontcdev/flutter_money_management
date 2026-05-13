@@ -240,6 +240,7 @@ class BudgetEditScreen extends HookConsumerWidget {
                     if (result == true) {
                       // Force refresh categories immediately
                       ref.invalidate(categoriesProvider);
+                      ref.invalidate(categoriesForWorkspaceProvider);
                       // Trigger a new fetch
                       await ref.read(categoriesProvider.future);
                     }
@@ -298,7 +299,8 @@ class BudgetEditScreen extends HookConsumerWidget {
               ],
               hint: '0',
               suffixIcon: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
                 child: Text(
                   CurrencyFormatter.getCurrencySymbol('VND'),
                   style: const TextStyle(

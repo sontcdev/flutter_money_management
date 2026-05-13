@@ -1278,6 +1278,82 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activeStatus => 'Active';
 
   @override
+  String get activity => 'Activity';
+
+  @override
+  String get manageMembers => 'Manage members';
+
+  @override
+  String get noCategoriesYet => 'No categories yet';
+
+  @override
+  String get noCategoriesYetDesc => 'Create categories to organize workspace transactions.';
+
+  @override
+  String get noTransactionsYet => 'No transactions yet';
+
+  @override
+  String get noTransactionsYetDesc => 'Add the first transaction to start tracking this workspace.';
+
+  @override
+  String get noMembersFoundDesc => 'Invite members to collaborate in this workspace.';
+
+  @override
+  String memberCount(Object count) {
+    return '$count members';
+  }
+
+  @override
+  String workspaceTypeValue(Object type) {
+    return '$type workspace';
+  }
+
+  @override
+  String updatedAt(Object dateTime) {
+    return 'Updated $dateTime';
+  }
+
+  @override
+  String get budgetProgress => 'Budget progress';
+
+  @override
+  String budgetUsage(Object consumed, Object limit) {
+    return '$consumed of $limit';
+  }
+
+  @override
+  String get overBudget => 'Over budget';
+
+  @override
+  String get dangerZone => 'Danger zone';
+
+  @override
+  String get leaveWorkspace => 'Leave workspace';
+
+  @override
+  String get leaveWorkspaceDesc => 'You will lose access to shared categories, budgets, and transactions.';
+
+  @override
+  String get leaveWorkspaceConfirm => 'Are you sure you want to leave this workspace? You will no longer see shared data after leaving.';
+
+  @override
+  String get leave => 'Leave';
+
+  @override
+  String get noInvitesForCurrentFilter => 'Try changing the status tab or clearing the email filter.';
+
+  @override
+  String get noActivityYet => 'No activity yet';
+
+  @override
+  String get noActivityYetDesc => 'Workspace changes will appear here after members start collaborating.';
+
+  @override
+  String activityByActorAt(Object actor, Object dateTime) {
+    return '$actor • $dateTime';
+  }
+
+  @override
   String failedToLoadWorkspaces(Object error) {
     return 'Failed to load workspaces: $error';
   }
@@ -1379,10 +1455,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passwordResetCompleteMessage => 'Your password has been updated successfully.';
 
   @override
-  String get displayNameOptional => 'Display Name (Optional)';
+  String get displayNameOptional => 'Username';
 
   @override
-  String get displayNameHint => 'How should we call you?';
+  String get displayNameHint => 'Choose a unique username';
+
+  @override
+  String get enterUsername => 'Please enter a username';
 
   @override
   String get atLeastSixCharacters => 'At least 6 characters';
@@ -1398,6 +1477,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get emailAlreadyRegistered => 'This email is already registered';
+
+  @override
+  String get usernameAlreadyRegistered => 'This username is already registered';
 
   @override
   String get weakPassword => 'Password is too weak. Please use a stronger password';

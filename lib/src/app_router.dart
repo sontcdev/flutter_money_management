@@ -87,14 +87,20 @@ class AppRouter {
         final args = settings.arguments;
         Category? category;
         CategoryType? initialType;
+        String? workspaceId;
         if (args is Category) {
           category = args;
         } else if (args is Map<String, dynamic>) {
           category = args['category'] as Category?;
           initialType = args['initialType'] as CategoryType?;
+          workspaceId = args['workspaceId'] as String?;
         }
         return AppAnimations.slideRoute(
-          CategoryEditScreen(category: category, initialType: initialType),
+          CategoryEditScreen(
+            category: category,
+            initialType: initialType,
+            workspaceId: workspaceId,
+          ),
         );
       case '/reports':
         return AppAnimations.slideRoute(const ReportsScreen());

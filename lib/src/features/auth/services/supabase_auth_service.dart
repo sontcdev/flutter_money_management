@@ -32,6 +32,10 @@ class SupabaseAuthService {
     AppLogger.info('Sign up started for $maskedEmail', name: _logName);
 
     try {
+      await _ensureSignUpUnique(
+        email: email,
+        displayName: displayName,
+      );
       final response = await _client.auth.signUp(
         email: email,
         password: password,
@@ -47,6 +51,34 @@ class SupabaseAuthService {
         error: e,
         stackTrace: stackTrace,
       );
+      throw mapSupabaseException(e);
+    }
+  }
+
+  Future<void> _ensureSignUpUnique({
+    required String email,
+    required String? displayName,
+  }) async {
+    try {
+      final response = await _client.rpc(
+        'check_signup_uniqueness',
+        params: {
+          'p_email': email.trim().toLowerCase(),
+          'p_display_name': displayName?.trim(),
+        },
+      );
+      final payload = (response as Map).cast<String, dynamic>();
+      if (payload['email_exists'] == true) {
+        throw const SupabaseOperationException('Email này đã được đăng ký.');
+      }
+      if (payload['display_name_exists'] == true) {
+        throw const SupabaseOperationException(
+            'Tên người dùng này đã tồn tại.');
+      }
+    } on PostgrestException catch (e) {
+      if (e.code == 'PGRST202') {
+        return;
+      }
       throw mapSupabaseException(e);
     }
   }
