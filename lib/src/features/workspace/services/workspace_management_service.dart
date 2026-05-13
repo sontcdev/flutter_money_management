@@ -55,6 +55,70 @@ class WorkspaceManagementService {
     }
   }
 
+  Future<String> createWorkspace({
+    required String name,
+    String? description,
+    String? avatarPath,
+  }) async {
+    final trimmedName = name.trim();
+    if (trimmedName.isEmpty) {
+      throw ArgumentError('Workspace name is required');
+    }
+
+    final response = await _supabase.rpc(
+      'create_group_workspace_v2',
+      params: {
+        'workspace_name': trimmedName,
+        'workspace_description': description?.trim(),
+        'workspace_avatar_path': avatarPath?.trim(),
+      },
+    );
+
+    return response as String;
+  }
+
+  Future<WorkspaceDetailSummary> getWorkspaceDetail(String workspaceId) async {
+    final response = await _supabase.rpc(
+      'get_workspace_detail',
+      params: {'p_workspace_id': workspaceId},
+    );
+
+    return WorkspaceDetailSummary.fromMap(
+      (response as List).cast<Map<String, dynamic>>().single,
+    );
+  }
+
+  Future<WorkspaceInvitePreview> getInvitePreview(String token) async {
+    final response = await _supabase.rpc(
+      'get_workspace_invite_preview',
+      params: {'invite_token': token.trim()},
+    );
+
+    return WorkspaceInvitePreview.fromMap(
+      (response as Map).cast<String, dynamic>(),
+    );
+  }
+
+  Future<List<WorkspaceActivityItem>> getWorkspaceActivity({
+    required String workspaceId,
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    final response = await _supabase.rpc(
+      'get_workspace_activity_logs',
+      params: {
+        'p_workspace_id': workspaceId,
+        'p_limit': limit,
+        'p_offset': offset,
+      },
+    );
+
+    return (response as List)
+        .cast<Map<String, dynamic>>()
+        .map(WorkspaceActivityItem.fromMap)
+        .toList();
+  }
+
   Future<WorkspaceInviteSummary> createInvite({
     required String workspaceId,
     required String email,
@@ -114,6 +178,34 @@ class WorkspaceManagementService {
     return WorkspaceInviteSummary.fromMap(
       (response as List).cast<Map<String, dynamic>>().single,
     );
+  }
+
+  Future<void> leaveWorkspace(String workspaceId) async {
+    await _supabase.rpc('leave_workspace', params: {
+      'p_workspace_id': workspaceId,
+    });
+  }
+
+  Future<void> transferOwnership({
+    required String workspaceId,
+    required String newOwnerUserId,
+  }) async {
+    await _supabase.rpc('transfer_workspace_owner', params: {
+      'p_workspace_id': workspaceId,
+      'p_new_owner_user_id': newOwnerUserId,
+    });
+  }
+
+  Future<void> updateMemberRole({
+    required String workspaceId,
+    required String userId,
+    required String role,
+  }) async {
+    await _supabase.rpc('update_workspace_member_role', params: {
+      'p_workspace_id': workspaceId,
+      'p_user_id': userId,
+      'p_role': role,
+    });
   }
 
   Future<void> removeMember({

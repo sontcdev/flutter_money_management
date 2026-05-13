@@ -801,6 +801,114 @@ class AppLocalizationsJa extends AppLocalizations {
   String get selectNewDate => '新しい日付を選択';
 
   @override
+  String get recurringTransactions => '定期取引';
+
+  @override
+  String get recurringTransactionsDesc => '繰り返しの収入と支出を管理します';
+
+  @override
+  String get recurringAddTitle => '定期取引を追加';
+
+  @override
+  String get recurringEditTitle => '定期取引を編集';
+
+  @override
+  String get recurringTitle => 'タイトル';
+
+  @override
+  String get recurringFrequency => '頻度';
+
+  @override
+  String get recurringInterval => '繰り返し間隔';
+
+  @override
+  String get recurringDayOfMonth => '毎月の日';
+
+  @override
+  String get recurringDayOfWeek => '曜日';
+
+  @override
+  String get recurringMode => '動作';
+
+  @override
+  String get recurringModeManualConfirm => 'リマインダーを作成して手動で確認';
+
+  @override
+  String get recurringModeReminderOnly => 'リマインダーのみ';
+
+  @override
+  String get recurringReminderDaysBefore => '事前通知（日）';
+
+  @override
+  String get recurringEndDate => '終了日';
+
+  @override
+  String get recurringNoEndDate => '終了日なし';
+
+  @override
+  String get recurringActive => '有効';
+
+  @override
+  String get recurringInactive => '停止中';
+
+  @override
+  String get recurringUpcoming => '今後のリマインダー';
+
+  @override
+  String get recurringTemplates => '定期テンプレート';
+
+  @override
+  String get recurringNoUpcoming => '今後の定期リマインダーはありません';
+
+  @override
+  String get recurringNoTemplates => '定期取引はまだありません';
+
+  @override
+  String get recurringNotificationsTitle => '定期リマインダーを有効化';
+
+  @override
+  String get recurringNotificationsDesc => '通知を有効にすると、定期的な収入や支出の期限前にアプリが通知できます。';
+
+  @override
+  String get recurringEnableNotifications => '通知を有効にする';
+
+  @override
+  String get recurringNotificationsEnabled => '定期リマインダーを有効にしました';
+
+  @override
+  String get recurringNotificationsDenied => '通知はまだ無効です';
+
+  @override
+  String get tapForDetails => 'タップして詳細を表示';
+
+  @override
+  String get markDone => '完了にする';
+
+  @override
+  String get startDate => '開始日';
+
+  @override
+  String get monday => '月曜日';
+
+  @override
+  String get tuesday => '火曜日';
+
+  @override
+  String get wednesday => '水曜日';
+
+  @override
+  String get thursday => '木曜日';
+
+  @override
+  String get friday => '金曜日';
+
+  @override
+  String get saturday => '土曜日';
+
+  @override
+  String get sunday => '日曜日';
+
+  @override
   String get noBudget => '予算なし';
 
   @override

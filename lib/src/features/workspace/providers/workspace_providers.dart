@@ -27,7 +27,9 @@ final workspaceListProvider = FutureProvider<List<Workspace>>((ref) async {
           role,
           workspaces!inner(
             id,
+            type,
             name,
+            settings,
             owner_user_id,
             created_at,
             updated_at
@@ -42,8 +44,13 @@ final workspaceListProvider = FutureProvider<List<Workspace>>((ref) async {
       workspaces.add(Workspace(
         id: workspaceData['id'] as String,
         name: workspaceData['name'] as String,
+        type: workspaceData['type'] as String,
         ownerId: workspaceData['owner_user_id'] as String,
         role: item['role'] as String,
+        description:
+            (workspaceData['settings'] as Map?)?['description'] as String?,
+        avatarPath:
+            (workspaceData['settings'] as Map?)?['avatar_path'] as String?,
         createdAt: DateTime.parse(workspaceData['created_at'] as String),
         updatedAt: DateTime.parse(workspaceData['updated_at'] as String),
       ));
@@ -114,6 +121,35 @@ final isWorkspaceOwnerProvider = Provider<bool>((ref) {
 final workspaceRoleProvider = Provider<String?>((ref) {
   final workspace = ref.watch(activeWorkspaceProvider);
   return workspace?.role;
+});
+
+final isPersonalWorkspaceProvider = Provider<bool>((ref) {
+  final workspace = ref.watch(activeWorkspaceProvider);
+  return workspace?.type == 'personal';
+});
+
+final isWorkspaceAdminProvider = Provider<bool>((ref) {
+  final role = ref.watch(workspaceRoleProvider);
+  return role == 'admin';
+});
+
+final canManageWorkspaceMembersProvider = Provider<bool>((ref) {
+  final role = ref.watch(workspaceRoleProvider);
+  return role == 'owner' || role == 'admin';
+});
+
+final canManageWorkspaceContentProvider = Provider<bool>((ref) {
+  final role = ref.watch(workspaceRoleProvider);
+  return role == 'owner' || role == 'admin';
+});
+
+final canLeaveWorkspaceProvider = Provider<bool>((ref) {
+  final workspace = ref.watch(activeWorkspaceProvider);
+  final role = ref.watch(workspaceRoleProvider);
+  if (workspace == null || workspace.type == 'personal') {
+    return false;
+  }
+  return role != 'owner';
 });
 
 /// Helper to clear active workspace (for sign out)

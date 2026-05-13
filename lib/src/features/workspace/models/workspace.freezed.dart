@@ -22,8 +22,12 @@ Workspace _$WorkspaceFromJson(Map<String, dynamic> json) {
 mixin _$Workspace {
   String get id => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
+  String get type => throw _privateConstructorUsedError;
   String get ownerId => throw _privateConstructorUsedError;
   String get role => throw _privateConstructorUsedError;
+  String? get description => throw _privateConstructorUsedError;
+  String? get avatarPath => throw _privateConstructorUsedError;
+  int? get memberCount => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
@@ -45,8 +49,12 @@ abstract class $WorkspaceCopyWith<$Res> {
   $Res call(
       {String id,
       String name,
+      String type,
       String ownerId,
       String role,
+      String? description,
+      String? avatarPath,
+      int? memberCount,
       DateTime createdAt,
       DateTime updatedAt});
 }
@@ -68,8 +76,12 @@ class _$WorkspaceCopyWithImpl<$Res, $Val extends Workspace>
   $Res call({
     Object? id = null,
     Object? name = null,
+    Object? type = null,
     Object? ownerId = null,
     Object? role = null,
+    Object? description = freezed,
+    Object? avatarPath = freezed,
+    Object? memberCount = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -82,6 +94,10 @@ class _$WorkspaceCopyWithImpl<$Res, $Val extends Workspace>
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
+      type: null == type
+          ? _value.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as String,
       ownerId: null == ownerId
           ? _value.ownerId
           : ownerId // ignore: cast_nullable_to_non_nullable
@@ -90,6 +106,18 @@ class _$WorkspaceCopyWithImpl<$Res, $Val extends Workspace>
           ? _value.role
           : role // ignore: cast_nullable_to_non_nullable
               as String,
+      description: freezed == description
+          ? _value.description
+          : description // ignore: cast_nullable_to_non_nullable
+              as String?,
+      avatarPath: freezed == avatarPath
+          ? _value.avatarPath
+          : avatarPath // ignore: cast_nullable_to_non_nullable
+              as String?,
+      memberCount: freezed == memberCount
+          ? _value.memberCount
+          : memberCount // ignore: cast_nullable_to_non_nullable
+              as int?,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -113,8 +141,12 @@ abstract class _$$WorkspaceImplCopyWith<$Res>
   $Res call(
       {String id,
       String name,
+      String type,
       String ownerId,
       String role,
+      String? description,
+      String? avatarPath,
+      int? memberCount,
       DateTime createdAt,
       DateTime updatedAt});
 }
@@ -134,8 +166,12 @@ class __$$WorkspaceImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? name = null,
+    Object? type = null,
     Object? ownerId = null,
     Object? role = null,
+    Object? description = freezed,
+    Object? avatarPath = freezed,
+    Object? memberCount = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -148,6 +184,10 @@ class __$$WorkspaceImplCopyWithImpl<$Res>
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
+      type: null == type
+          ? _value.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as String,
       ownerId: null == ownerId
           ? _value.ownerId
           : ownerId // ignore: cast_nullable_to_non_nullable
@@ -156,6 +196,18 @@ class __$$WorkspaceImplCopyWithImpl<$Res>
           ? _value.role
           : role // ignore: cast_nullable_to_non_nullable
               as String,
+      description: freezed == description
+          ? _value.description
+          : description // ignore: cast_nullable_to_non_nullable
+              as String?,
+      avatarPath: freezed == avatarPath
+          ? _value.avatarPath
+          : avatarPath // ignore: cast_nullable_to_non_nullable
+              as String?,
+      memberCount: freezed == memberCount
+          ? _value.memberCount
+          : memberCount // ignore: cast_nullable_to_non_nullable
+              as int?,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -174,8 +226,12 @@ class _$WorkspaceImpl implements _Workspace {
   const _$WorkspaceImpl(
       {required this.id,
       required this.name,
+      required this.type,
       required this.ownerId,
       required this.role,
+      this.description,
+      this.avatarPath,
+      this.memberCount,
       required this.createdAt,
       required this.updatedAt});
 
@@ -187,9 +243,17 @@ class _$WorkspaceImpl implements _Workspace {
   @override
   final String name;
   @override
+  final String type;
+  @override
   final String ownerId;
   @override
   final String role;
+  @override
+  final String? description;
+  @override
+  final String? avatarPath;
+  @override
+  final int? memberCount;
   @override
   final DateTime createdAt;
   @override
@@ -197,7 +261,7 @@ class _$WorkspaceImpl implements _Workspace {
 
   @override
   String toString() {
-    return 'Workspace(id: $id, name: $name, ownerId: $ownerId, role: $role, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'Workspace(id: $id, name: $name, type: $type, ownerId: $ownerId, role: $role, description: $description, avatarPath: $avatarPath, memberCount: $memberCount, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -207,8 +271,15 @@ class _$WorkspaceImpl implements _Workspace {
             other is _$WorkspaceImpl &&
             (identical(other.id, id) || other.id == id) &&
             (identical(other.name, name) || other.name == name) &&
+            (identical(other.type, type) || other.type == type) &&
             (identical(other.ownerId, ownerId) || other.ownerId == ownerId) &&
             (identical(other.role, role) || other.role == role) &&
+            (identical(other.description, description) ||
+                other.description == description) &&
+            (identical(other.avatarPath, avatarPath) ||
+                other.avatarPath == avatarPath) &&
+            (identical(other.memberCount, memberCount) ||
+                other.memberCount == memberCount) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -218,7 +289,8 @@ class _$WorkspaceImpl implements _Workspace {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode =>
-      Object.hash(runtimeType, id, name, ownerId, role, createdAt, updatedAt);
+      Object.hash(runtimeType, id, name, type, ownerId, role, description,
+          avatarPath, memberCount, createdAt, updatedAt);
 
   /// Create a copy of Workspace
   /// with the given fields replaced by the non-null parameter values.
@@ -240,8 +312,12 @@ abstract class _Workspace implements Workspace {
   const factory _Workspace(
       {required final String id,
       required final String name,
+      required final String type,
       required final String ownerId,
       required final String role,
+      final String? description,
+      final String? avatarPath,
+      final int? memberCount,
       required final DateTime createdAt,
       required final DateTime updatedAt}) = _$WorkspaceImpl;
 
@@ -253,9 +329,17 @@ abstract class _Workspace implements Workspace {
   @override
   String get name;
   @override
+  String get type;
+  @override
   String get ownerId;
   @override
   String get role;
+  @override
+  String? get description;
+  @override
+  String? get avatarPath;
+  @override
+  int? get memberCount;
   @override
   DateTime get createdAt;
   @override

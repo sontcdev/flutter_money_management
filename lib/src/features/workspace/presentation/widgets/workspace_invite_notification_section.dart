@@ -3,7 +3,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/workspace/models/workspace_management_models.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_management_providers.dart';
-import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_section_header.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
@@ -167,28 +166,15 @@ class _InviteNotificationCardState
     }
 
     final context = this.context;
-    setState(() => _isSubmitting = true);
-
     try {
-      final workspaceId = await ref
-          .read(workspaceManagementServiceProvider)
-          .acceptInvite(widget.invite.token);
-      ref.read(activeWorkspaceIdProvider.notifier).state = workspaceId;
-      ref.invalidate(workspaceListProvider);
-      ref.invalidate(myWorkspaceInviteNotificationsProvider);
-
       if (!context.mounted) {
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            AppLocalizations.of(context)!.joinedWorkspaceSuccessfully,
-          ),
-        ),
+      Navigator.of(context).pushNamed(
+        '/workspace-invite-preview',
+        arguments: widget.invite.token,
       );
-      Navigator.of(context).pushReplacementNamed('/home');
     } catch (e, stackTrace) {
       if (!context.mounted) {
         return;

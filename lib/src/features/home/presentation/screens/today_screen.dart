@@ -28,6 +28,8 @@ class TodayScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final transactionsAsync = ref.watch(transactionsProvider);
     final budgetsAsync = ref.watch(budgetsWithConsumedProvider);
+    final upcomingRecurringAsync =
+        ref.watch(upcomingRecurringOccurrencesProvider);
     final monthStartDay = ref.watch(monthStartDayProvider);
 
     return Scaffold(
@@ -78,6 +80,10 @@ class TodayScreen extends ConsumerWidget {
 
                   const SizedBox(height: AppSpacing.sectionGap),
 
+                  _buildRecurringSection(context, l10n, upcomingRecurringAsync),
+
+                  const SizedBox(height: AppSpacing.sectionGap),
+
                   // Attention Section
                   _buildAttentionSection(
                       context, l10n, transactions, budgetsAsync, monthStartDay),
@@ -101,6 +107,44 @@ class TodayScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildRecurringSection(
+    BuildContext context,
+    AppLocalizations l10n,
+    AsyncValue upcomingRecurringAsync,
+  ) {
+    return upcomingRecurringAsync.when(
+      data: (occurrences) {
+        if (occurrences.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        return Padding(
+          padding:
+              const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppSectionHeader(
+                title: l10n.recurringUpcoming,
+                padding: EdgeInsets.zero,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              AppMetricCard.status(
+                label: l10n.recurringTransactions,
+                value:
+                    '${occurrences.length} ${l10n.notification.toLowerCase()}',
+                icon: Icons.schedule,
+                tone: MetricCardTone.warning,
+              ),
+            ],
+          ),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 

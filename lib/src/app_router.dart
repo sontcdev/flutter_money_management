@@ -14,6 +14,8 @@ import 'features/categories/presentation/screens/category_edit_screen.dart';
 import 'features/categories/presentation/screens/icon_management_screen.dart';
 import 'features/home/presentation/screens/dashboard_screen.dart';
 import 'features/home/presentation/screens/home_screen.dart';
+import 'features/recurring/presentation/screens/recurring_transaction_edit_screen.dart';
+import 'features/recurring/presentation/screens/recurring_transactions_screen.dart';
 import 'features/reports/presentation/screens/report_calendar_screen.dart';
 import 'features/reports/presentation/screens/reports_screen.dart';
 import 'features/settings/presentation/screens/settings_screen.dart';
@@ -23,6 +25,9 @@ import 'features/transactions/presentation/screens/transaction_detail_screen.dar
 import 'features/transactions/presentation/screens/transaction_management_screen.dart';
 import 'features/transactions/presentation/screens/transactions_screen.dart';
 import 'features/workspace/presentation/screens/workspace_management_screen.dart';
+import 'features/workspace/presentation/screens/create_workspace_screen.dart';
+import 'features/workspace/presentation/screens/workspace_detail_screen.dart';
+import 'features/workspace/presentation/screens/workspace_invite_preview_screen.dart';
 import 'features/workspace/presentation/screens/workspace_selection_screen.dart';
 import 'features/categories/models/category.dart';
 import 'features/budgets/models/budget.dart';
@@ -93,12 +98,39 @@ class AppRouter {
         );
       case '/reports':
         return AppAnimations.slideRoute(const ReportsScreen());
+      case '/recurring-transactions':
+        final args = settings.arguments as Map<String, dynamic>?;
+        final highlightedOccurrenceId = args?['occurrenceId'] as String?;
+        return AppAnimations.slideRoute(
+          RecurringTransactionsScreen(
+            highlightedOccurrenceId: highlightedOccurrenceId,
+          ),
+        );
+      case '/recurring-transaction-edit':
+        final recurringTransactionId = settings.arguments as String?;
+        return AppAnimations.slideRoute(
+          RecurringTransactionEditScreen(
+            recurringTransactionId: recurringTransactionId,
+          ),
+        );
       case '/report-calendar':
         return AppAnimations.slideRoute(const ReportCalendarScreen());
       case '/settings':
         return AppAnimations.slideRoute(const SettingsScreen());
       case '/workspace-management':
         return AppAnimations.slideRoute(const WorkspaceManagementScreen());
+      case '/workspace-create':
+        return AppAnimations.slideRoute(const CreateWorkspaceScreen());
+      case '/workspace-detail':
+        final workspaceId = settings.arguments as String?;
+        return AppAnimations.slideRoute(
+          WorkspaceDetailScreen(workspaceId: workspaceId),
+        );
+      case '/workspace-invite-preview':
+        final token = settings.arguments as String;
+        return AppAnimations.slideRoute(
+          WorkspaceInvitePreviewScreen(token: token),
+        );
       case '/icon-management':
         return AppAnimations.slideRoute(const IconManagementScreen());
       case '/transaction-management':

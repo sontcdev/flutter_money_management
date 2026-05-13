@@ -116,7 +116,12 @@ class TransactionDetailScreen extends ConsumerWidget {
                         if (confirm == true) {
                           final receiptService =
                               ref.read(transactionReceiptServiceProvider);
-                          await receiptService.removeReceipt(transactionId);
+                          try {
+                            await receiptService.removeReceipt(transactionId);
+                          } catch (_) {
+                            // Allow owner/admin to continue deleting the transaction
+                            // even if receipt cleanup fails due to legacy storage rules.
+                          }
                           await transactionRepo
                               .deleteTransaction(transactionId);
                           ref.invalidate(budgetsProvider);

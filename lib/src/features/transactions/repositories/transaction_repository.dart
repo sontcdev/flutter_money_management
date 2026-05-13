@@ -5,12 +5,13 @@ import 'package:uuid/uuid.dart';
 
 import 'package:flutter_money_management/src/data/repositories/supabase_error_mapper.dart';
 import 'package:flutter_money_management/src/features/budgets/services/budget_service.dart';
+import 'package:flutter_money_management/src/features/recurring/services/recurring_transaction_service.dart';
 import 'package:flutter_money_management/src/features/budgets/models/budget.dart'
     as budget_model;
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart'
     as model;
 
-class TransactionRepository {
+class TransactionRepository implements TransactionCreationGateway {
   final SupabaseClient _supabase;
   final String? Function() _getActiveWorkspaceId;
   final String? Function() _getCurrentUserId;
@@ -22,8 +23,10 @@ class TransactionRepository {
     this._getCurrentUserId,
   );
 
-  Future<List<model.Transaction>> getAllTransactions() async {
-    final workspaceId = _requireWorkspaceId();
+  Future<List<model.Transaction>> getAllTransactions({
+    String? workspaceIdOverride,
+  }) async {
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     final response = await _supabase
         .from('transactions')
         .select()
@@ -39,9 +42,10 @@ class TransactionRepository {
 
   Future<List<model.Transaction>> getTransactionsByDateRange(
     DateTime start,
-    DateTime end,
-  ) async {
-    final workspaceId = _requireWorkspaceId();
+    DateTime end, {
+    String? workspaceIdOverride,
+  }) async {
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     final response = await _supabase
         .from('transactions')
         .select()
@@ -57,8 +61,11 @@ class TransactionRepository {
         .toList();
   }
 
-  Future<model.Transaction> getTransactionById(String id) async {
-    final workspaceId = _requireWorkspaceId();
+  Future<model.Transaction> getTransactionById(
+    String id, {
+    String? workspaceIdOverride,
+  }) async {
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     final response = await _supabase
         .from('transactions')
         .select()
@@ -74,11 +81,13 @@ class TransactionRepository {
     return _mapTransaction(response);
   }
 
+  @override
   Future<model.Transaction> createTransaction(
     model.Transaction transaction, {
     bool allowOverdraft = false,
+    String? workspaceIdOverride,
   }) async {
-    final workspaceId = _requireWorkspaceId();
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     _requireUserId();
     final id = transaction.id.isEmpty ? _uuid.v4() : transaction.id;
     final transactionWithId = transaction.copyWith(id: id);
@@ -86,6 +95,7 @@ class TransactionRepository {
     await _validateBudgetImpact(
       transaction: transactionWithId,
       allowOverdraft: allowOverdraft,
+      workspaceIdOverride: workspaceIdOverride,
     );
 
     try {
@@ -112,15 +122,20 @@ class TransactionRepository {
   Future<void> updateTransaction(
     model.Transaction transaction, {
     bool allowOverdraft = false,
+    String? workspaceIdOverride,
   }) async {
-    final workspaceId = _requireWorkspaceId();
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     _requireUserId();
-    final existing = await getTransactionById(transaction.id);
+    final existing = await getTransactionById(
+      transaction.id,
+      workspaceIdOverride: workspaceIdOverride,
+    );
 
     await _validateBudgetImpact(
       transaction: transaction,
       previousTransaction: existing,
       allowOverdraft: allowOverdraft,
+      workspaceIdOverride: workspaceIdOverride,
     );
 
     try {
@@ -141,8 +156,9 @@ class TransactionRepository {
     }
   }
 
-  Future<void> deleteTransaction(String id) async {
-    final workspaceId = _requireWorkspaceId();
+  Future<void> deleteTransaction(String id,
+      {String? workspaceIdOverride}) async {
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
 
     _requireUserId();
 
@@ -156,9 +172,16 @@ class TransactionRepository {
     }
   }
 
-  Future<bool> canCurrentUserManageTransaction(String id) async {
-    final workspaceId = _requireWorkspaceId();
+  Future<bool> canCurrentUserManageTransaction(
+    String id, {
+    String? workspaceIdOverride,
+  }) async {
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     final userId = _requireUserId();
+    final currentRole = await _getCurrentWorkspaceRole(workspaceId);
+    if (currentRole == 'owner' || currentRole == 'admin') {
+      return true;
+    }
     final response = await _supabase
         .from('transactions')
         .select('created_by_user_id')
@@ -178,13 +201,17 @@ class TransactionRepository {
     required model.Transaction transaction,
     model.Transaction? previousTransaction,
     required bool allowOverdraft,
+    String? workspaceIdOverride,
   }) async {
     if (transaction.type != model.TransactionType.expense) {
       return;
     }
 
-    final budget =
-        await _getActiveBudget(transaction.categoryId, transaction.dateTime);
+    final budget = await _getActiveBudget(
+      transaction.categoryId,
+      transaction.dateTime,
+      workspaceIdOverride: workspaceIdOverride,
+    );
     if (budget == null) {
       return;
     }
@@ -192,6 +219,7 @@ class TransactionRepository {
     final transactions = await getTransactionsByDateRange(
       budget.periodStart,
       budget.periodEnd,
+      workspaceIdOverride: workspaceIdOverride,
     );
 
     var consumed = transactions
@@ -217,8 +245,11 @@ class TransactionRepository {
   }
 
   Future<budget_model.Budget?> _getActiveBudget(
-      String categoryId, DateTime date) async {
-    final workspaceId = _requireWorkspaceId();
+    String categoryId,
+    DateTime date, {
+    String? workspaceIdOverride,
+  }) async {
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     final response = await _supabase
         .from('budgets')
         .select()
@@ -287,8 +318,19 @@ class TransactionRepository {
     );
   }
 
-  String _requireWorkspaceId() {
-    final workspaceId = _getActiveWorkspaceId();
+  Future<String?> _getCurrentWorkspaceRole(String workspaceId) async {
+    final response = await _supabase
+        .from('workspace_members')
+        .select('role')
+        .eq('workspace_id', workspaceId)
+        .eq('user_id', _requireUserId())
+        .eq('membership_status', 'active')
+        .maybeSingle();
+    return response?['role'] as String?;
+  }
+
+  String _requireWorkspaceId([String? workspaceIdOverride]) {
+    final workspaceId = workspaceIdOverride ?? _getActiveWorkspaceId();
     if (workspaceId == null || workspaceId.isEmpty) {
       throw Exception('No active workspace selected');
     }

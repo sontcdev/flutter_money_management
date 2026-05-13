@@ -1645,6 +1645,222 @@ abstract class AppLocalizations {
   /// **'Select New Date'**
   String get selectNewDate;
 
+  /// No description provided for @recurringTransactions.
+  ///
+  /// In en, this message translates to:
+  /// **'Recurring Transactions'**
+  String get recurringTransactions;
+
+  /// No description provided for @recurringTransactionsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage repeating income and expenses'**
+  String get recurringTransactionsDesc;
+
+  /// No description provided for @recurringAddTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add recurring transaction'**
+  String get recurringAddTitle;
+
+  /// No description provided for @recurringEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit recurring transaction'**
+  String get recurringEditTitle;
+
+  /// No description provided for @recurringTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get recurringTitle;
+
+  /// No description provided for @recurringFrequency.
+  ///
+  /// In en, this message translates to:
+  /// **'Frequency'**
+  String get recurringFrequency;
+
+  /// No description provided for @recurringInterval.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat every'**
+  String get recurringInterval;
+
+  /// No description provided for @recurringDayOfMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Day of month'**
+  String get recurringDayOfMonth;
+
+  /// No description provided for @recurringDayOfWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Day of week'**
+  String get recurringDayOfWeek;
+
+  /// No description provided for @recurringMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Behavior'**
+  String get recurringMode;
+
+  /// No description provided for @recurringModeManualConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Create reminder and confirm manually'**
+  String get recurringModeManualConfirm;
+
+  /// No description provided for @recurringModeReminderOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder only'**
+  String get recurringModeReminderOnly;
+
+  /// No description provided for @recurringReminderDaysBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'Remind before (days)'**
+  String get recurringReminderDaysBefore;
+
+  /// No description provided for @recurringEndDate.
+  ///
+  /// In en, this message translates to:
+  /// **'End date'**
+  String get recurringEndDate;
+
+  /// No description provided for @recurringNoEndDate.
+  ///
+  /// In en, this message translates to:
+  /// **'No end date'**
+  String get recurringNoEndDate;
+
+  /// No description provided for @recurringActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get recurringActive;
+
+  /// No description provided for @recurringInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive'**
+  String get recurringInactive;
+
+  /// No description provided for @recurringUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming reminders'**
+  String get recurringUpcoming;
+
+  /// No description provided for @recurringTemplates.
+  ///
+  /// In en, this message translates to:
+  /// **'Recurring templates'**
+  String get recurringTemplates;
+
+  /// No description provided for @recurringNoUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'No upcoming recurring reminders'**
+  String get recurringNoUpcoming;
+
+  /// No description provided for @recurringNoTemplates.
+  ///
+  /// In en, this message translates to:
+  /// **'No recurring transactions yet'**
+  String get recurringNoTemplates;
+
+  /// No description provided for @recurringNotificationsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable recurring reminders'**
+  String get recurringNotificationsTitle;
+
+  /// No description provided for @recurringNotificationsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on notifications so the app can remind you before recurring income and expenses are due.'**
+  String get recurringNotificationsDesc;
+
+  /// No description provided for @recurringEnableNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable notifications'**
+  String get recurringEnableNotifications;
+
+  /// No description provided for @recurringNotificationsEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Recurring reminders enabled'**
+  String get recurringNotificationsEnabled;
+
+  /// No description provided for @recurringNotificationsDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are still disabled'**
+  String get recurringNotificationsDenied;
+
+  /// No description provided for @tapForDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap for details'**
+  String get tapForDetails;
+
+  /// No description provided for @markDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark done'**
+  String get markDone;
+
+  /// No description provided for @startDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Start date'**
+  String get startDate;
+
+  /// No description provided for @monday.
+  ///
+  /// In en, this message translates to:
+  /// **'Monday'**
+  String get monday;
+
+  /// No description provided for @tuesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Tuesday'**
+  String get tuesday;
+
+  /// No description provided for @wednesday.
+  ///
+  /// In en, this message translates to:
+  /// **'Wednesday'**
+  String get wednesday;
+
+  /// No description provided for @thursday.
+  ///
+  /// In en, this message translates to:
+  /// **'Thursday'**
+  String get thursday;
+
+  /// No description provided for @friday.
+  ///
+  /// In en, this message translates to:
+  /// **'Friday'**
+  String get friday;
+
+  /// No description provided for @saturday.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturday'**
+  String get saturday;
+
+  /// No description provided for @sunday.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunday'**
+  String get sunday;
+
   /// No description provided for @noBudget.
   ///
   /// In en, this message translates to:

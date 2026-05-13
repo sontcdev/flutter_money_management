@@ -10,8 +10,12 @@ class Workspace with _$Workspace {
   const factory Workspace({
     required String id,
     required String name,
+    required String type,
     required String ownerId,
     required String role,
+    String? description,
+    String? avatarPath,
+    int? memberCount,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _Workspace;

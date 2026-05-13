@@ -23,6 +23,8 @@ class WorkspaceManagementScreen extends HookConsumerWidget {
     final activeWorkspace = ref.watch(activeWorkspaceProvider);
     final currentUser = ref.watch(currentUserProvider);
     final isOwner = ref.watch(isWorkspaceOwnerProvider);
+    final canManageMembers = ref.watch(canManageWorkspaceMembersProvider);
+    final canLeaveWorkspace = ref.watch(canLeaveWorkspaceProvider);
     final membersAsync = ref.watch(workspaceMembersProvider);
     final invitesAsync = ref.watch(workspacePendingInvitesProvider);
     final emailController = useTextEditingController();
@@ -201,7 +203,7 @@ class WorkspaceManagementScreen extends HookConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  if (isOwner) ...[
+                  if (canManageMembers) ...[
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -275,12 +277,75 @@ class WorkspaceManagementScreen extends HookConsumerWidget {
                     _InviteSection(invitesAsync: invitesAsync),
                     const SizedBox(height: 16),
                   ],
+                  if (canLeaveWorkspace)
+                    Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.logout),
+                        title: const Text('Leave workspace'),
+                        subtitle: const Text(
+                          'You will lose access to shared categories, budgets, and transactions.',
+                        ),
+                        onTap: () async {
+                          final confirmed = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Leave workspace'),
+                              content: const Text(
+                                'Are you sure you want to leave this workspace?',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(false),
+                                  child: Text(l10n.cancel),
+                                ),
+                                FilledButton(
+                                  onPressed: () =>
+                                      Navigator.of(context).pop(true),
+                                  child: const Text('Leave'),
+                                ),
+                              ],
+                            ),
+                          );
+                          if (confirmed != true || !context.mounted) {
+                            return;
+                          }
+                          try {
+                            await ref
+                                .read(workspaceManagementServiceProvider)
+                                .leaveWorkspace(activeWorkspace.id);
+                            ref.invalidate(workspaceListProvider);
+                            clearActiveWorkspace(ref);
+                            if (context.mounted) {
+                              Navigator.of(context).pushNamedAndRemoveUntil(
+                                '/workspace-selection',
+                                (route) => false,
+                              );
+                            }
+                          } catch (e, stackTrace) {
+                            if (!context.mounted) {
+                              return;
+                            }
+                            await ErrorReportHelper.handleApiError(
+                              context: context,
+                              ref: ref,
+                              error: e,
+                              stackTrace: stackTrace,
+                              feature: 'workspace',
+                              action: 'leave_workspace',
+                              screen: 'workspace_management_screen',
+                            );
+                          }
+                        },
+                      ),
+                    ),
                   _MemberSection(
                     workspaceId: activeWorkspace.id,
-                    isOwner: isOwner,
+                    canManageMembers: canManageMembers,
                     membersAsync: membersAsync,
                     currentUserId: currentUser?.id,
                     ownerId: activeWorkspace.ownerId,
+                    isOwner: isOwner,
                   ),
                 ],
               ),
@@ -292,6 +357,7 @@ class WorkspaceManagementScreen extends HookConsumerWidget {
 class _MemberSection extends ConsumerWidget {
   const _MemberSection({
     required this.workspaceId,
+    required this.canManageMembers,
     required this.isOwner,
     required this.membersAsync,
     required this.currentUserId,
@@ -299,6 +365,7 @@ class _MemberSection extends ConsumerWidget {
   });
 
   final String workspaceId;
+  final bool canManageMembers;
   final bool isOwner;
   final AsyncValue<List<WorkspaceMemberSummary>> membersAsync;
   final String? currentUserId;
@@ -352,7 +419,7 @@ class _MemberSection extends ConsumerWidget {
     WidgetRef ref,
     WorkspaceMemberSummary member,
   ) {
-    if (!isOwner ||
+    if (!canManageMembers ||
         member.userId == ownerId ||
         member.userId == currentUserId) {
       return null;

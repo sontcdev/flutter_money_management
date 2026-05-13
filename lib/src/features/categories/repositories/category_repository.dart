@@ -21,8 +21,10 @@ class CategoryRepository {
     this._getCurrentUserId,
   );
 
-  Future<List<model.Category>> getAllCategories() async {
-    final workspaceId = _requireWorkspaceId();
+  Future<List<model.Category>> getAllCategories({
+    String? workspaceIdOverride,
+  }) async {
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     final response = await _supabase
         .from('categories')
         .select()
@@ -38,8 +40,10 @@ class CategoryRepository {
   }
 
   Future<List<model.Category>> getCategoriesByType(
-      model.CategoryType type) async {
-    final workspaceId = _requireWorkspaceId();
+    model.CategoryType type, {
+    String? workspaceIdOverride,
+  }) async {
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     final response = await _supabase
         .from('categories')
         .select()
@@ -55,8 +59,11 @@ class CategoryRepository {
         .toList();
   }
 
-  Future<model.Category?> getCategoryById(String id) async {
-    final workspaceId = _requireWorkspaceId();
+  Future<model.Category?> getCategoryById(
+    String id, {
+    String? workspaceIdOverride,
+  }) async {
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     final response = await _supabase
         .from('categories')
         .select()
@@ -72,8 +79,11 @@ class CategoryRepository {
     return _mapCategory(response);
   }
 
-  Future<model.Category> createCategory(model.Category category) async {
-    final workspaceId = _requireWorkspaceId();
+  Future<model.Category> createCategory(
+    model.Category category, {
+    String? workspaceIdOverride,
+  }) async {
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     _requireUserId();
     final id = category.id.isEmpty ? _uuid.v4() : category.id;
 
@@ -94,8 +104,11 @@ class CategoryRepository {
     }
   }
 
-  Future<void> updateCategory(model.Category category) async {
-    final workspaceId = _requireWorkspaceId();
+  Future<void> updateCategory(
+    model.Category category, {
+    String? workspaceIdOverride,
+  }) async {
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     _requireUserId();
 
     try {
@@ -113,8 +126,11 @@ class CategoryRepository {
     }
   }
 
-  Future<void> deleteCategory(String id) async {
-    final workspaceId = _requireWorkspaceId();
+  Future<void> deleteCategory(
+    String id, {
+    String? workspaceIdOverride,
+  }) async {
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     _requireUserId();
 
     final transactionInUse = await _supabase
@@ -169,8 +185,8 @@ class CategoryRepository {
     );
   }
 
-  String _requireWorkspaceId() {
-    final workspaceId = _getActiveWorkspaceId();
+  String _requireWorkspaceId([String? workspaceIdOverride]) {
+    final workspaceId = workspaceIdOverride ?? _getActiveWorkspaceId();
     if (workspaceId == null || workspaceId.isEmpty) {
       throw Exception('No active workspace selected');
     }

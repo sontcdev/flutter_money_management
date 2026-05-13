@@ -11,6 +11,8 @@ import 'i18n/theme_provider.dart';
 import 'ui/widgets/auth_callback_feedback_listener.dart';
 import 'utils/responsive.dart';
 
+final appNavigatorKey = GlobalKey<NavigatorState>();
+
 class MoneyManagementApp extends ConsumerWidget {
   const MoneyManagementApp({super.key});
 
@@ -21,6 +23,7 @@ class MoneyManagementApp extends ConsumerWidget {
     final themeColor = ref.watch(themeColorProvider);
 
     return MaterialApp(
+      navigatorKey: appNavigatorKey,
       title: 'MyMoney',
       theme: AppTheme.lightTheme(primaryColor: themeColor),
       darkTheme: AppTheme.darkTheme(primaryColor: themeColor),

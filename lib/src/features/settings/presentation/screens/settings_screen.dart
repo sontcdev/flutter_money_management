@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_money_management/src/features/auth/providers/auth_providers.dart';
 import 'package:flutter_money_management/src/features/settings/providers/settings_preferences_providers.dart';
+import 'package:flutter_money_management/src/features/workspace/providers/workspace_management_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/i18n/locale_provider.dart';
 import 'package:flutter_money_management/src/i18n/theme_provider.dart';
@@ -24,6 +25,7 @@ class SettingsScreen extends HookConsumerWidget {
         useFuture(useMemoized(() => PackageInfo.fromPlatform()));
     final currentUser = ref.watch(currentUserProvider);
     final activeWorkspace = ref.watch(activeWorkspaceProvider);
+    final canLeaveWorkspace = ref.watch(canLeaveWorkspaceProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -128,6 +130,14 @@ class SettingsScreen extends HookConsumerWidget {
             onTap: () =>
                 Navigator.pushNamed(context, '/transaction-management'),
           ),
+          ListTile(
+            leading: const Icon(Icons.schedule),
+            title: Text(l10n.recurringTransactions),
+            subtitle: Text(l10n.recurringTransactionsDesc),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () =>
+                Navigator.pushNamed(context, '/recurring-transactions'),
+          ),
           const Divider(height: 32),
 
           // Account Section
@@ -144,8 +154,21 @@ class SettingsScreen extends HookConsumerWidget {
                 title: Text(l10n.activeWorkspace),
                 subtitle: Text(activeWorkspace.name),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () =>
-                    Navigator.pushNamed(context, '/workspace-management'),
+                onTap: () => Navigator.pushNamed(context, '/workspace-detail'),
+              ),
+            if (canLeaveWorkspace)
+              ListTile(
+                leading: Icon(Icons.logout, color: Colors.orange[700]),
+                title: Text(
+                  'Leave workspace',
+                  style: TextStyle(color: Colors.orange[700]),
+                ),
+                subtitle: const Text('Leave the current shared workspace'),
+                onTap: () => _handleLeaveWorkspace(
+                  context,
+                  ref,
+                  activeWorkspace!.id,
+                ),
               ),
             ListTile(
               leading: Icon(Icons.logout, color: Colors.red[700]),
@@ -242,6 +265,60 @@ class SettingsScreen extends HookConsumerWidget {
             screen: 'settings_screen',
           );
         }
+      }
+    }
+  }
+
+  Future<void> _handleLeaveWorkspace(
+    BuildContext context,
+    WidgetRef ref,
+    String workspaceId,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Leave workspace'),
+        content: const Text('Are you sure you want to leave this workspace?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(AppLocalizations.of(context)!.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Leave'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !context.mounted) {
+      return;
+    }
+
+    try {
+      await ref
+          .read(workspaceManagementServiceProvider)
+          .leaveWorkspace(workspaceId);
+      clearActiveWorkspace(ref);
+      ref.invalidate(workspaceListProvider);
+      if (context.mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/workspace-selection',
+          (route) => false,
+        );
+      }
+    } catch (e, stackTrace) {
+      if (context.mounted) {
+        await ErrorReportHelper.handleApiError(
+          context: context,
+          ref: ref,
+          error: e,
+          stackTrace: stackTrace,
+          feature: 'workspace',
+          action: 'leave_workspace_settings',
+          screen: 'settings_screen',
+        );
       }
     }
   }

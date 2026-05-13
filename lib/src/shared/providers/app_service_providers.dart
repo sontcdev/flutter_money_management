@@ -1,4 +1,5 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:flutter_money_management/src/services/app_lock_service.dart';
@@ -19,4 +20,9 @@ final emailPersistenceServiceProvider =
 
 final errorReportServiceProvider = Provider<ErrorReportService>((ref) {
   return ErrorReportService(Supabase.instance.client);
+});
+
+final localNotificationsPluginProvider =
+    Provider<FlutterLocalNotificationsPlugin>((ref) {
+  return FlutterLocalNotificationsPlugin();
 });

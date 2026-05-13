@@ -801,6 +801,114 @@ class AppLocalizationsVi extends AppLocalizations {
   String get selectNewDate => 'Chọn ngày mới';
 
   @override
+  String get recurringTransactions => 'Giao dịch định kỳ';
+
+  @override
+  String get recurringTransactionsDesc => 'Quản lý các khoản thu chi lặp lại';
+
+  @override
+  String get recurringAddTitle => 'Thêm giao dịch định kỳ';
+
+  @override
+  String get recurringEditTitle => 'Sửa giao dịch định kỳ';
+
+  @override
+  String get recurringTitle => 'Tiêu đề';
+
+  @override
+  String get recurringFrequency => 'Tần suất';
+
+  @override
+  String get recurringInterval => 'Lặp lại mỗi';
+
+  @override
+  String get recurringDayOfMonth => 'Ngày trong tháng';
+
+  @override
+  String get recurringDayOfWeek => 'Ngày trong tuần';
+
+  @override
+  String get recurringMode => 'Cách hoạt động';
+
+  @override
+  String get recurringModeManualConfirm => 'Tạo nhắc việc và xác nhận thủ công';
+
+  @override
+  String get recurringModeReminderOnly => 'Chỉ nhắc nhở';
+
+  @override
+  String get recurringReminderDaysBefore => 'Nhắc trước (ngày)';
+
+  @override
+  String get recurringEndDate => 'Ngày kết thúc';
+
+  @override
+  String get recurringNoEndDate => 'Không có ngày kết thúc';
+
+  @override
+  String get recurringActive => 'Đang hoạt động';
+
+  @override
+  String get recurringInactive => 'Tạm dừng';
+
+  @override
+  String get recurringUpcoming => 'Nhắc việc sắp tới';
+
+  @override
+  String get recurringTemplates => 'Mẫu định kỳ';
+
+  @override
+  String get recurringNoUpcoming => 'Không có nhắc việc định kỳ sắp tới';
+
+  @override
+  String get recurringNoTemplates => 'Chưa có giao dịch định kỳ';
+
+  @override
+  String get recurringNotificationsTitle => 'Bật nhắc việc định kỳ';
+
+  @override
+  String get recurringNotificationsDesc => 'Bật thông báo để ứng dụng có thể nhắc bạn trước khi các khoản thu chi định kỳ đến hạn.';
+
+  @override
+  String get recurringEnableNotifications => 'Bật thông báo';
+
+  @override
+  String get recurringNotificationsEnabled => 'Đã bật nhắc việc định kỳ';
+
+  @override
+  String get recurringNotificationsDenied => 'Thông báo vẫn đang tắt';
+
+  @override
+  String get tapForDetails => 'Chạm để xem chi tiết';
+
+  @override
+  String get markDone => 'Đánh dấu xong';
+
+  @override
+  String get startDate => 'Ngày bắt đầu';
+
+  @override
+  String get monday => 'Thứ hai';
+
+  @override
+  String get tuesday => 'Thứ ba';
+
+  @override
+  String get wednesday => 'Thứ tư';
+
+  @override
+  String get thursday => 'Thứ năm';
+
+  @override
+  String get friday => 'Thứ sáu';
+
+  @override
+  String get saturday => 'Thứ bảy';
+
+  @override
+  String get sunday => 'Chủ nhật';
+
+  @override
   String get noBudget => 'Không có ngân sách';
 
   @override

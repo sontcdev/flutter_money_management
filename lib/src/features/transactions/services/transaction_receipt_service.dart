@@ -21,12 +21,17 @@ class TransactionReceiptService {
   Future<void> attachReceipt({
     required String transactionId,
     required String localFilePath,
+    String? workspaceIdOverride,
   }) async {
-    final existing = await _attachments
-        .getLatestReceiptAttachmentByTransactionId(transactionId);
+    final existing =
+        await _attachments.getLatestReceiptAttachmentByTransactionId(
+      transactionId,
+      workspaceIdOverride: workspaceIdOverride,
+    );
     final uploaded = await _uploadReceipt(
       transactionId: transactionId,
       localFilePath: localFilePath,
+      workspaceIdOverride: workspaceIdOverride,
     );
 
     try {
@@ -37,6 +42,7 @@ class TransactionReceiptService {
         fileName: uploaded.fileName,
         mimeType: uploaded.mimeType,
         fileSize: uploaded.fileSize,
+        workspaceIdOverride: workspaceIdOverride,
       );
     } catch (_) {
       await _deleteStorageObject(
@@ -47,7 +53,10 @@ class TransactionReceiptService {
     }
 
     if (existing != null) {
-      await _attachments.deleteAttachment(existing.id);
+      await _attachments.deleteAttachment(
+        existing.id,
+        workspaceIdOverride: workspaceIdOverride,
+      );
       await _deleteStorageObject(
         storageBucket: existing.storageBucket,
         storagePath: existing.storagePath,
@@ -55,14 +64,21 @@ class TransactionReceiptService {
     }
   }
 
-  Future<void> removeReceipt(String transactionId) async {
-    final existing = await _attachments
-        .getLatestReceiptAttachmentByTransactionId(transactionId);
+  Future<void> removeReceipt(String transactionId,
+      {String? workspaceIdOverride}) async {
+    final existing =
+        await _attachments.getLatestReceiptAttachmentByTransactionId(
+      transactionId,
+      workspaceIdOverride: workspaceIdOverride,
+    );
     if (existing == null) {
       return;
     }
 
-    await _attachments.deleteAttachment(existing.id);
+    await _attachments.deleteAttachment(
+      existing.id,
+      workspaceIdOverride: workspaceIdOverride,
+    );
     await _deleteStorageObject(
       storageBucket: existing.storageBucket,
       storagePath: existing.storagePath,
@@ -78,8 +94,9 @@ class TransactionReceiptService {
   Future<_UploadedReceipt> _uploadReceipt({
     required String transactionId,
     required String localFilePath,
+    String? workspaceIdOverride,
   }) async {
-    final workspaceId = _getActiveWorkspaceId();
+    final workspaceId = workspaceIdOverride ?? _getActiveWorkspaceId();
     if (workspaceId == null || workspaceId.isEmpty) {
       throw Exception('No active workspace selected');
     }

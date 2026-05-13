@@ -20,6 +20,7 @@ import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 import 'package:flutter_money_management/src/utils/vnd_input_formatter.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
+import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 
 class AddTransactionScreen extends HookConsumerWidget {
   final model.TransactionType? initialType;
@@ -32,17 +33,29 @@ class AddTransactionScreen extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final categoriesAsync = ref.watch(categoriesProvider);
+    final workspacesAsync = ref.watch(workspaceListProvider);
+    final activeWorkspace = ref.watch(activeWorkspaceProvider);
 
     // Form state
     final amountController = useTextEditingController();
     final noteController = useTextEditingController();
     final selectedDate = useState(DateTime.now());
     final selectedType = useState(initialType ?? model.TransactionType.expense);
+    final selectedWorkspaceId = useState<String?>(activeWorkspace?.id);
     final selectedCategoryId = useState<String?>(null);
     final localReceiptPath = useState<String?>(null);
     final isLoading = useState(false);
     final allowOverdraft = useState(false);
+    final categoriesAsync = selectedWorkspaceId.value == null
+        ? const AsyncValue<List<Category>>.data([])
+        : ref.watch(categoriesForWorkspaceProvider(selectedWorkspaceId.value!));
+
+    useEffect(() {
+      if (selectedWorkspaceId.value == null && activeWorkspace != null) {
+        selectedWorkspaceId.value = activeWorkspace.id;
+      }
+      return null;
+    }, [activeWorkspace]);
 
     Future<void> handleSubmit() async {
       if (amountController.text.isEmpty) {
@@ -86,6 +99,7 @@ class AddTransactionScreen extends HookConsumerWidget {
         final createdTransaction = await repository.createTransaction(
           transaction,
           allowOverdraft: allowOverdraft.value,
+          workspaceIdOverride: selectedWorkspaceId.value,
         );
 
         String? receiptWarning;
@@ -94,6 +108,7 @@ class AddTransactionScreen extends HookConsumerWidget {
             await receiptService.attachReceipt(
               transactionId: createdTransaction.id,
               localFilePath: localReceiptPath.value!,
+              workspaceIdOverride: selectedWorkspaceId.value,
             );
           } catch (e, stackTrace) {
             AppLogger.error(
@@ -156,6 +171,7 @@ class AddTransactionScreen extends HookConsumerWidget {
             action: 'create_transaction',
             screen: 'add_transaction_screen',
             extraContext: {
+              'workspace_id': selectedWorkspaceId.value,
               'category_id': selectedCategoryId.value!,
               'transaction_type': selectedType.value.toString(),
               'has_receipt': localReceiptPath.value != null,
@@ -212,6 +228,56 @@ class AddTransactionScreen extends HookConsumerWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.sectionGap),
+
+            workspacesAsync.when(
+              data: (workspaces) {
+                if (workspaces.isEmpty) {
+                  return const SizedBox.shrink();
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Workspace',
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    DropdownButtonFormField<String>(
+                      value: selectedWorkspaceId.value,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.groups_2_outlined),
+                      ),
+                      items: workspaces
+                          .map(
+                            (workspace) => DropdownMenuItem<String>(
+                              value: workspace.id,
+                              child: Text(
+                                workspace.type == 'personal'
+                                    ? 'Personal'
+                                    : workspace.name,
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: isLoading.value
+                          ? null
+                          : (value) {
+                              selectedWorkspaceId.value = value;
+                              selectedCategoryId.value = null;
+                            },
+                    ),
+                    const SizedBox(height: AppSpacing.sectionGap),
+                  ],
+                );
+              },
+              loading: () => const Padding(
+                padding: EdgeInsets.only(bottom: AppSpacing.sectionGap),
+                child: LinearProgressIndicator(),
+              ),
+              error: (_, __) => const SizedBox.shrink(),
+            ),
 
             // Amount Input - Priority 1
             AppInput(

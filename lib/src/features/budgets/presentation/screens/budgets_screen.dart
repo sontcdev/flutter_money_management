@@ -9,6 +9,7 @@ import 'package:flutter_money_management/src/features/categories/presentation/wi
 import 'package:flutter_money_management/src/features/settings/providers/settings_preferences_providers.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
 import 'package:flutter_money_management/src/features/workspace/services/workspace_sync_helper.dart';
+import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
@@ -34,22 +35,25 @@ class BudgetsScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final budgetsAsync = ref.watch(budgetsWithConsumedProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
+    final canManageContent = ref.watch(canManageWorkspaceContentProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.budgets),
         automaticallyImplyLeading: showBackButton,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () async {
-              final result = await Navigator.pushNamed(context, '/budget-edit');
-              if (result == true) {
-                ref.invalidate(budgetsProvider);
-                ref.invalidate(budgetsWithConsumedProvider);
-              }
-            },
-          ),
+          if (canManageContent)
+            IconButton(
+              icon: const Icon(Icons.add),
+              onPressed: () async {
+                final result =
+                    await Navigator.pushNamed(context, '/budget-edit');
+                if (result == true) {
+                  ref.invalidate(budgetsProvider);
+                  ref.invalidate(budgetsWithConsumedProvider);
+                }
+              },
+            ),
         ],
       ),
       body: RefreshIndicator(
@@ -72,15 +76,17 @@ class BudgetsScreen extends ConsumerWidget {
                     icon: Icons.account_balance_wallet_outlined,
                     title: l10n.noBudgets,
                     message: l10n.createFirstBudget,
-                    actionLabel: l10n.addBudgetAction,
-                    onAction: () async {
-                      final result =
-                          await Navigator.pushNamed(context, '/budget-edit');
-                      if (result == true) {
-                        ref.invalidate(budgetsProvider);
-                        ref.invalidate(budgetsWithConsumedProvider);
-                      }
-                    },
+                    actionLabel: canManageContent ? l10n.addBudgetAction : null,
+                    onAction: canManageContent
+                        ? () async {
+                            final result = await Navigator.pushNamed(
+                                context, '/budget-edit');
+                            if (result == true) {
+                              ref.invalidate(budgetsProvider);
+                              ref.invalidate(budgetsWithConsumedProvider);
+                            }
+                          }
+                        : null,
                   );
                 }
 

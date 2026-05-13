@@ -801,6 +801,114 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectNewDate => 'Select New Date';
 
   @override
+  String get recurringTransactions => 'Recurring Transactions';
+
+  @override
+  String get recurringTransactionsDesc => 'Manage repeating income and expenses';
+
+  @override
+  String get recurringAddTitle => 'Add recurring transaction';
+
+  @override
+  String get recurringEditTitle => 'Edit recurring transaction';
+
+  @override
+  String get recurringTitle => 'Title';
+
+  @override
+  String get recurringFrequency => 'Frequency';
+
+  @override
+  String get recurringInterval => 'Repeat every';
+
+  @override
+  String get recurringDayOfMonth => 'Day of month';
+
+  @override
+  String get recurringDayOfWeek => 'Day of week';
+
+  @override
+  String get recurringMode => 'Behavior';
+
+  @override
+  String get recurringModeManualConfirm => 'Create reminder and confirm manually';
+
+  @override
+  String get recurringModeReminderOnly => 'Reminder only';
+
+  @override
+  String get recurringReminderDaysBefore => 'Remind before (days)';
+
+  @override
+  String get recurringEndDate => 'End date';
+
+  @override
+  String get recurringNoEndDate => 'No end date';
+
+  @override
+  String get recurringActive => 'Active';
+
+  @override
+  String get recurringInactive => 'Inactive';
+
+  @override
+  String get recurringUpcoming => 'Upcoming reminders';
+
+  @override
+  String get recurringTemplates => 'Recurring templates';
+
+  @override
+  String get recurringNoUpcoming => 'No upcoming recurring reminders';
+
+  @override
+  String get recurringNoTemplates => 'No recurring transactions yet';
+
+  @override
+  String get recurringNotificationsTitle => 'Enable recurring reminders';
+
+  @override
+  String get recurringNotificationsDesc => 'Turn on notifications so the app can remind you before recurring income and expenses are due.';
+
+  @override
+  String get recurringEnableNotifications => 'Enable notifications';
+
+  @override
+  String get recurringNotificationsEnabled => 'Recurring reminders enabled';
+
+  @override
+  String get recurringNotificationsDenied => 'Notifications are still disabled';
+
+  @override
+  String get tapForDetails => 'Tap for details';
+
+  @override
+  String get markDone => 'Mark done';
+
+  @override
+  String get startDate => 'Start date';
+
+  @override
+  String get monday => 'Monday';
+
+  @override
+  String get tuesday => 'Tuesday';
+
+  @override
+  String get wednesday => 'Wednesday';
+
+  @override
+  String get thursday => 'Thursday';
+
+  @override
+  String get friday => 'Friday';
+
+  @override
+  String get saturday => 'Saturday';
+
+  @override
+  String get sunday => 'Sunday';
+
+  @override
   String get noBudget => 'No Budget';
 
   @override

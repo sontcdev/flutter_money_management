@@ -23,6 +23,12 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
         title: Text(l10n.selectWorkspace),
         actions: [
           IconButton(
+            icon: const Icon(Icons.add_circle_outline),
+            tooltip: 'Create workspace',
+            onPressed: () =>
+                Navigator.of(context).pushNamed('/workspace-create'),
+          ),
+          IconButton(
             icon: Badge(
               isLabelVisible: inviteCount > 0,
               label: Text('$inviteCount'),
@@ -98,6 +104,13 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
                             child: Text(l10n.retry),
                           ),
                           FilledButton(
+                            onPressed: () {
+                              Navigator.of(context)
+                                  .pushNamed('/workspace-create');
+                            },
+                            child: const Text('Create workspace'),
+                          ),
+                          FilledButton(
                             onPressed: () async {
                               final supabaseAuth =
                                   ref.read(supabaseAuthServiceProvider);
@@ -148,7 +161,10 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
                     // Set active workspace and navigate to home
                     ref.read(activeWorkspaceIdProvider.notifier).state =
                         workspace.id;
-                    Navigator.of(context).pushReplacementNamed('/home');
+                    Navigator.of(context).pushReplacementNamed(
+                      '/workspace-detail',
+                      arguments: workspace.id,
+                    );
                   },
                 ),
               );
@@ -263,23 +279,15 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
 
     setSubmitting(true);
     try {
-      final workspaceId = await ref
-          .read(workspaceManagementServiceProvider)
-          .acceptInvite(token);
-      ref.read(activeWorkspaceIdProvider.notifier).state = workspaceId;
-      ref.invalidate(workspaceListProvider);
-
       if (!dialogContext.mounted || !parentContext.mounted) {
         return;
       }
 
       Navigator.of(dialogContext).pop();
-      ScaffoldMessenger.of(parentContext).showSnackBar(
-        SnackBar(
-            content: Text(AppLocalizations.of(parentContext)!
-                .joinedWorkspaceSuccessfully)),
+      Navigator.of(parentContext).pushReplacementNamed(
+        '/workspace-invite-preview',
+        arguments: token,
       );
-      Navigator.of(parentContext).pushReplacementNamed('/home');
     } catch (e, stackTrace) {
       if (!dialogContext.mounted) {
         return;

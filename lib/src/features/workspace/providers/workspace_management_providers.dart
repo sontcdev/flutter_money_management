@@ -25,8 +25,8 @@ final workspaceMembersProvider =
 final workspacePendingInvitesProvider =
     FutureProvider<List<WorkspaceInviteSummary>>((ref) async {
   final activeWorkspace = ref.watch(activeWorkspaceProvider);
-  final isOwner = ref.watch(isWorkspaceOwnerProvider);
-  if (activeWorkspace == null || !isOwner) {
+  final canManageMembers = ref.watch(canManageWorkspaceMembersProvider);
+  if (activeWorkspace == null || !canManageMembers) {
     return [];
   }
 
@@ -51,4 +51,32 @@ final myWorkspaceInviteCountProvider = Provider<int>((ref) {
     data: (invites) => invites.length,
     orElse: () => 0,
   );
+});
+
+final workspaceDetailProvider =
+    FutureProvider<WorkspaceDetailSummary?>((ref) async {
+  final activeWorkspace = ref.watch(activeWorkspaceProvider);
+  if (activeWorkspace == null) {
+    return null;
+  }
+
+  final service = ref.watch(workspaceManagementServiceProvider);
+  return service.getWorkspaceDetail(activeWorkspace.id);
+});
+
+final workspaceActivityProvider =
+    FutureProvider<List<WorkspaceActivityItem>>((ref) async {
+  final activeWorkspace = ref.watch(activeWorkspaceProvider);
+  if (activeWorkspace == null) {
+    return [];
+  }
+
+  final service = ref.watch(workspaceManagementServiceProvider);
+  return service.getWorkspaceActivity(workspaceId: activeWorkspace.id);
+});
+
+final workspaceInvitePreviewProvider =
+    FutureProvider.family<WorkspaceInvitePreview, String>((ref, token) async {
+  final service = ref.watch(workspaceManagementServiceProvider);
+  return service.getInvitePreview(token);
 });

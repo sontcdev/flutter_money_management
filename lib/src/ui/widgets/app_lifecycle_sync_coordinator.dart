@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'dart:async';
 
+import '../../app.dart';
+import '../../features/recurring/providers/recurring_providers.dart';
+import '../../features/workspace/providers/workspace_providers.dart';
 import '../../features/workspace/services/workspace_sync_helper.dart';
 import '../../utils/app_logger.dart';
 
@@ -23,15 +27,21 @@ class _AppLifecycleSyncCoordinatorState
   bool _isSyncing = false;
   DateTime? _lastSyncedAt;
   static const _cooldown = Duration(seconds: 20);
+  StreamSubscription? _notificationIntentSubscription;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _bindNotificationIntents();
+      _syncRecurringReminders();
+    });
   }
 
   @override
   void dispose() {
+    _notificationIntentSubscription?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -60,6 +70,7 @@ class _AppLifecycleSyncCoordinatorState
     try {
       AppLogger.info('Resume sync started', name: 'MM.Sync');
       await syncCurrentWorkspaceData(ref, refreshWorkspaceList: true);
+      await _syncRecurringReminders();
       _lastSyncedAt = DateTime.now();
       AppLogger.info('Resume sync succeeded', name: 'MM.Sync');
     } catch (e, stackTrace) {
@@ -73,6 +84,34 @@ class _AppLifecycleSyncCoordinatorState
     } finally {
       _isSyncing = false;
     }
+  }
+
+  Future<void> _syncRecurringReminders() async {
+    try {
+      await ref
+          .read(recurringActionsProvider.notifier)
+          .syncRecurringReminders();
+    } catch (e, stackTrace) {
+      AppLogger.warn(
+        'Recurring reminder sync failed',
+        name: 'MM.RecurringReminder',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  void _bindNotificationIntents() {
+    _notificationIntentSubscription?.cancel();
+    final service = ref.read(recurringReminderServiceProvider);
+    _notificationIntentSubscription =
+        service.notificationIntents.listen((intent) {
+      ref.read(activeWorkspaceIdProvider.notifier).state = intent.workspaceId;
+      appNavigatorKey.currentState?.pushNamed(
+        '/recurring-transactions',
+        arguments: {'occurrenceId': intent.occurrenceId},
+      );
+    });
   }
 
   @override

@@ -11,7 +11,6 @@
   <component name="ChangeListManager">
     <list default="true" id="a8babec7-963b-454c-9a79-5d682db73e7c" name="Changes" comment="release ios 1.1.0">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/l10n/app_en.arb" beforeDir="false" afterPath="$PROJECT_DIR$/lib/l10n/app_en.arb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/l10n/app_ja.arb" beforeDir="false" afterPath="$PROJECT_DIR$/lib/l10n/app_ja.arb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/l10n/app_localizations.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/l10n/app_localizations.dart" afterDir="false" />
@@ -19,18 +18,38 @@
       <change beforePath="$PROJECT_DIR$/lib/l10n/app_localizations_ja.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/l10n/app_localizations_ja.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/l10n/app_localizations_vi.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/l10n/app_localizations_vi.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/l10n/app_vi.arb" beforeDir="false" afterPath="$PROJECT_DIR$/lib/l10n/app_vi.arb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/features/auth/presentation/screens/sign_up_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/auth/presentation/screens/sign_up_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/app.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/app.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/app_router.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/app_router.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/features/budgets/presentation/screens/budgets_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/budgets/presentation/screens/budgets_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/features/budgets/repositories/budget_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/budgets/repositories/budget_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/features/categories/presentation/screens/categories_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/categories/presentation/screens/categories_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/features/categories/presentation/screens/category_edit_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/categories/presentation/screens/category_edit_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/features/categories/providers/category_providers.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/categories/providers/category_providers.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/features/categories/repositories/category_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/categories/repositories/category_repository.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/features/home/presentation/screens/today_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/home/presentation/screens/today_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/features/settings/presentation/screens/settings_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/settings/presentation/screens/settings_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/features/transactions/presentation/screens/add_transaction_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/transactions/presentation/screens/add_transaction_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/features/transactions/presentation/screens/transaction_detail_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/transactions/presentation/screens/transaction_detail_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/features/transactions/repositories/transaction_attachment_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/transactions/repositories/transaction_attachment_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/features/transactions/repositories/transaction_repository.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/transactions/repositories/transaction_repository.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/features/transactions/services/transaction_receipt_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/transactions/services/transaction_receipt_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/features/workspace/models/workspace.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/workspace/models/workspace.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/features/workspace/models/workspace.freezed.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/workspace/models/workspace.freezed.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/features/workspace/models/workspace.g.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/workspace/models/workspace.g.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/features/workspace/models/workspace_management_models.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/workspace/models/workspace_management_models.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/features/workspace/presentation/screens/workspace_management_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/workspace/presentation/screens/workspace_management_screen.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/features/workspace/presentation/screens/workspace_selection_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/workspace/presentation/screens/workspace_selection_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/features/workspace/presentation/widgets/workspace_invite_notification_section.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/workspace/presentation/widgets/workspace_invite_notification_section.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/features/workspace/presentation/widgets/workspace_switcher.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/workspace/presentation/widgets/workspace_switcher.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/features/workspace/providers/workspace_management_providers.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/workspace/providers/workspace_management_providers.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/features/workspace/providers/workspace_providers.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/workspace/providers/workspace_providers.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/src/features/workspace/services/workspace_management_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/workspace/services/workspace_management_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/ui/widgets/error_report_dialog.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/widgets/error_report_dialog.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/src/utils/supabase_logging_http_client.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/utils/supabase_logging_http_client.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/features/workspace/services/workspace_sync_helper.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/features/workspace/services/workspace_sync_helper.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/providers/providers.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/providers/providers.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/shared/providers/app_service_providers.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/shared/providers/app_service_providers.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/src/ui/widgets/app_lifecycle_sync_coordinator.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/src/ui/widgets/app_lifecycle_sync_coordinator.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/build_release_apk.sh" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/build_release_apk.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/supabase/all_in_one.sql" beforeDir="false" afterPath="$PROJECT_DIR$/supabase/all_in_one.sql" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -103,45 +122,45 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Flutter.main.dart.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Notification.DisplayName-DoNotAsk-Android Notification Group": "Android Notification Group",
-    "Notification.DoNotAsk-Android Notification Group": "true",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "android.gradle.sync.needed": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "feat/1105",
-    "io.flutter.project.isFirstOpen": "true",
-    "io.flutter.reload.alreadyRun": "true",
-    "junie.onboarding.icon.badge.shown": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/Volumes/sontc/sources/others/flutter_money_management",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "SDKs",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle",
-    "show.migrate.to.gradle.popup": "false",
-    "to.speed.mode.migration.done": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Flutter.main.dart.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Notification.DisplayName-DoNotAsk-Android Notification Group&quot;: &quot;Android Notification Group&quot;,
+    &quot;Notification.DoNotAsk-Android Notification Group&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;android.gradle.sync.needed&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;io.flutter.project.isFirstOpen&quot;: &quot;true&quot;,
+    &quot;io.flutter.reload.alreadyRun&quot;: &quot;true&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Volumes/sontc/sources/others/flutter_money_management&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;SDKs&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;,
+    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="G:\sources\flutter_money_management\docs" />

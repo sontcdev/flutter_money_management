@@ -20,8 +20,9 @@ class BudgetRepository {
     this._getCurrentUserId,
   );
 
-  Future<List<model.Budget>> getAllBudgets() async {
-    final workspaceId = _requireWorkspaceId();
+  Future<List<model.Budget>> getAllBudgets(
+      {String? workspaceIdOverride}) async {
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     final response = await _supabase
         .from('budgets')
         .select()
@@ -35,8 +36,11 @@ class BudgetRepository {
         .toList();
   }
 
-  Future<model.Budget> getBudgetById(String id) async {
-    final workspaceId = _requireWorkspaceId();
+  Future<model.Budget> getBudgetById(
+    String id, {
+    String? workspaceIdOverride,
+  }) async {
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     final response = await _supabase
         .from('budgets')
         .select()
@@ -52,8 +56,11 @@ class BudgetRepository {
     return _mapBudget(response);
   }
 
-  Future<List<model.Budget>> getBudgetsByCategory(String categoryId) async {
-    final workspaceId = _requireWorkspaceId();
+  Future<List<model.Budget>> getBudgetsByCategory(
+    String categoryId, {
+    String? workspaceIdOverride,
+  }) async {
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     final response = await _supabase
         .from('budgets')
         .select()
@@ -83,13 +90,17 @@ class BudgetRepository {
     return null;
   }
 
-  Future<model.Budget> createBudget(model.Budget budget) async {
-    final workspaceId = _requireWorkspaceId();
+  Future<model.Budget> createBudget(
+    model.Budget budget, {
+    String? workspaceIdOverride,
+  }) async {
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     _requireUserId();
     await _validateBudgetPeriod(
       categoryId: budget.categoryId,
       start: budget.periodStart,
       end: budget.periodEnd,
+      workspaceIdOverride: workspaceIdOverride,
     );
 
     final id = budget.id.isEmpty ? _uuid.v4() : budget.id;
@@ -113,14 +124,18 @@ class BudgetRepository {
     }
   }
 
-  Future<void> updateBudget(model.Budget budget) async {
-    final workspaceId = _requireWorkspaceId();
+  Future<void> updateBudget(
+    model.Budget budget, {
+    String? workspaceIdOverride,
+  }) async {
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     _requireUserId();
     await _validateBudgetPeriod(
       categoryId: budget.categoryId,
       start: budget.periodStart,
       end: budget.periodEnd,
       excludeId: budget.id,
+      workspaceIdOverride: workspaceIdOverride,
     );
 
     try {
@@ -141,8 +156,11 @@ class BudgetRepository {
     }
   }
 
-  Future<void> deleteBudget(String id) async {
-    final workspaceId = _requireWorkspaceId();
+  Future<void> deleteBudget(
+    String id, {
+    String? workspaceIdOverride,
+  }) async {
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     _requireUserId();
     try {
       await _supabase.rpc('soft_delete_budget_rpc', params: {
@@ -163,8 +181,12 @@ class BudgetRepository {
     required DateTime start,
     required DateTime end,
     String? excludeId,
+    String? workspaceIdOverride,
   }) async {
-    final budgets = await getBudgetsByCategory(categoryId);
+    final budgets = await getBudgetsByCategory(
+      categoryId,
+      workspaceIdOverride: workspaceIdOverride,
+    );
     final hasOverlap = budgets.any((budget) {
       if (excludeId != null && budget.id == excludeId) {
         return false;
@@ -212,8 +234,8 @@ class BudgetRepository {
     }
   }
 
-  String _requireWorkspaceId() {
-    final workspaceId = _getActiveWorkspaceId();
+  String _requireWorkspaceId([String? workspaceIdOverride]) {
+    final workspaceId = workspaceIdOverride ?? _getActiveWorkspaceId();
     if (workspaceId == null || workspaceId.isEmpty) {
       throw Exception('No active workspace selected');
     }

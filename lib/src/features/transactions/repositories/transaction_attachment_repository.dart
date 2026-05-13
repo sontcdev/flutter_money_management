@@ -16,9 +16,9 @@ class TransactionAttachmentRepository {
   final _uuid = const Uuid();
 
   Future<TransactionAttachment?> getLatestReceiptAttachmentByTransactionId(
-    String transactionId,
-  ) async {
-    final workspaceId = _requireWorkspaceId();
+      String transactionId,
+      {String? workspaceIdOverride}) async {
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     final response = await _supabase
         .from('transaction_attachments')
         .select()
@@ -43,8 +43,9 @@ class TransactionAttachmentRepository {
     required String fileName,
     String? mimeType,
     int? fileSize,
+    String? workspaceIdOverride,
   }) async {
-    final workspaceId = _requireWorkspaceId();
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     final userId = _requireUserId();
     final id = _uuid.v4();
 
@@ -73,8 +74,9 @@ class TransactionAttachmentRepository {
     );
   }
 
-  Future<void> deleteAttachment(String attachmentId) async {
-    final workspaceId = _requireWorkspaceId();
+  Future<void> deleteAttachment(String attachmentId,
+      {String? workspaceIdOverride}) async {
+    final workspaceId = _requireWorkspaceId(workspaceIdOverride);
     await _supabase
         .from('transaction_attachments')
         .delete()
@@ -99,8 +101,8 @@ class TransactionAttachmentRepository {
     );
   }
 
-  String _requireWorkspaceId() {
-    final workspaceId = _getActiveWorkspaceId();
+  String _requireWorkspaceId([String? workspaceIdOverride]) {
+    final workspaceId = workspaceIdOverride ?? _getActiveWorkspaceId();
     if (workspaceId == null || workspaceId.isEmpty) {
       throw Exception('No active workspace selected');
     }

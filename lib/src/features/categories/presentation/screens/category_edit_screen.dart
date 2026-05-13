@@ -2,13 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
+import 'package:flutter_money_management/src/features/budgets/models/budget.dart'
+    as budget_model;
 import 'package:flutter_money_management/src/features/categories/providers/custom_icons_provider.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
+import 'package:flutter_money_management/src/features/settings/providers/settings_preferences_providers.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
 import 'package:flutter_money_management/src/utils/category_icons.dart';
+import 'package:flutter_money_management/src/utils/currency_formatter.dart';
+import 'package:flutter_money_management/src/utils/cycle_utils.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
+import 'package:flutter_money_management/src/utils/vnd_input_formatter.dart';
+import 'package:flutter/services.dart';
 
 class CategoryEditScreen extends HookConsumerWidget {
   final Category? category;
@@ -27,6 +34,10 @@ class CategoryEditScreen extends HookConsumerWidget {
         useState(category?.type ?? initialType ?? CategoryType.expense);
     final isLoading = useState(false);
     final showAllIcons = useState(false);
+    final createBudget = useState(false);
+    final budgetAmountController = useTextEditingController();
+    final budgetPeriod = useState(budget_model.PeriodType.monthly);
+    final monthStartDay = ref.watch(monthStartDayProvider);
 
     // Get custom icons from provider
     final customIcons = ref.watch(customIconsProvider);
@@ -96,7 +107,48 @@ class CategoryEditScreen extends HookConsumerWidget {
         );
 
         if (category == null) {
-          await categoryRepo.createCategory(newCategory);
+          final createdCategory =
+              await categoryRepo.createCategory(newCategory);
+          if (createBudget.value &&
+              selectedType.value == CategoryType.expense) {
+            final amount =
+                CurrencyFormatter.parseVND(budgetAmountController.text);
+            if (amount == null) {
+              throw const FormatException('Invalid budget amount');
+            }
+            final amountCents = CurrencyFormatter.toCents(amount);
+            final now = DateTime.now();
+            late final DateTime periodStart;
+            late final DateTime periodEnd;
+            switch (budgetPeriod.value) {
+              case budget_model.PeriodType.yearly:
+                periodStart = DateTime(now.year, 1, 1);
+                periodEnd = DateTime(now.year, 12, 31, 23, 59, 59);
+                break;
+              case budget_model.PeriodType.monthly:
+              default:
+                final cycle = CycleUtils.getCurrentCycleRange(monthStartDay);
+                periodStart = cycle.start;
+                periodEnd = cycle.end;
+                break;
+            }
+
+            await ref.read(budgetRepositoryProvider).createBudget(
+                  budget_model.Budget(
+                    id: '',
+                    categoryId: createdCategory.id,
+                    periodType: budgetPeriod.value,
+                    periodStart: periodStart,
+                    periodEnd: periodEnd,
+                    limitCents: amountCents,
+                    consumedCents: 0,
+                    allowOverdraft: false,
+                    overdraftCents: 0,
+                    createdAt: DateTime.now(),
+                    updatedAt: DateTime.now(),
+                  ),
+                );
+          }
         } else {
           await categoryRepo.updateCategory(newCategory);
         }
@@ -248,6 +300,54 @@ class CategoryEditScreen extends HookConsumerWidget {
               }).toList(),
             ),
             const SizedBox(height: 32),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Create budget for this category'),
+              subtitle: const Text('Only available for expense categories'),
+              value: createBudget.value &&
+                  selectedType.value == CategoryType.expense,
+              onChanged:
+                  selectedType.value == CategoryType.expense && category == null
+                      ? (value) => createBudget.value = value
+                      : null,
+            ),
+            if (createBudget.value &&
+                selectedType.value == CategoryType.expense) ...[
+              const SizedBox(height: 16),
+              DropdownButtonFormField<budget_model.PeriodType>(
+                value: budgetPeriod.value,
+                decoration: const InputDecoration(
+                  labelText: 'Budget period',
+                  border: OutlineInputBorder(),
+                ),
+                items: const [
+                  DropdownMenuItem(
+                    value: budget_model.PeriodType.monthly,
+                    child: Text('Monthly'),
+                  ),
+                  DropdownMenuItem(
+                    value: budget_model.PeriodType.yearly,
+                    child: Text('Yearly'),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    budgetPeriod.value = value;
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+              AppInput(
+                label: 'Budget amount',
+                controller: budgetAmountController,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  VNDInputFormatter(),
+                ],
+              ),
+            ],
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
               child: AppButton(

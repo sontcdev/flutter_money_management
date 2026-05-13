@@ -82,7 +82,9 @@ class WorkspaceSwitcher extends ConsumerWidget {
                             ),
                           ),
                           Text(
-                            workspace.role,
+                            workspace.type == 'personal'
+                                ? '${workspace.role} • personal'
+                                : workspace.role,
                             style:
                                 Theme.of(context).textTheme.bodySmall?.copyWith(
                                       color: Colors.grey,
@@ -109,10 +111,34 @@ class WorkspaceSwitcher extends ConsumerWidget {
                 ],
               ),
             ),
+            PopupMenuItem<String>(
+              value: 'detail',
+              child: Row(
+                children: [
+                  const Icon(Icons.dashboard_customize_outlined, size: 20),
+                  const SizedBox(width: 12),
+                  const Text('Workspace detail'),
+                ],
+              ),
+            ),
+            PopupMenuItem<String>(
+              value: 'create',
+              child: Row(
+                children: [
+                  const Icon(Icons.add_circle_outline, size: 20),
+                  const SizedBox(width: 12),
+                  const Text('Create workspace'),
+                ],
+              ),
+            ),
           ],
           onSelected: (value) {
             if (value == 'manage') {
               Navigator.of(context).pushNamed('/workspace-management');
+            } else if (value == 'detail') {
+              Navigator.of(context).pushNamed('/workspace-detail');
+            } else if (value == 'create') {
+              Navigator.of(context).pushNamed('/workspace-create');
             } else {
               // Switch to selected workspace
               ref.read(activeWorkspaceIdProvider.notifier).state = value;

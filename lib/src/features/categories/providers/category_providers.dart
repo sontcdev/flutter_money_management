@@ -19,10 +19,28 @@ final categoriesProvider = FutureProvider<List<Category>>((ref) async {
   return repository.getAllCategories();
 });
 
+final categoriesForWorkspaceProvider =
+    FutureProvider.family<List<Category>, String>((ref, workspaceId) async {
+  final repository = ref.watch(categoryRepositoryProvider);
+  return repository.getAllCategories(workspaceIdOverride: workspaceId);
+});
+
 final categoriesByTypeProvider =
     FutureProvider.family<List<Category>, CategoryType>((ref, type) async {
   final repository = ref.watch(categoryRepositoryProvider);
   return repository.getCategoriesByType(type);
+});
+
+typedef WorkspaceCategoryTypeQuery = ({String workspaceId, CategoryType type});
+
+final categoriesByTypeForWorkspaceProvider =
+    FutureProvider.family<List<Category>, WorkspaceCategoryTypeQuery>(
+        (ref, query) async {
+  final repository = ref.watch(categoryRepositoryProvider);
+  return repository.getCategoriesByType(
+    query.type,
+    workspaceIdOverride: query.workspaceId,
+  );
 });
 
 final categoryProvider =
