@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_money_management/src/data/repositories/supabase_error_mapper.dart';
 import 'package:flutter_money_management/src/shared/providers/app_service_providers.dart';
 import 'package:flutter_money_management/src/ui/widgets/error_report_dialog.dart';
 import 'package:flutter_money_management/src/utils/app_logger.dart';
@@ -11,15 +11,8 @@ class ErrorReportHelper {
 
   /// Kiểm tra xem lỗi có phải là API error không
   static bool isApiError(Object error) {
-    // PostgrestException từ Supabase
-    if (error is PostgrestException) return true;
-    
-    // AuthException từ Supabase
-    if (error is AuthException) return true;
-    
-    // StorageException từ Supabase
-    if (error is StorageException) return true;
-    
+    if (SupabaseErrorMapper.isSupabaseException(error)) return true;
+
     // Exception wrapper có message chứa dấu hiệu remote
     if (error is Exception) {
       final message = error.toString().toLowerCase();
@@ -31,7 +24,7 @@ class ErrorReportHelper {
           message.contains('network') ||
           message.contains('connection');
     }
-    
+
     return false;
   }
 
@@ -76,10 +69,10 @@ class ErrorReportHelper {
 
     // Show error report dialog
     final errorReportService = ref.read(errorReportServiceProvider);
-    
+
     await ErrorReportDialog.show(
       context: context,
-      error: error,
+      error: SupabaseErrorMapper.map(error),
       stackTrace: stackTrace,
       errorType: '$feature.$action',
       errorContext: errorContext,
@@ -107,14 +100,14 @@ class ErrorReportHelper {
     if (extraContext != null) {
       // Sanitize sensitive data
       final sanitized = Map<String, dynamic>.from(extraContext);
-      
+
       // Remove sensitive keys
       sanitized.remove('password');
       sanitized.remove('token');
       sanitized.remove('access_token');
       sanitized.remove('refresh_token');
       sanitized.remove('authorization');
-      
+
       context.addAll(sanitized);
     }
 
@@ -130,7 +123,7 @@ class ErrorReportHelper {
 
     final localPart = parts.first;
     final domain = parts.last;
-    
+
     if (localPart.isEmpty) {
       return '***@$domain';
     }
@@ -138,7 +131,7 @@ class ErrorReportHelper {
     final maskedLocal = localPart.length == 1
         ? '${localPart[0]}***'
         : '${localPart[0]}***${localPart[localPart.length - 1]}';
-    
+
     return '$maskedLocal@$domain';
   }
 

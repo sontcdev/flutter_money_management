@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'dart:async';
 
 import '../../app.dart';
+import '../../features/notifications/providers/notification_providers.dart';
 import '../../features/recurring/providers/recurring_providers.dart';
 import '../../features/workspace/providers/workspace_providers.dart';
 import '../../features/workspace/services/workspace_sync_helper.dart';
@@ -35,7 +36,7 @@ class _AppLifecycleSyncCoordinatorState
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _bindNotificationIntents();
-      _syncRecurringReminders();
+      _syncOnStartup();
     });
   }
 
@@ -70,6 +71,7 @@ class _AppLifecycleSyncCoordinatorState
     try {
       AppLogger.info('Resume sync started', name: 'MM.Sync');
       await syncCurrentWorkspaceData(ref, refreshWorkspaceList: true);
+      _refreshNotifications();
       await _syncRecurringReminders();
       _lastSyncedAt = DateTime.now();
       AppLogger.info('Resume sync succeeded', name: 'MM.Sync');
@@ -86,6 +88,29 @@ class _AppLifecycleSyncCoordinatorState
     }
   }
 
+  Future<void> _syncOnStartup() async {
+    try {
+      final workspaceId = await syncCurrentWorkspaceData(ref);
+      _refreshNotifications();
+      if (workspaceId == null) {
+        AppLogger.debug(
+          'Startup recurring reminder sync skipped: no active workspace',
+          name: 'MM.RecurringReminder',
+        );
+        return;
+      }
+
+      await _syncRecurringReminders();
+    } catch (e, stackTrace) {
+      AppLogger.warn(
+        'Startup sync failed',
+        name: 'MM.Sync',
+        error: e,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
   Future<void> _syncRecurringReminders() async {
     try {
       await ref
@@ -99,6 +124,11 @@ class _AppLifecycleSyncCoordinatorState
         stackTrace: stackTrace,
       );
     }
+  }
+
+  void _refreshNotifications() {
+    ref.invalidate(myNotificationsProvider);
+    ref.invalidate(unreadNotificationCountProvider);
   }
 
   void _bindNotificationIntents() {

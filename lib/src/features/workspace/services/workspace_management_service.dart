@@ -142,12 +142,25 @@ class WorkspaceManagementService {
   }
 
   Future<List<WorkspaceInviteNotification>> getMyPendingInvites() async {
-    final response = await _supabase.rpc('get_my_pending_workspace_invites');
+    try {
+      final response = await _supabase.rpc(
+        'get_my_pending_workspace_invites',
+        params: const <String, dynamic>{},
+      );
 
-    return (response as List)
-        .cast<Map<String, dynamic>>()
-        .map(WorkspaceInviteNotification.fromMap)
-        .toList();
+      return (response as List)
+          .cast<Map<String, dynamic>>()
+          .map(WorkspaceInviteNotification.fromMap)
+          .toList();
+    } on PostgrestException catch (e) {
+      if (e.code == 'PGRST202') {
+        debugPrint(
+          'Warning: get_my_pending_workspace_invites function not found in database',
+        );
+        return [];
+      }
+      rethrow;
+    }
   }
 
   Future<void> revokeInvite(String inviteId) async {

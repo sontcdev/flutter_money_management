@@ -349,6 +349,7 @@
   "workspaceInviteAlreadyMember": "Email này đã là thành viên của workspace",
   "workspaceInviteInvalidEmail": "Định dạng email không hợp lệ",
   "workspaceInviteAlreadyPending": "Đã có lời mời đang chờ cho email này",
+  "workspaceInviteUserNotFound": "Không tìm thấy người dùng với email này",
   "inviteCreated": "Đã tạo lời mời",
   "shareInviteCodeWith": "Chia sẻ mã mời này với {email}:",
   "inviteRefreshed": "Đã làm mới lời mời",

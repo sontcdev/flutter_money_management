@@ -349,6 +349,7 @@
   "workspaceInviteAlreadyMember": "このメールはすでにワークスペースのメンバーです",
   "workspaceInviteInvalidEmail": "メール形式が正しくありません",
   "workspaceInviteAlreadyPending": "このメールにはすでに保留中の招待があります",
+  "workspaceInviteUserNotFound": "このメールのユーザーは存在しません",
   "inviteCreated": "招待を作成しました",
   "shareInviteCodeWith": "この招待コードを {email} に共有してください:",
   "inviteRefreshed": "招待を更新しました",

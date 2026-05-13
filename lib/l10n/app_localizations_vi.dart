@@ -1058,6 +1058,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get workspaceInviteAlreadyPending => 'Đã có lời mời đang chờ cho email này';
 
   @override
+  String get workspaceInviteUserNotFound => 'Không tìm thấy người dùng với email này';
+
+  @override
   String get inviteCreated => 'Đã tạo lời mời';
 
   @override

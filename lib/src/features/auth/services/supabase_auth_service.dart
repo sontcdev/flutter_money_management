@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:flutter_money_management/src/config/supabase_config.dart';
+import 'package:flutter_money_management/src/data/repositories/supabase_error_mapper.dart';
 import 'package:flutter_money_management/src/utils/app_logger.dart';
 
 /// Supabase cloud authentication service
@@ -46,7 +47,7 @@ class SupabaseAuthService {
         error: e,
         stackTrace: stackTrace,
       );
-      rethrow;
+      throw mapSupabaseException(e);
     }
   }
 
@@ -72,7 +73,7 @@ class SupabaseAuthService {
         error: e,
         stackTrace: stackTrace,
       );
-      rethrow;
+      throw mapSupabaseException(e);
     }
   }
 
@@ -89,7 +90,7 @@ class SupabaseAuthService {
         error: e,
         stackTrace: stackTrace,
       );
-      rethrow;
+      throw mapSupabaseException(e);
     }
   }
 
@@ -111,7 +112,7 @@ class SupabaseAuthService {
         error: e,
         stackTrace: stackTrace,
       );
-      rethrow;
+      throw mapSupabaseException(e);
     }
   }
 
@@ -131,7 +132,7 @@ class SupabaseAuthService {
         error: e,
         stackTrace: stackTrace,
       );
-      rethrow;
+      throw mapSupabaseException(e);
     }
   }
 
@@ -158,7 +159,7 @@ class SupabaseAuthService {
         error: e,
         stackTrace: stackTrace,
       );
-      rethrow;
+      throw mapSupabaseException(e);
     }
   }
 
@@ -179,7 +180,7 @@ class SupabaseAuthService {
         error: e,
         stackTrace: stackTrace,
       );
-      rethrow;
+      throw mapSupabaseException(e);
     }
   }
 

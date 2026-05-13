@@ -349,6 +349,7 @@
   "workspaceInviteAlreadyMember": "This email is already a workspace member",
   "workspaceInviteInvalidEmail": "Email format is invalid",
   "workspaceInviteAlreadyPending": "A pending invite already exists for this email",
+  "workspaceInviteUserNotFound": "No user exists with this email",
   "inviteCreated": "Invite created",
   "shareInviteCodeWith": "Share this invite code with {email}:",
   "inviteRefreshed": "Invite refreshed",

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_money_management/src/data/repositories/supabase_error_mapper.dart';
 import 'package:flutter_money_management/src/services/error_report_service.dart';
 
 class ErrorReportDialog extends StatefulWidget {
@@ -87,37 +88,23 @@ class _ErrorReportDialogState extends State<ErrorReportDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final displayError = SupabaseErrorMapper.map(widget.error);
+
     return AlertDialog(
-      title: const Text('Đã xảy ra lỗi'),
+      title: const Text('Thông báo'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Ứng dụng gặp lỗi không mong muốn. Bạn có muốn gửi báo cáo lỗi để giúp chúng tôi cải thiện ứng dụng không?',
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              widget.error.toString(),
-              style: const TextStyle(
-                fontSize: 12,
-                fontFamily: 'monospace',
-              ),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
+          const Text('Đã có lỗi xảy ra'),
+          const SizedBox(height: 8),
+          Text(displayError.toString()),
         ],
       ),
       actions: [
         TextButton(
-          onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(false),
+          onPressed:
+              _isSubmitting ? null : () => Navigator.of(context).pop(false),
           child: const Text('Đồng ý'),
         ),
         FilledButton(
@@ -153,5 +140,4 @@ class _ErrorReportDialogState extends State<ErrorReportDialog> {
 
     return 'Không thể gửi báo cáo lúc này. Vui lòng thử lại sau.';
   }
-
 }

@@ -1058,6 +1058,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get workspaceInviteAlreadyPending => 'A pending invite already exists for this email';
 
   @override
+  String get workspaceInviteUserNotFound => 'No user exists with this email';
+
+  @override
   String get inviteCreated => 'Invite created';
 
   @override

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
-import 'package:flutter_money_management/src/features/workspace/providers/workspace_management_providers.dart';
+import 'package:flutter_money_management/src/features/notifications/providers/notification_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 
 /// Widget to display current workspace and allow switching
@@ -13,7 +13,10 @@ class WorkspaceSwitcher extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final activeWorkspace = ref.watch(activeWorkspaceProvider);
     final workspacesAsync = ref.watch(workspaceListProvider);
-    final inviteCount = ref.watch(myWorkspaceInviteCountProvider);
+    final unreadCount = ref.watch(unreadNotificationCountProvider).maybeWhen(
+          data: (count) => count,
+          orElse: () => 0,
+        );
 
     return workspacesAsync.when(
       data: (workspaces) {
@@ -33,11 +36,11 @@ class WorkspaceSwitcher extends ConsumerWidget {
                   size: 20,
                   color: Theme.of(context).colorScheme.primary,
                 ),
-                if (inviteCount > 0)
+                if (unreadCount > 0)
                   Padding(
                     padding: const EdgeInsets.only(left: 4),
                     child: Badge(
-                      label: Text('$inviteCount'),
+                      label: Text('$unreadCount'),
                       child: const SizedBox(width: 1, height: 1),
                     ),
                   ),
@@ -111,23 +114,23 @@ class WorkspaceSwitcher extends ConsumerWidget {
                 ],
               ),
             ),
-            PopupMenuItem<String>(
+            const PopupMenuItem<String>(
               value: 'detail',
               child: Row(
                 children: [
-                  const Icon(Icons.dashboard_customize_outlined, size: 20),
-                  const SizedBox(width: 12),
-                  const Text('Workspace detail'),
+                  Icon(Icons.dashboard_customize_outlined, size: 20),
+                  SizedBox(width: 12),
+                  Text('Workspace detail'),
                 ],
               ),
             ),
-            PopupMenuItem<String>(
+            const PopupMenuItem<String>(
               value: 'create',
               child: Row(
                 children: [
-                  const Icon(Icons.add_circle_outline, size: 20),
-                  const SizedBox(width: 12),
-                  const Text('Create workspace'),
+                  Icon(Icons.add_circle_outline, size: 20),
+                  SizedBox(width: 12),
+                  Text('Create workspace'),
                 ],
               ),
             ),

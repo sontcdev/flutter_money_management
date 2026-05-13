@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/src/features/auth/providers/auth_providers.dart';
@@ -13,6 +15,8 @@ class SplashScreen extends ConsumerStatefulWidget {
 }
 
 class _SplashScreenState extends ConsumerState<SplashScreen> {
+  static const _startupTimeout = Duration(seconds: 8);
+
   bool _isNavigating = false;
 
   @override
@@ -29,7 +33,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     try {
       // Wait for auth state to be available
-      final authState = await ref.read(authStateProvider.future);
+      final authState =
+          await ref.read(authStateProvider.future).timeout(_startupTimeout);
 
       if (!mounted) return;
 
@@ -51,7 +56,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
       // Case 3: Valid session, check workspaces.
       ref.invalidate(workspaceListProvider);
-      final workspaces = await ref.read(workspaceListProvider.future);
+      final workspaces =
+          await ref.read(workspaceListProvider.future).timeout(_startupTimeout);
 
       if (!mounted) return;
 
@@ -68,9 +74,60 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       }
     } catch (e) {
       if (!mounted) return;
+
+      if (_isNetworkError(e)) {
+        _isNavigating = false;
+        final shouldRetry = await _showNetworkErrorDialog();
+        if (!mounted) return;
+
+        if (shouldRetry) {
+          _handleNavigation();
+        } else {
+          Navigator.of(context).pushReplacementNamed('/sign-in');
+        }
+        return;
+      }
+
       // On error, default to sign in
       Navigator.of(context).pushReplacementNamed('/sign-in');
     }
+  }
+
+  bool _isNetworkError(Object error) {
+    if (error is TimeoutException) return true;
+
+    final message = error.toString().toLowerCase();
+    return message.contains('socketexception') ||
+        message.contains('failed host lookup') ||
+        message.contains('network is unreachable') ||
+        message.contains('connection refused') ||
+        message.contains('connection timed out') ||
+        message.contains('authretryablefetchexception');
+  }
+
+  Future<bool> _showNetworkErrorDialog() async {
+    final retry = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('Không có kết nối mạng'),
+        content: const Text(
+          'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng rồi thử lại.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Đăng nhập lại'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Thử lại'),
+          ),
+        ],
+      ),
+    );
+
+    return retry ?? false;
   }
 
   @override

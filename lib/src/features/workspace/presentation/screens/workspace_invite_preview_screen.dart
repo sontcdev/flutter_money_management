@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:flutter_money_management/l10n/app_localizations.dart';
+import 'package:flutter_money_management/src/features/notifications/providers/notification_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_management_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
@@ -93,6 +94,8 @@ class _WorkspaceInvitePreviewScreenState
           .acceptInvite(widget.token);
       ref.read(activeWorkspaceIdProvider.notifier).state = workspaceId;
       ref.invalidate(workspaceListProvider);
+      ref.invalidate(myNotificationsProvider);
+      ref.invalidate(unreadNotificationCountProvider);
       ref.invalidate(myWorkspaceInviteNotificationsProvider);
 
       if (!context.mounted) {

@@ -2131,6 +2131,12 @@ abstract class AppLocalizations {
   /// **'A pending invite already exists for this email'**
   String get workspaceInviteAlreadyPending;
 
+  /// No description provided for @workspaceInviteUserNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No user exists with this email'**
+  String get workspaceInviteUserNotFound;
+
   /// No description provided for @inviteCreated.
   ///
   /// In en, this message translates to:

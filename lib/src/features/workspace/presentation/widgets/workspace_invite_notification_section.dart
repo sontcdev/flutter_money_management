@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
+import 'package:flutter_money_management/src/features/notifications/models/user_notification.dart';
+import 'package:flutter_money_management/src/features/notifications/providers/notification_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/models/workspace_management_models.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_management_providers.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
@@ -22,39 +24,46 @@ class WorkspaceInviteNotificationSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final invitesAsync = ref.watch(myWorkspaceInviteNotificationsProvider);
+    final notificationsAsync = ref.watch(myNotificationsProvider);
+    final legacyInvitesAsync =
+        ref.watch(myWorkspaceInviteNotificationsProvider);
 
     return Padding(
       padding: padding,
-      child: invitesAsync.when(
-        data: (invites) {
-          if (invites.isEmpty && !showWhenEmpty) {
-            return const SizedBox.shrink();
+      child: notificationsAsync.when(
+        data: (notifications) {
+          final workspaceInviteNotifications = notifications
+              .where((notification) =>
+                  notification.isWorkspaceInvite &&
+                  notification.inviteToken != null &&
+                  notification.workspaceName != null)
+              .toList();
+          final unreadNotificationInvites = workspaceInviteNotifications
+              .where((notification) => !notification.isRead)
+              .map(_InviteNotificationViewData.fromNotification)
+              .toList();
+
+          if (workspaceInviteNotifications.isNotEmpty) {
+            return _InviteNotificationList(
+              invites: unreadNotificationInvites,
+              showWhenEmpty: showWhenEmpty,
+            );
           }
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppSectionHeader(
-                title: l10n.notification,
-                padding: EdgeInsets.zero,
+          return legacyInvitesAsync.when(
+            data: (legacyInvites) => _InviteNotificationList(
+              invites: legacyInvites
+                  .map(_InviteNotificationViewData.fromLegacyInvite)
+                  .toList(),
+              showWhenEmpty: showWhenEmpty,
+            ),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, _) => Card(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.cardPadding),
+                child: Text(l10n.errorWithMessage('$error')),
               ),
-              const SizedBox(height: AppSpacing.md),
-              if (invites.isEmpty)
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.cardPadding),
-                    child: Text(l10n.noWorkspaceInviteNotifications),
-                  ),
-                )
-              else
-                ...invites.map(
-                  (invite) => Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                    child: _InviteNotificationCard(invite: invite),
-                  ),
-                ),
-            ],
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -69,10 +78,54 @@ class WorkspaceInviteNotificationSection extends ConsumerWidget {
   }
 }
 
+class _InviteNotificationList extends StatelessWidget {
+  const _InviteNotificationList({
+    required this.invites,
+    required this.showWhenEmpty,
+  });
+
+  final List<_InviteNotificationViewData> invites;
+  final bool showWhenEmpty;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    if (invites.isEmpty && !showWhenEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppSectionHeader(
+          title: l10n.notification,
+          padding: EdgeInsets.zero,
+        ),
+        const SizedBox(height: AppSpacing.md),
+        if (invites.isEmpty)
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.cardPadding),
+              child: Text(l10n.noWorkspaceInviteNotifications),
+            ),
+          )
+        else
+          ...invites.map(
+            (invite) => Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.md),
+              child: _InviteNotificationCard(invite: invite),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 class _InviteNotificationCard extends ConsumerStatefulWidget {
   const _InviteNotificationCard({required this.invite});
 
-  final WorkspaceInviteNotification invite;
+  final _InviteNotificationViewData invite;
 
   @override
   ConsumerState<_InviteNotificationCard> createState() =>
@@ -166,7 +219,11 @@ class _InviteNotificationCardState
     }
 
     final context = this.context;
+    setState(() => _isSubmitting = true);
+
     try {
+      await _markNotificationReadIfNeeded();
+
       if (!context.mounted) {
         return;
       }
@@ -189,7 +246,7 @@ class _InviteNotificationCardState
         action: 'accept_invite_notification',
         screen: 'workspace_invite_notification_section',
         extraContext: {
-          'invite_id': widget.invite.id,
+          'invite_id': widget.invite.inviteId,
           'workspace_id': widget.invite.workspaceId,
         },
       );
@@ -212,6 +269,7 @@ class _InviteNotificationCardState
       await ref
           .read(workspaceManagementServiceProvider)
           .declineInvite(widget.invite.token);
+      await _markNotificationReadIfNeeded();
       ref.invalidate(myWorkspaceInviteNotificationsProvider);
 
       if (!context.mounted) {
@@ -237,7 +295,7 @@ class _InviteNotificationCardState
         action: 'decline_invite_notification',
         screen: 'workspace_invite_notification_section',
         extraContext: {
-          'invite_id': widget.invite.id,
+          'invite_id': widget.invite.inviteId,
           'workspace_id': widget.invite.workspaceId,
         },
       );
@@ -246,5 +304,64 @@ class _InviteNotificationCardState
         setState(() => _isSubmitting = false);
       }
     }
+  }
+
+  Future<void> _markNotificationReadIfNeeded() async {
+    final notificationId = widget.invite.notificationId;
+    if (notificationId == null) {
+      return;
+    }
+
+    await ref.read(notificationServiceProvider).markRead(notificationId);
+    ref.invalidate(myNotificationsProvider);
+    ref.invalidate(unreadNotificationCountProvider);
+  }
+}
+
+class _InviteNotificationViewData {
+  const _InviteNotificationViewData({
+    required this.inviteId,
+    required this.workspaceId,
+    required this.workspaceName,
+    required this.token,
+    required this.invitedByEmail,
+    required this.invitedByDisplayName,
+    required this.notificationId,
+  });
+
+  final String inviteId;
+  final String workspaceId;
+  final String workspaceName;
+  final String token;
+  final String? invitedByEmail;
+  final String? invitedByDisplayName;
+  final String? notificationId;
+
+  factory _InviteNotificationViewData.fromNotification(
+    UserNotification notification,
+  ) {
+    return _InviteNotificationViewData(
+      inviteId: notification.inviteId ?? notification.id,
+      workspaceId: notification.workspaceId ?? '',
+      workspaceName: notification.workspaceName ?? notification.title,
+      token: notification.inviteToken!,
+      invitedByEmail: notification.invitedByEmail,
+      invitedByDisplayName: notification.invitedByDisplayName,
+      notificationId: notification.id,
+    );
+  }
+
+  factory _InviteNotificationViewData.fromLegacyInvite(
+    WorkspaceInviteNotification invite,
+  ) {
+    return _InviteNotificationViewData(
+      inviteId: invite.id,
+      workspaceId: invite.workspaceId,
+      workspaceName: invite.workspaceName,
+      token: invite.token,
+      invitedByEmail: invite.invitedByEmail,
+      invitedByDisplayName: invite.invitedByDisplayName,
+      notificationId: null,
+    );
   }
 }

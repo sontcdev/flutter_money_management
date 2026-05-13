@@ -1058,6 +1058,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get workspaceInviteAlreadyPending => 'このメールにはすでに保留中の招待があります';
 
   @override
+  String get workspaceInviteUserNotFound => 'このメールのユーザーは存在しません';
+
+  @override
   String get inviteCreated => '招待を作成しました';
 
   @override
