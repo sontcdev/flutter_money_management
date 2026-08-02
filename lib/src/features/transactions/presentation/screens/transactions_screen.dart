@@ -53,14 +53,22 @@ class TransactionsScreen extends HookConsumerWidget {
             : Text(l10n.transactions),
         automaticallyImplyLeading: false,
         actions: [
-          IconButton(
-            icon: Icon(showSearch.value ? Icons.close : Icons.search),
-            onPressed: () {
-              showSearch.value = !showSearch.value;
-              if (!showSearch.value) {
-                searchQuery.value = '';
-              }
-            },
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.sm),
+            child: Material(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              shape: const CircleBorder(),
+              clipBehavior: Clip.antiAlias,
+              child: IconButton(
+                icon: Icon(showSearch.value ? Icons.close : Icons.search),
+                onPressed: () {
+                  showSearch.value = !showSearch.value;
+                  if (!showSearch.value) {
+                    searchQuery.value = '';
+                  }
+                },
+              ),
+            ),
           ),
         ],
       ),
@@ -298,108 +306,131 @@ class _TransactionGroup extends StatelessWidget {
         .where((t) => t.type == TransactionType.expense)
         .fold<int>(0, (sum, t) => sum + t.amountCents);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Improved Date Header
-        Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.screenPadding,
-            vertical: AppSpacing.md,
+    final theme = Theme.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Date label with income/expense summary chips
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.screenPadding,
+              vertical: AppSpacing.sm,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  dateLabel.toUpperCase(),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.6,
+                  ),
+                ),
+                Row(
+                  children: [
+                    if (totalIncome > 0) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.incomeContainer,
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusSm),
+                        ),
+                        child: Text(
+                          '+${CurrencyFormatter.formatVNDFromCents(totalIncome, locale: l10n.localeName)}',
+                          style: const TextStyle(
+                            color: AppColors.income,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                    ],
+                    if (totalExpense > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.expenseContainer,
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusSm),
+                        ),
+                        child: Text(
+                          '-${CurrencyFormatter.formatVNDFromCents(totalExpense, locale: l10n.localeName)}',
+                          style: const TextStyle(
+                            color: AppColors.expense,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          decoration: BoxDecoration(
-            color: Theme.of(context)
-                .colorScheme
-                .surfaceContainerHighest
-                .withValues(alpha: 0.5),
-            border: Border(
-              bottom: BorderSide(
-                color: Theme.of(context).dividerColor,
-                width: 0.5,
+
+          // Transactions grouped in a rounded, bordered card (matches design)
+          Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+            child: Card(
+              margin: EdgeInsets.zero,
+              clipBehavior: Clip.antiAlias,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                child: Column(
+                  children: [
+                    for (var i = 0; i < transactions.length; i++) ...[
+                      Builder(builder: (context) {
+                        final transaction = transactions[i];
+                        final category = categoryMap[transaction.categoryId];
+
+                        return TransactionItem(
+                          transaction: transaction,
+                          categoryName: category?.name ?? l10n.unknown,
+                          categoryIconName: category?.iconName,
+                          categoryColor: category != null
+                              ? getCategoryColor(category.colorValue)
+                              : null,
+                          showDate: true, // Show date in subtitle
+                          showChevron: true,
+                          onTap: () {
+                            Navigator.pushNamed(
+                              context,
+                              '/transaction-detail',
+                              arguments: transaction.id,
+                            );
+                          },
+                        );
+                      }),
+                      if (i != transactions.length - 1)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.lg),
+                          child: Divider(
+                            height: 1,
+                            color: theme.dividerColor,
+                          ),
+                        ),
+                    ],
+                  ],
+                ),
               ),
             ),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                dateLabel,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-              ),
-              Row(
-                children: [
-                  if (totalIncome > 0) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.sm,
-                        vertical: AppSpacing.xs,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.incomeContainer,
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusSm),
-                      ),
-                      child: Text(
-                        '+${CurrencyFormatter.formatVNDFromCents(totalIncome, locale: l10n.localeName)}',
-                        style: const TextStyle(
-                          color: AppColors.income,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                  ],
-                  if (totalExpense > 0)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.sm,
-                        vertical: AppSpacing.xs,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.expenseContainer,
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusSm),
-                      ),
-                      child: Text(
-                        '-${CurrencyFormatter.formatVNDFromCents(totalExpense, locale: l10n.localeName)}',
-                        style: const TextStyle(
-                          color: AppColors.expense,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ],
-          ),
-        ),
-
-        // Transactions using refactored TransactionItem
-        ...transactions.map((transaction) {
-          final category = categoryMap[transaction.categoryId];
-
-          return TransactionItem(
-            transaction: transaction,
-            categoryName: category?.name ?? l10n.unknown,
-            categoryIconName: category?.iconName,
-            categoryColor:
-                category != null ? getCategoryColor(category.colorValue) : null,
-            showDate: true, // Show date in subtitle
-            showChevron: true,
-            onTap: () {
-              Navigator.pushNamed(
-                context,
-                '/transaction-detail',
-                arguments: transaction.id,
-              );
-            },
-          );
-        }),
-      ],
+        ],
+      ),
     );
   }
 }

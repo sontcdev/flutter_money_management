@@ -8,6 +8,8 @@ import 'package:flutter_money_management/src/features/reports/presentation/widge
 import 'package:flutter_money_management/src/features/reports/providers/report_providers.dart';
 import 'package:flutter_money_management/src/features/settings/providers/settings_preferences_providers.dart';
 import 'package:flutter_money_management/src/features/transactions/presentation/widgets/transaction_list_item.dart';
+import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/confirm_delete_dialog.dart';
 import 'package:flutter_money_management/src/utils/cycle_utils.dart';
 
@@ -177,7 +179,7 @@ class ReportCalendarScreen extends HookConsumerWidget {
                         Center(
                           child: Text(
                             l10n.noTransactionsThisMonth,
-                            style: const TextStyle(color: Colors.grey),
+                            style: Theme.of(context).textTheme.bodyMedium,
                           ),
                         ),
                       ],
@@ -255,7 +257,7 @@ class ReportCalendarScreen extends HookConsumerWidget {
             child: Center(
               child: InkWell(
                 onTap: () => _showMonthYearPicker(context, ref, month),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -264,7 +266,7 @@ class ReportCalendarScreen extends HookConsumerWidget {
                         .colorScheme
                         .surfaceContainerHighest
                         .withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -369,10 +371,10 @@ class ReportCalendarScreen extends HookConsumerWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.delete, color: Colors.red),
+              leading: const Icon(Icons.delete, color: AppColors.expense),
               title: Text(
                 AppLocalizations.of(context)!.delete,
-                style: const TextStyle(color: Colors.red),
+                style: const TextStyle(color: AppColors.expense),
               ),
               onTap: () async {
                 Navigator.pop(context);
@@ -505,7 +507,9 @@ class _MonthYearPickerSheet extends HookWidget {
                     onSelected: (_) => selectedYear.value = year,
                     selectedColor: Theme.of(context).colorScheme.primary,
                     labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : null,
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.onPrimary
+                          : null,
                       fontWeight: isSelected ? FontWeight.bold : null,
                     ),
                   ),
@@ -539,20 +543,20 @@ class _MonthYearPickerSheet extends HookWidget {
                               .colorScheme
                               .primary
                               .withValues(alpha: 0.1)
-                          : (Theme.of(context).brightness == Brightness.dark
-                              ? Colors.grey[800]
-                              : Colors.grey[100]),
-                  borderRadius: BorderRadius.circular(8),
+                          : Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   child: InkWell(
                     onTap: () =>
                         onMonthSelected(DateTime(selectedYear.value, monthNum)),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                     child: Center(
                       child: Text(
                         months[index],
                         style: TextStyle(
                           color: isCurrentSelection
-                              ? Colors.white
+                              ? Theme.of(context).colorScheme.onPrimary
                               : (isCurrentMonth
                                   ? Theme.of(context).colorScheme.primary
                                   : Theme.of(context)

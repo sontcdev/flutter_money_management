@@ -200,9 +200,24 @@ class WorkspaceManagementScreen extends HookConsumerWidget {
                   AppCard(
                     child: Row(
                       children: [
-                        CircleAvatar(
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            borderRadius:
+                                BorderRadius.circular(AppSpacing.radiusSm),
+                          ),
+                          alignment: Alignment.center,
                           child: Text(
                             activeWorkspace.name.substring(0, 1).toUpperCase(),
+                            style:
+                                Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                           ),
                         ),
                         const SizedBox(width: AppSpacing.lg),
@@ -268,7 +283,6 @@ class WorkspaceManagementScreen extends HookConsumerWidget {
                             decoration: InputDecoration(
                               labelText: l10n.memberEmail,
                               hintText: l10n.emailExample,
-                              border: const OutlineInputBorder(),
                               errorText: inviteErrorText,
                             ),
                             onSubmitted: (_) => submitInvite(),
@@ -745,7 +759,6 @@ class _InviteSection extends HookConsumerWidget {
                                 },
                                 icon: const Icon(Icons.clear),
                               ),
-                        border: const OutlineInputBorder(),
                       ),
                       onChanged: (value) {
                         emailFilter.value = value;
@@ -941,13 +954,16 @@ class _InviteSubtitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final mutedColor =
+        isDark ? AppColors.textLightSecondary : AppColors.textFaint;
     if (invite.status == 'declined') {
       final declinedAt = invite.updatedAt ?? invite.createdAt;
       return _InviteStatusSubtitle(
         email: invite.email,
         statusLabel: l10n.declinedStatus,
         detailLabel: l10n.declinedAt(_formatInviteDateTime(declinedAt)),
-        color: Colors.grey,
+        color: mutedColor,
       );
     }
 
@@ -957,11 +973,11 @@ class _InviteSubtitle extends StatelessWidget {
         email: invite.email,
         statusLabel: l10n.revokedStatus,
         detailLabel: l10n.revokedAt(_formatInviteDateTime(revokedAt)),
-        color: Colors.grey,
+        color: mutedColor,
       );
     }
 
-    final expiryStatus = _inviteExpiryStatus(l10n, invite.expiresAt);
+    final expiryStatus = _inviteExpiryStatus(context, l10n, invite.expiresAt);
 
     return Text.rich(
       TextSpan(
@@ -1152,7 +1168,8 @@ String _inviteExpiryLabel(AppLocalizations l10n, DateTime expiresAt) {
 }
 
 _InviteExpiryStatus _inviteExpiryStatus(
-    AppLocalizations l10n, DateTime expiresAt) {
+    BuildContext context, AppLocalizations l10n, DateTime expiresAt) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
   final now = DateTime.now();
   final localExpiry = expiresAt.toLocal();
   final difference = localExpiry.difference(now);
@@ -1161,7 +1178,7 @@ _InviteExpiryStatus _inviteExpiryStatus(
     return _InviteExpiryStatus(
       label: _inviteExpiryLabel(l10n, expiresAt),
       statusLabel: l10n.expiredStatus,
-      color: Colors.red,
+      color: isDark ? AppColors.errorDark : AppColors.error,
     );
   }
 
@@ -1170,7 +1187,7 @@ _InviteExpiryStatus _inviteExpiryStatus(
     return _InviteExpiryStatus(
       label: _inviteExpiryLabel(l10n, expiresAt),
       statusLabel: l10n.urgentStatus,
-      color: Colors.orange,
+      color: isDark ? AppColors.warningDark : AppColors.warning,
     );
   }
 
@@ -1178,14 +1195,14 @@ _InviteExpiryStatus _inviteExpiryStatus(
     return _InviteExpiryStatus(
       label: _inviteExpiryLabel(l10n, expiresAt),
       statusLabel: l10n.expiringSoonStatus,
-      color: Colors.amber.shade800,
+      color: isDark ? AppColors.warningDark : AppColors.warning,
     );
   }
 
   return _InviteExpiryStatus(
     label: _inviteExpiryLabel(l10n, expiresAt),
     statusLabel: l10n.activeStatus,
-    color: Colors.green,
+    color: isDark ? AppColors.successDark : AppColors.success,
   );
 }
 

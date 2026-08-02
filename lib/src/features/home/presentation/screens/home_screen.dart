@@ -7,6 +7,7 @@ import 'package:flutter_money_management/src/features/reports/presentation/scree
 import 'package:flutter_money_management/src/features/settings/presentation/screens/settings_screen.dart';
 import 'package:flutter_money_management/src/features/transactions/presentation/screens/transactions_screen.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
+import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'today_screen.dart';
 
 /// Tab navigation enum for type-safe tab management
@@ -38,54 +39,67 @@ class HomeScreen extends HookConsumerWidget {
     // Determine if FAB should be shown
     final showFAB = currentTab.value != AppTab.profile;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       body: IndexedStack(
         index: currentTab.value.index,
         children: AppTab.values.map((tab) => screens[tab]!).toList(),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: currentTab.value.index,
-        onTap: (index) {
-          final newTab = AppTab.values[index];
-          // Invalidate providers when switching tabs to ensure fresh data
-          if (newTab != currentTab.value) {
-            ref.invalidate(budgetsProvider);
-            ref.invalidate(budgetsWithConsumedProvider);
-            ref.invalidate(transactionsProvider);
-          }
-          currentTab.value = newTab;
-        },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: Colors.grey,
-        items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.today_outlined),
-            activeIcon: const Icon(Icons.today),
-            label: l10n.today,
+      // Bottom nav bar sits flush against a top border with no elevation,
+      // matching the mockup's flat surface + hairline border style.
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: isDark ? AppColors.borderDark : AppColors.border,
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.receipt_long_outlined),
-            activeIcon: const Icon(Icons.receipt_long),
-            label: l10n.transactions,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.account_balance_wallet_outlined),
-            activeIcon: const Icon(Icons.account_balance_wallet),
-            label: l10n.budgets,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.insights_outlined),
-            activeIcon: const Icon(Icons.insights),
-            label: l10n.reports,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.person_outline),
-            activeIcon: const Icon(Icons.person),
-            label: l10n.settings,
-          ),
-        ],
+        ),
+        child: BottomNavigationBar(
+          currentIndex: currentTab.value.index,
+          onTap: (index) {
+            final newTab = AppTab.values[index];
+            // Invalidate providers when switching tabs to ensure fresh data
+            if (newTab != currentTab.value) {
+              ref.invalidate(budgetsProvider);
+              ref.invalidate(budgetsWithConsumedProvider);
+              ref.invalidate(transactionsProvider);
+            }
+            currentTab.value = newTab;
+          },
+          items: [
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.home_outlined),
+              activeIcon: const Icon(Icons.home_rounded),
+              label: l10n.today,
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.receipt_long_outlined),
+              activeIcon: const Icon(Icons.receipt_long_rounded),
+              label: l10n.transactions,
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.account_balance_wallet_outlined),
+              activeIcon: const Icon(Icons.account_balance_wallet_rounded),
+              label: l10n.budgets,
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.insights_outlined),
+              activeIcon: const Icon(Icons.insights_rounded),
+              label: l10n.reports,
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.person_outline),
+              activeIcon: const Icon(Icons.person_rounded),
+              label: l10n.settings,
+            ),
+          ],
+        ),
       ),
+      // Circular FAB floats centered above the nav bar (CircleBorder + brand
+      // fill come from AppTheme's floatingActionButtonTheme).
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: showFAB
           ? FloatingActionButton(
               onPressed: () async {

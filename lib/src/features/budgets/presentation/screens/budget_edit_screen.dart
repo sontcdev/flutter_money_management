@@ -8,6 +8,8 @@ import 'package:flutter_money_management/src/features/budgets/models/budget.dart
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
+import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
@@ -218,7 +220,7 @@ class BudgetEditScreen extends HookConsumerWidget {
         ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -227,8 +229,10 @@ class BudgetEditScreen extends HookConsumerWidget {
               children: [
                 Text(
                   l10n.category,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w600, fontSize: 16),
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall
+                      ?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 TextButton.icon(
                   onPressed: () async {
@@ -248,13 +252,13 @@ class BudgetEditScreen extends HookConsumerWidget {
                   icon: const Icon(Icons.add, size: 18),
                   label: Text(l10n.add),
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                     visualDensity: VisualDensity.compact,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             categoriesAsync.when(
               data: (categories) {
                 final expenseCategories = categories
@@ -288,7 +292,7 @@ class BudgetEditScreen extends HookConsumerWidget {
               loading: () => const CircularProgressIndicator(),
               error: (err, stack) => Text(l10n.errorWithMessage('$err')),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             AppInput(
               label: '${l10n.limit} (${l10n.currency})',
               controller: limitController,
@@ -299,8 +303,8 @@ class BudgetEditScreen extends HookConsumerWidget {
               ],
               hint: '0',
               suffixIcon: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md, vertical: AppSpacing.lg),
                 child: Text(
                   CurrencyFormatter.getCurrencySymbol('VND'),
                   style: const TextStyle(
@@ -310,12 +314,15 @@ class BudgetEditScreen extends HookConsumerWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             Text(
               l10n.period,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+              style: Theme.of(context)
+                  .textTheme
+                  .titleSmall
+                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Row(
               children: [
                 Expanded(
@@ -329,7 +336,7 @@ class BudgetEditScreen extends HookConsumerWidget {
                     },
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: _PeriodOptionButton(
                     label: l10n.yearly,
@@ -341,7 +348,7 @@ class BudgetEditScreen extends HookConsumerWidget {
                     },
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: _PeriodOptionButton(
                     label: l10n.custom,
@@ -358,7 +365,7 @@ class BudgetEditScreen extends HookConsumerWidget {
 
             // Custom date range picker
             if (selectedPeriodType.value == PeriodType.custom) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               Row(
                 children: [
                   Expanded(
@@ -379,7 +386,7 @@ class BudgetEditScreen extends HookConsumerWidget {
                       },
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: _DatePickerField(
                       label: l10n.toDate,
@@ -404,24 +411,28 @@ class BudgetEditScreen extends HookConsumerWidget {
 
             // Transaction selector for new budgets
             if (budget == null && selectedCategoryId.value != null) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               Builder(
                 builder: (context) {
                   final categoryTransactions = getCategoryTransactions();
 
                   if (categoryTransactions.isEmpty) {
+                    final onSurfaceFaint = Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.6);
                     return Card(
-                      color: Colors.grey[100],
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
                       child: Padding(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(AppSpacing.lg),
                         child: Row(
                           children: [
-                            const Icon(Icons.info_outline, color: Colors.grey),
-                            const SizedBox(width: 12),
+                            Icon(Icons.info_outline, color: onSurfaceFaint),
+                            const SizedBox(width: AppSpacing.md),
                             Expanded(
                               child: Text(
                                 l10n.noExpenseTransactionInPeriod,
-                                style: const TextStyle(color: Colors.grey),
+                                style: TextStyle(color: onSurfaceFaint),
                               ),
                             ),
                           ],
@@ -526,13 +537,13 @@ class BudgetEditScreen extends HookConsumerWidget {
                                 ),
                                 style: const TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.red,
+                                  color: AppColors.expense,
                                 ),
                               ),
                               dense: true,
                             );
                           }),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: AppSpacing.sm),
                         ],
                       ],
                     ),
@@ -541,14 +552,14 @@ class BudgetEditScreen extends HookConsumerWidget {
               ),
             ],
 
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             SwitchListTile(
               title: Text(l10n.allowOverdraft),
               subtitle: Text(l10n.allowOverdraftDesc),
               value: allowOverdraft.value,
               onChanged: (value) => allowOverdraft.value = value,
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: AppSpacing.xxl),
             AppButton(
               text: l10n.save,
               onPressed: handleSave,
@@ -576,41 +587,39 @@ class _PeriodOptionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final unselectedForeground =
+        theme.colorScheme.onSurface.withValues(alpha: 0.6);
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        padding: const EdgeInsets.symmetric(
+            vertical: AppSpacing.md, horizontal: AppSpacing.sm),
         decoration: BoxDecoration(
           color: isSelected
-              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.1)
-              : Colors.grey[100],
+              ? theme.colorScheme.primary.withValues(alpha: 0.1)
+              : theme.colorScheme.surfaceContainerHighest,
           border: Border.all(
-            color: isSelected
-                ? Theme.of(context).colorScheme.primary
-                : Colors.grey[300]!,
+            color: isSelected ? theme.colorScheme.primary : theme.dividerColor,
             width: isSelected ? 2 : 1,
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         ),
         child: Column(
           children: [
             Icon(
               icon,
-              color: isSelected
-                  ? Theme.of(context).colorScheme.primary
-                  : Colors.grey[600],
+              color: isSelected ? theme.colorScheme.primary : unselectedForeground,
               size: 24,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppSpacing.xs),
             Text(
               label,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                color: isSelected
-                    ? Theme.of(context).colorScheme.primary
-                    : Colors.grey[700],
+                color: isSelected ? theme.colorScheme.primary : unselectedForeground,
               ),
             ),
           ],
@@ -633,14 +642,15 @@ class _DatePickerField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       child: Container(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[300]!),
-          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.dividerColor),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -649,15 +659,15 @@ class _DatePickerField extends StatelessWidget {
               label,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey[600],
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppSpacing.xs),
             Row(
               children: [
                 Icon(Icons.calendar_today,
-                    size: 16, color: Theme.of(context).colorScheme.primary),
-                const SizedBox(width: 8),
+                    size: 16, color: theme.colorScheme.primary),
+                const SizedBox(width: AppSpacing.sm),
                 Text(
                   formatLocalizedDate(context, date),
                   style: const TextStyle(fontWeight: FontWeight.w500),

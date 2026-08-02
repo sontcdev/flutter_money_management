@@ -7,6 +7,10 @@ import 'package:flutter_money_management/src/features/workspace/services/workspa
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
+import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_segmented_filter.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
 import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
@@ -42,36 +46,25 @@ class CategoriesScreen extends HookConsumerWidget {
       body: Column(
         children: [
           // Tab selector
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _TabButton(
-                    label: l10n.all,
-                    isSelected: selectedTab.value == 0,
-                    onTap: () => selectedTab.value = 0,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _TabButton(
-                    label: l10n.expense,
-                    isSelected: selectedTab.value == 1,
-                    onTap: () => selectedTab.value = 1,
-                    color: Colors.red,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _TabButton(
-                    label: l10n.income,
-                    isSelected: selectedTab.value == 2,
-                    onTap: () => selectedTab.value = 2,
-                    color: Colors.green,
-                  ),
-                ),
-              ],
+          AppSegmentedFilter<int>(
+            options: [
+              FilterOption(value: 0, label: l10n.all),
+              FilterOption(
+                value: 1,
+                label: l10n.expense,
+                color: AppColors.expense,
+              ),
+              FilterOption(
+                value: 2,
+                label: l10n.income,
+                color: AppColors.income,
+              ),
+            ],
+            selectedValue: selectedTab.value,
+            onChanged: (value) => selectedTab.value = value,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.screenPadding,
+              vertical: AppSpacing.sm,
             ),
           ),
           Expanded(
@@ -123,87 +116,65 @@ class CategoriesScreen extends HookConsumerWidget {
 
                 return RefreshIndicator(
                   onRefresh: () => syncCurrentWorkspaceData(ref),
-                  child: ListView.builder(
+                  child: ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
-                    itemCount: filteredCategories.length,
-                    itemBuilder: (context, index) {
-                      final category = filteredCategories[index];
-                      return CategoryItem(
-                        category: category,
-                        onEdit: canManageContent
-                            ? () async {
-                                final result = await Navigator.pushNamed(
-                                  context,
-                                  '/category-edit',
-                                  arguments: category,
-                                );
-                                if (result == true) {
-                                  ref.invalidate(categoriesProvider);
-                                }
-                              }
-                            : null,
-                        onDelete: canManageContent
-                            ? () async {
-                                final confirm = await showDialog<bool>(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    title: Text(l10n.confirmDelete),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(context, false),
-                                        child: Text(l10n.no),
-                                      ),
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(context, true),
-                                        child: Text(l10n.yes),
-                                      ),
-                                    ],
-                                  ),
-                                );
-
-                                if (confirm == true) {
-                                  try {
-                                    await ref
-                                        .read(categoryRepositoryProvider)
-                                        .deleteCategory(category.id);
-                                    ref.invalidate(categoriesProvider);
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(content: Text(l10n.success)),
-                                      );
-                                    }
-                                  } on CategoryInUseException {
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        SnackBar(
-                                            content: Text(l10n.categoryInUse)),
-                                      );
-                                    }
-                                  } catch (e, stackTrace) {
-                                    if (context.mounted) {
-                                      await ErrorReportHelper.handleApiError(
-                                        context: context,
-                                        ref: ref,
-                                        error: e,
-                                        stackTrace: stackTrace,
-                                        feature: 'category',
-                                        action: 'delete_category',
-                                        screen: 'categories_screen',
-                                        extraContext: {
-                                          'category_id': category.id,
-                                        },
-                                      );
-                                    }
-                                  }
-                                }
-                              }
-                            : null,
-                      );
-                    },
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.screenPadding,
+                      0,
+                      AppSpacing.screenPadding,
+                      AppSpacing.screenPadding,
+                    ),
+                    children: [
+                      AppCard(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.xs,
+                          vertical: AppSpacing.xs,
+                        ),
+                        child: Column(
+                          children: [
+                            for (var i = 0;
+                                i < filteredCategories.length;
+                                i++) ...[
+                              CategoryItem(
+                                category: filteredCategories[i],
+                                onEdit: canManageContent
+                                    ? () async {
+                                        final result =
+                                            await Navigator.pushNamed(
+                                          context,
+                                          '/category-edit',
+                                          arguments: filteredCategories[i],
+                                        );
+                                        if (result == true) {
+                                          ref.invalidate(categoriesProvider);
+                                        }
+                                      }
+                                    : null,
+                                onDelete: canManageContent
+                                    ? () => _deleteCategory(
+                                          context: context,
+                                          ref: ref,
+                                          l10n: l10n,
+                                          category: filteredCategories[i],
+                                        )
+                                    : null,
+                              ),
+                              if (i != filteredCategories.length - 1)
+                                Divider(
+                                  height: 1,
+                                  thickness: 1,
+                                  indent: AppSpacing.md,
+                                  endIndent: AppSpacing.md,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .outlineVariant
+                                      .withValues(alpha: 0.6),
+                                ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },
@@ -219,42 +190,63 @@ class CategoriesScreen extends HookConsumerWidget {
       ),
     );
   }
-}
 
-class _TabButton extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final Color? color;
-
-  const _TabButton({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-    this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final selectedColor = color ?? Theme.of(context).colorScheme.primary;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? selectedColor : Colors.grey[200],
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? Colors.white : Colors.grey[700],
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-            ),
+  Future<void> _deleteCategory({
+    required BuildContext context,
+    required WidgetRef ref,
+    required AppLocalizations l10n,
+    required Category category,
+  }) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.confirmDelete),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.no),
           ),
-        ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.yes),
+          ),
+        ],
       ),
     );
+
+    if (confirm == true) {
+      try {
+        await ref.read(categoryRepositoryProvider).deleteCategory(
+              category.id,
+            );
+        ref.invalidate(categoriesProvider);
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.success)),
+          );
+        }
+      } on CategoryInUseException {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.categoryInUse)),
+          );
+        }
+      } catch (e, stackTrace) {
+        if (context.mounted) {
+          await ErrorReportHelper.handleApiError(
+            context: context,
+            ref: ref,
+            error: e,
+            stackTrace: stackTrace,
+            feature: 'category',
+            action: 'delete_category',
+            screen: 'categories_screen',
+            extraContext: {
+              'category_id': category.id,
+            },
+          );
+        }
+      }
+    }
   }
 }

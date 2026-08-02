@@ -9,6 +9,9 @@ import 'package:flutter_money_management/src/features/workspace/providers/worksp
 import 'package:flutter_money_management/src/i18n/locale_provider.dart';
 import 'package:flutter_money_management/src/i18n/theme_provider.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
+import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
 class SettingsScreen extends HookConsumerWidget {
@@ -26,6 +29,9 @@ class SettingsScreen extends HookConsumerWidget {
     final currentUser = ref.watch(currentUserProvider);
     final activeWorkspace = ref.watch(activeWorkspaceProvider);
     final canLeaveWorkspace = ref.watch(canLeaveWorkspaceProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final errorColor = isDark ? AppColors.errorDark : AppColors.error;
+    final warningColor = isDark ? AppColors.warningDark : AppColors.warning;
 
     return Scaffold(
       appBar: AppBar(
@@ -33,179 +39,246 @@ class SettingsScreen extends HookConsumerWidget {
         automaticallyImplyLeading: false,
       ),
       body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
-          // Appearance Section
-          _buildSectionHeader(context, l10n.appearanceSection),
-          ListTile(
-            leading: const Icon(Icons.language),
-            title: Text(l10n.language),
-            trailing: DropdownButton<String>(
-              value: locale.languageCode,
-              items: [
-                DropdownMenuItem(
-                    value: 'en', child: Text(l10n.languageEnglish)),
-                DropdownMenuItem(
-                    value: 'ja', child: Text(l10n.languageJapanese)),
-                DropdownMenuItem(
-                    value: 'vi', child: Text(l10n.languageVietnamese)),
-              ],
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(localeProvider.notifier).setLocale(Locale(value));
-                }
-              },
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.brightness_6),
-            title: Text(l10n.theme),
-            trailing: DropdownButton<ThemeMode>(
-              value: themeMode,
-              items: [
-                DropdownMenuItem(
-                    value: ThemeMode.light, child: Text(l10n.light)),
-                DropdownMenuItem(value: ThemeMode.dark, child: Text(l10n.dark)),
-                DropdownMenuItem(
-                    value: ThemeMode.system, child: Text(l10n.system)),
-              ],
-              onChanged: (value) {
-                if (value != null) {
-                  ref.read(themeModeProvider.notifier).setThemeMode(value);
-                }
-              },
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.palette),
-            title: Text(l10n.themeColor),
-            subtitle: Text(l10n.selectThemeColor),
-            trailing: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: themeColor,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.grey[300]!),
-              ),
-            ),
-            onTap: () => _showColorPicker(context, ref, themeColor, l10n),
-          ),
-
-          const Divider(height: 32),
-
-          // Budget Section
-          _buildSectionHeader(context, l10n.budgetSettings),
-          ListTile(
-            leading: const Icon(Icons.calendar_month),
-            title: Text(l10n.monthStartDay),
-            subtitle: Text(l10n.monthStartDayDesc(monthStartDay)),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () =>
-                _showMonthStartDayPicker(context, ref, monthStartDay, l10n),
-          ),
-          ListTile(
-            leading: const Icon(Icons.pie_chart),
-            title: Text(l10n.manageBudgets),
-            subtitle: Text(l10n.manageBudgetsDesc),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.pushNamed(context, '/budgets'),
-          ),
-
-          const Divider(height: 32),
-
-          // Data Section
-          _buildSectionHeader(context, l10n.dataSection),
-          ListTile(
-            leading: const Icon(Icons.category),
-            title: Text(l10n.manageCategories),
-            subtitle: Text(l10n.manageCategoriesDesc),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => Navigator.pushNamed(context, '/categories'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.receipt_long),
-            title: Text(l10n.manageTransactions),
-            subtitle: Text(l10n.manageTransactionsDesc),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () =>
-                Navigator.pushNamed(context, '/transaction-management'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.schedule),
-            title: Text(l10n.recurringTransactions),
-            subtitle: Text(l10n.recurringTransactionsDesc),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () =>
-                Navigator.pushNamed(context, '/recurring-transactions'),
-          ),
-          const Divider(height: 32),
-
-          // Account Section
-          _buildSectionHeader(context, l10n.accountSection),
+          // Profile summary
           if (currentUser != null) ...[
-            ListTile(
-              leading: const Icon(Icons.email_outlined),
-              title: Text(l10n.email),
-              subtitle: Text(currentUser.email ?? l10n.notAvailable),
-            ),
-            if (activeWorkspace != null)
-              ListTile(
-                leading: const Icon(Icons.workspace_premium_outlined),
-                title: Text(l10n.activeWorkspace),
-                subtitle: Text(activeWorkspace.name),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.pushNamed(context, '/workspace-detail'),
+            AppCard(
+              padding: const EdgeInsets.all(18),
+              child: Row(
+                children: [
+                  _InitialsAvatar(
+                    text: currentUser.email ?? '?',
+                    size: 56,
+                  ),
+                  const SizedBox(width: AppSpacing.lg),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          currentUser.email ?? l10n.notAvailable,
+                          style: Theme.of(context).textTheme.titleMedium,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          l10n.accountSection,
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: AppColors.textFaint),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            if (canLeaveWorkspace)
-              ListTile(
-                leading: Icon(Icons.logout, color: Colors.orange[700]),
-                title: Text(
-                  'Leave workspace',
-                  style: TextStyle(color: Colors.orange[700]),
-                ),
-                subtitle: const Text('Leave the current shared workspace'),
-                onTap: () => _handleLeaveWorkspace(
-                  context,
-                  ref,
-                  activeWorkspace!.id,
-                ),
-              ),
-            ListTile(
-              leading: Icon(Icons.logout, color: Colors.red[700]),
-              title: Text(
-                l10n.logout,
-                style: TextStyle(color: Colors.red[700]),
-              ),
-              subtitle: Text(l10n.logoutDesc),
-              onTap: () => _handleLogout(context, ref),
             ),
-          ] else ...[
-            ListTile(
-              leading: const Icon(Icons.login),
-              title: Text(l10n.signIn),
-              subtitle: Text(l10n.signInDesc),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => Navigator.pushNamed(context, '/sign-in'),
-            ),
+            const SizedBox(height: 20),
           ],
 
-          const Divider(height: 32),
+          // Workspace section
+          if (activeWorkspace != null) ...[
+            _SectionCaption(title: l10n.activeWorkspace),
+            _SettingsListCard(
+              children: [
+                _SettingsRow(
+                  leading: _SquareBadge(text: activeWorkspace.name),
+                  title: activeWorkspace.name,
+                  subtitle: l10n.roleValue(activeWorkspace.role),
+                  onTap: () =>
+                      Navigator.pushNamed(context, '/workspace-detail'),
+                ),
+              ],
+            ),
+            if (canLeaveWorkspace) ...[
+              const SizedBox(height: 12),
+              _SettingsListCard(
+                children: [
+                  _SettingsRow(
+                    icon: Icons.logout,
+                    iconColor: warningColor,
+                    title: l10n.leaveWorkspace,
+                    titleColor: warningColor,
+                    subtitle: 'Leave the current shared workspace',
+                    trailing: const SizedBox.shrink(),
+                    onTap: () => _handleLeaveWorkspace(
+                      context,
+                      ref,
+                      activeWorkspace.id,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 20),
+          ],
 
-          // About Section
-          _buildSectionHeader(context, l10n.aboutSection),
-          if (packageInfo.data != null)
-            ListTile(
-              leading: const Icon(Icons.info_outline),
-              title: Text(packageInfo.data!.appName),
-              subtitle: Text(
-                l10n.versionLabel(
-                  packageInfo.data!.version,
-                  packageInfo.data!.buildNumber,
+          // Appearance
+          _SectionCaption(title: l10n.appearanceSection),
+          _SettingsListCard(
+            children: [
+              _SettingsRow(
+                icon: Icons.language,
+                title: l10n.language,
+                trailing: DropdownButton<String>(
+                  value: locale.languageCode,
+                  underline: const SizedBox.shrink(),
+                  items: [
+                    DropdownMenuItem(
+                        value: 'en', child: Text(l10n.languageEnglish)),
+                    DropdownMenuItem(
+                        value: 'ja', child: Text(l10n.languageJapanese)),
+                    DropdownMenuItem(
+                        value: 'vi', child: Text(l10n.languageVietnamese)),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      ref
+                          .read(localeProvider.notifier)
+                          .setLocale(Locale(value));
+                    }
+                  },
                 ),
               ),
-            ),
+              _SettingsRow(
+                icon: Icons.brightness_6_outlined,
+                title: l10n.theme,
+                trailing: DropdownButton<ThemeMode>(
+                  value: themeMode,
+                  underline: const SizedBox.shrink(),
+                  items: [
+                    DropdownMenuItem(
+                        value: ThemeMode.light, child: Text(l10n.light)),
+                    DropdownMenuItem(
+                        value: ThemeMode.dark, child: Text(l10n.dark)),
+                    DropdownMenuItem(
+                        value: ThemeMode.system, child: Text(l10n.system)),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      ref.read(themeModeProvider.notifier).setThemeMode(value);
+                    }
+                  },
+                ),
+              ),
+              _SettingsRow(
+                icon: Icons.palette_outlined,
+                title: l10n.themeColor,
+                subtitle: l10n.selectThemeColor,
+                trailing: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: themeColor,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                  ),
+                ),
+                onTap: () => _showColorPicker(context, ref, themeColor, l10n),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
 
-          const SizedBox(height: 24),
+          // Budget
+          _SectionCaption(title: l10n.budgetSettings),
+          _SettingsListCard(
+            children: [
+              _SettingsRow(
+                icon: Icons.calendar_month_outlined,
+                title: l10n.monthStartDay,
+                subtitle: l10n.monthStartDayDesc(monthStartDay),
+                onTap: () => _showMonthStartDayPicker(
+                    context, ref, monthStartDay, l10n),
+              ),
+              _SettingsRow(
+                icon: Icons.pie_chart_outline,
+                title: l10n.manageBudgets,
+                subtitle: l10n.manageBudgetsDesc,
+                onTap: () => Navigator.pushNamed(context, '/budgets'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Data
+          _SectionCaption(title: l10n.dataSection),
+          _SettingsListCard(
+            children: [
+              _SettingsRow(
+                icon: Icons.category_outlined,
+                title: l10n.manageCategories,
+                subtitle: l10n.manageCategoriesDesc,
+                onTap: () => Navigator.pushNamed(context, '/categories'),
+              ),
+              _SettingsRow(
+                icon: Icons.receipt_long_outlined,
+                title: l10n.manageTransactions,
+                subtitle: l10n.manageTransactionsDesc,
+                onTap: () =>
+                    Navigator.pushNamed(context, '/transaction-management'),
+              ),
+              _SettingsRow(
+                icon: Icons.schedule_outlined,
+                title: l10n.recurringTransactions,
+                subtitle: l10n.recurringTransactionsDesc,
+                onTap: () =>
+                    Navigator.pushNamed(context, '/recurring-transactions'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Account / About
+          if (currentUser == null) ...[
+            _SectionCaption(title: l10n.accountSection),
+            _SettingsListCard(
+              children: [
+                _SettingsRow(
+                  icon: Icons.login,
+                  title: l10n.signIn,
+                  subtitle: l10n.signInDesc,
+                  onTap: () => Navigator.pushNamed(context, '/sign-in'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+          ],
+
+          if (packageInfo.data != null) ...[
+            _SectionCaption(title: l10n.aboutSection),
+            _SettingsListCard(
+              children: [
+                _SettingsRow(
+                  icon: Icons.info_outline,
+                  title: packageInfo.data!.appName,
+                  subtitle: l10n.versionLabel(
+                    packageInfo.data!.version,
+                    packageInfo.data!.buildNumber,
+                  ),
+                  trailing: const SizedBox.shrink(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+          ],
+
+          if (currentUser != null)
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: errorColor,
+                  side: BorderSide(color: errorColor),
+                ),
+                onPressed: () => _handleLogout(context, ref),
+                child: Text(l10n.logout),
+              ),
+            ),
         ],
       ),
     );
@@ -225,7 +298,7 @@ class SettingsScreen extends HookConsumerWidget {
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: FilledButton.styleFrom(
-              backgroundColor: Colors.red[700],
+              backgroundColor: AppColors.error,
             ),
             child: Text(AppLocalizations.of(context)!.signOutTitle),
           ),
@@ -323,19 +396,6 @@ class SettingsScreen extends HookConsumerWidget {
     }
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.w600,
-            ),
-      ),
-    );
-  }
-
   void _showMonthStartDayPicker(BuildContext context, WidgetRef ref,
       int currentDay, AppLocalizations l10n) {
     showModalBottomSheet(
@@ -348,10 +408,7 @@ class SettingsScreen extends HookConsumerWidget {
               padding: const EdgeInsets.all(16),
               child: Text(
                 l10n.selectMonthStartDay,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
             SizedBox(
@@ -377,11 +434,13 @@ class SettingsScreen extends HookConsumerWidget {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? Theme.of(context).colorScheme.primary
-                            : Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
+                            : Theme.of(context).colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                         border: isSelected
                             ? null
-                            : Border.all(color: Colors.grey[300]!),
+                            : Border.all(
+                                color: Theme.of(context).colorScheme.outline,
+                              ),
                       ),
                       child: Center(
                         child: Text(
@@ -390,7 +449,9 @@ class SettingsScreen extends HookConsumerWidget {
                             fontWeight: isSelected
                                 ? FontWeight.bold
                                 : FontWeight.normal,
-                            color: isSelected ? Colors.white : Colors.black87,
+                            color: isSelected
+                                ? Theme.of(context).colorScheme.onPrimary
+                                : Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                       ),
@@ -418,10 +479,7 @@ class SettingsScreen extends HookConsumerWidget {
               padding: const EdgeInsets.all(16),
               child: Text(
                 l10n.selectThemeColor,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(context).textTheme.titleMedium,
               ),
             ),
             Padding(
@@ -452,7 +510,12 @@ class SettingsScreen extends HookConsumerWidget {
                             color: color,
                             shape: BoxShape.circle,
                             border: isSelected
-                                ? Border.all(color: Colors.black, width: 3)
+                                ? Border.all(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface,
+                                    width: 3,
+                                  )
                                 : null,
                             boxShadow: [
                               BoxShadow(
@@ -510,5 +573,200 @@ class SettingsScreen extends HookConsumerWidget {
       default:
         return key;
     }
+  }
+}
+
+/// Small uppercase caption used above a group of settings rows,
+/// matching the mockup's section labels.
+class _SectionCaption extends StatelessWidget {
+  const _SectionCaption({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10, left: 4),
+      child: Text(
+        title.toUpperCase(),
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: AppColors.textFaint,
+              letterSpacing: 0.6,
+            ),
+      ),
+    );
+  }
+}
+
+/// Card that hosts a tight vertical list of [_SettingsRow]s, separated by
+/// hairline dividers, matching the mockup's grouped-row cards.
+class _SettingsListCard extends StatelessWidget {
+  const _SettingsListCard({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+      child: Column(
+        children: [
+          for (var i = 0; i < children.length; i++) ...[
+            if (i > 0)
+              Container(
+                height: 1,
+                margin: const EdgeInsets.symmetric(horizontal: 12),
+                color: Theme.of(context).dividerColor,
+              ),
+            children[i],
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// A single settings row: optional leading icon/badge, title, optional
+/// subtitle, and a trailing widget (defaults to a chevron when [onTap] is
+/// set).
+class _SettingsRow extends StatelessWidget {
+  const _SettingsRow({
+    this.icon,
+    this.leading,
+    required this.title,
+    this.subtitle,
+    this.trailing,
+    this.onTap,
+    this.iconColor,
+    this.titleColor,
+  });
+
+  final IconData? icon;
+  final Widget? leading;
+  final String title;
+  final String? subtitle;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+  final Color? iconColor;
+  final Color? titleColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final row = Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      child: Row(
+        children: [
+          if (leading != null)
+            leading!
+          else if (icon != null)
+            Icon(icon, size: 20, color: iconColor),
+          if (leading != null || icon != null) const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: titleColor,
+                      ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textFaint,
+                        ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          trailing ??
+              (onTap != null
+                  ? const Icon(
+                      Icons.chevron_right,
+                      size: 20,
+                      color: AppColors.textFaint,
+                    )
+                  : const SizedBox.shrink()),
+        ],
+      ),
+    );
+
+    if (onTap == null) {
+      return row;
+    }
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+      child: row,
+    );
+  }
+}
+
+/// Circular avatar showing the first letter of [text].
+class _InitialsAvatar extends StatelessWidget {
+  const _InitialsAvatar({required this.text, this.size = 44});
+
+  final String text;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = text.trim().isNotEmpty ? text.trim()[0].toUpperCase() : '?';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.primarySoftDark : AppColors.primarySoft,
+        shape: BoxShape.circle,
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: isDark
+                  ? AppColors.primaryStrongDark
+                  : AppColors.primaryStrong,
+              fontWeight: FontWeight.w800,
+            ),
+      ),
+    );
+  }
+}
+
+/// Rounded-square badge with the first 1-2 letters of a workspace name,
+/// used to represent a workspace in list rows.
+class _SquareBadge extends StatelessWidget {
+  const _SquareBadge({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = text.trim().isNotEmpty ? text.trim()[0].toUpperCase() : '?';
+    return Container(
+      width: 38,
+      height: 38,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary,
+        borderRadius: BorderRadius.circular(11),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: Theme.of(context).colorScheme.onPrimary,
+              fontWeight: FontWeight.w700,
+            ),
+      ),
+    );
   }
 }

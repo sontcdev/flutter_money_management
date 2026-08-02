@@ -8,6 +8,8 @@ import 'package:flutter_money_management/src/features/categories/models/category
 import 'package:flutter_money_management/src/features/recurring/models/recurring_transaction.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
@@ -219,14 +221,23 @@ class _RecurringTransactionEditForm extends HookConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      selectedMode.value == RecurringMode.manualConfirm
-                          ? l10n.recurringModeManualConfirm
-                          : l10n.recurringModeReminderOnly,
-                    ),
+                AppCard(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Text(
+                          selectedMode.value == RecurringMode.manualConfirm
+                              ? l10n.recurringModeManualConfirm
+                              : l10n.recurringModeReminderOnly,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
@@ -266,7 +277,9 @@ class _RecurringTransactionEditForm extends HookConsumerWidget {
                   ],
                   suffixIcon: Padding(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 16),
+                      horizontal: AppSpacing.screenPadding,
+                      vertical: AppSpacing.screenPadding,
+                    ),
                     child: Text(CurrencyFormatter.getCurrencySymbol('VND')),
                   ),
                 ),
@@ -444,6 +457,7 @@ class _RecurringTransactionEditForm extends HookConsumerWidget {
                   controller: noteController,
                   maxLines: 3,
                 ),
+                const SizedBox(height: AppSpacing.sm),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(l10n.recurringActive),
@@ -451,15 +465,11 @@ class _RecurringTransactionEditForm extends HookConsumerWidget {
                   onChanged: (value) => isActive.value = value,
                 ),
                 const SizedBox(height: AppSpacing.xl),
-                FilledButton(
+                AppButton(
+                  text: l10n.save,
                   onPressed: isSaving.value ? null : submit,
-                  child: isSaving.value
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text(l10n.save),
+                  isLoading: isSaving.value,
+                  fullWidth: true,
                 ),
               ],
             ),

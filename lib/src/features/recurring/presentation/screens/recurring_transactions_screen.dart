@@ -6,7 +6,11 @@ import 'package:flutter_money_management/src/features/budgets/services/budget_se
 import 'package:flutter_money_management/src/features/recurring/models/recurring_occurrence.dart';
 import 'package:flutter_money_management/src/features/recurring/models/recurring_transaction.dart';
 import 'package:flutter_money_management/src/features/recurring/providers/recurring_providers.dart';
+import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_status_chip.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
@@ -82,7 +86,10 @@ class _RecurringTransactionsScreenState
               const SizedBox(height: AppSpacing.sectionGap),
             Text(
               l10n.recurringUpcoming,
-              style: Theme.of(context).textTheme.titleMedium,
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: AppSpacing.md),
             occurrencesAsync.when(
@@ -122,7 +129,10 @@ class _RecurringTransactionsScreenState
             const SizedBox(height: AppSpacing.sectionGap),
             Text(
               l10n.recurringTemplates,
-              style: Theme.of(context).textTheme.titleMedium,
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: AppSpacing.md),
             recurringAsync.when(
@@ -220,56 +230,75 @@ class _OccurrenceCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Card(
-      color:
-          highlighted ? Theme.of(context).colorScheme.primaryContainer : null,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () => _showOccurrenceDetailSheet(
-          context: context,
-          ref: ref,
-          occurrence: occurrence,
-          recurringTransaction: recurringTransaction,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                recurringTransaction.title,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                formatLocalizedDateWithWeekday(
-                    context, occurrence.scheduledFor),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                CurrencyFormatter.formatVNDFromCents(
-                  recurringTransaction.amountCents,
-                  locale: l10n.localeName,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  Chip(label: Text(_typeLabel(recurringTransaction, l10n))),
-                  Chip(
-                    label: Text(_modeLabel(recurringTransaction.mode, l10n)),
+    final isExpense = recurringTransaction.isExpense;
+    final amountColor = isExpense ? AppColors.expense : AppColors.income;
+
+    return AppCard(
+      padding: EdgeInsets.zero,
+      color: highlighted
+          ? Theme.of(context).colorScheme.primaryContainer
+          : null,
+      onTap: () => _showOccurrenceDetailSheet(
+        context: context,
+        ref: ref,
+        occurrence: occurrence,
+        recurringTransaction: recurringTransaction,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.cardPadding),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    recurringTransaction.title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                l10n.tapForDetails,
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ],
-          ),
+                ),
+                Text(
+                  CurrencyFormatter.formatVNDFromCents(
+                    recurringTransaction.amountCents,
+                    locale: l10n.localeName,
+                  ),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: amountColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              formatLocalizedDateWithWeekday(context, occurrence.scheduledFor),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: [
+                AppStatusChip(
+                  label: _typeLabel(recurringTransaction, l10n),
+                  color: amountColor,
+                ),
+                AppStatusChip.info(
+                  label: _modeLabel(recurringTransaction.mode, l10n),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              l10n.tapForDetails,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
         ),
       ),
     );
@@ -405,9 +434,18 @@ class _OccurrenceDetailSheet extends ConsumerWidget {
       }
     }
 
+    final amountColor = recurringTransaction.isExpense
+        ? AppColors.expense
+        : AppColors.income;
+
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.screenPadding,
+          0,
+          AppSpacing.screenPadding,
+          AppSpacing.xl,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -416,62 +454,68 @@ class _OccurrenceDetailSheet extends ConsumerWidget {
               recurringTransaction.title,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
-            const SizedBox(height: 8),
-            Text(formatLocalizedFullDate(context, occurrence.scheduledFor)),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              formatLocalizedFullDate(context, occurrence.scheduledFor),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
             Text(
               CurrencyFormatter.formatVNDFromCents(
                 recurringTransaction.amountCents,
                 locale: l10n.localeName,
               ),
-              style: Theme.of(context).textTheme.titleLarge,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: amountColor,
+                    fontWeight: FontWeight.w700,
+                  ),
             ),
             if ((recurringTransaction.note ?? '').isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Text(
                 recurringTransaction.note!,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ],
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
               children: [
-                Chip(
-                  avatar: const Icon(Icons.schedule, size: 18),
-                  label: Text(
-                      _frequencyLabel(recurringTransaction.frequency, l10n)),
+                AppStatusChip.info(
+                  icon: Icons.schedule,
+                  label: _frequencyLabel(recurringTransaction.frequency, l10n),
                 ),
-                Chip(
-                  avatar: Icon(
-                    recurringTransaction.isExpense
-                        ? Icons.arrow_upward
-                        : Icons.arrow_downward,
-                    size: 18,
-                  ),
-                  label: Text(
-                    recurringTransaction.isExpense ? l10n.expense : l10n.income,
-                  ),
+                AppStatusChip(
+                  icon: recurringTransaction.isExpense
+                      ? Icons.arrow_upward
+                      : Icons.arrow_downward,
+                  color: recurringTransaction.isExpense
+                      ? AppColors.expense
+                      : AppColors.income,
+                  label:
+                      recurringTransaction.isExpense ? l10n.expense : l10n.income,
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: AppSpacing.xl),
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: AppButton.outlined(
                     onPressed: isBusy ? null : skip,
-                    icon: const Icon(Icons.skip_next),
-                    label: Text(l10n.skip),
+                    icon: Icons.skip_next,
+                    text: l10n.skip,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: AppSpacing.md),
                 Expanded(
-                  child: FilledButton.icon(
+                  child: AppButton(
                     onPressed: isBusy ? null : confirm,
-                    icon: const Icon(Icons.check_circle_outline),
-                    label: Text(l10n.markDone),
+                    icon: Icons.check_circle_outline,
+                    text: l10n.markDone,
                   ),
                 ),
               ],
@@ -521,25 +565,25 @@ class _NotificationsPermissionCard extends ConsumerWidget {
       );
     }
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.recurringNotificationsTitle,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 8),
-            Text(l10n.recurringNotificationsDesc),
-            const SizedBox(height: 12),
-            FilledButton(
-              onPressed: isBusy ? null : requestPermission,
-              child: Text(l10n.recurringEnableNotifications),
-            ),
-          ],
-        ),
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.recurringNotificationsTitle,
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(l10n.recurringNotificationsDesc),
+          const SizedBox(height: AppSpacing.md),
+          FilledButton(
+            onPressed: isBusy ? null : requestPermission,
+            child: Text(l10n.recurringEnableNotifications),
+          ),
+        ],
       ),
     );
   }
@@ -603,33 +647,46 @@ class _RecurringTemplateCard extends ConsumerWidget {
       }
     }
 
-    return Card(
+    final amountColor =
+        item.isExpense ? AppColors.expense : AppColors.income;
+
+    return AppCard(
+      padding: EdgeInsets.zero,
       child: ListTile(
-        title: Text(item.title),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.cardPadding,
+          vertical: AppSpacing.xs,
+        ),
+        title: Text(
+          item.title,
+          style: Theme.of(context)
+              .textTheme
+              .titleSmall
+              ?.copyWith(fontWeight: FontWeight.w700),
+        ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
+            const SizedBox(height: AppSpacing.xs),
             Text(
               '${_frequencyLabel(item.frequency, l10n)} • ${formatLocalizedDate(context, item.nextOccurrenceAt)}',
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppSpacing.sm),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
               children: [
-                Chip(
-                  label: Text(item.isExpense ? l10n.expense : l10n.income),
-                  visualDensity: VisualDensity.compact,
+                AppStatusChip(
+                  label: item.isExpense ? l10n.expense : l10n.income,
+                  color: amountColor,
                 ),
-                Chip(
-                  label: Text(
-                    item.isActive
-                        ? l10n.recurringActive
-                        : l10n.recurringInactive,
-                  ),
-                  visualDensity: VisualDensity.compact,
-                ),
+                item.isActive
+                    ? AppStatusChip.success(label: l10n.recurringActive)
+                    : AppStatusChip(
+                        label: l10n.recurringInactive,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
               ],
             ),
           ],
@@ -687,10 +744,10 @@ class _SectionPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Text(text),
+    return AppCard(
+      child: Text(
+        text,
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
       ),
     );
   }

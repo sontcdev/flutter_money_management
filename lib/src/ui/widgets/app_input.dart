@@ -82,64 +82,64 @@ class _AppInputState extends State<AppInput> {
     _removeOverlay();
 
     _overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-        left: 0,
-        right: 0,
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              border: Border(
-                top: BorderSide(
-                  color: Colors.grey.shade300,
-                  width: 0.5,
+      builder: (context) {
+        final colorScheme = Theme.of(context).colorScheme;
+        return Positioned(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+          left: 0,
+          right: 0,
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                border: Border(
+                  top: BorderSide(color: colorScheme.outline, width: 0.5),
                 ),
               ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Nút "Bỏ qua"
-                TextButton(
-                  onPressed: () {
-                    if (widget.onToolbarSkipPressed != null) {
-                      widget.onToolbarSkipPressed!();
-                    }
-                    _focusNode.unfocus();
-                  },
-                  child: Text(
-                    AppLocalizations.of(context)!.skip,
-                    style: TextStyle(
-                      color: Colors.pink.shade300,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Nút "Bỏ qua"
+                  TextButton(
+                    onPressed: () {
+                      if (widget.onToolbarSkipPressed != null) {
+                        widget.onToolbarSkipPressed!();
+                      }
+                      _focusNode.unfocus();
+                    },
+                    child: Text(
+                      AppLocalizations.of(context)!.skip,
+                      style: TextStyle(
+                        color: colorScheme.onSurface.withValues(alpha: 0.6),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
                   ),
-                ),
-                // Nút "OK"
-                TextButton(
-                  onPressed: () {
-                    if (widget.onToolbarOkPressed != null) {
-                      widget.onToolbarOkPressed!();
-                    }
-                    _focusNode.unfocus();
-                  },
-                  child: Text(
-                    AppLocalizations.of(context)!.done,
-                    style: TextStyle(
-                      color: Colors.pink.shade300,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                  // Nút "OK"
+                  TextButton(
+                    onPressed: () {
+                      if (widget.onToolbarOkPressed != null) {
+                        widget.onToolbarOkPressed!();
+                      }
+                      _focusNode.unfocus();
+                    },
+                    child: Text(
+                      AppLocalizations.of(context)!.done,
+                      style: TextStyle(
+                        color: colorScheme.primary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
 
     Overlay.of(context).insert(_overlayEntry!);

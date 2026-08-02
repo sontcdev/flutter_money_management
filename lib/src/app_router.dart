@@ -12,7 +12,6 @@ import 'features/budgets/presentation/screens/budgets_screen.dart';
 import 'features/categories/presentation/screens/categories_screen.dart';
 import 'features/categories/presentation/screens/category_edit_screen.dart';
 import 'features/categories/presentation/screens/icon_management_screen.dart';
-import 'features/home/presentation/screens/dashboard_screen.dart';
 import 'features/home/presentation/screens/home_screen.dart';
 import 'features/recurring/presentation/screens/recurring_transaction_edit_screen.dart';
 import 'features/recurring/presentation/screens/recurring_transactions_screen.dart';
@@ -49,8 +48,6 @@ class AppRouter {
         return AppAnimations.fadeRoute(const WorkspaceSelectionScreen());
       case '/home':
         return AppAnimations.fadeRoute(const HomeScreen());
-      case '/dashboard':
-        return AppAnimations.fadeRoute(const DashboardScreen());
       case '/add-transaction':
         final args = settings.arguments as Map<String, dynamic>?;
         final initialType = args?['type'] as model.TransactionType?;

@@ -5,6 +5,9 @@ import 'package:flutter_money_management/src/features/auth/providers/auth_provid
 import 'package:flutter_money_management/src/features/workspace/presentation/widgets/workspace_invite_notification_section.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_management_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
+import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
 /// Screen to select or create a workspace after authentication
@@ -59,10 +62,19 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
         },
         child: workspacesAsync.when(
           data: (workspaces) {
+            final colorScheme = Theme.of(context).colorScheme;
+            final textTheme = Theme.of(context).textTheme;
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            final secondaryText = isDark
+                ? AppColors.textLightSecondary
+                : AppColors.textSecondary;
+            final faintText =
+                isDark ? AppColors.textLightFaint : AppColors.textFaint;
+
             if (workspaces.isEmpty) {
               return SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(AppSpacing.xl),
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 520),
@@ -70,54 +82,62 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        const Icon(
-                          Icons.error_outline,
-                          size: 72,
-                          color: Colors.orange,
+                        Container(
+                          width: 72,
+                          height: 72,
+                          decoration: BoxDecoration(
+                            color: AppColors.warning.withValues(alpha: 0.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.error_outline,
+                            size: 36,
+                            color: AppColors.warning,
+                          ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppSpacing.lg),
                         Text(
                           l10n.workspaceSetupIncomplete,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: textTheme.headlineSmall,
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: AppSpacing.sm),
                         Text(
                           l10n.workspaceSetupIncompleteDesc,
-                          textAlign: TextAlign.left,
+                          textAlign: TextAlign.center,
+                          style: textTheme.bodyMedium
+                              ?.copyWith(color: secondaryText),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: AppSpacing.xl),
                         Wrap(
-                          spacing: 12,
-                          runSpacing: 12,
+                          spacing: AppSpacing.sm,
+                          runSpacing: AppSpacing.sm,
                           alignment: WrapAlignment.center,
                           children: [
-                            OutlinedButton.icon(
+                            AppButton.outlined(
+                              text: l10n.joinByInviteCode,
+                              icon: Icons.key_outlined,
                               onPressed: () =>
                                   _showJoinInviteDialog(context, ref),
-                              icon: const Icon(Icons.key_outlined),
-                              label: Text(l10n.joinByInviteCode),
                             ),
-                            OutlinedButton(
+                            AppButton.outlined(
+                              text: l10n.retry,
                               onPressed: () {
                                 ref.invalidate(workspaceListProvider);
                                 ref.invalidate(
                                   myWorkspaceInviteNotificationsProvider,
                                 );
                               },
-                              child: Text(l10n.retry),
                             ),
-                            FilledButton(
+                            AppButton(
+                              text: 'Create workspace',
                               onPressed: () {
                                 Navigator.of(context)
                                     .pushNamed('/workspace-create');
                               },
-                              child: const Text('Create workspace'),
                             ),
-                            FilledButton(
+                            AppButton(
+                              text: l10n.signOutTitle,
                               onPressed: () async {
                                 final supabaseAuth =
                                     ref.read(supabaseAuthServiceProvider);
@@ -128,11 +148,10 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
                                       .pushReplacementNamed('/sign-in');
                                 }
                               },
-                              child: Text(l10n.signOutTitle),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: AppSpacing.xxl),
                         const WorkspaceInviteNotificationSection(
                           padding: EdgeInsets.zero,
                         ),
@@ -145,35 +164,92 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
 
             return ListView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               itemCount: workspaces.length,
               itemBuilder: (context, index) {
                 final workspace = workspaces[index];
                 final isOwner = workspace.ownerId == currentUser?.id;
+                final initials = workspace.name.isNotEmpty
+                    ? workspace.name[0].toUpperCase()
+                    : '?';
 
-                return Card(
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      child: Text(workspace.name[0].toUpperCase()),
+                return Container(
+                  margin: const EdgeInsets.only(bottom: AppSpacing.md),
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.surfaceDark : AppColors.surface,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                    border: Border.all(
+                      color: isDark ? AppColors.borderDark : AppColors.border,
+                      width: 1.5,
                     ),
-                    title: Text(workspace.name),
-                    subtitle: Text(
-                      isOwner ? l10n.ownerRole : l10n.roleValue(workspace.role),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isOwner ? Colors.green : Colors.blue,
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                    child: InkWell(
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.radiusLg),
+                      onTap: () {
+                        // Set active workspace and navigate to home
+                        ref.read(activeWorkspaceIdProvider.notifier).state =
+                            workspace.id;
+                        Navigator.of(context).pushReplacementNamed(
+                          '/workspace-detail',
+                          arguments: workspace.id,
+                        );
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: colorScheme.primary,
+                                borderRadius:
+                                    BorderRadius.circular(AppSpacing.radiusMd),
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                initials,
+                                style: textTheme.headlineSmall?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    workspace.name,
+                                    style: textTheme.bodyLarge?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: AppSpacing.xs / 2),
+                                  Text(
+                                    isOwner
+                                        ? l10n.ownerRole
+                                        : l10n.roleValue(workspace.role),
+                                    style: textTheme.bodySmall
+                                        ?.copyWith(color: faintText),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              Icons.chevron_right,
+                              color: faintText,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    trailing: const Icon(Icons.arrow_forward_ios),
-                    onTap: () {
-                      // Set active workspace and navigate to home
-                      ref.read(activeWorkspaceIdProvider.notifier).state =
-                          workspace.id;
-                      Navigator.of(context).pushReplacementNamed(
-                        '/workspace-detail',
-                        arguments: workspace.id,
-                      );
-                    },
                   ),
                 );
               },
@@ -189,16 +265,29 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline,
-                          size: 64, color: Colors.red),
-                      const SizedBox(height: 16),
-                      Text(l10n.errorLoadingWorkspaces('$error')),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
+                      Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? AppColors.errorDark
+                            : AppColors.error,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.xl,
+                        ),
+                        child: Text(
+                          l10n.errorLoadingWorkspaces('$error'),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      AppButton(
+                        text: l10n.retry,
                         onPressed: () {
                           ref.invalidate(workspaceListProvider);
                         },
-                        child: Text(l10n.retry),
                       ),
                     ],
                   ),

@@ -13,6 +13,7 @@ import 'package:flutter_money_management/src/features/transactions/models/transa
 import 'package:flutter_money_management/src/features/transactions/models/transaction_attachment.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/features/budgets/services/budget_service.dart';
+import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
@@ -213,9 +214,15 @@ class EditTransactionScreen extends HookConsumerWidget {
       }
     }
 
+    final isExpenseType =
+        selectedType.value == model.TransactionType.expense;
+    final amountColor =
+        isExpenseType ? AppColors.expense : AppColors.income;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.editTransaction),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -246,29 +253,51 @@ class EditTransactionScreen extends HookConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.sectionGap),
 
-            // Amount Input - Priority 1
-            AppInput(
-              label: l10n.amount,
-              hint: '0',
-              controller: amountController,
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                VNDInputFormatter(),
-              ],
-              prefixIcon: const Icon(Icons.attach_money),
-              suffixIcon: Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md, vertical: AppSpacing.lg),
-                child: Text(
-                  CurrencyFormatter.getCurrencySymbol('VND'),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.primary,
+            // Amount Input - Priority 1 (large centered display, matches design)
+            Column(
+              children: [
+                Text(
+                  l10n.amount,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.6),
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                IntrinsicWidth(
+                  child: TextField(
+                    controller: amountController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      VNDInputFormatter(),
+                    ],
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: amountColor,
+                        ),
+                    decoration: InputDecoration(
+                      hintText: '0',
+                      filled: false,
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      isCollapsed: true,
+                      contentPadding: EdgeInsets.zero,
+                      suffixText: CurrencyFormatter.getCurrencySymbol('VND'),
+                      suffixStyle:
+                          Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: amountColor,
+                                fontWeight: FontWeight.w700,
+                              ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
             const SizedBox(height: AppSpacing.lg),
 
@@ -356,13 +385,15 @@ class EditTransactionScreen extends HookConsumerWidget {
                                   const SizedBox(width: AppSpacing.xs),
                                   Text(
                                     category.name,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w600
-                                          : FontWeight.w500,
-                                      color: categoryColor,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          fontWeight: isSelected
+                                              ? FontWeight.w700
+                                              : FontWeight.w600,
+                                          color: categoryColor,
+                                        ),
                                   ),
                                 ],
                               ),
@@ -415,19 +446,31 @@ class EditTransactionScreen extends HookConsumerWidget {
                             vertical: AppSpacing.md,
                           ),
                           decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey[300]!),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
                             borderRadius:
                                 BorderRadius.circular(AppSpacing.radiusMd),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.calendar_today, size: 20),
+                              Icon(
+                                Icons.calendar_today,
+                                size: 18,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withValues(alpha: 0.6),
+                              ),
                               const SizedBox(width: AppSpacing.sm),
                               Text(
                                 formatLocalizedDate(
                                     context, selectedDate.value),
-                                style: const TextStyle(fontSize: 16),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.copyWith(fontWeight: FontWeight.w600),
                               ),
                             ],
                           ),

@@ -1,6 +1,7 @@
 // path: lib/src/ui/widgets/app_status_chip.dart
 
 import 'package:flutter/material.dart';
+import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 
 /// Standardized status chip for displaying status badges
@@ -26,13 +27,13 @@ class AppStatusChip extends StatelessWidget {
   }) {
     return AppStatusChip(
       label: label,
-      color: Colors.green,
+      color: AppColors.success,
       icon: icon,
       isOutlined: isOutlined,
     );
   }
 
-  /// Warning status (orange)
+  /// Warning status (amber)
   factory AppStatusChip.warning({
     required String label,
     IconData? icon,
@@ -40,7 +41,7 @@ class AppStatusChip extends StatelessWidget {
   }) {
     return AppStatusChip(
       label: label,
-      color: Colors.orange,
+      color: AppColors.warning,
       icon: icon,
       isOutlined: isOutlined,
     );
@@ -54,7 +55,7 @@ class AppStatusChip extends StatelessWidget {
   }) {
     return AppStatusChip(
       label: label,
-      color: Colors.red,
+      color: AppColors.error,
       icon: icon,
       isOutlined: isOutlined,
     );
@@ -68,7 +69,7 @@ class AppStatusChip extends StatelessWidget {
   }) {
     return AppStatusChip(
       label: label,
-      color: Colors.blue,
+      color: AppColors.info,
       icon: icon,
       isOutlined: isOutlined,
     );
@@ -76,13 +77,16 @@ class AppStatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: isOutlined ? Colors.transparent : color.withValues(alpha: 0.1),
+        color: isOutlined
+            ? Colors.transparent
+            : color.withValues(alpha: isDark ? 0.22 : 0.12),
         border: isOutlined ? Border.all(color: color, width: 1.5) : null,
         borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
       ),

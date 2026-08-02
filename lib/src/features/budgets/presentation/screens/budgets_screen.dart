@@ -13,7 +13,6 @@ import 'package:flutter_money_management/src/features/workspace/providers/worksp
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
-import 'package:flutter_money_management/src/ui/widgets/app_metric_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
 import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
@@ -206,58 +205,32 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
 
     return CustomScrollView(
       slivers: [
-        // Summary section
+        // Summary section — hero gradient card with overall usage
         SliverToBoxAdapter(
-          child: Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            color: Theme.of(context)
-                .colorScheme
-                .surfaceContainerHighest
-                .withValues(alpha: 0.3),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.lg,
+              AppSpacing.md,
+              AppSpacing.lg,
+              AppSpacing.sm,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  l10n.budgetOverview,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                _BudgetHeroCard(
+                  totalLimit: totalLimit,
+                  totalSpent: totalSpent,
+                  totalRemaining: totalRemaining,
+                  locale: l10n.localeName,
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                Row(
-                  children: [
-                    Expanded(
-                      child: AppMetricCard(
-                        label: l10n.spent,
-                        value: CurrencyFormatter.formatVNDFromCents(totalSpent,
-                            locale: l10n.localeName),
-                        color: AppColors.expense,
-                        icon: Icons.trending_up,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: AppMetricCard(
-                        label: l10n.remaining,
-                        value: CurrencyFormatter.formatVNDFromCents(
-                            totalRemaining,
-                            locale: l10n.localeName),
-                        color: totalRemaining >= 0
-                            ? AppColors.income
-                            : AppColors.expense,
-                        icon: Icons.account_balance_wallet,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.sm),
+                const SizedBox(height: AppSpacing.md),
                 Row(
                   children: [
                     Expanded(
                       child: _StatusCard(
                         label: l10n.onTrack,
                         count: onTrackCount,
-                        color: Colors.green,
+                        color: AppColors.primary,
                         icon: Icons.check_circle_outline,
                       ),
                     ),
@@ -266,7 +239,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
                       child: _StatusCard(
                         label: l10n.exceeded,
                         count: exceededCount,
-                        color: Colors.red,
+                        color: AppColors.error,
                         icon: Icons.warning_amber_rounded,
                       ),
                     ),
@@ -399,12 +372,19 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.filter_list_off,
-                      size: 64, color: Colors.grey[400]),
+                      size: 64,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.3)),
                   const SizedBox(height: AppSpacing.md),
                   Text(
                     l10n.noBudgetsMatchFilter,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.grey[600],
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.5),
                         ),
                   ),
                 ],
@@ -475,11 +455,101 @@ class _StatusCard extends StatelessWidget {
                 Text(
                   label,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[700],
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.6),
                       ),
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Hero gradient card showing the total budget limit for the current period,
+/// how much has been spent, and a progress bar toward the total limit.
+class _BudgetHeroCard extends StatelessWidget {
+  final int totalLimit;
+  final int totalSpent;
+  final int totalRemaining;
+  final String locale;
+
+  const _BudgetHeroCard({
+    required this.totalLimit,
+    required this.totalSpent,
+    required this.totalRemaining,
+    required this.locale,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final progress = totalLimit > 0 ? totalSpent / totalLimit : 0.0;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [AppColors.primaryDark, AppColors.primaryStrong]
+              : [AppColors.primary, AppColors.primaryStrong],
+        ),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.budgetOverview,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: Colors.white.withValues(alpha: 0.85),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            CurrencyFormatter.formatVNDFromCents(totalLimit, locale: locale),
+            style: theme.textTheme.displaySmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+            child: LinearProgressIndicator(
+              value: progress.clamp(0.0, 1.0),
+              minHeight: 8,
+              backgroundColor: Colors.white.withValues(alpha: 0.25),
+              valueColor: const AlwaysStoppedAnimation(Colors.white),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '${l10n.spent}: ${CurrencyFormatter.formatVNDFromCents(totalSpent, locale: locale)}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.85),
+                ),
+              ),
+              Text(
+                '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(totalRemaining, locale: locale)}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: Colors.white.withValues(alpha: 0.85),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -502,26 +572,29 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
       child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
+          horizontal: AppSpacing.md,
           vertical: AppSpacing.xs,
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? Theme.of(context).colorScheme.primary
-              : Colors.grey[200],
+              ? theme.colorScheme.primary
+              : theme.colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
         ),
         child: Text(
           '$label ($count)',
           style: TextStyle(
             fontSize: 13,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-            color: isSelected ? Colors.white : Colors.grey[700],
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            color: isSelected
+                ? theme.colorScheme.onPrimary
+                : theme.colorScheme.onSurface.withValues(alpha: 0.65),
           ),
         ),
       ),
@@ -558,13 +631,13 @@ class _SwipeableBudgetCard extends ConsumerWidget {
                 await _deleteBudget(ref, l10n, context);
               }
             },
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
             foregroundColor: Colors.white,
             icon: Icons.delete,
             label: l10n.delete,
             borderRadius: const BorderRadius.only(
-              topRight: Radius.circular(12),
-              bottomRight: Radius.circular(12),
+              topRight: Radius.circular(AppSpacing.radiusLg),
+              bottomRight: Radius.circular(AppSpacing.radiusLg),
             ),
           ),
         ],
@@ -598,7 +671,7 @@ class _SwipeableBudgetCard extends ConsumerWidget {
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(true),
-                  style: TextButton.styleFrom(foregroundColor: Colors.red),
+                  style: TextButton.styleFrom(foregroundColor: AppColors.error),
                   child: Text(l10n.delete),
                 ),
               ],
@@ -649,12 +722,12 @@ class _BudgetCard extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
       child: InkWell(
         onTap: () => _showBudgetTransactions(context, ref),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -666,22 +739,23 @@ class _BudgetCard extends ConsumerWidget {
                         children: [
                           if (category != null)
                             Container(
-                              width: 32,
-                              height: 32,
+                              width: 36,
+                              height: 36,
                               decoration: BoxDecoration(
                                 color: getCategoryColor(category.colorValue)
-                                    .withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(8),
+                                    .withValues(alpha: 0.15),
+                                borderRadius:
+                                    BorderRadius.circular(AppSpacing.radiusSm),
                               ),
                               child: Center(
                                 child: CategoryIconWidget(
                                   iconName: category.iconName,
-                                  size: 16,
+                                  size: 18,
                                   color: getCategoryColor(category.colorValue),
                                 ),
                               ),
                             ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: AppSpacing.sm),
                           Expanded(
                             child: Text(
                               category?.name ?? l10n.unknown,
@@ -764,8 +838,8 @@ class _BudgetCard extends ConsumerWidget {
                       '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents - budget.consumedCents, locale: l10n.localeName)}',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: budget.consumedCents > budget.limitCents
-                                ? Colors.red
-                                : Colors.green,
+                                ? AppColors.error
+                                : AppColors.primary,
                             fontWeight: FontWeight.w600,
                           ),
                       textAlign: TextAlign.right,
@@ -870,117 +944,117 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
       body: Column(
         children: [
           // Hero summary card with gradient
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: percentage > 100
-                    ? [Colors.red.shade50, Colors.red.shade100]
-                    : percentage >= 80
-                        ? [Colors.orange.shade50, Colors.orange.shade100]
-                        : [Colors.green.shade50, Colors.green.shade100],
+          Builder(builder: (context) {
+            final theme = Theme.of(context);
+            final statusColor = percentage > 100
+                ? AppColors.error
+                : percentage >= 80
+                    ? AppColors.warning
+                    : AppColors.primary;
+            final statusContainerColor = percentage > 100
+                ? AppColors.expenseContainer
+                : percentage >= 80
+                    ? AppColors.warningContainer
+                    : AppColors.incomeContainer;
+            return Container(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    statusContainerColor,
+                    statusContainerColor.withValues(alpha: 0.6),
+                  ],
+                ),
               ),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.spent,
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: Colors.grey[700],
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            CurrencyFormatter.formatVNDFromCents(
-                                budget.consumedCents,
-                                locale: l10n.localeName),
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineSmall
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.sm,
-                        vertical: AppSpacing.xs,
-                      ),
-                      decoration: BoxDecoration(
-                        color: percentage > 100
-                            ? Colors.red
-                            : percentage >= 80
-                                ? Colors.orange
-                                : Colors.green,
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusFull),
-                      ),
-                      child: Text(
-                        '${percentage.toStringAsFixed(1)}%',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.spent,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurface
+                                    .withValues(alpha: 0.6),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: AppSpacing.xs),
+                            Text(
+                              CurrencyFormatter.formatVNDFromCents(
+                                  budget.consumedCents,
+                                  locale: l10n.localeName),
+                              style: theme.textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.md),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                  child: LinearProgressIndicator(
-                    value: (percentage / 100).clamp(0.0, 1.0),
-                    minHeight: 12,
-                    backgroundColor: Colors.white.withValues(alpha: 0.5),
-                    valueColor: AlwaysStoppedAnimation(
-                      percentage > 100
-                          ? Colors.red
-                          : percentage >= 80
-                              ? Colors.orange
-                              : Colors.green,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: statusColor,
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusFull),
+                        ),
+                        child: Text(
+                          '${percentage.toStringAsFixed(1)}%',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                    child: LinearProgressIndicator(
+                      value: (percentage / 100).clamp(0.0, 1.0),
+                      minHeight: 12,
+                      backgroundColor: Colors.white.withValues(alpha: 0.5),
+                      valueColor: AlwaysStoppedAnimation(statusColor),
                     ),
                   ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      '${l10n.limit}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents, locale: l10n.localeName)}',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[700],
-                          ),
-                    ),
-                    Text(
-                      '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents - budget.consumedCents, locale: l10n.localeName)}',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: budget.consumedCents > budget.limitCents
-                                ? Colors.red
-                                : Colors.green,
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${l10n.limit}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents, locale: l10n.localeName)}',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurface
+                              .withValues(alpha: 0.6),
+                        ),
+                      ),
+                      Text(
+                        '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents - budget.consumedCents, locale: l10n.localeName)}',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: budget.consumedCents > budget.limitCents
+                              ? AppColors.error
+                              : AppColors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          }),
 
           // Transactions list
           Expanded(
@@ -1001,13 +1075,20 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.receipt_long,
-                            size: 64, color: Colors.grey[400]),
+                            size: 64,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.3)),
                         const SizedBox(height: AppSpacing.md),
                         Text(
                           l10n.noTransactions,
                           style:
                               Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    color: Colors.grey[600],
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.5),
                                   ),
                         ),
                       ],
@@ -1045,7 +1126,9 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.all(AppSpacing.sm),
                             decoration: BoxDecoration(
-                              color: Colors.grey[100],
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest,
                               borderRadius: const BorderRadius.vertical(
                                 top: Radius.circular(AppSpacing.radiusMd),
                               ),
@@ -1107,14 +1190,17 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                                   formatLocalizedTime(context, t.dateTime),
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.grey[600],
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.6),
                                   ),
                                 ),
                                 trailing: Text(
                                   '-${CurrencyFormatter.formatVNDFromCents(t.amountCents, locale: l10n.localeName)}',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.black87,
+                                    color: Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                                 onTap: () {

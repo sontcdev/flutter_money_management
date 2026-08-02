@@ -8,7 +8,9 @@ import 'package:flutter_money_management/src/features/categories/providers/custo
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/features/settings/providers/settings_preferences_providers.dart';
+import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
 import 'package:flutter_money_management/src/utils/category_icons.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
@@ -202,18 +204,39 @@ class CategoryEditScreen extends HookConsumerWidget {
       }
     }
 
+    final theme = Theme.of(context);
+    final sectionLabelStyle = theme.textTheme.labelLarge?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+      fontWeight: FontWeight.w700,
+    );
+    final previewColor = Color(selectedColor.value);
+    final previewIcon = CategoryIcons.getIcon(selectedIcon.value);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(category == null ? l10n.addCategory : l10n.editCategory),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.screenPadding),
         child: Column(
           children: [
+            // Live preview of the selected icon + color
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: previewColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+              ),
+              child: Icon(previewIcon, size: 32, color: previewColor),
+            ),
+            const SizedBox(height: AppSpacing.xl),
             // Category Type Selector
-            Text(l10n.categoryType,
-                style: const TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(l10n.categoryType, style: sectionLabelStyle),
+            ),
+            const SizedBox(height: AppSpacing.sm),
             SegmentedButton<CategoryType>(
               segments: [
                 ButtonSegment(
@@ -232,18 +255,20 @@ class CategoryEditScreen extends HookConsumerWidget {
                 selectedType.value = selection.first;
               },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
             AppInput(
               label: l10n.categoryName,
               controller: nameController,
             ),
-            const SizedBox(height: 16),
-            Text(l10n.categoryIcon,
-                style: const TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.lg),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(l10n.categoryIcon, style: sectionLabelStyle),
+            ),
+            const SizedBox(height: AppSpacing.sm),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
               children: displayIconKeys.map((iconKey) {
                 final isSelected = selectedIcon.value == iconKey;
                 final iconData = CategoryIcons.getIcon(iconKey);
@@ -255,18 +280,13 @@ class CategoryEditScreen extends HookConsumerWidget {
                     height: 48,
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? iconColor.withValues(alpha: 0.2)
-                          : Theme.of(context).brightness == Brightness.dark
-                              ? Colors.grey[800]
-                              : Colors.grey[100],
-                      borderRadius: BorderRadius.circular(12),
+                          ? iconColor.withValues(alpha: 0.15)
+                          : theme.colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                       border: isSelected
                           ? Border.all(color: iconColor, width: 2)
                           : Border.all(
-                              color: Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Colors.grey[700]!
-                                  : Colors.grey[300]!,
+                              color: theme.colorScheme.outlineVariant,
                               width: 1,
                             ),
                     ),
@@ -276,16 +296,14 @@ class CategoryEditScreen extends HookConsumerWidget {
                         size: 24,
                         color: isSelected
                             ? iconColor
-                            : Theme.of(context).brightness == Brightness.dark
-                                ? Colors.grey[400]
-                                : Colors.grey[600],
+                            : theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),
                 );
               }).toList(),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.xs),
             Center(
               child: TextButton.icon(
                 icon: Icon(
@@ -295,51 +313,64 @@ class CategoryEditScreen extends HookConsumerWidget {
                 onPressed: () => showAllIcons.value = !showAllIcons.value,
               ),
             ),
-            const SizedBox(height: 16),
-            Text(l10n.categoryColor,
-                style: const TextStyle(fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.lg),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(l10n.categoryColor, style: sectionLabelStyle),
+            ),
+            const SizedBox(height: AppSpacing.sm),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: AppSpacing.md,
+              runSpacing: AppSpacing.md,
               children: colors.map((color) {
                 final isSelected = selectedColor.value == color;
                 return GestureDetector(
                   onTap: () => selectedColor.value = color,
                   child: Container(
-                    width: 48,
-                    height: 48,
+                    width: 34,
+                    height: 34,
+                    padding: const EdgeInsets.all(3),
                     decoration: BoxDecoration(
-                      color: Color(color),
-                      borderRadius: BorderRadius.circular(12),
+                      shape: BoxShape.circle,
                       border: isSelected
-                          ? Border.all(color: Colors.black, width: 3)
+                          ? Border.all(color: Color(color), width: 2)
                           : null,
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Color(color),
+                        shape: BoxShape.circle,
+                      ),
                     ),
                   ),
                 );
               }).toList(),
             ),
-            const SizedBox(height: 32),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Create budget for this category'),
-              subtitle: const Text('Only available for expense categories'),
-              value: createBudget.value &&
-                  selectedType.value == CategoryType.expense,
-              onChanged:
-                  selectedType.value == CategoryType.expense && category == null
-                      ? (value) => createBudget.value = value
-                      : null,
+            const SizedBox(height: AppSpacing.xl),
+            AppCard(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.xs,
+              ),
+              child: SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Create budget for this category'),
+                subtitle: const Text('Only available for expense categories'),
+                value: createBudget.value &&
+                    selectedType.value == CategoryType.expense,
+                onChanged: selectedType.value == CategoryType.expense &&
+                        category == null
+                    ? (value) => createBudget.value = value
+                    : null,
+              ),
             ),
             if (createBudget.value &&
                 selectedType.value == CategoryType.expense) ...[
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               DropdownButtonFormField<budget_model.PeriodType>(
                 value: budgetPeriod.value,
                 decoration: const InputDecoration(
                   labelText: 'Budget period',
-                  border: OutlineInputBorder(),
                 ),
                 items: const [
                   DropdownMenuItem(
@@ -357,7 +388,7 @@ class CategoryEditScreen extends HookConsumerWidget {
                   }
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               AppInput(
                 label: 'Budget amount',
                 controller: budgetAmountController,
@@ -368,14 +399,12 @@ class CategoryEditScreen extends HookConsumerWidget {
                 ],
               ),
             ],
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: AppButton(
-                text: l10n.save,
-                onPressed: save,
-                isLoading: isLoading.value,
-              ),
+            const SizedBox(height: AppSpacing.lg),
+            AppButton(
+              text: l10n.save,
+              onPressed: save,
+              isLoading: isLoading.value,
+              fullWidth: true,
             ),
           ],
         ),

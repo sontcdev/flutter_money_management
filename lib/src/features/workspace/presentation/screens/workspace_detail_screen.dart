@@ -184,11 +184,16 @@ class _CategoriesTab extends ConsumerWidget {
                 message: l10n.noCategoriesYetDesc,
               )
             else
-              ...categories.map(
-                (category) => ListTile(
-                  title: Text(category.name),
-                  subtitle: Text(category.type.name),
-                ),
+              _GroupedListCard(
+                children: categories
+                    .map(
+                      (category) => ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(category.name),
+                        subtitle: Text(category.type.name),
+                      ),
+                    )
+                    .toList(),
               ),
           ],
         ),
@@ -234,16 +239,21 @@ class _BudgetsTab extends ConsumerWidget {
                 message: l10n.createFirstBudget,
               )
             else
-              ...budgets.map(
-                (budget) => ListTile(
-                  title: Text(
-                    CurrencyFormatter.formatVNDFromCents(
-                      budget.limitCents,
-                      locale: l10n.localeName,
-                    ),
-                  ),
-                  subtitle: Text(budget.periodType.name),
-                ),
+              _GroupedListCard(
+                children: budgets
+                    .map(
+                      (budget) => ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          CurrencyFormatter.formatVNDFromCents(
+                            budget.limitCents,
+                            locale: l10n.localeName,
+                          ),
+                        ),
+                        subtitle: Text(budget.periodType.name),
+                      ),
+                    )
+                    .toList(),
               ),
           ],
         ),
@@ -291,20 +301,25 @@ class _TransactionsTab extends ConsumerWidget {
                 message: l10n.noTransactionsYetDesc,
               )
             else
-              ...transactions.map(
-                (transaction) => ListTile(
-                  title: Text(transaction.note ?? l10n.transactions),
-                  subtitle: Text(formatLocalizedDateTime(
-                    context,
-                    transaction.dateTime.toLocal(),
-                  )),
-                  trailing: Text(
-                    CurrencyFormatter.formatVNDFromCents(
-                      transaction.amountCents,
-                      locale: l10n.localeName,
-                    ),
-                  ),
-                ),
+              _GroupedListCard(
+                children: transactions
+                    .map(
+                      (transaction) => ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(transaction.note ?? l10n.transactions),
+                        subtitle: Text(formatLocalizedDateTime(
+                          context,
+                          transaction.dateTime.toLocal(),
+                        )),
+                        trailing: Text(
+                          CurrencyFormatter.formatVNDFromCents(
+                            transaction.amountCents,
+                            locale: l10n.localeName,
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
           ],
         ),
@@ -674,6 +689,31 @@ class _MemberSummaryTile extends StatelessWidget {
           AppStatusChip.info(label: l10n.roleValue(member.role)),
           AppStatusChip.success(
               label: l10n.statusValue(member.membershipStatus)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Card that hosts a tight vertical list of rows separated by hairline
+/// dividers, used for category/budget/transaction lists to match the
+/// mockup's grouped-row card pattern.
+class _GroupedListCard extends StatelessWidget {
+  const _GroupedListCard({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+      child: Column(
+        children: [
+          for (var i = 0; i < children.length; i++) ...[
+            if (i > 0)
+              Divider(height: 1, color: Theme.of(context).dividerColor),
+            children[i],
+          ],
         ],
       ),
     );

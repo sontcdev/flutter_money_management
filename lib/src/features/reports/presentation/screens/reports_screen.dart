@@ -10,6 +10,7 @@ import 'package:flutter_money_management/src/features/categories/models/category
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/cycle_utils.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
@@ -98,14 +99,17 @@ class ReportsScreen extends HookConsumerWidget {
                                 .colorScheme
                                 .primary
                                 .withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius:
+                                BorderRadius.circular(AppSpacing.radiusFull),
                           ),
                           child: Text(
                             '${l10n.month} ${customMonth.value!.month}/${customMonth.value!.year}',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
                           ),
                         ),
                       ],
@@ -120,14 +124,17 @@ class ReportsScreen extends HookConsumerWidget {
                                 .colorScheme
                                 .primary
                                 .withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius:
+                                BorderRadius.circular(AppSpacing.radiusFull),
                           ),
                           child: Text(
                             '${l10n.year} ${customYear.value}',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
                           ),
                         ),
                       ],
@@ -167,7 +174,7 @@ class ReportsScreen extends HookConsumerWidget {
                         children: [
                           Text(
                             l10n.overviewReport,
-                            style: Theme.of(context).textTheme.titleLarge,
+                            style: Theme.of(context).textTheme.headlineSmall,
                           ),
                           const SizedBox(height: 16),
                           _SummaryRow(
@@ -198,10 +205,7 @@ class ReportsScreen extends HookConsumerWidget {
                           const SizedBox(height: 8),
                           Text(
                             '${l10n.transactionCount}: ${filteredTransactions.length}',
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: Colors.grey,
-                                    ),
+                            style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
                       ),
@@ -243,7 +247,7 @@ class ReportsScreen extends HookConsumerWidget {
                           label: l10n.expense,
                           isSelected: reportTypeFilter.value == 1,
                           onTap: () => reportTypeFilter.value = 1,
-                          color: Colors.red,
+                          color: AppColors.expense,
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -252,7 +256,7 @@ class ReportsScreen extends HookConsumerWidget {
                           label: l10n.income,
                           isSelected: reportTypeFilter.value == 2,
                           onTap: () => reportTypeFilter.value = 2,
-                          color: Colors.green,
+                          color: AppColors.income,
                         ),
                       ),
                     ],
@@ -268,7 +272,7 @@ class ReportsScreen extends HookConsumerWidget {
                 children: [
                   Text(
                     l10n.budgetReports,
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   TextButton(
                     onPressed: () => Navigator.pushNamed(context, '/budgets'),
@@ -288,7 +292,11 @@ class ReportsScreen extends HookConsumerWidget {
                           child: Column(
                             children: [
                               Icon(Icons.pie_chart_outline,
-                                  size: 48, color: Colors.grey[400]),
+                                  size: 48,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.3)),
                               const SizedBox(height: 8),
                               Text(l10n.noBudgets),
                               TextButton(
@@ -388,7 +396,8 @@ class ReportsScreen extends HookConsumerWidget {
                                     dateRange.start,
                                     dateRange.end,
                                   ),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(
+                                      AppSpacing.radiusMd),
                                   child: Padding(
                                     padding: const EdgeInsets.all(16),
                                     child: Column(
@@ -405,7 +414,8 @@ class ReportsScreen extends HookConsumerWidget {
                                                         category.colorValue)
                                                     .withValues(alpha: 0.2),
                                                 borderRadius:
-                                                    BorderRadius.circular(8),
+                                                    BorderRadius.circular(
+                                                        AppSpacing.radiusSm),
                                               ),
                                               child: Center(
                                                 child: CategoryIconWidget(
@@ -424,21 +434,18 @@ class ReportsScreen extends HookConsumerWidget {
                                                 children: [
                                                   Text(
                                                     category.name,
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      fontSize: 16,
-                                                    ),
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .titleMedium,
                                                   ),
                                                   Text(
                                                     budget.periodType ==
                                                             PeriodType.monthly
                                                         ? l10n.monthly
                                                         : l10n.yearly,
-                                                    style: TextStyle(
-                                                      fontSize: 12,
-                                                      color: Colors.grey[600],
-                                                    ),
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall,
                                                   ),
                                                 ],
                                               ),
@@ -450,19 +457,20 @@ class ReportsScreen extends HookConsumerWidget {
                                                       vertical: 4),
                                               decoration: BoxDecoration(
                                                 color: isExceeded
-                                                    ? Colors.red
+                                                    ? AppColors.expense
                                                         .withValues(alpha: 0.1)
-                                                    : Colors.green
+                                                    : AppColors.income
                                                         .withValues(alpha: 0.1),
                                                 borderRadius:
-                                                    BorderRadius.circular(12),
+                                                    BorderRadius.circular(
+                                                        AppSpacing.radiusSm),
                                               ),
                                               child: Text(
                                                 '${percentage.toStringAsFixed(1)}%',
                                                 style: TextStyle(
                                                   color: isExceeded
-                                                      ? Colors.red
-                                                      : Colors.green,
+                                                      ? AppColors.expense
+                                                      : AppColors.income,
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               ),
@@ -471,16 +479,18 @@ class ReportsScreen extends HookConsumerWidget {
                                         ),
                                         const SizedBox(height: 12),
                                         ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                              AppSpacing.radiusFull),
                                           child: LinearProgressIndicator(
                                             value: (percentage / 100)
                                                 .clamp(0.0, 1.0),
                                             minHeight: 8,
-                                            backgroundColor: Colors.grey[200],
+                                            backgroundColor: Theme.of(context)
+                                                .colorScheme
+                                                .surfaceContainerHighest,
                                             valueColor: AlwaysStoppedAnimation(
                                               isExceeded
-                                                  ? Colors.red
+                                                  ? AppColors.expense
                                                   : getCategoryColor(
                                                       category.colorValue),
                                             ),
@@ -509,8 +519,8 @@ class ReportsScreen extends HookConsumerWidget {
                                                     .bodyMedium
                                                     ?.copyWith(
                                                       color: isExceeded
-                                                          ? Colors.red
-                                                          : Colors.green,
+                                                          ? AppColors.expense
+                                                          : AppColors.income,
                                                       fontWeight:
                                                           FontWeight.w600,
                                                     ),
@@ -577,7 +587,7 @@ class ReportsScreen extends HookConsumerWidget {
                 reportTypeFilter.value == 2
                     ? l10n.incomeByCategory
                     : l10n.expenseByCategory,
-                style: Theme.of(context).textTheme.titleMedium,
+                style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 8),
               transactionsAsync.when(
@@ -674,7 +684,8 @@ class ReportsScreen extends HookConsumerWidget {
                                   customYear.value,
                                   reportTypeFilter.value == 2, // isIncomeReport
                                 ),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(
+                                    AppSpacing.radiusSm),
                                 child: Padding(
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 8),
@@ -686,8 +697,8 @@ class ReportsScreen extends HookConsumerWidget {
                                         decoration: BoxDecoration(
                                           color: getCategoryColor(
                                               category.colorValue),
-                                          borderRadius:
-                                              BorderRadius.circular(8),
+                                          borderRadius: BorderRadius.circular(
+                                              AppSpacing.radiusSm),
                                         ),
                                         child: Center(
                                           child: CategoryIconWidget(
@@ -705,8 +716,12 @@ class ReportsScreen extends HookConsumerWidget {
                                           children: [
                                             Text(
                                               category.name,
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.w500),
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyLarge
+                                                  ?.copyWith(
+                                                      fontWeight:
+                                                          FontWeight.w500),
                                             ),
                                             const SizedBox(height: 4),
                                             ClipRRect(
@@ -716,8 +731,10 @@ class ReportsScreen extends HookConsumerWidget {
                                                 value: totalExpense > 0
                                                     ? entry.value / totalExpense
                                                     : 0,
-                                                backgroundColor:
-                                                    Colors.grey[200],
+                                                backgroundColor: Theme.of(
+                                                        context)
+                                                    .colorScheme
+                                                    .surfaceContainerHighest,
                                                 valueColor:
                                                     AlwaysStoppedAnimation(
                                                         getCategoryColor(
@@ -737,23 +754,28 @@ class ReportsScreen extends HookConsumerWidget {
                                             CurrencyFormatter
                                                 .formatVNDFromCents(entry.value,
                                                     locale: l10n.localeName),
-                                            style: const TextStyle(
-                                                fontWeight: FontWeight.w600),
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyLarge
+                                                ?.copyWith(
+                                                    fontWeight:
+                                                        FontWeight.w600),
                                           ),
                                           Text(
                                             '$percentage%',
                                             style: Theme.of(context)
                                                 .textTheme
-                                                .bodySmall
-                                                ?.copyWith(
-                                                  color: Colors.grey,
-                                                ),
+                                                .bodySmall,
                                           ),
                                         ],
                                       ),
                                       const SizedBox(width: 8),
                                       Icon(Icons.chevron_right,
-                                          color: Colors.grey[400], size: 20),
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .onSurface
+                                              .withValues(alpha: 0.3),
+                                          size: 20),
                                     ],
                                   ),
                                 ),
@@ -1027,7 +1049,7 @@ class CategoryTransactionsScreen extends ConsumerWidget {
               height: 32,
               decoration: BoxDecoration(
                 color: Color(categoryColor).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               ),
               child: Center(
                 child: Text(categoryIcon, style: const TextStyle(fontSize: 16)),
@@ -1038,10 +1060,10 @@ class CategoryTransactionsScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(categoryName, style: const TextStyle(fontSize: 16)),
+                  Text(categoryName,
+                      style: Theme.of(context).textTheme.titleMedium),
                   Text(periodLabel,
-                      style: const TextStyle(
-                          fontSize: 12, fontWeight: FontWeight.normal)),
+                      style: Theme.of(context).textTheme.bodySmall),
                 ],
               ),
             ),
@@ -1067,7 +1089,12 @@ class CategoryTransactionsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.receipt_long, size: 64, color: Colors.grey[400]),
+                  Icon(Icons.receipt_long,
+                      size: 64,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.3)),
                   const SizedBox(height: 16),
                   Text(l10n.noTransactions),
                 ],
@@ -1102,7 +1129,7 @@ class CategoryTransactionsScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   color: Color(categoryColor).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                   border: Border.all(
                       color: Color(categoryColor).withValues(alpha: 0.3)),
                 ),
@@ -1110,21 +1137,20 @@ class CategoryTransactionsScreen extends ConsumerWidget {
                   children: [
                     Text(
                       isIncomeReport ? l10n.totalIncome : l10n.totalExpense,
-                      style: TextStyle(color: Colors.grey[600]),
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 4),
                     Text(
                       CurrencyFormatter.formatVNDFromCents(totalAmount,
                           locale: l10n.localeName),
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(categoryColor),
-                      ),
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineMedium
+                          ?.copyWith(color: Color(categoryColor)),
                     ),
                     Text(
                       '${categoryTransactions.length} ${l10n.transactionsCount}',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
@@ -1149,17 +1175,20 @@ class CategoryTransactionsScreen extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: Colors.grey[100],
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest,
                               borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(12)),
+                                  top: Radius.circular(AppSpacing.radiusMd)),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   formatLocalizedDate(context, date),
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w600),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleSmall,
                                 ),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
@@ -1167,7 +1196,8 @@ class CategoryTransactionsScreen extends ConsumerWidget {
                                   decoration: BoxDecoration(
                                     color: Color(categoryColor)
                                         .withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(
+                                        AppSpacing.radiusSm),
                                   ),
                                   child: Text(
                                     '${isIncomeReport ? "+" : "-"}${CurrencyFormatter.formatVNDFromCents(dayTotal, locale: l10n.localeName)}',
@@ -1188,8 +1218,10 @@ class CategoryTransactionsScreen extends ConsumerWidget {
                                   style: TextStyle(
                                     fontWeight: FontWeight.w500,
                                     color: isIncomeReport
-                                        ? Colors.green
-                                        : Colors.black87,
+                                        ? AppColors.income
+                                        : Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
                                   ),
                                 ),
                                 onTap: () {
@@ -1292,19 +1324,13 @@ class BudgetTransactionsScreen extends ConsumerWidget {
                           children: [
                             Text(
                               l10n.spent,
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 14,
-                              ),
+                              style: Theme.of(context).textTheme.bodyMedium,
                             ),
                             Text(
                               CurrencyFormatter.formatVNDFromCents(
                                   consumedCents,
                                   locale: l10n.localeName),
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: Theme.of(context).textTheme.headlineMedium,
                             ),
                           ],
                         ),
@@ -1313,14 +1339,17 @@ class BudgetTransactionsScreen extends ConsumerWidget {
                               horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: isExceeded
-                                ? Colors.red.withValues(alpha: 0.1)
-                                : Colors.green.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(16),
+                                ? AppColors.expense.withValues(alpha: 0.1)
+                                : AppColors.income.withValues(alpha: 0.1),
+                            borderRadius:
+                                BorderRadius.circular(AppSpacing.radiusFull),
                           ),
                           child: Text(
                             '${percentage.toStringAsFixed(1)}%',
                             style: TextStyle(
-                              color: isExceeded ? Colors.red : Colors.green,
+                              color: isExceeded
+                                  ? AppColors.expense
+                                  : AppColors.income,
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                             ),
@@ -1330,14 +1359,17 @@ class BudgetTransactionsScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 12),
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.radiusFull),
                       child: LinearProgressIndicator(
                         value: (percentage / 100).clamp(0.0, 1.0),
                         minHeight: 10,
-                        backgroundColor: Colors.grey[200],
+                        backgroundColor: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
                         valueColor: AlwaysStoppedAnimation(
                           isExceeded
-                              ? Colors.red
+                              ? AppColors.expense
                               : Theme.of(context).colorScheme.primary,
                         ),
                       ),
@@ -1348,14 +1380,19 @@ class BudgetTransactionsScreen extends ConsumerWidget {
                       children: [
                         Text(
                           '${l10n.limit}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents, locale: l10n.localeName)}',
-                          style: TextStyle(color: Colors.grey[600]),
+                          style: Theme.of(context).textTheme.bodyMedium,
                         ),
                         Text(
                           '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents - consumedCents, locale: l10n.localeName)}',
-                          style: TextStyle(
-                            color: isExceeded ? Colors.red : Colors.green,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                                color: isExceeded
+                                    ? AppColors.expense
+                                    : AppColors.income,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
                       ],
                     ),
@@ -1371,7 +1408,11 @@ class BudgetTransactionsScreen extends ConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.receipt_long,
-                                size: 64, color: Colors.grey[400]),
+                                size: 64,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withValues(alpha: 0.3)),
                             const SizedBox(height: 16),
                             Text(l10n.noTransactions),
                           ],
@@ -1426,16 +1467,16 @@ class BudgetTransactionsScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(12)),
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(AppSpacing.radiusMd)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       _formatDate(context, date),
-                      style: const TextStyle(fontWeight: FontWeight.w600),
+                      style: Theme.of(context).textTheme.titleSmall,
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -1445,7 +1486,8 @@ class BudgetTransactionsScreen extends ConsumerWidget {
                             .colorScheme
                             .primary
                             .withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusSm),
                       ),
                       child: Text(
                         '-${CurrencyFormatter.formatVNDFromCents(dayTotal, locale: l10n.localeName)}',
@@ -1465,7 +1507,8 @@ class BudgetTransactionsScreen extends ConsumerWidget {
                       height: 40,
                       decoration: BoxDecoration(
                         color: AppColors.expense.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius:
+                            BorderRadius.circular(AppSpacing.radiusSm),
                       ),
                       child: const Icon(
                         Icons.shopping_cart,
@@ -1475,21 +1518,18 @@ class BudgetTransactionsScreen extends ConsumerWidget {
                     ),
                     title: Text(
                       t.note ?? l10n.noNote,
-                      style: const TextStyle(fontSize: 14),
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     subtitle: Text(
                       formatLocalizedTime(context, t.dateTime),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                     trailing: Text(
                       '-${CurrencyFormatter.formatVNDFromCents(t.amountCents, locale: l10n.localeName)}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium
+                          ?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     onTap: () {
                       Navigator.pushNamed(
@@ -1532,16 +1572,17 @@ class _PeriodButton extends StatelessWidget {
           color: isSelected
               ? Theme.of(context).colorScheme.primary
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
         ),
         child: Text(
           label,
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey[700],
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-            fontSize: 12,
-          ),
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: isSelected
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
         ),
       ),
     );
@@ -1649,8 +1690,8 @@ class _CustomPeriodPickerSheet extends HookWidget {
           // Tab: By month / By year
           Container(
             decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: BorderRadius.circular(8),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
             ),
             child: Row(
               children: [
@@ -1663,15 +1704,15 @@ class _CustomPeriodPickerSheet extends HookWidget {
                         color: selectedTab.value == 0
                             ? Theme.of(context).colorScheme.primary
                             : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                       ),
                       child: Center(
                         child: Text(
                           l10n.byMonth,
                           style: TextStyle(
                             color: selectedTab.value == 0
-                                ? Colors.white
-                                : Colors.grey[700],
+                                ? Theme.of(context).colorScheme.onPrimary
+                                : Theme.of(context).colorScheme.onSurfaceVariant,
                             fontWeight: selectedTab.value == 0
                                 ? FontWeight.w600
                                 : FontWeight.normal,
@@ -1690,15 +1731,15 @@ class _CustomPeriodPickerSheet extends HookWidget {
                         color: selectedTab.value == 1
                             ? Theme.of(context).colorScheme.primary
                             : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                       ),
                       child: Center(
                         child: Text(
                           l10n.byYear,
                           style: TextStyle(
                             color: selectedTab.value == 1
-                                ? Colors.white
-                                : Colors.grey[700],
+                                ? Theme.of(context).colorScheme.onPrimary
+                                : Theme.of(context).colorScheme.onSurfaceVariant,
                             fontWeight: selectedTab.value == 1
                                 ? FontWeight.w600
                                 : FontWeight.normal,
@@ -1731,12 +1772,10 @@ class _CustomPeriodPickerSheet extends HookWidget {
                       onSelected: (_) => selectedYear.value = year,
                       selectedColor: Theme.of(context).colorScheme.primary,
                       backgroundColor:
-                          Theme.of(context).brightness == Brightness.dark
-                              ? Colors.grey[800]
-                              : Colors.grey[200],
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
                       labelStyle: TextStyle(
                         color: isSelected
-                            ? Colors.white
+                            ? Theme.of(context).colorScheme.onPrimary
                             : Theme.of(context).textTheme.bodyLarge?.color,
                         fontWeight: isSelected ? FontWeight.bold : null,
                       ),
@@ -1772,22 +1811,22 @@ class _CustomPeriodPickerSheet extends HookWidget {
                                 .colorScheme
                                 .primary
                                 .withValues(alpha: 0.1)
-                            : (Theme.of(context).brightness == Brightness.dark
-                                ? Colors.grey[800]
-                                : Colors.grey[100]),
-                    borderRadius: BorderRadius.circular(8),
+                            : Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                     child: InkWell(
                       onTap: () => Navigator.pop(context, {
                         'type': 'month',
                         'value': DateTime(selectedYear.value, monthNum),
                       }),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                       child: Center(
                         child: Text(
                           months[index],
                           style: TextStyle(
                             color: isCurrentSelection
-                                ? Colors.white
+                                ? Theme.of(context).colorScheme.onPrimary
                                 : (isCurrentMonth
                                     ? Theme.of(context).colorScheme.primary
                                     : Theme.of(context)
@@ -1829,22 +1868,22 @@ class _CustomPeriodPickerSheet extends HookWidget {
                                 .colorScheme
                                 .primary
                                 .withValues(alpha: 0.1)
-                            : (Theme.of(context).brightness == Brightness.dark
-                                ? Colors.grey[800]
-                                : Colors.grey[100]),
-                    borderRadius: BorderRadius.circular(8),
+                            : Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                     child: InkWell(
                       onTap: () => Navigator.pop(context, {
                         'type': 'year',
                         'value': year,
                       }),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                       child: Center(
                         child: Text(
                           year.toString(),
                           style: TextStyle(
                             color: isCurrentSelection
-                                ? Colors.white
+                                ? Theme.of(context).colorScheme.onPrimary
                                 : (isCurrentYear
                                     ? Theme.of(context).colorScheme.primary
                                     : Theme.of(context)
@@ -1891,14 +1930,18 @@ class _ReportTypeButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? selectedColor : Colors.grey[200],
-          borderRadius: BorderRadius.circular(8),
+          color: isSelected
+              ? selectedColor
+              : Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
         ),
         child: Center(
           child: Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.white : Colors.grey[700],
+              color: isSelected
+                  ? Theme.of(context).colorScheme.onPrimary
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             ),
           ),

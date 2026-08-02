@@ -3,6 +3,9 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/auth/providers/auth_providers.dart';
+import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/utils/app_logger.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
@@ -138,99 +141,102 @@ class SignUpScreen extends HookConsumerWidget {
       }
     }
 
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final secondaryText =
+        isDark ? AppColors.textLightSecondary : AppColors.textSecondary;
+    final faintText = isDark ? AppColors.textLightFaint : AppColors.textFaint;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.createAccount),
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            AppSpacing.sm,
+            AppSpacing.xl,
+            AppSpacing.xl,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.sm),
 
-              // App Icon
-              Center(
-                child: Image.asset(
-                  'assets/icon/icon.png',
-                  width: 80,
-                  height: 80,
+              // Back button
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.arrow_back),
+                style: IconButton.styleFrom(
+                  side: BorderSide(color: colorScheme.outline, width: 1.5),
+                  shape: const CircleBorder(),
                 ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
 
               Text(
-                l10n.appTitle,
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                textAlign: TextAlign.center,
+                l10n.createAccount,
+                style: textTheme.headlineLarge,
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.xs),
 
               Text(
                 l10n.createAccountToSync,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                textAlign: TextAlign.center,
+                style: textTheme.bodyMedium?.copyWith(color: secondaryText),
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.xs),
 
               Text(
                 l10n.verifyEmailBeforeSignInHint,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[500],
-                      fontStyle: FontStyle.italic,
-                    ),
-                textAlign: TextAlign.center,
+                style: textTheme.bodySmall?.copyWith(
+                  color: faintText,
+                  fontStyle: FontStyle.italic,
+                ),
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.xl),
 
               // Username Field
+              Text(l10n.displayNameOptional, style: textTheme.labelLarge),
+              const SizedBox(height: AppSpacing.sm),
               TextField(
                 controller: displayNameController,
                 decoration: InputDecoration(
-                  labelText: l10n.displayNameOptional,
                   hintText: l10n.displayNameHint,
                   prefixIcon: const Icon(Icons.person_outline),
-                  border: const OutlineInputBorder(),
                 ),
                 textInputAction: TextInputAction.next,
                 enabled: !isLoading.value,
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
 
               // Email Field
+              Text(l10n.email, style: textTheme.labelLarge),
+              const SizedBox(height: AppSpacing.sm),
               TextField(
                 controller: emailController,
                 decoration: InputDecoration(
-                  labelText: l10n.email,
                   hintText: l10n.emailExample,
                   prefixIcon: const Icon(Icons.email_outlined),
-                  border: const OutlineInputBorder(),
                 ),
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
                 enabled: !isLoading.value,
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
 
               // Password Field
+              Text(l10n.password, style: textTheme.labelLarge),
+              const SizedBox(height: AppSpacing.sm),
               TextField(
                 controller: passwordController,
                 decoration: InputDecoration(
-                  labelText: l10n.password,
                   hintText: l10n.atLeastSixCharacters,
                   prefixIcon: const Icon(Icons.lock_outline),
-                  border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
                     icon: Icon(
                       obscurePassword.value
@@ -247,16 +253,16 @@ class SignUpScreen extends HookConsumerWidget {
                 enabled: !isLoading.value,
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
 
               // Confirm Password Field
+              Text(l10n.confirmPassword, style: textTheme.labelLarge),
+              const SizedBox(height: AppSpacing.sm),
               TextField(
                 controller: confirmPasswordController,
                 decoration: InputDecoration(
-                  labelText: l10n.confirmPassword,
                   hintText: l10n.reenterYourPassword,
                   prefixIcon: const Icon(Icons.lock_outline),
-                  border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
                     icon: Icon(
                       obscureConfirmPassword.value
@@ -275,76 +281,71 @@ class SignUpScreen extends HookConsumerWidget {
                 onSubmitted: (_) => handleSignUp(),
               ),
 
-              const SizedBox(height: 24),
-
               // Error Message
-              if (errorMessage.value != null)
+              if (errorMessage.value != null) ...[
+                const SizedBox(height: AppSpacing.lg),
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(AppSpacing.md),
                   decoration: BoxDecoration(
-                    color: Colors.red[50],
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red[300]!),
+                    color: (isDark ? AppColors.errorDark : AppColors.error)
+                        .withValues(alpha: isDark ? 0.18 : 0.08),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.error_outline, color: Colors.red[700]),
-                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.error_outline,
+                        color: isDark ? AppColors.errorDark : AppColors.error,
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: Text(
                           errorMessage.value!,
-                          style: TextStyle(color: Colors.red[700]),
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: isDark
+                                ? AppColors.errorDark
+                                : AppColors.error,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
+              ],
 
-              if (errorMessage.value != null) const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.xl),
 
               // Sign Up Button
-              OutlinedButton.icon(
+              AppButton.prominent(
+                text: l10n.createAccount,
+                isLoading: isLoading.value,
+                fullWidth: true,
+                icon: isLoading.value ? null : Icons.person_add_outlined,
                 onPressed: isLoading.value ? null : handleSignUp,
-                icon: isLoading.value
-                    ? const SizedBox(
-                        height: 16,
-                        width: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.person_add_outlined, size: 16),
-                label: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 7),
-                  child: Text(
-                    l10n.createAccount,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Theme.of(context).colorScheme.primary,
-                  side: BorderSide(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.xl),
 
               // Sign In Link
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(l10n.alreadyHaveAccount),
-                  TextButton(
-                    onPressed: isLoading.value
-                        ? null
-                        : () => Navigator.of(context).pop(),
-                    child: Text(l10n.signIn),
-                  ),
-                ],
+              Center(
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      l10n.alreadyHaveAccount,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: secondaryText,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: isLoading.value
+                          ? null
+                          : () => Navigator.of(context).pop(),
+                      child: Text(l10n.signIn),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

@@ -49,6 +49,9 @@ dependencies:
   # App info
   package_info_plus: ^8.0.0
   flutter_slidable: ^4.0.3
+
+  # Typography
+  google_fonts: ^6.2.1
   
   # UUID generation
   uuid: ^4.5.1

@@ -1,27 +1,28 @@
 // path: lib/src/theme/report_theme.dart
 
 import 'package:flutter/material.dart';
+import 'app_colors.dart';
 
 class ReportTheme {
-  // Colors matching the sample image
-  static const Color incomeColor = Color(0xFF4CAF50); // Green (Xanh lá)
-  static const Color expenseColor = Color(0xFFF44336); // Red (Đỏ)
-  static const Color selectedDateBackground = Color(0xFFFFE4E8); // Pale pink
-  static const Color todayBackground = Color(0xFFF5F5F5); // Light gray
-  static const Color groupHeaderBackground =
-      Color(0xFFF8F9FA); // Very light gray
+  // Colors aligned with the AppColors design tokens (brand green / negative
+  // red), so calendar badges/highlights match the rest of the app.
+  static const Color incomeColor = AppColors.income;
+  static const Color expenseColor = AppColors.expense;
+  static const Color selectedDateBackground = AppColors.primarySoft;
+  static const Color todayBackground = AppColors.surface2;
+  static const Color groupHeaderBackground = AppColors.surface2;
 
   // Text styles
   static const TextStyle monthLabelStyle = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w600,
-    color: Colors.black87,
+    color: AppColors.textPrimary,
   );
 
   static const TextStyle dateLabelStyle = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.normal,
-    color: Colors.black87,
+    color: AppColors.textPrimary,
   );
 
   static const TextStyle amountLabelStyle = TextStyle(
@@ -31,7 +32,7 @@ class ReportTheme {
 
   static const TextStyle summaryLabelStyle = TextStyle(
     fontSize: 12,
-    color: Colors.grey,
+    color: AppColors.textFaint,
   );
 
   static const TextStyle summaryAmountStyle = TextStyle(
@@ -42,18 +43,18 @@ class ReportTheme {
   static const TextStyle groupDateStyle = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w600,
-    color: Colors.black87,
+    color: AppColors.textPrimary,
   );
 
   static const TextStyle transactionTitleStyle = TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.w600,
-    color: Colors.black87,
+    color: AppColors.textPrimary,
   );
 
   static const TextStyle transactionSubtitleStyle = TextStyle(
     fontSize: 12,
-    color: Colors.grey,
+    color: AppColors.textFaint,
   );
 
   static const TextStyle transactionAmountStyle = TextStyle(
@@ -107,11 +108,12 @@ class ReportTheme {
 
   // Card decoration
   static BoxDecoration cardDecoration = BoxDecoration(
-    color: Colors.white,
+    color: AppColors.surface,
     borderRadius: BorderRadius.circular(cardBorderRadius),
+    border: Border.all(color: AppColors.border, width: 1),
     boxShadow: [
       BoxShadow(
-        color: Colors.black.withValues(alpha: 0.05),
+        color: AppColors.shadow,
         blurRadius: 8,
         offset: const Offset(0, 2),
       ),

@@ -88,7 +88,17 @@ class _FilterButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveColor = color ?? Theme.of(context).colorScheme.primary;
+    final theme = Theme.of(context);
+    final effectiveColor = color ?? theme.colorScheme.primary;
+    final unselectedBackground = theme.colorScheme.surfaceContainerHighest;
+    final unselectedForeground = theme.colorScheme.onSurface.withValues(
+      alpha: 0.6,
+    );
+    final selectedForeground =
+        ThemeData.estimateBrightnessForColor(effectiveColor) ==
+                Brightness.dark
+            ? Colors.white
+            : Colors.black;
 
     return GestureDetector(
       onTap: onTap,
@@ -98,8 +108,8 @@ class _FilterButton extends StatelessWidget {
           horizontal: AppSpacing.sm,
         ),
         decoration: BoxDecoration(
-          color: isSelected ? effectiveColor : Colors.grey[200],
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          color: isSelected ? effectiveColor : unselectedBackground,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -109,7 +119,7 @@ class _FilterButton extends StatelessWidget {
               Icon(
                 icon,
                 size: AppSpacing.iconSizeSm,
-                color: isSelected ? Colors.white : Colors.grey[700],
+                color: isSelected ? selectedForeground : unselectedForeground,
               ),
               const SizedBox(width: AppSpacing.xs),
             ],
@@ -117,8 +127,9 @@ class _FilterButton extends StatelessWidget {
               child: Text(
                 label,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.grey[700],
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  color:
+                      isSelected ? selectedForeground : unselectedForeground,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   fontSize: 14,
                 ),
                 textAlign: TextAlign.center,

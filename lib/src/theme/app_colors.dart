@@ -2,95 +2,87 @@
 
 import 'package:flutter/material.dart';
 
+/// Color tokens derived from the OKLCH design system used in the app's
+/// Claude Design mockups (brand hue 155 green, negative hue 25 red,
+/// warn hue 85 amber, accent hue 260 blue). Values below are the sRGB
+/// conversion of those OKLCH tokens so Flutter's [Color] can consume them.
 class AppColors {
-  // Primary colors - Softer, more pleasant blue-purple
-  static const Color primary =
-      Color(0xFF6366F1); // Indigo - modern & professional
-  static const Color primaryDark = Color(0xFF4F46E5);
-  static const Color primaryLight = Color(0xFF818CF8);
+  AppColors._();
 
-  // Secondary colors - Warmer accent
-  static const Color secondary = Color(0xFFF59E0B); // Amber - warm & friendly
-  static const Color secondaryDark = Color(0xFFD97706);
-  static const Color secondaryLight = Color(0xFFFBBF24);
+  // Brand / primary (green) — used as the default accent; the app also
+  // supports a user-selectable accent color via ThemeColorNotifier, which
+  // overrides `primary`/`primaryStrong`/`primarySoft` at theme-build time.
+  static const Color primary = Color(0xFF00884B);
+  static const Color primaryStrong = Color(0xFF00632D);
+  static const Color primarySoft = Color(0xFFD1F1DB);
+  static const Color primaryDark = Color(0xFF51B67A);
+  static const Color primaryStrongDark = Color(0xFF73CE95);
+  static const Color primarySoftDark = Color(0xFF12301E);
 
-  // Background colors - Softer, less harsh
-  static const Color background = Color(0xFFFAFAFC); // Very light grey-blue
-  static const Color backgroundDark = Color(0xFF0F0F14);
+  // Surfaces
+  static const Color background = Color(0xFFF8F6F2);
+  static const Color backgroundDark = Color(0xFF110F09);
   static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceDark = Color(0xFF1A1A21);
+  static const Color surfaceDark = Color(0xFF1D1A13);
+  static const Color surface2 = Color(0xFFF1EFEA);
+  static const Color surface2Dark = Color(0xFF27241C);
 
-  // Text colors - Better contrast
-  static const Color textPrimary =
-      Color(0xFF1F2937); // Darker grey for better readability
-  static const Color textSecondary = Color(0xFF6B7280); // Medium grey
-  static const Color textLight = Color(0xFFFFFFFF);
-  static const Color textDark = Color(0xFF0F0F14);
+  // Text / ink
+  static const Color textPrimary = Color(0xFF16140C);
+  static const Color textSecondary = Color(0xFF5C584C);
+  static const Color textFaint = Color(0xFF8F8C83);
+  static const Color textLight = Color(0xFFF3F2ED);
+  static const Color textLightSecondary = Color(0xFFB1AEA6);
+  static const Color textLightFaint = Color(0xFF74716A);
+  static const Color textDark = Color(0xFF16140C);
 
-  // Status colors - More vibrant & clear
-  static const Color success = Color(0xFF10B981); // Emerald green
-  static const Color error = Color(0xFFEF4444); // Softer red
-  static const Color warning = Color(0xFFF59E0B); // Amber
-  static const Color info = Color(0xFF3B82F6); // Blue
+  // Borders
+  static const Color border = Color(0xFFE0DED7);
+  static const Color borderDark = Color(0xFF35332C);
 
-  // Expense/Income colors - Clear differentiation
-  static const Color expense = Color(0xFFEF4444); // Red
-  static const Color income = Color(0xFF10B981); // Green
+  // Status
+  static const Color error = Color(0xFFCF4040);
+  static const Color errorDark = Color(0xFFF2716A);
+  static const Color success = primary;
+  static const Color successDark = primaryDark;
+  static const Color warning = Color(0xFFD3A329);
+  static const Color warningDark = Color(0xFFDDB049);
+  static const Color info = Color(0xFF4678CC);
+  static const Color infoDark = Color(0xFF73A5F6);
 
-  // Category colors (palette - Modern & Vibrant)
+  // Expense/income
+  static const Color expense = error;
+  static const Color expenseDark = errorDark;
+  static const Color income = primary;
+  static const Color incomeDark = primaryDark;
+
+  // Soft container backgrounds (chips, badges, highlighted rows)
+  static const Color expenseContainer = Color(0xFFFFE3DF);
+  static const Color expenseContainerDark = Color(0xFF47211E);
+  static const Color incomeContainer = Color(0xFFD1F1DB);
+  static const Color incomeContainerDark = Color(0xFF12301E);
+  static const Color warningContainer = Color(0xFFFBEDD1);
+  static const Color warningContainerDark = Color(0xFF392C0C);
+  static const Color successContainer = incomeContainer;
+  static const Color successContainerDark = incomeContainerDark;
+  static const Color infoContainer = Color(0xFFD7E9FF);
+  static const Color infoContainerDark = Color(0xFF1A2941);
+
+  // Elevation/shadow
+  static const Color shadow = Color(0x1A16140C);
+  static const Color shadowDark = Color(0x59000000);
+
+  // Category palette — vibrant, distinct hues for user-assigned categories.
   static const List<Color> categoryColors = [
-    Color(0xFF6366F1), // Indigo
-    Color(0xFF8B5CF6), // Violet
-    Color(0xFFEC4899), // Pink
-    Color(0xFFEF4444), // Red
-    Color(0xFFF59E0B), // Amber
-    Color(0xFF10B981), // Emerald
-    Color(0xFF06B6D4), // Cyan
-    Color(0xFF3B82F6), // Blue
-    Color(0xFF14B8A6), // Teal
-    Color(0xFF84CC16), // Lime
+    Color(0xFF00884B), // brand green
+    Color(0xFF4678CC), // accent blue
+    Color(0xFFD3A329), // amber
+    Color(0xFFCF4040), // red
+    Color(0xFF8B5CF6), // violet
+    Color(0xFFEC4899), // pink
+    Color(0xFF06B6D4), // cyan
+    Color(0xFF14B8A6), // teal
+    Color(0xFF84CC16), // lime
+    Color(0xFFF97316), // orange
   ];
-
-  // Border colors - Softer
-  static const Color border = Color(0xFFE5E7EB); // Light grey
-  static const Color borderDark = Color(0xFF374151);
-
-  // Elevation/Shadow colors
-  static const Color shadow = Color(0x0F000000); // Lighter shadow
-  static const Color shadowDark = Color(0x40000000);
-
-  // Semantic surface colors for finance UI
-  static const Color surfaceSubtle =
-      Color(0xFFF8F9FA); // Very subtle background
-  static const Color surfaceMuted =
-      Color(0xFFF3F4F6); // Muted surface for secondary content
-  static const Color surfaceDarkSubtle =
-      Color(0xFF1F1F26); // Dark mode subtle surface
-
-  // Container colors for transaction types
-  static const Color incomeContainer =
-      Color(0xFFD1FAE5); // Light green container
-  static const Color incomeContainerDark =
-      Color(0xFF064E3B); // Dark green container
-  static const Color expenseContainer =
-      Color(0xFFFEE2E2); // Light red container
-  static const Color expenseContainerDark =
-      Color(0xFF7F1D1D); // Dark red container
-
-  // Status container colors
-  static const Color warningContainer =
-      Color(0xFFFEF3C7); // Light amber container
-  static const Color warningContainerDark =
-      Color(0xFF78350F); // Dark amber container
-  static const Color infoContainer = Color(0xFFDBEAFE); // Light blue container
-  static const Color infoContainerDark =
-      Color(0xFF1E3A8A); // Dark blue container
-  static const Color successContainer =
-      Color(0xFFD1FAE5); // Light green container
-  static const Color successContainerDark =
-      Color(0xFF064E3B); // Dark green container
-
-  // Muted text helpers
-  static const Color textMuted = Color(0xFF9CA3AF); // More muted than secondary
-  static const Color textDisabled = Color(0xFFD1D5DB); // Disabled state text
 }

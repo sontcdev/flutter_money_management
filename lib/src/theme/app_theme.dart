@@ -1,9 +1,105 @@
 // path: lib/src/theme/app_theme.dart
 
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
+import 'app_spacing.dart';
 
 class AppTheme {
+  static TextTheme _textTheme({
+    required Color primaryText,
+    required Color secondaryText,
+  }) {
+    final base = GoogleFonts.manropeTextTheme();
+    return base.copyWith(
+      displayLarge: GoogleFonts.sora(
+        fontSize: 48,
+        fontWeight: FontWeight.w700,
+        color: primaryText,
+        letterSpacing: -1.5,
+        height: 1.1,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      ),
+      displayMedium: GoogleFonts.sora(
+        fontSize: 36,
+        fontWeight: FontWeight.w700,
+        color: primaryText,
+        letterSpacing: -1.0,
+        height: 1.2,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      ),
+      displaySmall: GoogleFonts.sora(
+        fontSize: 28,
+        fontWeight: FontWeight.w600,
+        color: primaryText,
+        letterSpacing: -0.5,
+        height: 1.3,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      ),
+      headlineLarge: GoogleFonts.sora(
+        fontSize: 24,
+        fontWeight: FontWeight.w700,
+        color: primaryText,
+        letterSpacing: -0.5,
+        height: 1.3,
+      ),
+      headlineMedium: GoogleFonts.sora(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: primaryText,
+        letterSpacing: -0.3,
+        height: 1.4,
+      ),
+      headlineSmall: GoogleFonts.sora(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: primaryText,
+        letterSpacing: -0.2,
+        height: 1.4,
+      ),
+      bodyLarge: GoogleFonts.manrope(
+        fontSize: 16,
+        fontWeight: FontWeight.w400,
+        color: primaryText,
+        letterSpacing: 0.2,
+        height: 1.5,
+      ),
+      bodyMedium: GoogleFonts.manrope(
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        color: primaryText,
+        letterSpacing: 0.2,
+        height: 1.5,
+      ),
+      bodySmall: GoogleFonts.manrope(
+        fontSize: 12,
+        fontWeight: FontWeight.w400,
+        color: secondaryText,
+        letterSpacing: 0.3,
+        height: 1.5,
+      ),
+      labelLarge: GoogleFonts.manrope(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: primaryText,
+        letterSpacing: 0.3,
+      ),
+      labelMedium: GoogleFonts.manrope(
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        color: primaryText,
+        letterSpacing: 0.5,
+        textBaseline: TextBaseline.alphabetic,
+      ),
+      labelSmall: GoogleFonts.manrope(
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
+        color: secondaryText,
+        letterSpacing: 0.5,
+      ),
+    );
+  }
+
   static ThemeData lightTheme({Color? primaryColor}) {
     final primary = primaryColor ?? AppColors.primary;
 
@@ -15,19 +111,21 @@ class AppTheme {
         secondary: primary.withValues(alpha: 0.8),
         error: AppColors.error,
         surface: AppColors.surface,
+        surfaceContainerHighest: AppColors.surface2,
         onPrimary: AppColors.textLight,
         onSecondary: AppColors.textDark,
         onSurface: AppColors.textPrimary,
+        outline: AppColors.border,
       ),
       scaffoldBackgroundColor: AppColors.background,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.surface,
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
         shadowColor: AppColors.shadow,
         surfaceTintColor: Colors.transparent,
-        titleTextStyle: TextStyle(
+        titleTextStyle: GoogleFonts.sora(
           color: AppColors.textPrimary,
           fontSize: 18,
           fontWeight: FontWeight.w600,
@@ -36,11 +134,12 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: AppColors.surface,
-        elevation: 2,
-        shadowColor: AppColors.shadow.withValues(alpha: 0.1),
+        elevation: 0,
+        shadowColor: AppColors.shadow,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          side: const BorderSide(color: AppColors.border, width: 1),
         ),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
@@ -52,9 +151,9 @@ class AppTheme {
           shadowColor: Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
           ),
-          textStyle: const TextStyle(
+          textStyle: GoogleFonts.manrope(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.2,
@@ -63,163 +162,84 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: primary,
-          side: BorderSide(color: primary.withValues(alpha: 0.5), width: 1.5),
+          foregroundColor: AppColors.textPrimary,
+          side: const BorderSide(color: AppColors.border, width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
           ),
-          textStyle: const TextStyle(
+          textStyle: GoogleFonts.manrope(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.2,
           ),
         ),
       ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: primary,
+          textStyle: GoogleFonts.manrope(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: AppColors.surface2,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.border, width: 1),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.border, width: 1),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           borderSide: BorderSide(color: primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           borderSide: const BorderSide(color: AppColors.error, width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           borderSide: const BorderSide(color: AppColors.error, width: 1.5),
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        hintStyle: const TextStyle(
-          color: AppColors.textSecondary,
+        hintStyle: GoogleFonts.manrope(
+          color: AppColors.textFaint,
           fontSize: 14,
         ),
       ),
-      textTheme: const TextTheme(
-        // Large amount display - for hero sections
-        displayLarge: TextStyle(
-          fontSize: 48,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textPrimary,
-          letterSpacing: -1.5,
-          height: 1.1,
-          fontFeatures: [FontFeature.tabularFigures()],
-        ),
-        displayMedium: TextStyle(
-          fontSize: 36,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textPrimary,
-          letterSpacing: -1.0,
-          height: 1.2,
-          fontFeatures: [FontFeature.tabularFigures()],
-        ),
-        displaySmall: TextStyle(
-          fontSize: 28,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
-          letterSpacing: -0.5,
-          height: 1.3,
-          fontFeatures: [FontFeature.tabularFigures()],
-        ),
-        // Section headers
-        headlineLarge: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textPrimary,
-          letterSpacing: -0.5,
-          height: 1.3,
-        ),
-        headlineMedium: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
-          letterSpacing: -0.3,
-          height: 1.4,
-        ),
-        headlineSmall: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
-          letterSpacing: -0.2,
-          height: 1.4,
-        ),
-        bodyLarge: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-          color: AppColors.textPrimary,
-          letterSpacing: 0.2,
-          height: 1.5,
-        ),
-        bodyMedium: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w400,
-          color: AppColors.textPrimary,
-          letterSpacing: 0.2,
-          height: 1.5,
-        ),
-        bodySmall: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w400,
-          color: AppColors.textSecondary,
-          letterSpacing: 0.3,
-          height: 1.5,
-        ),
-        // Status labels and supporting text
-        labelLarge: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
-          letterSpacing: 0.3,
-        ),
-        labelMedium: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
-          letterSpacing: 0.5,
-          textBaseline: TextBaseline.alphabetic,
-        ),
-        labelSmall: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-          color: AppColors.textSecondary,
-          letterSpacing: 0.5,
-        ),
+      textTheme: _textTheme(
+        primaryText: AppColors.textPrimary,
+        secondaryText: AppColors.textSecondary,
       ),
       dividerTheme: const DividerThemeData(
         color: AppColors.border,
-        thickness: 0.5,
+        thickness: 1,
         space: 16,
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primary,
         foregroundColor: AppColors.textLight,
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        elevation: 2,
+        shape: const CircleBorder(),
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: AppColors.surface,
         selectedItemColor: primary,
-        unselectedItemColor: AppColors.textSecondary,
-        elevation: 8,
+        unselectedItemColor: AppColors.textFaint,
+        elevation: 0,
         type: BottomNavigationBarType.fixed,
-        selectedLabelStyle: const TextStyle(
+        selectedLabelStyle: GoogleFonts.manrope(
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),
-        unselectedLabelStyle: const TextStyle(
+        unselectedLabelStyle: GoogleFonts.manrope(
           fontSize: 12,
           fontWeight: FontWeight.w500,
         ),
@@ -229,11 +249,11 @@ class AppTheme {
         unselectedLabelColor: AppColors.textSecondary,
         indicatorColor: primary,
         indicatorSize: TabBarIndicatorSize.label,
-        labelStyle: const TextStyle(
+        labelStyle: GoogleFonts.manrope(
           fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
-        unselectedLabelStyle: const TextStyle(
+        unselectedLabelStyle: GoogleFonts.manrope(
           fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
@@ -242,22 +262,22 @@ class AppTheme {
         color: primary,
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.border,
+        backgroundColor: AppColors.surface2,
         selectedColor: primary.withValues(alpha: 0.15),
-        labelStyle: const TextStyle(
+        labelStyle: GoogleFonts.manrope(
           fontSize: 13,
           fontWeight: FontWeight.w500,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
         ),
       ),
     );
   }
 
   static ThemeData darkTheme({Color? primaryColor}) {
-    final primary = primaryColor ?? AppColors.primary;
+    final primary = primaryColor ?? AppColors.primaryDark;
 
     return ThemeData(
       useMaterial3: true,
@@ -265,21 +285,23 @@ class AppTheme {
       colorScheme: ColorScheme.dark(
         primary: primary,
         secondary: primary.withValues(alpha: 0.8),
-        error: AppColors.error,
+        error: AppColors.errorDark,
         surface: AppColors.surfaceDark,
-        onPrimary: AppColors.textLight,
-        onSecondary: AppColors.textDark,
+        surfaceContainerHighest: AppColors.surface2Dark,
+        onPrimary: AppColors.textDark,
+        onSecondary: AppColors.textLight,
         onSurface: AppColors.textLight,
+        outline: AppColors.borderDark,
       ),
       scaffoldBackgroundColor: AppColors.backgroundDark,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.surfaceDark,
+      appBarTheme: AppBarTheme(
+        backgroundColor: AppColors.backgroundDark,
         foregroundColor: AppColors.textLight,
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
         shadowColor: AppColors.shadowDark,
         surfaceTintColor: Colors.transparent,
-        titleTextStyle: TextStyle(
+        titleTextStyle: GoogleFonts.sora(
           color: AppColors.textLight,
           fontSize: 18,
           fontWeight: FontWeight.w600,
@@ -288,24 +310,26 @@ class AppTheme {
       ),
       cardTheme: CardThemeData(
         color: AppColors.surfaceDark,
-        elevation: 2,
+        elevation: 0,
         shadowColor: AppColors.shadowDark,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          side: const BorderSide(color: AppColors.borderDark, width: 1),
         ),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
-          foregroundColor: AppColors.textLight,
+          foregroundColor: AppColors.textDark,
           elevation: 0,
           shadowColor: Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
           ),
-          textStyle: const TextStyle(
+          textStyle: GoogleFonts.manrope(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.2,
@@ -314,177 +338,99 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: primary,
-          side: BorderSide(color: primary.withValues(alpha: 0.5), width: 1.5),
+          foregroundColor: AppColors.textLight,
+          side: const BorderSide(color: AppColors.borderDark, width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
           ),
-          textStyle: const TextStyle(
+          textStyle: GoogleFonts.manrope(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.2,
           ),
         ),
       ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: primary,
+          textStyle: GoogleFonts.manrope(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surfaceDark,
+        fillColor: AppColors.surface2Dark,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.borderDark, width: 1),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.borderDark, width: 1),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
           borderSide: BorderSide(color: primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.error, width: 1),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderSide: const BorderSide(color: AppColors.errorDark, width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderSide:
+              const BorderSide(color: AppColors.errorDark, width: 1.5),
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        hintStyle: const TextStyle(
-          color: AppColors.textSecondary,
+        hintStyle: GoogleFonts.manrope(
+          color: AppColors.textLightFaint,
           fontSize: 14,
         ),
       ),
-      textTheme: const TextTheme(
-        // Large amount display - for hero sections
-        displayLarge: TextStyle(
-          fontSize: 48,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textLight,
-          letterSpacing: -1.5,
-          height: 1.1,
-          fontFeatures: [FontFeature.tabularFigures()],
-        ),
-        displayMedium: TextStyle(
-          fontSize: 36,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textLight,
-          letterSpacing: -1.0,
-          height: 1.2,
-          fontFeatures: [FontFeature.tabularFigures()],
-        ),
-        displaySmall: TextStyle(
-          fontSize: 28,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textLight,
-          letterSpacing: -0.5,
-          height: 1.3,
-          fontFeatures: [FontFeature.tabularFigures()],
-        ),
-        // Section headers
-        headlineLarge: TextStyle(
-          fontSize: 24,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textLight,
-          letterSpacing: -0.5,
-          height: 1.3,
-        ),
-        headlineMedium: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textLight,
-          letterSpacing: -0.3,
-          height: 1.4,
-        ),
-        headlineSmall: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textLight,
-          letterSpacing: -0.2,
-          height: 1.4,
-        ),
-        bodyLarge: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-          color: AppColors.textLight,
-          letterSpacing: 0.2,
-          height: 1.5,
-        ),
-        bodyMedium: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w400,
-          color: AppColors.textLight,
-          letterSpacing: 0.2,
-          height: 1.5,
-        ),
-        bodySmall: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w400,
-          color: AppColors.textSecondary,
-          letterSpacing: 0.3,
-          height: 1.5,
-        ),
-        // Status labels and supporting text
-        labelLarge: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textLight,
-          letterSpacing: 0.3,
-        ),
-        labelMedium: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textLight,
-          letterSpacing: 0.5,
-          textBaseline: TextBaseline.alphabetic,
-        ),
-        labelSmall: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
-          color: AppColors.textSecondary,
-          letterSpacing: 0.5,
-        ),
+      textTheme: _textTheme(
+        primaryText: AppColors.textLight,
+        secondaryText: AppColors.textLightSecondary,
       ),
       dividerTheme: const DividerThemeData(
         color: AppColors.borderDark,
-        thickness: 0.5,
+        thickness: 1,
         space: 16,
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primary,
-        foregroundColor: AppColors.textLight,
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        foregroundColor: AppColors.textDark,
+        elevation: 2,
+        shape: const CircleBorder(),
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: AppColors.surfaceDark,
         selectedItemColor: primary,
-        unselectedItemColor: AppColors.textSecondary,
-        elevation: 8,
+        unselectedItemColor: AppColors.textLightFaint,
+        elevation: 0,
         type: BottomNavigationBarType.fixed,
-        selectedLabelStyle: const TextStyle(
+        selectedLabelStyle: GoogleFonts.manrope(
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),
-        unselectedLabelStyle: const TextStyle(
+        unselectedLabelStyle: GoogleFonts.manrope(
           fontSize: 12,
           fontWeight: FontWeight.w500,
         ),
       ),
       tabBarTheme: TabBarThemeData(
         labelColor: primary,
-        unselectedLabelColor: AppColors.textSecondary,
+        unselectedLabelColor: AppColors.textLightSecondary,
         indicatorColor: primary,
         indicatorSize: TabBarIndicatorSize.label,
-        labelStyle: const TextStyle(
+        labelStyle: GoogleFonts.manrope(
           fontSize: 14,
           fontWeight: FontWeight.w600,
         ),
-        unselectedLabelStyle: const TextStyle(
+        unselectedLabelStyle: GoogleFonts.manrope(
           fontSize: 14,
           fontWeight: FontWeight.w500,
         ),
@@ -493,15 +439,15 @@ class AppTheme {
         color: primary,
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.borderDark,
+        backgroundColor: AppColors.surface2Dark,
         selectedColor: primary.withValues(alpha: 0.2),
-        labelStyle: const TextStyle(
+        labelStyle: GoogleFonts.manrope(
           fontSize: 13,
           fontWeight: FontWeight.w500,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
         ),
       ),
     );
