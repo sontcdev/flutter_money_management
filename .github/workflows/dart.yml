@@ -8,7 +8,7 @@ jobs:
     name: 🎉 iOS Build
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: subosito/flutter-action@v2
         with:
@@ -32,11 +32,8 @@ jobs:
         run: zip -qq -r -9 FlutterIpaExport.ipa Payload
         working-directory: build/ios/iphoneos
 
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: build/ios/iphoneos/FlutterIpaExport.ipa
-          tag: v1.0
-          overwrite: true
-          body: "This is first release"
+          name: app-release-ipa
+          path: build/ios/iphoneos/FlutterIpaExport.ipa
