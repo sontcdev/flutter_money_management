@@ -7,7 +7,7 @@ High-signal guidance for working in `flutter_money_management`.
 - Install deps: `flutter pub get`
 - Generate localizations: `flutter gen-l10n`
 - Generate code after changing freezed/JSON models: `dart run build_runner build --delete-conflicting-outputs`
-- Verify in the same order as CI (`.github/workflows/ci.yml`, pinned to Flutter `3.32.7`):
+- Verify in the same order as CI (`.github/workflows/ci.yml`, pinned to Flutter `3.41.7`):
   1. `flutter pub get`
   2. `flutter gen-l10n`
   3. `dart run build_runner build --delete-conflicting-outputs`
@@ -21,6 +21,8 @@ High-signal guidance for working in `flutter_money_management`.
 - Codegen applies repo-wide to any file with freezed/json_serializable `part` directives, not just `lib/src/models/`. Most models now live per-feature: `lib/src/features/*/models/*.dart` (e.g. `budgets/models/budget.dart`, `transactions/models/transaction.dart`, `workspace/models/workspace.dart`, `recurring/models/*.dart`, `notifications/models/user_notification.dart`, `categories/models/category.dart`).
 - Localization config lives in `lib/src/i18n/l10n.yaml`, but ARB files are in `lib/l10n/`.
 - `build.yaml` still has a leftover `drift_dev` builder block (`store_date_time_values_as_text: false`); this is vestigial — there is no Drift dependency or database in the project anymore.
+- `pubspec.lock` is committed (tracked as an exception to the `*.lock` rule in `.gitignore`) so CI resolves the exact same dependency versions as local dev. Run `flutter pub get` and commit the updated lockfile whenever `pubspec.yaml` constraints change.
+- `flutter analyze` fails the process (non-zero exit) on this Flutter/Dart SDK even when only `info`-level lints are reported (e.g. `deprecated_member_use`, `prefer_const_*`) — not just on `error`-level issues. Treat any analyzer info as build-breaking in CI.
 
 ## Architecture Notes
 
