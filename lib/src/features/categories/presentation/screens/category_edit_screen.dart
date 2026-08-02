@@ -368,7 +368,7 @@ class CategoryEditScreen extends HookConsumerWidget {
                 selectedType.value == CategoryType.expense) ...[
               const SizedBox(height: AppSpacing.lg),
               DropdownButtonFormField<budget_model.PeriodType>(
-                value: budgetPeriod.value,
+                initialValue: budgetPeriod.value,
                 decoration: const InputDecoration(
                   labelText: 'Budget period',
                 ),

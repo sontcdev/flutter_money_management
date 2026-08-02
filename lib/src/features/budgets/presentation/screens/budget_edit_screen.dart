@@ -267,7 +267,7 @@ class BudgetEditScreen extends HookConsumerWidget {
                 return DropdownButtonFormField<String>(
                   key: ValueKey(selectedCategoryId.value),
                   decoration: InputDecoration(labelText: l10n.category),
-                  value: selectedCategoryId.value,
+                  initialValue: selectedCategoryId.value,
                   items: expenseCategories.map((category) {
                     return DropdownMenuItem<String>(
                       value: category.id,

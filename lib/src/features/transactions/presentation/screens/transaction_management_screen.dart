@@ -331,7 +331,7 @@ class TransactionManagementScreen extends HookConsumerWidget {
               Expanded(
                 child: DropdownButtonFormField<String?>(
                   key: ValueKey('category-${selectedCategoryId.value}'),
-                  value: selectedCategoryId.value,
+                  initialValue: selectedCategoryId.value,
                   decoration: InputDecoration(
                     labelText: l10n.category,
                     border: const OutlineInputBorder(),
@@ -360,7 +360,7 @@ class TransactionManagementScreen extends HookConsumerWidget {
               Expanded(
                 child: DropdownButtonFormField<String?>(
                   key: ValueKey('budget-${selectedBudgetId.value}'),
-                  value: selectedBudgetId.value,
+                  initialValue: selectedBudgetId.value,
                   decoration: InputDecoration(
                     labelText: l10n.budget,
                     border: const OutlineInputBorder(),

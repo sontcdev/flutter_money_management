@@ -261,7 +261,7 @@ class AddTransactionScreen extends HookConsumerWidget {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     DropdownButtonFormField<String>(
-                      value: selectedWorkspaceId.value,
+                      initialValue: selectedWorkspaceId.value,
                       decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.groups_2_outlined),
                       ),
