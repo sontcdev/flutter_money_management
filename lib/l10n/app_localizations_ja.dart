@@ -381,6 +381,33 @@ class AppLocalizationsJa extends AppLocalizations {
   String get selectThemeColor => 'お好みのインターフェース色を選択';
 
   @override
+  String get fontSize => '文字サイズ';
+
+  @override
+  String get selectFontSize => 'お好みの文字サイズを選択してください';
+
+  @override
+  String get fontSizeSmall => '小';
+
+  @override
+  String get fontSizeMedium => '中';
+
+  @override
+  String get fontSizeLarge => '大';
+
+  @override
+  String get fontSizeExtraLarge => '特大';
+
+  @override
+  String get goodMorning => 'おはようございます';
+
+  @override
+  String get goodAfternoon => 'こんにちは';
+
+  @override
+  String get goodEvening => 'こんばんは';
+
+  @override
   String get budgetSettings => '予算設定';
 
   @override

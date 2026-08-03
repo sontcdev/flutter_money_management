@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
+import 'package:flutter_money_management/src/features/auth/providers/auth_providers.dart';
+import 'package:flutter_money_management/src/features/budgets/models/budget.dart';
+import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
+import 'package:flutter_money_management/src/features/home/providers/home_tab_provider.dart';
 import 'package:flutter_money_management/src/features/settings/providers/settings_preferences_providers.dart';
 import 'package:flutter_money_management/src/features/transactions/presentation/widgets/transaction_item.dart';
 import 'package:flutter_money_management/src/features/workspace/presentation/widgets/workspace_invite_notification_section.dart';
@@ -12,6 +16,7 @@ import 'package:flutter_money_management/src/features/transactions/models/transa
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_avatar.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_metric_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_section_header.dart';
@@ -31,13 +36,26 @@ class TodayScreen extends ConsumerWidget {
     final upcomingRecurringAsync =
         ref.watch(upcomingRecurringOccurrencesProvider);
     final monthStartDay = ref.watch(monthStartDayProvider);
+    final currentUser = ref.watch(currentUserProvider);
+    final displayName =
+        (currentUser?.userMetadata?['display_name'] as String?) ??
+            currentUser?.email ??
+            '?';
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.today),
         automaticallyImplyLeading: false,
-        actions: const [
-          WorkspaceSwitcher(),
+        title: _buildGreeting(context, ref, l10n),
+        actions: [
+          const WorkspaceSwitcher(),
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.screenPadding),
+            child: AppAvatar(
+              name: displayName,
+              size: 36,
+              onTap: () => Navigator.pushNamed(context, '/settings'),
+            ),
+          ),
         ],
       ),
       body: RefreshIndicator(
@@ -85,13 +103,18 @@ class TodayScreen extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.sectionGap),
 
                   // Attention Section
-                  _buildAttentionSection(
-                      context, l10n, transactions, budgetsAsync, monthStartDay),
+                  _buildAttentionSection(context, ref, l10n, transactions,
+                      budgetsAsync, monthStartDay),
+
+                  const SizedBox(height: AppSpacing.sectionGap),
+
+                  // Monthly Budget Progress
+                  _buildBudgetProgressSection(context, ref, l10n, budgetsAsync),
 
                   const SizedBox(height: AppSpacing.sectionGap),
 
                   // Recent Activity
-                  _buildRecentActivity(context, l10n, transactions),
+                  _buildRecentActivity(context, ref, l10n, transactions),
 
                   const SizedBox(height: AppSpacing.xl),
                 ],
@@ -107,6 +130,139 @@ class TodayScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildGreeting(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) {
+    final hour = DateTime.now().hour;
+    final greeting = hour < 12
+        ? l10n.goodMorning
+        : hour < 18
+            ? l10n.goodAfternoon
+            : l10n.goodEvening;
+    final currentUser = ref.watch(currentUserProvider);
+    final displayName = currentUser?.userMetadata?['display_name'] as String?;
+
+    return Text(
+      displayName != null && displayName.isNotEmpty
+          ? '$greeting, $displayName'
+          : greeting,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  Widget _buildBudgetProgressSection(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    AsyncValue budgetsAsync,
+  ) {
+    if (budgetsAsync is! AsyncData) {
+      return const SizedBox.shrink();
+    }
+
+    final budgets = (budgetsAsync.value as List<Budget>)
+        .where((b) => b.deletedAt == null)
+        .toList();
+
+    if (budgets.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final categoriesAsync = ref.watch(categoriesProvider);
+
+    return categoriesAsync.when(
+      data: (categories) {
+        final Map<String, Category> categoryById = {
+          for (final c in categories) c.id: c,
+        };
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.screenPadding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppSectionHeader(
+                title: l10n.budgetProgress,
+                padding: EdgeInsets.zero,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              ...budgets.take(3).map((budget) {
+                final category = categoryById[budget.categoryId];
+                final progress = budget.progressPercentage.clamp(0.0, 1.0);
+                final tone = budget.isExceeded
+                    ? MetricCardTone.danger
+                    : progress >= 0.8
+                        ? MetricCardTone.warning
+                        : MetricCardTone.neutral;
+
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                  child: Container(
+                    padding: const EdgeInsets.all(AppSpacing.cardPadding),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                      border: Border.all(
+                        color: tone == MetricCardTone.danger
+                            ? AppColors.expense
+                            : Theme.of(context).dividerColor,
+                        width: tone == MetricCardTone.danger ? 1.5 : 1,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                category?.name ?? '',
+                                style: Theme.of(context).textTheme.bodyMedium,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Text(
+                              '${(progress * 100).toStringAsFixed(0)}%',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: progress,
+                            minHeight: 6,
+                            backgroundColor: Theme.of(context)
+                                .dividerColor
+                                .withValues(alpha: 0.3),
+                            color: tone == MetricCardTone.danger
+                                ? AppColors.expense
+                                : tone == MetricCardTone.warning
+                                    ? Colors.orange
+                                    : Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }),
+            ],
+          ),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 
@@ -190,11 +346,12 @@ class TodayScreen extends ConsumerWidget {
     // Determine tone based on budget status
     MetricCardTone tone = MetricCardTone.neutral;
     if (budgetsAsync is AsyncData) {
-      final budgets = budgetsAsync.value as List;
+      final budgets = budgetsAsync.value as List<Budget>;
       final exceededCount =
-          budgets.where((b) => b.consumed > b.limitCents).length;
+          budgets.where((b) => b.consumedCents > b.limitCents).length;
       final nearLimitCount = budgets.where((b) {
-        final percentage = b.limitCents > 0 ? (b.consumed / b.limitCents) : 0.0;
+        final percentage =
+            b.limitCents > 0 ? (b.consumedCents / b.limitCents) : 0.0;
         return percentage >= 0.8 && percentage < 1.0;
       }).length;
 
@@ -276,6 +433,7 @@ class TodayScreen extends ConsumerWidget {
 
   Widget _buildAttentionSection(
     BuildContext context,
+    WidgetRef ref,
     AppLocalizations l10n,
     List<model.Transaction> transactions,
     AsyncValue budgetsAsync,
@@ -305,11 +463,12 @@ class TodayScreen extends ConsumerWidget {
 
     // Budget warnings
     if (budgetsAsync is AsyncData) {
-      final budgets = budgetsAsync.value as List;
+      final budgets = budgetsAsync.value as List<Budget>;
       final exceededBudgets =
-          budgets.where((b) => b.consumed > b.limitCents).toList();
+          budgets.where((b) => b.consumedCents > b.limitCents).toList();
       final nearLimitBudgets = budgets.where((b) {
-        final percentage = b.limitCents > 0 ? (b.consumed / b.limitCents) : 0.0;
+        final percentage =
+            b.limitCents > 0 ? (b.consumedCents / b.limitCents) : 0.0;
         return percentage >= 0.8 && percentage < 1.0;
       }).toList();
 
@@ -320,10 +479,8 @@ class TodayScreen extends ConsumerWidget {
             value: '${exceededBudgets.length} ${l10n.exceeded.toLowerCase()}',
             icon: Icons.warning_amber_rounded,
             tone: MetricCardTone.danger,
-            onTap: () {
-              // Navigate to budgets tab
-              // This will be handled by parent HomeScreen
-            },
+            onTap: () =>
+                ref.read(currentTabProvider.notifier).state = AppTab.plan,
           ),
         );
       } else if (nearLimitBudgets.isNotEmpty) {
@@ -333,9 +490,8 @@ class TodayScreen extends ConsumerWidget {
             value: '${nearLimitBudgets.length} ${l10n.nearLimit.toLowerCase()}',
             icon: Icons.warning_outlined,
             tone: MetricCardTone.warning,
-            onTap: () {
-              // Navigate to budgets tab
-            },
+            onTap: () =>
+                ref.read(currentTabProvider.notifier).state = AppTab.plan,
           ),
         );
       }
@@ -366,6 +522,7 @@ class TodayScreen extends ConsumerWidget {
 
   Widget _buildRecentActivity(
     BuildContext context,
+    WidgetRef ref,
     AppLocalizations l10n,
     List<model.Transaction> transactions,
   ) {
@@ -380,10 +537,8 @@ class TodayScreen extends ConsumerWidget {
             title: l10n.recentTransactions,
             padding: EdgeInsets.zero,
             trailing: TextButton(
-              onPressed: () {
-                // Navigate to Activity tab
-                // This will be handled by parent HomeScreen
-              },
+              onPressed: () =>
+                  ref.read(currentTabProvider.notifier).state = AppTab.activity,
               child: Text(l10n.viewAll),
             ),
           ),

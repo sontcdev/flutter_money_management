@@ -6,6 +6,20 @@ import 'app_colors.dart';
 import 'app_spacing.dart';
 
 class AppTheme {
+  /// Monospace style for currency amount fields (IBM Plex Mono), matching
+  /// the `.mono` class used across the Claude Design mockups.
+  static TextStyle monoAmountStyle({
+    required Color color,
+    double fontSize = 15,
+    FontWeight fontWeight = FontWeight.w600,
+  }) {
+    return GoogleFonts.ibmPlexMono(
+      color: color,
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+    );
+  }
+
   static TextTheme _textTheme({
     required Color primaryText,
     required Color secondaryText,
@@ -273,6 +287,19 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
         ),
       ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? AppColors.surface
+              : AppColors.surface,
+        ),
+        trackColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? primary
+              : AppColors.border,
+        ),
+        trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
+      ),
     );
   }
 
@@ -449,6 +476,17 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
         ),
+      ),
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith(
+          (states) => AppColors.surfaceDark,
+        ),
+        trackColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? primary
+              : AppColors.borderDark,
+        ),
+        trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
       ),
     );
   }

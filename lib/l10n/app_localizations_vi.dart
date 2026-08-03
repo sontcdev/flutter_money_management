@@ -381,6 +381,33 @@ class AppLocalizationsVi extends AppLocalizations {
   String get selectThemeColor => 'Chọn màu giao diện yêu thích';
 
   @override
+  String get fontSize => 'Cỡ chữ';
+
+  @override
+  String get selectFontSize => 'Chọn cỡ chữ bạn muốn hiển thị';
+
+  @override
+  String get fontSizeSmall => 'Nhỏ';
+
+  @override
+  String get fontSizeMedium => 'Vừa';
+
+  @override
+  String get fontSizeLarge => 'Lớn';
+
+  @override
+  String get fontSizeExtraLarge => 'Rất lớn';
+
+  @override
+  String get goodMorning => 'Chào buổi sáng';
+
+  @override
+  String get goodAfternoon => 'Chào buổi chiều';
+
+  @override
+  String get goodEvening => 'Chào buổi tối';
+
+  @override
   String get budgetSettings => 'Cài đặt Ngân sách';
 
   @override

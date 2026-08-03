@@ -381,6 +381,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectThemeColor => 'Select your favorite interface color';
 
   @override
+  String get fontSize => 'Font Size';
+
+  @override
+  String get selectFontSize => 'Select your preferred text size';
+
+  @override
+  String get fontSizeSmall => 'Small';
+
+  @override
+  String get fontSizeMedium => 'Medium';
+
+  @override
+  String get fontSizeLarge => 'Large';
+
+  @override
+  String get fontSizeExtraLarge => 'Extra large';
+
+  @override
+  String get goodMorning => 'Good morning';
+
+  @override
+  String get goodAfternoon => 'Good afternoon';
+
+  @override
+  String get goodEvening => 'Good evening';
+
+  @override
   String get budgetSettings => 'Budget Settings';
 
   @override
