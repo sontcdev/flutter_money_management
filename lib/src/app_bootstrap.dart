@@ -145,6 +145,8 @@ class _AppBootstrapState extends State<AppBootstrap> {
             .overrideWith((ref) => ThemeNotifier(_sharedPreferences!)),
         themeColorProvider
             .overrideWith((ref) => ThemeColorNotifier(_sharedPreferences!)),
+        fontScaleProvider
+            .overrideWith((ref) => FontScaleNotifier(_sharedPreferences!)),
       ],
       child: const AppLifecycleSyncCoordinator(
         child: MoneyManagementApp(),

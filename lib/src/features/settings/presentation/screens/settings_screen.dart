@@ -23,6 +23,7 @@ class SettingsScreen extends HookConsumerWidget {
     final locale = ref.watch(localeProvider);
     final themeMode = ref.watch(themeModeProvider);
     final themeColor = ref.watch(themeColorProvider);
+    final fontScale = ref.watch(fontScaleProvider);
     final monthStartDay = ref.watch(monthStartDayProvider);
     final packageInfo =
         useFuture(useMemoized(() => PackageInfo.fromPlatform()));
@@ -179,6 +180,12 @@ class SettingsScreen extends HookConsumerWidget {
                   ),
                 ),
                 onTap: () => _showColorPicker(context, ref, themeColor, l10n),
+              ),
+              _SettingsRow(
+                icon: Icons.text_fields_outlined,
+                title: l10n.fontSize,
+                subtitle: _fontScaleLabel(fontScale, l10n),
+                onTap: () => _showFontScalePicker(context, ref, fontScale, l10n),
               ),
             ],
           ),
@@ -465,6 +472,58 @@ class SettingsScreen extends HookConsumerWidget {
         ),
       ),
     );
+  }
+
+  void _showFontScalePicker(BuildContext context, WidgetRef ref,
+      FontScale currentScale, AppLocalizations l10n) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                l10n.selectFontSize,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ),
+            ...FontScale.values.map((scale) {
+              final isSelected = scale == currentScale;
+              return ListTile(
+                title: Text(
+                  _fontScaleLabel(scale, l10n),
+                  style: TextStyle(fontSize: 16 * scale.multiplier),
+                ),
+                trailing: isSelected
+                    ? Icon(Icons.check,
+                        color: Theme.of(context).colorScheme.primary)
+                    : null,
+                onTap: () {
+                  ref.read(fontScaleProvider.notifier).setFontScale(scale);
+                  Navigator.pop(context);
+                },
+              );
+            }),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _fontScaleLabel(FontScale scale, AppLocalizations l10n) {
+    switch (scale) {
+      case FontScale.small:
+        return l10n.fontSizeSmall;
+      case FontScale.medium:
+        return l10n.fontSizeMedium;
+      case FontScale.large:
+        return l10n.fontSizeLarge;
+      case FontScale.extraLarge:
+        return l10n.fontSizeExtraLarge;
+    }
   }
 
   void _showColorPicker(BuildContext context, WidgetRef ref, Color currentColor,

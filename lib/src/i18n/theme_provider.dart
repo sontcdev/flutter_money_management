@@ -68,3 +68,41 @@ final themeColorProvider =
     StateNotifierProvider<ThemeColorNotifier, Color>((ref) {
   throw UnimplementedError('ThemeColorNotifier must be overridden');
 });
+
+// Font Scale Provider
+enum FontScale {
+  small(0.9),
+  medium(1.0),
+  large(1.15),
+  extraLarge(1.3);
+
+  const FontScale(this.multiplier);
+
+  final double multiplier;
+}
+
+class FontScaleNotifier extends StateNotifier<FontScale> {
+  static const String _fontScaleKey = 'font_scale';
+  final SharedPreferences _prefs;
+
+  FontScaleNotifier(this._prefs) : super(FontScale.medium) {
+    _loadFontScale();
+  }
+
+  void _loadFontScale() {
+    final index = _prefs.getInt(_fontScaleKey);
+    if (index != null && index >= 0 && index < FontScale.values.length) {
+      state = FontScale.values[index];
+    }
+  }
+
+  Future<void> setFontScale(FontScale scale) async {
+    await _prefs.setInt(_fontScaleKey, scale.index);
+    state = scale;
+  }
+}
+
+final fontScaleProvider =
+    StateNotifierProvider<FontScaleNotifier, FontScale>((ref) {
+  throw UnimplementedError('FontScaleNotifier must be overridden');
+});

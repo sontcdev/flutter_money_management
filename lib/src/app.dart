@@ -21,6 +21,7 @@ class MoneyManagementApp extends ConsumerWidget {
     final locale = ref.watch(localeProvider);
     final themeMode = ref.watch(themeModeProvider);
     final themeColor = ref.watch(themeColorProvider);
+    final fontScale = ref.watch(fontScaleProvider);
 
     return MaterialApp(
       navigatorKey: appNavigatorKey,
@@ -59,10 +60,11 @@ class MoneyManagementApp extends ConsumerWidget {
           textScaleFactor = 1.35;
         }
 
-        // Apply text scaling for tablets
+        // Apply text scaling for tablets combined with the user's font size preference
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(
-            textScaler: TextScaler.linear(textScaleFactor),
+            textScaler:
+                TextScaler.linear(textScaleFactor * fontScale.multiplier),
           ),
           child: AuthCallbackFeedbackListener(child: child!),
         );
