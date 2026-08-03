@@ -942,6 +942,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get budgetDeleted => '予算を削除しました';
 
   @override
+  String get deleteBudget => '予算を削除';
+
+  @override
   String confirmDeleteBudget(Object categoryName) {
     return '\"$categoryName\" の予算を削除してもよろしいですか？';
   }

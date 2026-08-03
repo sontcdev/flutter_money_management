@@ -102,6 +102,65 @@ class BudgetEditScreen extends HookConsumerWidget {
           .fold<int>(0, (sum, t) => sum + t.amountCents);
     }
 
+    Future<void> handleDelete() async {
+      final confirmed = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text(l10n.notification),
+              content: Text(l10n.confirmDeleteBudget(
+                categoriesAsync.valueOrNull
+                        ?.where((c) => c.id == budget!.categoryId)
+                        .firstOrNull
+                        ?.name ??
+                    l10n.unknown,
+              )),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(l10n.cancel),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  style: TextButton.styleFrom(foregroundColor: AppColors.error),
+                  child: Text(l10n.delete),
+                ),
+              ],
+            ),
+          ) ??
+          false;
+
+      if (!confirmed) return;
+
+      isLoading.value = true;
+      try {
+        final budgetRepo = ref.read(budgetRepositoryProvider);
+        await budgetRepo.deleteBudget(budget!.id);
+        ref.invalidate(budgetsProvider);
+        ref.invalidate(budgetsWithConsumedProvider);
+        if (context.mounted) {
+          Navigator.of(context).pop(true);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.budgetDeleted)),
+          );
+        }
+      } catch (e, stackTrace) {
+        if (context.mounted) {
+          await ErrorReportHelper.handleApiError(
+            context: context,
+            ref: ref,
+            error: e,
+            stackTrace: stackTrace,
+            feature: 'budget',
+            action: 'delete_budget',
+            screen: 'budget_edit_screen',
+            extraContext: {'budget_id': budget!.id},
+          );
+        }
+      } finally {
+        isLoading.value = false;
+      }
+    }
+
     Future<void> handleSave() async {
       if (limitController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -266,7 +325,26 @@ class BudgetEditScreen extends HookConsumerWidget {
                     .toList();
                 return DropdownButtonFormField<String>(
                   key: ValueKey(selectedCategoryId.value),
-                  decoration: InputDecoration(labelText: l10n.category),
+                  decoration: InputDecoration(
+                    labelText: l10n.category,
+                    filled: true,
+                    fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
                   initialValue: selectedCategoryId.value,
                   items: expenseCategories.map((category) {
                     return DropdownMenuItem<String>(
@@ -565,6 +643,21 @@ class BudgetEditScreen extends HookConsumerWidget {
               onPressed: handleSave,
               isLoading: isLoading.value,
             ),
+            if (budget != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: isLoading.value ? null : handleDelete,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.error,
+                    side: const BorderSide(color: AppColors.error),
+                  ),
+                  icon: const Icon(Icons.delete_outline, size: AppSpacing.iconSizeSm),
+                  label: Text(l10n.deleteBudget),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -592,34 +685,31 @@ class _PeriodOptionButton extends StatelessWidget {
         theme.colorScheme.onSurface.withValues(alpha: 0.6);
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
       child: Container(
-        padding: const EdgeInsets.symmetric(
-            vertical: AppSpacing.md, horizontal: AppSpacing.sm),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        alignment: Alignment.center,
         decoration: BoxDecoration(
           color: isSelected
-              ? theme.colorScheme.primary.withValues(alpha: 0.1)
+              ? theme.colorScheme.primary
               : theme.colorScheme.surfaceContainerHighest,
-          border: Border.all(
-            color: isSelected ? theme.colorScheme.primary : theme.dividerColor,
-            width: isSelected ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
         ),
-        child: Column(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
-              color: isSelected ? theme.colorScheme.primary : unselectedForeground,
-              size: 24,
+              color: isSelected ? Colors.white : unselectedForeground,
+              size: 16,
             ),
-            const SizedBox(height: AppSpacing.xs),
+            const SizedBox(width: AppSpacing.xs),
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                color: isSelected ? theme.colorScheme.primary : unselectedForeground,
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? Colors.white : unselectedForeground,
               ),
             ),
           ],

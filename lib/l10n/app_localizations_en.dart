@@ -942,6 +942,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get budgetDeleted => 'Budget deleted';
 
   @override
+  String get deleteBudget => 'Delete budget';
+
+  @override
   String confirmDeleteBudget(Object categoryName) {
     return 'Are you sure you want to delete the budget for \"$categoryName\"?';
   }

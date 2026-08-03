@@ -68,7 +68,7 @@ class BudgetDetailScreen extends ConsumerWidget {
                         decoration: BoxDecoration(
                           color: statusColor.withValues(alpha: 0.12),
                           borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusMd),
+                              BorderRadius.circular(AppSpacing.radiusLg),
                         ),
                         child: Center(
                           child: category != null
@@ -87,7 +87,7 @@ class BudgetDetailScreen extends ConsumerWidget {
                         decoration: BoxDecoration(
                           color: statusColor.withValues(alpha: 0.12),
                           borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusMd),
+                              BorderRadius.circular(AppSpacing.radiusLg),
                         ),
                       ),
                       error: (_, __) => Container(
@@ -96,7 +96,7 @@ class BudgetDetailScreen extends ConsumerWidget {
                         decoration: BoxDecoration(
                           color: statusColor.withValues(alpha: 0.12),
                           borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusMd),
+                              BorderRadius.circular(AppSpacing.radiusLg),
                         ),
                         child: Icon(Icons.category_outlined,
                             size: 28, color: statusColor),

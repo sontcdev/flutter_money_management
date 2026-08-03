@@ -305,6 +305,7 @@
   "sunday": "Sunday",
   "noBudget": "No Budget",
   "budgetDeleted": "Budget deleted",
+  "deleteBudget": "Delete budget",
   "confirmDeleteBudget": "Are you sure you want to delete the budget for \"{categoryName}\"?",
   "notification": "Notification",
   "chooseSaveLocation": "Choose save location",

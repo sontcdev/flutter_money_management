@@ -942,6 +942,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get budgetDeleted => 'Đã xóa ngân sách';
 
   @override
+  String get deleteBudget => 'Xoá ngân sách';
+
+  @override
   String confirmDeleteBudget(Object categoryName) {
     return 'Bạn có chắc chắn muốn xóa ngân sách cho \"$categoryName\"?';
   }

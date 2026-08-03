@@ -3,7 +3,6 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/budgets/models/budget.dart';
-import 'package:flutter_money_management/src/features/budgets/presentation/widgets/budget_progress.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
 import 'package:flutter_money_management/src/features/settings/providers/settings_preferences_providers.dart';
@@ -13,6 +12,7 @@ import 'package:flutter_money_management/src/features/workspace/providers/worksp
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
 import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
@@ -543,13 +543,21 @@ class _BudgetHeroCard extends StatelessWidget {
                 ),
               ),
               Text(
-                '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(totalRemaining, locale: locale)}',
+                '${(progress.clamp(0.0, 1.0) * 100).round()}%',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.85),
-                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(totalRemaining, locale: locale)}',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: Colors.white.withValues(alpha: 0.85),
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -642,7 +650,10 @@ class _SwipeableBudgetCard extends ConsumerWidget {
           ),
         ],
       ),
-      child: _BudgetCard(budget: budget),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: AppSpacing.md),
+        child: _BudgetCard(budget: budget),
+      ),
     );
   }
 
@@ -720,137 +731,84 @@ class _BudgetCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final categoryAsync = ref.watch(categoryProvider(budget.categoryId));
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isExceeded = budget.isExceeded;
+    final progress = budget.progressPercentage / 100;
+    final amountColor =
+        isExceeded ? AppColors.error : theme.colorScheme.onSurface.withValues(alpha: 0.6);
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: InkWell(
-        onTap: () => _showBudgetTransactions(context, ref),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      onTap: () => _showBudgetTransactions(context, ref),
+      color: isExceeded
+          ? AppColors.error.withValues(alpha: theme.brightness == Brightness.dark ? 0.08 : 0.03)
+          : null,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: categoryAsync.when(
-                      data: (category) => Row(
-                        children: [
-                          if (category != null)
-                            Container(
-                              width: 36,
-                              height: 36,
-                              decoration: BoxDecoration(
-                                color: getCategoryColor(category.colorValue)
-                                    .withValues(alpha: 0.15),
-                                borderRadius:
-                                    BorderRadius.circular(AppSpacing.radiusSm),
-                              ),
-                              child: Center(
-                                child: CategoryIconWidget(
-                                  iconName: category.iconName,
-                                  size: 18,
-                                  color: getCategoryColor(category.colorValue),
-                                ),
-                              ),
-                            ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Expanded(
-                            child: Text(
-                              category?.name ?? l10n.unknown,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
+              Expanded(
+                child: categoryAsync.when(
+                  data: (category) => Row(
+                    children: [
+                      if (category != null)
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: getCategoryColor(category.colorValue)
+                                .withValues(alpha: 0.15),
+                            borderRadius:
+                                BorderRadius.circular(AppSpacing.radiusSm),
+                          ),
+                          child: Center(
+                            child: CategoryIconWidget(
+                              iconName: category.iconName,
+                              size: 18,
+                              color: getCategoryColor(category.colorValue),
                             ),
                           ),
-                        ],
-                      ),
-                      loading: () => Text(l10n.loading),
-                      error: (_, __) => Text(l10n.unknown),
-                    ),
-                  ),
-                  Text(
-                    budget.periodType == PeriodType.monthly
-                        ? l10n.monthly
-                        : budget.periodType == PeriodType.yearly
-                            ? l10n.yearly
-                            : l10n.custom,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.w600,
                         ),
-                  ),
-                  const SizedBox(width: 8),
-                  // Edit button
-                  IconButton(
-                    icon: const Icon(Icons.edit, size: 20),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    onPressed: () async {
-                      final result = await Navigator.pushNamed(
-                        context,
-                        '/budget-edit',
-                        arguments: budget,
-                      );
-                      if (result == true) {
-                        ref.invalidate(budgetsProvider);
-                        ref.invalidate(budgetsWithConsumedProvider);
-                      }
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              categoryAsync.when(
-                data: (category) => BudgetProgress(
-                  budget: budget,
-                  categoryName: category?.name ?? l10n.unknown,
-                  currency: 'VND',
-                ),
-                loading: () => const SizedBox(
-                  height: 40,
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-                error: (_, __) => BudgetProgress(
-                  budget: budget,
-                  categoryName: l10n.unknown,
-                  currency: 'VND',
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Flexible(
-                    child: Text(
-                      '${CurrencyFormatter.formatVNDFromCents(budget.consumedCents, locale: l10n.localeName)} / ${CurrencyFormatter.formatVNDFromCents(budget.limitCents, locale: l10n.localeName)}',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents - budget.consumedCents, locale: l10n.localeName)}',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: budget.consumedCents > budget.limitCents
-                                ? AppColors.error
-                                : AppColors.primary,
-                            fontWeight: FontWeight.w600,
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: Text(
+                          category?.name ?? l10n.unknown,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
                           ),
-                      textAlign: TextAlign.right,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                  loading: () => Text(l10n.loading),
+                  error: (_, __) => Text(l10n.unknown),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                '${CurrencyFormatter.formatVNDFromCents(budget.consumedCents, locale: l10n.localeName)} / ${CurrencyFormatter.formatVNDFromCents(budget.limitCents, locale: l10n.localeName)}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: amountColor,
+                ),
               ),
             ],
           ),
-        ),
+          const SizedBox(height: AppSpacing.sm),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+            child: LinearProgressIndicator(
+              value: progress.clamp(0.0, 1.0),
+              minHeight: 8,
+              backgroundColor: theme.colorScheme.surfaceContainerHighest,
+              valueColor: AlwaysStoppedAnimation(
+                isExceeded ? AppColors.error : theme.colorScheme.primary,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

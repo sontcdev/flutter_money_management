@@ -305,6 +305,7 @@
   "sunday": "Chủ nhật",
   "noBudget": "Không có ngân sách",
   "budgetDeleted": "Đã xóa ngân sách",
+  "deleteBudget": "Xoá ngân sách",
   "confirmDeleteBudget": "Bạn có chắc chắn muốn xóa ngân sách cho \"{categoryName}\"?",
   "notification": "Thông báo",
   "chooseSaveLocation": "Chọn vị trí lưu file",

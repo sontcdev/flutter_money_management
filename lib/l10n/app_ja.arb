@@ -305,6 +305,7 @@
   "sunday": "日曜日",
   "noBudget": "予算なし",
   "budgetDeleted": "予算を削除しました",
+  "deleteBudget": "予算を削除",
   "confirmDeleteBudget": "\"{categoryName}\" の予算を削除してもよろしいですか？",
   "notification": "通知",
   "chooseSaveLocation": "保存場所を選択",

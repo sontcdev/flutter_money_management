@@ -1927,6 +1927,12 @@ abstract class AppLocalizations {
   /// **'Budget deleted'**
   String get budgetDeleted;
 
+  /// No description provided for @deleteBudget.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete budget'**
+  String get deleteBudget;
+
   /// No description provided for @confirmDeleteBudget.
   ///
   /// In en, this message translates to:
