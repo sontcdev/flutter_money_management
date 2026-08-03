@@ -7,10 +7,12 @@ import 'package:flutter_money_management/src/features/settings/providers/setting
 import 'package:flutter_money_management/src/features/workspace/services/workspace_sync_helper.dart';
 import 'package:flutter_money_management/src/features/budgets/models/budget.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
+import 'package:flutter_money_management/src/features/reports/presentation/widgets/chart_widget.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/cycle_utils.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
@@ -45,10 +47,9 @@ class ReportsScreen extends HookConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Period Selector
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
+              AppCard(
+                padding: const EdgeInsets.all(12),
+                child: Column(
                     children: [
                       Row(
                         children: [
@@ -140,7 +141,6 @@ class ReportsScreen extends HookConsumerWidget {
                       ],
                     ],
                   ),
-                ),
               ),
 
               const SizedBox(height: 16),
@@ -166,50 +166,84 @@ class ReportsScreen extends HookConsumerWidget {
 
                   final balance = totalIncome - totalExpense;
 
-                  return Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 2-up summary cards: Tổng chi / Tổng thu
+                      Row(
                         children: [
-                          Text(
-                            l10n.overviewReport,
-                            style: Theme.of(context).textTheme.headlineSmall,
+                          Expanded(
+                            child: _SummaryStatCard(
+                              label: l10n.totalExpense,
+                              amount: totalExpense,
+                              color: AppColors.expense,
+                              icon: Icons.arrow_upward,
+                            ),
                           ),
-                          const SizedBox(height: 16),
-                          _SummaryRow(
-                            label: l10n.totalIncome,
-                            amount: totalIncome,
-                            color: AppColors.income,
-                            icon: Icons.arrow_downward,
-                          ),
-                          const SizedBox(height: 12),
-                          _SummaryRow(
-                            label: l10n.totalExpense,
-                            amount: totalExpense,
-                            color: AppColors.expense,
-                            icon: Icons.arrow_upward,
-                          ),
-                          const Divider(height: 24),
-                          _SummaryRow(
-                            label: l10n.balance,
-                            amount: balance,
-                            color: balance >= 0
-                                ? AppColors.income
-                                : AppColors.expense,
-                            icon: balance >= 0
-                                ? Icons.trending_up
-                                : Icons.trending_down,
-                            isBold: true,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '${l10n.transactionCount}: ${filteredTransactions.length}',
-                            style: Theme.of(context).textTheme.bodySmall,
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: _SummaryStatCard(
+                              label: l10n.totalIncome,
+                              amount: totalIncome,
+                              color: AppColors.income,
+                              icon: Icons.arrow_downward,
+                            ),
                           ),
                         ],
                       ),
-                    ),
+                      const SizedBox(height: AppSpacing.md),
+                      AppCard(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  balance >= 0
+                                      ? Icons.trending_up
+                                      : Icons.trending_down,
+                                  color: balance >= 0
+                                      ? AppColors.income
+                                      : AppColors.expense,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  l10n.balance,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(fontWeight: FontWeight.w600),
+                                ),
+                              ],
+                            ),
+                            Text(
+                              CurrencyFormatter.formatVNDFromCents(
+                                balance,
+                                locale: l10n.localeName,
+                              ),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: balance >= 0
+                                        ? AppColors.income
+                                        : AppColors.expense,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 4),
+                        child: Text(
+                          '${l10n.transactionCount}: ${filteredTransactions.length}',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                    ],
                   );
                 },
                 loading: () => const Card(
@@ -228,11 +262,41 @@ class ReportsScreen extends HookConsumerWidget {
 
               const SizedBox(height: 16),
 
+              // 6-month expense trend
+              transactionsAsync.when(
+                data: (transactions) {
+                  final monthlyData =
+                      _buildLastSixMonthsExpense(transactions);
+                  return AppCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.totalExpense,
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        BarChartWidget(
+                          data: monthlyData,
+                          labelFormatter: _formatCompactAmount,
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (err, _) => const SizedBox.shrink(),
+              ),
+
+              const SizedBox(height: 16),
+
               // Type Filter for Reports
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Row(
+              AppCard(
+                padding: const EdgeInsets.all(8),
+                child: Row(
                     children: [
                       Expanded(
                         child: _ReportTypeButton(
@@ -261,7 +325,6 @@ class ReportsScreen extends HookConsumerWidget {
                       ),
                     ],
                   ),
-                ),
               ),
 
               const SizedBox(height: 16),
@@ -384,9 +447,10 @@ class ReportsScreen extends HookConsumerWidget {
                               final isExceeded =
                                   consumedCents > budget.limitCents;
 
-                              return Card(
-                                margin: const EdgeInsets.only(bottom: 8),
-                                child: InkWell(
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.only(bottom: AppSpacing.sm),
+                                child: AppCard(
                                   onTap: () =>
                                       _showBudgetTransactionsWithPeriod(
                                     context,
@@ -396,31 +460,27 @@ class ReportsScreen extends HookConsumerWidget {
                                     dateRange.start,
                                     dateRange.end,
                                   ),
-                                  borderRadius: BorderRadius.circular(
-                                      AppSpacing.radiusMd),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(16),
-                                    child: Column(
+                                  child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
                                         Row(
                                           children: [
                                             Container(
-                                              width: 40,
-                                              height: 40,
+                                              width: 36,
+                                              height: 36,
                                               decoration: BoxDecoration(
                                                 color: getCategoryColor(
                                                         category.colorValue)
                                                     .withValues(alpha: 0.2),
                                                 borderRadius:
                                                     BorderRadius.circular(
-                                                        AppSpacing.radiusSm),
+                                                        AppSpacing.radiusMd),
                                               ),
                                               child: Center(
                                                 child: CategoryIconWidget(
                                                   iconName: category.iconName,
-                                                  size: 20,
+                                                  size: 18,
                                                   color: getCategoryColor(
                                                       category.colorValue),
                                                 ),
@@ -463,7 +523,7 @@ class ReportsScreen extends HookConsumerWidget {
                                                         .withValues(alpha: 0.1),
                                                 borderRadius:
                                                     BorderRadius.circular(
-                                                        AppSpacing.radiusSm),
+                                                        AppSpacing.radiusFull),
                                               ),
                                               child: Text(
                                                 '${percentage.toStringAsFixed(1)}%',
@@ -532,7 +592,6 @@ class ReportsScreen extends HookConsumerWidget {
                                         ),
                                       ],
                                     ),
-                                  ),
                                 ),
                               );
                             }).toList(),
@@ -657,10 +716,30 @@ class ReportsScreen extends HookConsumerWidget {
                       final sortedCategories = categoryTotals.entries.toList()
                         ..sort((a, b) => b.value.compareTo(a.value));
 
-                      return Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
+                      final pieData = sortedCategories.map((entry) {
+                        final category = categories.firstWhere(
+                          (c) => c.id == entry.key,
+                          orElse: () => categories.first,
+                        );
+                        final percentage = totalExpense > 0
+                            ? (entry.value / totalExpense * 100)
+                            : 0.0;
+                        return ChartData(
+                          label: category.name,
+                          value: entry.value.toDouble(),
+                          percentage: percentage,
+                          color: getCategoryColor(category.colorValue),
+                        );
+                      }).toList();
+
+                      return Column(
+                        children: [
+                          AppCard(
+                            child: PieChartWidget(data: pieData),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          AppCard(
+                            child: Column(
                             children: sortedCategories.map((entry) {
                               final category = categories.firstWhere(
                                 (c) => c.id == entry.key,
@@ -725,8 +804,8 @@ class ReportsScreen extends HookConsumerWidget {
                                             ),
                                             const SizedBox(height: 4),
                                             ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(4),
+                                              borderRadius: BorderRadius.circular(
+                                                  AppSpacing.radiusFull),
                                               child: LinearProgressIndicator(
                                                 value: totalExpense > 0
                                                     ? entry.value / totalExpense
@@ -781,8 +860,9 @@ class ReportsScreen extends HookConsumerWidget {
                                 ),
                               );
                             }).toList(),
+                            ),
                           ),
-                        ),
+                        ],
                       );
                     },
                     loading: () => const Card(
@@ -967,6 +1047,40 @@ class ReportsScreen extends HookConsumerWidget {
                 .isAfter(startDate.subtract(const Duration(seconds: 1))) &&
             t.dateTime.isBefore(endDate.add(const Duration(seconds: 1))))
         .toList();
+  }
+
+  List<ChartData> _buildLastSixMonthsExpense(List<Transaction> transactions) {
+    final now = DateTime.now();
+    final months = List.generate(
+      6,
+      (i) => DateTime(now.year, now.month - (5 - i), 1),
+    );
+
+    return months.map((month) {
+      final total = transactions
+          .where((t) =>
+              t.type == TransactionType.expense &&
+              t.dateTime.year == month.year &&
+              t.dateTime.month == month.month)
+          .fold<double>(0, (sum, t) => sum + t.amountCents);
+      final isCurrentMonth =
+          month.year == now.year && month.month == now.month;
+      return ChartData(
+        label: 'T${month.month}',
+        value: total,
+        color: isCurrentMonth ? AppColors.primary : AppColors.primary.withValues(alpha: 0.35),
+      );
+    }).toList();
+  }
+
+  String _formatCompactAmount(double value) {
+    if (value >= 1000000) {
+      return '${(value / 1000000).toStringAsFixed(value % 1000000 == 0 ? 0 : 1)}tr';
+    }
+    if (value >= 1000) {
+      return '${(value / 1000).toStringAsFixed(0)}k';
+    }
+    return value.toStringAsFixed(0);
   }
 }
 
@@ -1572,7 +1686,7 @@ class _PeriodButton extends StatelessWidget {
           color: isSelected
               ? Theme.of(context).colorScheme.primary
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
         ),
         child: Text(
           label,
@@ -1589,47 +1703,53 @@ class _PeriodButton extends StatelessWidget {
   }
 }
 
-class _SummaryRow extends StatelessWidget {
+class _SummaryStatCard extends StatelessWidget {
   final String label;
   final int amount;
   final Color color;
   final IconData icon;
-  final bool isBold;
 
-  const _SummaryRow({
+  const _SummaryStatCard({
     required this.label,
     required this.amount,
     required this.color,
     required this.icon,
-    this.isBold = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: color, size: 20),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontWeight: isBold ? FontWeight.w600 : FontWeight.normal,
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 18),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            CurrencyFormatter.formatVNDFromCents(
+              amount,
+              locale: localeNameOf(context),
             ),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                ),
           ),
-        ),
-        Text(
-          CurrencyFormatter.formatVNDFromCents(
-            amount,
-            locale: localeNameOf(context),
-          ),
-          style: TextStyle(
-            color: color,
-            fontWeight: FontWeight.w600,
-            fontSize: isBold ? 16 : 14,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -1933,7 +2053,7 @@ class _ReportTypeButton extends StatelessWidget {
           color: isSelected
               ? selectedColor
               : Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
         ),
         child: Center(
           child: Text(

@@ -245,9 +245,9 @@ class ReportCalendarScreen extends HookConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          IconButton(
-            icon: const Icon(Icons.chevron_left),
-            onPressed: () {
+          _MonthNavButton(
+            icon: Icons.chevron_left,
+            onTap: () {
               ref
                   .read(transactionListNotifierProvider.notifier)
                   .loadPreviousMonth();
@@ -309,9 +309,9 @@ class ReportCalendarScreen extends HookConsumerWidget {
               ),
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.chevron_right),
-            onPressed: () {
+          _MonthNavButton(
+            icon: Icons.chevron_right,
+            onTap: () {
               ref
                   .read(transactionListNotifierProvider.notifier)
                   .loadNextMonth();
@@ -430,6 +430,35 @@ void _showScrollingToNearestMessage(
   );
 }
 
+class _MonthNavButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _MonthNavButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
+          ),
+          child: Icon(icon, size: 20),
+        ),
+      ),
+    );
+  }
+}
+
 // ========== MONTH YEAR PICKER ==========
 class _MonthYearPickerSheet extends HookWidget {
   final DateTime initialMonth;
@@ -546,11 +575,11 @@ class _MonthYearPickerSheet extends HookWidget {
                           : Theme.of(context)
                               .colorScheme
                               .surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                   child: InkWell(
                     onTap: () =>
                         onMonthSelected(DateTime(selectedYear.value, monthNum)),
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                     child: Center(
                       child: Text(
                         months[index],
