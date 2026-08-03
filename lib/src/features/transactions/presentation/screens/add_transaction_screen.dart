@@ -16,6 +16,7 @@ import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
+import 'package:flutter_money_management/src/ui/widgets/transaction_type_toggle.dart';
 import 'package:flutter_money_management/src/utils/app_logger.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
@@ -207,42 +208,14 @@ class AddTransactionScreen extends HookConsumerWidget {
           children: [
             // Type Toggle - pill-shaped segmented control on a surface2 track,
             // matching the mockup's "Chi tiêu / Thu nhập" switch.
-            Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _TypeSegment(
-                      label: l10n.expense,
-                      icon: Icons.arrow_upward,
-                      color: AppColors.expense,
-                      selected: selectedType.value ==
-                          model.TransactionType.expense,
-                      onTap: () {
-                        selectedType.value = model.TransactionType.expense;
-                        selectedCategoryId.value = null;
-                      },
-                    ),
-                  ),
-                  Expanded(
-                    child: _TypeSegment(
-                      label: l10n.income,
-                      icon: Icons.arrow_downward,
-                      color: AppColors.income,
-                      selected: selectedType.value ==
-                          model.TransactionType.income,
-                      onTap: () {
-                        selectedType.value = model.TransactionType.income;
-                        selectedCategoryId.value = null;
-                      },
-                    ),
-                  ),
-                ],
-              ),
+            TransactionTypeToggle(
+              value: selectedType.value,
+              expenseLabel: l10n.expense,
+              incomeLabel: l10n.income,
+              onChanged: (type) {
+                selectedType.value = type;
+                selectedCategoryId.value = null;
+              },
             ),
             const SizedBox(height: AppSpacing.sectionGap),
 
@@ -638,76 +611,5 @@ class AddTransactionScreen extends HookConsumerWidget {
     return date1.year == date2.year &&
         date1.month == date2.month &&
         date1.day == date2.day;
-  }
-}
-
-/// One pill segment of the expense/income type toggle. When selected it
-/// rises onto the surface color with a subtle shadow, mirroring the
-/// mockup's "Chi tiêu / Thu nhập" switch.
-class _TypeSegment extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final Color color;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _TypeSegment({
-    required this.label,
-    required this.icon,
-    required this.color,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-        decoration: BoxDecoration(
-          color: selected ? Theme.of(context).colorScheme.surface : null,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: Theme.of(context).colorScheme.shadow.withValues(
-                          alpha: 0.08,
-                        ),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: AppSpacing.iconSizeSm,
-              color: selected
-                  ? color
-                  : Theme.of(context).colorScheme.onSurface.withValues(
-                        alpha: 0.5,
-                      ),
-            ),
-            const SizedBox(width: AppSpacing.xs),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: selected
-                        ? color
-                        : Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.5),
-                  ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }

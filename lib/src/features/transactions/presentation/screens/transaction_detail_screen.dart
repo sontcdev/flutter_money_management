@@ -7,6 +7,8 @@ import 'package:flutter_money_management/src/features/transactions/models/transa
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 
@@ -61,104 +63,64 @@ class TransactionDetailScreen extends ConsumerWidget {
         final amountColor = isExpense ? AppColors.expense : AppColors.income;
         final amountPrefix = isExpense ? '-' : '+';
 
+        Future<void> handleEdit() async {
+          final result = await Navigator.pushNamed(
+            context,
+            '/edit-transaction',
+            arguments: transactionId,
+          );
+          if (result == true && context.mounted) {
+            ref.invalidate(transactionsProvider);
+            ref.invalidate(transactionReceiptAttachmentProvider(transactionId));
+            ref.invalidate(transactionReceiptImageUrlProvider(transactionId));
+            Navigator.pop(context, true);
+          }
+        }
+
+        Future<void> handleDelete() async {
+          final confirm = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text(l10n.confirmDelete),
+              content: Text(l10n.confirmDeleteTransaction),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: Text(l10n.cancel),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: TextButton.styleFrom(foregroundColor: Colors.red),
+                  child: Text(l10n.delete),
+                ),
+              ],
+            ),
+          );
+
+          if (confirm == true) {
+            final receiptService = ref.read(transactionReceiptServiceProvider);
+            try {
+              await receiptService.removeReceipt(transactionId);
+            } catch (_) {
+              // Allow owner/admin to continue deleting the transaction
+              // even if receipt cleanup fails due to legacy storage rules.
+            }
+            await transactionRepo.deleteTransaction(transactionId);
+            ref.invalidate(budgetsProvider);
+            ref.invalidate(budgetsWithConsumedProvider);
+            ref.invalidate(transactionsProvider);
+            ref.invalidate(transactionReceiptAttachmentProvider(transactionId));
+            ref.invalidate(transactionReceiptImageUrlProvider(transactionId));
+            if (context.mounted) {
+              Navigator.pop(context, true);
+            }
+          }
+        }
+
         return Scaffold(
           appBar: AppBar(
             title: Text(l10n.transactions),
             centerTitle: true,
-            actions: canManageTransactionAsync.maybeWhen(
-              data: (canManageTransaction) {
-                if (!canManageTransaction) {
-                  return const <Widget>[];
-                }
-
-                return <Widget>[
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: () async {
-                      final result = await Navigator.pushNamed(
-                        context,
-                        '/edit-transaction',
-                        arguments: transactionId,
-                      );
-                      if (result == true && context.mounted) {
-                        ref.invalidate(transactionsProvider);
-                        ref.invalidate(transactionReceiptAttachmentProvider(
-                            transactionId));
-                        ref.invalidate(
-                            transactionReceiptImageUrlProvider(transactionId));
-                        Navigator.pop(context, true);
-                      }
-                    },
-                  ),
-                  PopupMenuButton<String>(
-                    onSelected: (value) async {
-                      if (value == 'delete') {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: Text(l10n.confirmDelete),
-                            content: Text(l10n.confirmDeleteTransaction),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, false),
-                                child: Text(l10n.cancel),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, true),
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.red,
-                                ),
-                                child: Text(l10n.delete),
-                              ),
-                            ],
-                          ),
-                        );
-
-                        if (confirm == true) {
-                          final receiptService =
-                              ref.read(transactionReceiptServiceProvider);
-                          try {
-                            await receiptService.removeReceipt(transactionId);
-                          } catch (_) {
-                            // Allow owner/admin to continue deleting the transaction
-                            // even if receipt cleanup fails due to legacy storage rules.
-                          }
-                          await transactionRepo
-                              .deleteTransaction(transactionId);
-                          ref.invalidate(budgetsProvider);
-                          ref.invalidate(budgetsWithConsumedProvider);
-                          ref.invalidate(transactionsProvider);
-                          ref.invalidate(transactionReceiptAttachmentProvider(
-                              transactionId));
-                          ref.invalidate(transactionReceiptImageUrlProvider(
-                              transactionId));
-                          if (context.mounted) {
-                            Navigator.pop(context, true);
-                          }
-                        }
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            const Icon(Icons.delete,
-                                color: Colors.red, size: 20),
-                            const SizedBox(width: AppSpacing.sm),
-                            Text(
-                              l10n.delete,
-                              style: const TextStyle(color: Colors.red),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ];
-              },
-              orElse: () => const <Widget>[],
-            ),
           ),
           body: SingleChildScrollView(
             child: Column(
@@ -177,8 +139,8 @@ class TransactionDetailScreen extends ConsumerWidget {
                       // Category Icon
                       if (category != null)
                         Container(
-                          width: 72,
-                          height: 72,
+                          width: 64,
+                          height: 64,
                           decoration: BoxDecoration(
                             color: getCategoryColor(category.colorValue)
                                 .withValues(alpha: 0.15),
@@ -188,7 +150,7 @@ class TransactionDetailScreen extends ConsumerWidget {
                           child: Center(
                             child: CategoryIconWidget(
                               iconName: category.iconName,
-                              size: 34,
+                              size: 30,
                               color: getCategoryColor(category.colorValue),
                             ),
                           ),
@@ -229,14 +191,12 @@ class TransactionDetailScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Transaction Info Card
-                      Card(
-                        margin: EdgeInsets.zero,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.lg,
-                            vertical: AppSpacing.xs,
-                          ),
-                          child: Column(
+                      AppCard(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg,
+                          vertical: AppSpacing.xs,
+                        ),
+                        child: Column(
                             children: [
                               _DetailRow(
                                 label: l10n.type,
@@ -264,6 +224,36 @@ class TransactionDetailScreen extends ConsumerWidget {
                             ],
                           ),
                         ),
+                      const SizedBox(height: AppSpacing.lg),
+
+                      // Delete / Edit action buttons
+                      canManageTransactionAsync.maybeWhen(
+                        data: (canManageTransaction) {
+                          if (!canManageTransaction) {
+                            return const SizedBox.shrink();
+                          }
+
+                          return Row(
+                            children: [
+                              Expanded(
+                                child: AppButton.outlined(
+                                  text: l10n.delete,
+                                  icon: Icons.delete_outline,
+                                  onPressed: handleDelete,
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.md),
+                              Expanded(
+                                child: AppButton(
+                                  text: l10n.edit,
+                                  icon: Icons.edit_outlined,
+                                  onPressed: handleEdit,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                        orElse: () => const SizedBox.shrink(),
                       ),
 
                       // Receipt Section

@@ -297,7 +297,7 @@ class _TransactionGroup extends StatelessWidget {
       dateLabel = formatLocalizedFullDate(context, date);
     }
 
-    // Calculate totals
+    // Calculate net total for the day (matches mockup's single net-amount label)
     final totalIncome = transactions
         .where((t) => t.type == TransactionType.income)
         .fold<int>(0, (sum, t) => sum + t.amountCents);
@@ -305,6 +305,16 @@ class _TransactionGroup extends StatelessWidget {
     final totalExpense = transactions
         .where((t) => t.type == TransactionType.expense)
         .fold<int>(0, (sum, t) => sum + t.amountCents);
+
+    final net = totalIncome - totalExpense;
+    final netColor = net < 0
+        ? AppColors.expense
+        : net > 0
+            ? AppColors.income
+            : null;
+    final netLabel = net == 0
+        ? ''
+        : ' · ${net > 0 ? '+' : ''}${CurrencyFormatter.formatVNDFromCents(net, locale: l10n.localeName)}';
 
     final theme = Theme.of(context);
 
@@ -319,64 +329,22 @@ class _TransactionGroup extends StatelessWidget {
               horizontal: AppSpacing.screenPadding,
               vertical: AppSpacing.sm,
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  dateLabel.toUpperCase(),
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.6,
-                  ),
+            child: Text.rich(
+              TextSpan(
+                text: dateLabel.toUpperCase(),
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.6,
                 ),
-                Row(
-                  children: [
-                    if (totalIncome > 0) ...[
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                          vertical: AppSpacing.xs,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.incomeContainer,
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusSm),
-                        ),
-                        child: Text(
-                          '+${CurrencyFormatter.formatVNDFromCents(totalIncome, locale: l10n.localeName)}',
-                          style: const TextStyle(
-                            color: AppColors.income,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                    ],
-                    if (totalExpense > 0)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                          vertical: AppSpacing.xs,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.expenseContainer,
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusSm),
-                        ),
-                        child: Text(
-                          '-${CurrencyFormatter.formatVNDFromCents(totalExpense, locale: l10n.localeName)}',
-                          style: const TextStyle(
-                            color: AppColors.expense,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ],
+                children: [
+                  if (netLabel.isNotEmpty)
+                    TextSpan(
+                      text: netLabel,
+                      style: TextStyle(color: netColor),
+                    ),
+                ],
+              ),
             ),
           ),
 

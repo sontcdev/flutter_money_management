@@ -17,6 +17,7 @@ import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
+import 'package:flutter_money_management/src/ui/widgets/transaction_type_toggle.dart';
 import 'package:flutter_money_management/src/utils/app_logger.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
@@ -229,27 +230,16 @@ class EditTransactionScreen extends HookConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Type Toggle - Centered
-            Center(
-              child: SegmentedButton<model.TransactionType>(
-                segments: [
-                  ButtonSegment(
-                    value: model.TransactionType.expense,
-                    label: Text(l10n.expense),
-                    icon: const Icon(Icons.arrow_upward),
-                  ),
-                  ButtonSegment(
-                    value: model.TransactionType.income,
-                    label: Text(l10n.income),
-                    icon: const Icon(Icons.arrow_downward),
-                  ),
-                ],
-                selected: {selectedType.value},
-                onSelectionChanged: (Set<model.TransactionType> selection) {
-                  selectedType.value = selection.first;
-                  selectedCategoryId.value = null;
-                },
-              ),
+            // Type Toggle - pill-shaped segmented control, matching the
+            // mockup's "Chi tiêu / Thu nhập" switch.
+            TransactionTypeToggle(
+              value: selectedType.value,
+              expenseLabel: l10n.expense,
+              incomeLabel: l10n.income,
+              onChanged: (type) {
+                selectedType.value = type;
+                selectedCategoryId.value = null;
+              },
             ),
             const SizedBox(height: AppSpacing.sectionGap),
 
