@@ -11,11 +11,11 @@
 /// For production, consider using environment variables or flutter_dotenv
 class SupabaseConfig {
   // Supabase project URL
-  static const String supabaseUrl = 'https://jbontdnjiobhyyrcnhaf.supabase.co';
+  static const String supabaseUrl = 'https://zikdftcotynwdnrgzden.supabase.co';
 
   // Supabase anon key (public key, safe for client apps)
   static const String supabaseAnonKey =
-      'sb_publishable_Wu_RrpSzP55ssxQHxaXHjQ_kRw6UKqC';
+      'sb_publishable_LGHXGvzmsZhGikU4AYKzTw_Z2Woao4_';
 
   // Mobile auth callback URI.
   // Add this exact value to Supabase Auth -> URL Configuration -> Additional Redirect URLs.
