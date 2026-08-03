@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
@@ -69,6 +70,7 @@ class TransactionItem extends StatelessWidget {
         horizontal: AppSpacing.screenPadding,
         vertical: isCompact ? AppSpacing.compactGap : AppSpacing.sm,
       ),
+      leading: _buildLeading(context),
       title: Text(
         categoryName,
         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -77,6 +79,29 @@ class TransactionItem extends StatelessWidget {
       ),
       subtitle: _buildSubtitle(context),
       trailing: _buildTrailing(context, formattedAmount, color),
+    );
+  }
+
+  Widget? _buildLeading(BuildContext context) {
+    if (categoryIconName == null && categoryIcon == null) return null;
+
+    final tint = categoryColor ?? Theme.of(context).colorScheme.primary;
+
+    return Container(
+      width: 42,
+      height: 42,
+      decoration: BoxDecoration(
+        color: tint.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      ),
+      alignment: Alignment.center,
+      child: categoryIconName != null
+          ? CategoryIconWidget(
+              iconName: categoryIconName!,
+              size: 20,
+              color: tint,
+            )
+          : Icon(categoryIcon, size: 20, color: tint),
     );
   }
 

@@ -17,7 +17,7 @@ import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_avatar.dart';
-import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_metric_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_section_header.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
@@ -86,11 +86,6 @@ class TodayScreen extends ConsumerWidget {
                   // Hero Summary
                   _buildHeroSummary(
                       context, l10n, transactions, budgetsAsync, monthStartDay),
-
-                  const SizedBox(height: AppSpacing.sectionGap),
-
-                  // Quick Actions
-                  _buildQuickActions(context, l10n),
 
                   const SizedBox(height: AppSpacing.sectionGap),
 
@@ -200,30 +195,49 @@ class TodayScreen extends ConsumerWidget {
                     : progress >= 0.8
                         ? MetricCardTone.warning
                         : MetricCardTone.neutral;
+                final barColor = tone == MetricCardTone.danger
+                    ? AppColors.expense
+                    : tone == MetricCardTone.warning
+                        ? AppColors.warning
+                        : Theme.of(context).colorScheme.primary;
+                final tint = category != null
+                    ? getCategoryColor(category.colorValue)
+                    : barColor;
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                  child: Container(
-                    padding: const EdgeInsets.all(AppSpacing.cardPadding),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                      border: Border.all(
-                        color: tone == MetricCardTone.danger
-                            ? AppColors.expense
-                            : Theme.of(context).dividerColor,
-                        width: tone == MetricCardTone.danger ? 1.5 : 1,
-                      ),
-                    ),
+                  child: AppCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: tint.withValues(alpha: 0.15),
+                                borderRadius:
+                                    BorderRadius.circular(AppSpacing.radiusSm),
+                              ),
+                              alignment: Alignment.center,
+                              child: category != null
+                                  ? CategoryIconWidget(
+                                      iconName: category.iconName,
+                                      size: 18,
+                                      color: tint,
+                                    )
+                                  : Icon(Icons.category_outlined,
+                                      size: 18, color: tint),
+                            ),
+                            const SizedBox(width: AppSpacing.md),
                             Expanded(
                               child: Text(
                                 category?.name ?? '',
-                                style: Theme.of(context).textTheme.bodyMedium,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(fontWeight: FontWeight.w600),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -232,24 +246,34 @@ class TodayScreen extends ConsumerWidget {
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyMedium
-                                  ?.copyWith(fontWeight: FontWeight.w600),
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: barColor,
+                                  ),
                             ),
                           ],
                         ),
                         const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          '${CurrencyFormatter.formatVNDFromCents(budget.consumedCents, locale: l10n.localeName)} / '
+                          '${CurrencyFormatter.formatVNDFromCents(budget.limitCents, locale: l10n.localeName)}',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurface
+                                    .withValues(alpha: 0.6),
+                              ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                           child: LinearProgressIndicator(
                             value: progress,
-                            minHeight: 6,
+                            minHeight: 8,
                             backgroundColor: Theme.of(context)
                                 .dividerColor
                                 .withValues(alpha: 0.3),
-                            color: tone == MetricCardTone.danger
-                                ? AppColors.expense
-                                : tone == MetricCardTone.warning
-                                    ? Colors.orange
-                                    : Theme.of(context).colorScheme.primary,
+                            color: barColor,
                           ),
                         ),
                       ],
@@ -364,67 +388,109 @@ class TodayScreen extends ConsumerWidget {
       }
     }
 
+    // Gradient tone follows the same status logic as before, but now the
+    // whole card is a single brand-gradient surface (matches mockup `.hero`).
+    final List<Color> gradientColors = switch (tone) {
+      MetricCardTone.danger => [AppColors.error, AppColors.expenseContainerDark],
+      MetricCardTone.warning => [AppColors.warning, AppColors.primaryStrong],
+      _ => [AppColors.primaryStrong, AppColors.primary],
+    };
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-      child: Column(
-        children: [
-          // Hero Balance Card
-          AppMetricCard.hero(
-            label: l10n.balance,
-            value: CurrencyFormatter.formatVNDFromCents(balance,
-                locale: l10n.localeName),
-            icon: balance >= 0 ? Icons.trending_up : Icons.trending_down,
-            subtitle:
-                CycleUtils.getCycleLabel(cycleRange.start, cycleRange.end),
-            tone: tone,
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: gradientColors,
           ),
-          const SizedBox(height: AppSpacing.md),
-          // Income & Expense Row
-          Row(
-            children: [
-              Expanded(
-                child: AppMetricCard(
-                  label: l10n.income,
-                  value: CurrencyFormatter.formatVNDFromCents(totalIncome,
-                      locale: l10n.localeName),
-                  icon: Icons.arrow_downward,
-                  color: AppColors.income,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              CycleUtils.getCycleLabel(cycleRange.start, cycleRange.end),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.75),
+                  ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              CurrencyFormatter.formatVNDFromCents(balance,
+                  locale: l10n.localeName),
+              style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildHeroMiniStat(
+                    context,
+                    icon: Icons.arrow_downward,
+                    label: l10n.income,
+                    value: CurrencyFormatter.formatVNDFromCents(totalIncome,
+                        locale: l10n.localeName),
+                  ),
                 ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: AppMetricCard(
-                  label: l10n.expense,
-                  value: CurrencyFormatter.formatVNDFromCents(totalExpense,
-                      locale: l10n.localeName),
-                  icon: Icons.arrow_upward,
-                  color: AppColors.expense,
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: _buildHeroMiniStat(
+                    context,
+                    icon: Icons.arrow_upward,
+                    label: l10n.expense,
+                    value: CurrencyFormatter.formatVNDFromCents(totalExpense,
+                        locale: l10n.localeName),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildQuickActions(BuildContext context, AppLocalizations l10n) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+  Widget _buildHeroMiniStat(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppSectionHeader(
-            title: l10n.quickActions,
-            padding: EdgeInsets.zero,
+          Row(
+            children: [
+              Icon(icon, size: AppSpacing.iconSizeSm, color: Colors.white),
+              const SizedBox(width: AppSpacing.xs),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.white.withValues(alpha: 0.8),
+                    ),
+              ),
+            ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          AppButton(
-            text: l10n.addTransaction,
-            icon: Icons.add_circle_outline,
-            onPressed: () {
-              Navigator.pushNamed(context, '/add-transaction');
-            },
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
