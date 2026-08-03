@@ -67,6 +67,7 @@ class CategoryIcons {
     'headphones': Icons.headphones_outlined,
 
     // Tài chính & Tiết kiệm
+    'wallet': Icons.wallet_outlined,
     'payments': Icons.payments_outlined,
     'credit_card': Icons.credit_card_outlined,
     'account_balance': Icons.account_balance_outlined,

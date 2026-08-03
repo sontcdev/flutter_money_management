@@ -1753,4 +1753,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get walletRequired => 'ウォレットを選択してください';
+
+  @override
+  String get negativeOpeningBalance => '初期残高をマイナスにする（借入）';
 }

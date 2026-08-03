@@ -1753,4 +1753,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get walletRequired => 'Vui lòng chọn ví';
+
+  @override
+  String get negativeOpeningBalance => 'Số dư ban đầu âm (đang nợ)';
 }

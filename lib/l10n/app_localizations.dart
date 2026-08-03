@@ -3408,6 +3408,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please select a wallet'**
   String get walletRequired;
+
+  /// No description provided for @negativeOpeningBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Negative opening balance (money owed)'**
+  String get negativeOpeningBalance;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -29,6 +29,9 @@ import 'features/workspace/presentation/screens/workspace_detail_screen.dart';
 import 'features/workspace/presentation/screens/workspace_invite_preview_screen.dart';
 import 'features/workspace/presentation/screens/workspace_selection_screen.dart';
 import 'features/categories/models/category.dart';
+import 'features/wallets/models/wallet.dart';
+import 'features/wallets/presentation/screens/wallet_edit_screen.dart';
+import 'features/wallets/presentation/screens/wallets_screen.dart';
 import 'features/budgets/models/budget.dart';
 import 'features/transactions/models/transaction.dart' as model;
 import 'utils/animations.dart';
@@ -98,6 +101,21 @@ class AppRouter {
             initialType: initialType,
             workspaceId: workspaceId,
           ),
+        );
+      case '/wallets':
+        return AppAnimations.slideRoute(const WalletsScreen());
+      case '/wallet-edit':
+        final args = settings.arguments;
+        Wallet? wallet;
+        String? workspaceId;
+        if (args is Wallet) {
+          wallet = args;
+        } else if (args is Map<String, dynamic>) {
+          wallet = args['wallet'] as Wallet?;
+          workspaceId = args['workspaceId'] as String?;
+        }
+        return AppAnimations.slideRoute(
+          WalletEditScreen(wallet: wallet, workspaceId: workspaceId),
         );
       case '/reports':
         return AppAnimations.slideRoute(const ReportsScreen());

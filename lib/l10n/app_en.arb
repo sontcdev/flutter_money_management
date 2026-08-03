@@ -604,5 +604,6 @@
   "walletTypeCreditCard": "Credit card",
   "walletTypeSavings": "Savings",
   "walletTypeOther": "Other",
-  "walletRequired": "Please select a wallet"
+  "walletRequired": "Please select a wallet",
+  "negativeOpeningBalance": "Negative opening balance (money owed)"
 }

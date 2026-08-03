@@ -604,5 +604,6 @@
   "walletTypeCreditCard": "Thẻ tín dụng",
   "walletTypeSavings": "Tiết kiệm",
   "walletTypeOther": "Khác",
-  "walletRequired": "Vui lòng chọn ví"
+  "walletRequired": "Vui lòng chọn ví",
+  "negativeOpeningBalance": "Số dư ban đầu âm (đang nợ)"
 }

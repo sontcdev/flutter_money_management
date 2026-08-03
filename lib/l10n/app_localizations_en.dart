@@ -1753,4 +1753,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get walletRequired => 'Please select a wallet';
+
+  @override
+  String get negativeOpeningBalance => 'Negative opening balance (money owed)';
 }

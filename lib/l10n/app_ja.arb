@@ -604,5 +604,6 @@
   "walletTypeCreditCard": "クレジットカード",
   "walletTypeSavings": "貯蓄",
   "walletTypeOther": "その他",
-  "walletRequired": "ウォレットを選択してください"
+  "walletRequired": "ウォレットを選択してください",
+  "negativeOpeningBalance": "初期残高をマイナスにする（借入）"
 }
