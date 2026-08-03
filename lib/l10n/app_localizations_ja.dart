@@ -1654,4 +1654,103 @@ class AppLocalizationsJa extends AppLocalizations {
   String versionLabel(Object version, Object buildNumber) {
     return 'バージョン $version ($buildNumber)';
   }
+
+  @override
+  String get wallets => 'ウォレット';
+
+  @override
+  String get manageWallets => 'ウォレット管理';
+
+  @override
+  String get manageWalletsSubtitle => 'ウォレットの追加・編集・アーカイブ';
+
+  @override
+  String get addWallet => 'ウォレットを追加';
+
+  @override
+  String get editWallet => 'ウォレットを編集';
+
+  @override
+  String get walletName => 'ウォレット名';
+
+  @override
+  String get walletType => 'ウォレットの種類';
+
+  @override
+  String get walletIcon => 'アイコン';
+
+  @override
+  String get walletColor => '色';
+
+  @override
+  String get openingBalance => '初期残高';
+
+  @override
+  String get defaultWallet => '既定のウォレット';
+
+  @override
+  String get setAsDefaultWallet => '既定のウォレットに設定';
+
+  @override
+  String get archiveWallet => 'ウォレットをアーカイブ';
+
+  @override
+  String get unarchiveWallet => 'アーカイブを解除';
+
+  @override
+  String get archivedWallets => 'アーカイブ済みウォレット';
+
+  @override
+  String get selectWallet => 'ウォレットを選択';
+
+  @override
+  String get fromWallet => '送金元ウォレット';
+
+  @override
+  String get toWallet => '送金先ウォレット';
+
+  @override
+  String get transfer => '振替';
+
+  @override
+  String get walletInUse => 'このウォレットは使用中のため削除できません。代わりにアーカイブしてください。';
+
+  @override
+  String get sameWalletError => '送金元と送金先のウォレットは異なる必要があります';
+
+  @override
+  String get noWallets => 'ウォレットがありません';
+
+  @override
+  String get noWalletsMessage => 'ウォレットを作成してお金の所在を管理しましょう';
+
+  @override
+  String get totalBalance => '合計残高';
+
+  @override
+  String get deleteWallet => 'ウォレットを削除';
+
+  @override
+  String get deleteWalletConfirm => 'このウォレットを削除してもよろしいですか？';
+
+  @override
+  String get walletTypeCash => '現金';
+
+  @override
+  String get walletTypeBank => '銀行';
+
+  @override
+  String get walletTypeEwallet => '電子ウォレット';
+
+  @override
+  String get walletTypeCreditCard => 'クレジットカード';
+
+  @override
+  String get walletTypeSavings => '貯蓄';
+
+  @override
+  String get walletTypeOther => 'その他';
+
+  @override
+  String get walletRequired => 'ウォレットを選択してください';
 }

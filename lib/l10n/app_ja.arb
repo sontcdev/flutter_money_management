@@ -440,14 +440,31 @@
   "noTransactionsYetDesc": "最初の取引を追加して、このワークスペースの記録を始めましょう。",
   "noMembersFoundDesc": "メンバーを招待して、このワークスペースで共同作業しましょう。",
   "memberCount": "{count} 人のメンバー",
-  "@memberCount": {"placeholders": {"count": {}}},
+  "@memberCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "workspaceTypeValue": "{type} ワークスペース",
-  "@workspaceTypeValue": {"placeholders": {"type": {}}},
+  "@workspaceTypeValue": {
+    "placeholders": {
+      "type": {}
+    }
+  },
   "updatedAt": "更新: {dateTime}",
-  "@updatedAt": {"placeholders": {"dateTime": {}}},
+  "@updatedAt": {
+    "placeholders": {
+      "dateTime": {}
+    }
+  },
   "budgetProgress": "予算の進捗",
   "budgetUsage": "{consumed} / {limit}",
-  "@budgetUsage": {"placeholders": {"consumed": {}, "limit": {}}},
+  "@budgetUsage": {
+    "placeholders": {
+      "consumed": {},
+      "limit": {}
+    }
+  },
   "overBudget": "予算超過",
   "dangerZone": "危険な操作",
   "leaveWorkspace": "ワークスペースを退出",
@@ -458,7 +475,12 @@
   "noActivityYet": "まだアクティビティがありません",
   "noActivityYetDesc": "メンバーが共同作業を始めると、ワークスペースの変更がここに表示されます。",
   "activityByActorAt": "{actor} • {dateTime}",
-  "@activityByActorAt": {"placeholders": {"actor": {}, "dateTime": {}}},
+  "@activityByActorAt": {
+    "placeholders": {
+      "actor": {},
+      "dateTime": {}
+    }
+  },
   "failedToLoadWorkspaces": "ワークスペースの読み込みに失敗しました: {error}",
   "enterEmail": "メールを入力してください",
   "enterValidEmailAddress": "有効なメールアドレスを入力してください",
@@ -549,5 +571,38 @@
       "version": {},
       "buildNumber": {}
     }
-  }
+  },
+  "wallets": "ウォレット",
+  "manageWallets": "ウォレット管理",
+  "manageWalletsSubtitle": "ウォレットの追加・編集・アーカイブ",
+  "addWallet": "ウォレットを追加",
+  "editWallet": "ウォレットを編集",
+  "walletName": "ウォレット名",
+  "walletType": "ウォレットの種類",
+  "walletIcon": "アイコン",
+  "walletColor": "色",
+  "openingBalance": "初期残高",
+  "defaultWallet": "既定のウォレット",
+  "setAsDefaultWallet": "既定のウォレットに設定",
+  "archiveWallet": "ウォレットをアーカイブ",
+  "unarchiveWallet": "アーカイブを解除",
+  "archivedWallets": "アーカイブ済みウォレット",
+  "selectWallet": "ウォレットを選択",
+  "fromWallet": "送金元ウォレット",
+  "toWallet": "送金先ウォレット",
+  "transfer": "振替",
+  "walletInUse": "このウォレットは使用中のため削除できません。代わりにアーカイブしてください。",
+  "sameWalletError": "送金元と送金先のウォレットは異なる必要があります",
+  "noWallets": "ウォレットがありません",
+  "noWalletsMessage": "ウォレットを作成してお金の所在を管理しましょう",
+  "totalBalance": "合計残高",
+  "deleteWallet": "ウォレットを削除",
+  "deleteWalletConfirm": "このウォレットを削除してもよろしいですか？",
+  "walletTypeCash": "現金",
+  "walletTypeBank": "銀行",
+  "walletTypeEwallet": "電子ウォレット",
+  "walletTypeCreditCard": "クレジットカード",
+  "walletTypeSavings": "貯蓄",
+  "walletTypeOther": "その他",
+  "walletRequired": "ウォレットを選択してください"
 }

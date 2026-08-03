@@ -3210,6 +3210,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Version {version} ({buildNumber})'**
   String versionLabel(Object version, Object buildNumber);
+
+  /// No description provided for @wallets.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallets'**
+  String get wallets;
+
+  /// No description provided for @manageWallets.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage wallets'**
+  String get manageWallets;
+
+  /// No description provided for @manageWalletsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add, edit, archive wallets'**
+  String get manageWalletsSubtitle;
+
+  /// No description provided for @addWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Add wallet'**
+  String get addWallet;
+
+  /// No description provided for @editWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit wallet'**
+  String get editWallet;
+
+  /// No description provided for @walletName.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet name'**
+  String get walletName;
+
+  /// No description provided for @walletType.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet type'**
+  String get walletType;
+
+  /// No description provided for @walletIcon.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon'**
+  String get walletIcon;
+
+  /// No description provided for @walletColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get walletColor;
+
+  /// No description provided for @openingBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening balance'**
+  String get openingBalance;
+
+  /// No description provided for @defaultWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Default wallet'**
+  String get defaultWallet;
+
+  /// No description provided for @setAsDefaultWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Set as default wallet'**
+  String get setAsDefaultWallet;
+
+  /// No description provided for @archiveWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive wallet'**
+  String get archiveWallet;
+
+  /// No description provided for @unarchiveWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Unarchive wallet'**
+  String get unarchiveWallet;
+
+  /// No description provided for @archivedWallets.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived wallets'**
+  String get archivedWallets;
+
+  /// No description provided for @selectWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Select wallet'**
+  String get selectWallet;
+
+  /// No description provided for @fromWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'From wallet'**
+  String get fromWallet;
+
+  /// No description provided for @toWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'To wallet'**
+  String get toWallet;
+
+  /// No description provided for @transfer.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer'**
+  String get transfer;
+
+  /// No description provided for @walletInUse.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet is in use and cannot be deleted. Archive it instead.'**
+  String get walletInUse;
+
+  /// No description provided for @sameWalletError.
+  ///
+  /// In en, this message translates to:
+  /// **'Source and destination wallets must be different'**
+  String get sameWalletError;
+
+  /// No description provided for @noWallets.
+  ///
+  /// In en, this message translates to:
+  /// **'No wallets yet'**
+  String get noWallets;
+
+  /// No description provided for @noWalletsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a wallet to track where your money is'**
+  String get noWalletsMessage;
+
+  /// No description provided for @totalBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Total balance'**
+  String get totalBalance;
+
+  /// No description provided for @deleteWallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete wallet'**
+  String get deleteWallet;
+
+  /// No description provided for @deleteWalletConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this wallet?'**
+  String get deleteWalletConfirm;
+
+  /// No description provided for @walletTypeCash.
+  ///
+  /// In en, this message translates to:
+  /// **'Cash'**
+  String get walletTypeCash;
+
+  /// No description provided for @walletTypeBank.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank'**
+  String get walletTypeBank;
+
+  /// No description provided for @walletTypeEwallet.
+  ///
+  /// In en, this message translates to:
+  /// **'E-wallet'**
+  String get walletTypeEwallet;
+
+  /// No description provided for @walletTypeCreditCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Credit card'**
+  String get walletTypeCreditCard;
+
+  /// No description provided for @walletTypeSavings.
+  ///
+  /// In en, this message translates to:
+  /// **'Savings'**
+  String get walletTypeSavings;
+
+  /// No description provided for @walletTypeOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get walletTypeOther;
+
+  /// No description provided for @walletRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a wallet'**
+  String get walletRequired;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -440,14 +440,31 @@
   "noTransactionsYetDesc": "Thêm giao dịch đầu tiên để bắt đầu theo dõi workspace này.",
   "noMembersFoundDesc": "Mời thành viên để cùng quản lý workspace này.",
   "memberCount": "{count} thành viên",
-  "@memberCount": {"placeholders": {"count": {}}},
+  "@memberCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "workspaceTypeValue": "Workspace {type}",
-  "@workspaceTypeValue": {"placeholders": {"type": {}}},
+  "@workspaceTypeValue": {
+    "placeholders": {
+      "type": {}
+    }
+  },
   "updatedAt": "Cập nhật {dateTime}",
-  "@updatedAt": {"placeholders": {"dateTime": {}}},
+  "@updatedAt": {
+    "placeholders": {
+      "dateTime": {}
+    }
+  },
   "budgetProgress": "Tiến độ ngân sách",
   "budgetUsage": "{consumed} / {limit}",
-  "@budgetUsage": {"placeholders": {"consumed": {}, "limit": {}}},
+  "@budgetUsage": {
+    "placeholders": {
+      "consumed": {},
+      "limit": {}
+    }
+  },
   "overBudget": "Vượt ngân sách",
   "dangerZone": "Khu vực nguy hiểm",
   "leaveWorkspace": "Rời workspace",
@@ -458,7 +475,12 @@
   "noActivityYet": "Chưa có hoạt động nào",
   "noActivityYetDesc": "Các thay đổi trong workspace sẽ xuất hiện ở đây khi thành viên bắt đầu cộng tác.",
   "activityByActorAt": "{actor} • {dateTime}",
-  "@activityByActorAt": {"placeholders": {"actor": {}, "dateTime": {}}},
+  "@activityByActorAt": {
+    "placeholders": {
+      "actor": {},
+      "dateTime": {}
+    }
+  },
   "failedToLoadWorkspaces": "Tải workspace thất bại: {error}",
   "enterEmail": "Vui lòng nhập email",
   "enterValidEmailAddress": "Vui lòng nhập địa chỉ email hợp lệ",
@@ -549,5 +571,38 @@
       "version": {},
       "buildNumber": {}
     }
-  }
+  },
+  "wallets": "Ví",
+  "manageWallets": "Quản lý ví",
+  "manageWalletsSubtitle": "Thêm, sửa, lưu trữ ví",
+  "addWallet": "Thêm ví",
+  "editWallet": "Sửa ví",
+  "walletName": "Tên ví",
+  "walletType": "Loại ví",
+  "walletIcon": "Biểu tượng",
+  "walletColor": "Màu sắc",
+  "openingBalance": "Số dư ban đầu",
+  "defaultWallet": "Ví mặc định",
+  "setAsDefaultWallet": "Đặt làm ví mặc định",
+  "archiveWallet": "Lưu trữ ví",
+  "unarchiveWallet": "Bỏ lưu trữ",
+  "archivedWallets": "Ví đã lưu trữ",
+  "selectWallet": "Chọn ví",
+  "fromWallet": "Từ ví",
+  "toWallet": "Đến ví",
+  "transfer": "Chuyển khoản",
+  "walletInUse": "Ví đang được sử dụng nên không thể xóa. Hãy lưu trữ thay vì xóa.",
+  "sameWalletError": "Ví nguồn và ví đích phải khác nhau",
+  "noWallets": "Chưa có ví nào",
+  "noWalletsMessage": "Tạo ví để theo dõi tiền của bạn đang ở đâu",
+  "totalBalance": "Tổng số dư",
+  "deleteWallet": "Xóa ví",
+  "deleteWalletConfirm": "Bạn có chắc muốn xóa ví này không?",
+  "walletTypeCash": "Tiền mặt",
+  "walletTypeBank": "Ngân hàng",
+  "walletTypeEwallet": "Ví điện tử",
+  "walletTypeCreditCard": "Thẻ tín dụng",
+  "walletTypeSavings": "Tiết kiệm",
+  "walletTypeOther": "Khác",
+  "walletRequired": "Vui lòng chọn ví"
 }

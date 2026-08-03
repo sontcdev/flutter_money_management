@@ -1654,4 +1654,103 @@ class AppLocalizationsEn extends AppLocalizations {
   String versionLabel(Object version, Object buildNumber) {
     return 'Version $version ($buildNumber)';
   }
+
+  @override
+  String get wallets => 'Wallets';
+
+  @override
+  String get manageWallets => 'Manage wallets';
+
+  @override
+  String get manageWalletsSubtitle => 'Add, edit, archive wallets';
+
+  @override
+  String get addWallet => 'Add wallet';
+
+  @override
+  String get editWallet => 'Edit wallet';
+
+  @override
+  String get walletName => 'Wallet name';
+
+  @override
+  String get walletType => 'Wallet type';
+
+  @override
+  String get walletIcon => 'Icon';
+
+  @override
+  String get walletColor => 'Color';
+
+  @override
+  String get openingBalance => 'Opening balance';
+
+  @override
+  String get defaultWallet => 'Default wallet';
+
+  @override
+  String get setAsDefaultWallet => 'Set as default wallet';
+
+  @override
+  String get archiveWallet => 'Archive wallet';
+
+  @override
+  String get unarchiveWallet => 'Unarchive wallet';
+
+  @override
+  String get archivedWallets => 'Archived wallets';
+
+  @override
+  String get selectWallet => 'Select wallet';
+
+  @override
+  String get fromWallet => 'From wallet';
+
+  @override
+  String get toWallet => 'To wallet';
+
+  @override
+  String get transfer => 'Transfer';
+
+  @override
+  String get walletInUse => 'Wallet is in use and cannot be deleted. Archive it instead.';
+
+  @override
+  String get sameWalletError => 'Source and destination wallets must be different';
+
+  @override
+  String get noWallets => 'No wallets yet';
+
+  @override
+  String get noWalletsMessage => 'Create a wallet to track where your money is';
+
+  @override
+  String get totalBalance => 'Total balance';
+
+  @override
+  String get deleteWallet => 'Delete wallet';
+
+  @override
+  String get deleteWalletConfirm => 'Are you sure you want to delete this wallet?';
+
+  @override
+  String get walletTypeCash => 'Cash';
+
+  @override
+  String get walletTypeBank => 'Bank';
+
+  @override
+  String get walletTypeEwallet => 'E-wallet';
+
+  @override
+  String get walletTypeCreditCard => 'Credit card';
+
+  @override
+  String get walletTypeSavings => 'Savings';
+
+  @override
+  String get walletTypeOther => 'Other';
+
+  @override
+  String get walletRequired => 'Please select a wallet';
 }

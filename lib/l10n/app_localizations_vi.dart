@@ -1654,4 +1654,103 @@ class AppLocalizationsVi extends AppLocalizations {
   String versionLabel(Object version, Object buildNumber) {
     return 'Phiên bản $version ($buildNumber)';
   }
+
+  @override
+  String get wallets => 'Ví';
+
+  @override
+  String get manageWallets => 'Quản lý ví';
+
+  @override
+  String get manageWalletsSubtitle => 'Thêm, sửa, lưu trữ ví';
+
+  @override
+  String get addWallet => 'Thêm ví';
+
+  @override
+  String get editWallet => 'Sửa ví';
+
+  @override
+  String get walletName => 'Tên ví';
+
+  @override
+  String get walletType => 'Loại ví';
+
+  @override
+  String get walletIcon => 'Biểu tượng';
+
+  @override
+  String get walletColor => 'Màu sắc';
+
+  @override
+  String get openingBalance => 'Số dư ban đầu';
+
+  @override
+  String get defaultWallet => 'Ví mặc định';
+
+  @override
+  String get setAsDefaultWallet => 'Đặt làm ví mặc định';
+
+  @override
+  String get archiveWallet => 'Lưu trữ ví';
+
+  @override
+  String get unarchiveWallet => 'Bỏ lưu trữ';
+
+  @override
+  String get archivedWallets => 'Ví đã lưu trữ';
+
+  @override
+  String get selectWallet => 'Chọn ví';
+
+  @override
+  String get fromWallet => 'Từ ví';
+
+  @override
+  String get toWallet => 'Đến ví';
+
+  @override
+  String get transfer => 'Chuyển khoản';
+
+  @override
+  String get walletInUse => 'Ví đang được sử dụng nên không thể xóa. Hãy lưu trữ thay vì xóa.';
+
+  @override
+  String get sameWalletError => 'Ví nguồn và ví đích phải khác nhau';
+
+  @override
+  String get noWallets => 'Chưa có ví nào';
+
+  @override
+  String get noWalletsMessage => 'Tạo ví để theo dõi tiền của bạn đang ở đâu';
+
+  @override
+  String get totalBalance => 'Tổng số dư';
+
+  @override
+  String get deleteWallet => 'Xóa ví';
+
+  @override
+  String get deleteWalletConfirm => 'Bạn có chắc muốn xóa ví này không?';
+
+  @override
+  String get walletTypeCash => 'Tiền mặt';
+
+  @override
+  String get walletTypeBank => 'Ngân hàng';
+
+  @override
+  String get walletTypeEwallet => 'Ví điện tử';
+
+  @override
+  String get walletTypeCreditCard => 'Thẻ tín dụng';
+
+  @override
+  String get walletTypeSavings => 'Tiết kiệm';
+
+  @override
+  String get walletTypeOther => 'Khác';
+
+  @override
+  String get walletRequired => 'Vui lòng chọn ví';
 }

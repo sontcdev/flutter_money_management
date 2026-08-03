@@ -440,14 +440,31 @@
   "noTransactionsYetDesc": "Add the first transaction to start tracking this workspace.",
   "noMembersFoundDesc": "Invite members to collaborate in this workspace.",
   "memberCount": "{count} members",
-  "@memberCount": {"placeholders": {"count": {}}},
+  "@memberCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
   "workspaceTypeValue": "{type} workspace",
-  "@workspaceTypeValue": {"placeholders": {"type": {}}},
+  "@workspaceTypeValue": {
+    "placeholders": {
+      "type": {}
+    }
+  },
   "updatedAt": "Updated {dateTime}",
-  "@updatedAt": {"placeholders": {"dateTime": {}}},
+  "@updatedAt": {
+    "placeholders": {
+      "dateTime": {}
+    }
+  },
   "budgetProgress": "Budget progress",
   "budgetUsage": "{consumed} of {limit}",
-  "@budgetUsage": {"placeholders": {"consumed": {}, "limit": {}}},
+  "@budgetUsage": {
+    "placeholders": {
+      "consumed": {},
+      "limit": {}
+    }
+  },
   "overBudget": "Over budget",
   "dangerZone": "Danger zone",
   "leaveWorkspace": "Leave workspace",
@@ -458,7 +475,12 @@
   "noActivityYet": "No activity yet",
   "noActivityYetDesc": "Workspace changes will appear here after members start collaborating.",
   "activityByActorAt": "{actor} • {dateTime}",
-  "@activityByActorAt": {"placeholders": {"actor": {}, "dateTime": {}}},
+  "@activityByActorAt": {
+    "placeholders": {
+      "actor": {},
+      "dateTime": {}
+    }
+  },
   "failedToLoadWorkspaces": "Failed to load workspaces: {error}",
   "enterEmail": "Please enter your email",
   "enterValidEmailAddress": "Please enter a valid email address",
@@ -549,5 +571,38 @@
       "version": {},
       "buildNumber": {}
     }
-  }
+  },
+  "wallets": "Wallets",
+  "manageWallets": "Manage wallets",
+  "manageWalletsSubtitle": "Add, edit, archive wallets",
+  "addWallet": "Add wallet",
+  "editWallet": "Edit wallet",
+  "walletName": "Wallet name",
+  "walletType": "Wallet type",
+  "walletIcon": "Icon",
+  "walletColor": "Color",
+  "openingBalance": "Opening balance",
+  "defaultWallet": "Default wallet",
+  "setAsDefaultWallet": "Set as default wallet",
+  "archiveWallet": "Archive wallet",
+  "unarchiveWallet": "Unarchive wallet",
+  "archivedWallets": "Archived wallets",
+  "selectWallet": "Select wallet",
+  "fromWallet": "From wallet",
+  "toWallet": "To wallet",
+  "transfer": "Transfer",
+  "walletInUse": "Wallet is in use and cannot be deleted. Archive it instead.",
+  "sameWalletError": "Source and destination wallets must be different",
+  "noWallets": "No wallets yet",
+  "noWalletsMessage": "Create a wallet to track where your money is",
+  "totalBalance": "Total balance",
+  "deleteWallet": "Delete wallet",
+  "deleteWalletConfirm": "Are you sure you want to delete this wallet?",
+  "walletTypeCash": "Cash",
+  "walletTypeBank": "Bank",
+  "walletTypeEwallet": "E-wallet",
+  "walletTypeCreditCard": "Credit card",
+  "walletTypeSavings": "Savings",
+  "walletTypeOther": "Other",
+  "walletRequired": "Please select a wallet"
 }
