@@ -71,6 +71,27 @@ class AppTheme {
         letterSpacing: -0.2,
         height: 1.4,
       ),
+      titleLarge: GoogleFonts.sora(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: primaryText,
+        letterSpacing: -0.2,
+        height: 1.4,
+      ),
+      titleMedium: GoogleFonts.manrope(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: primaryText,
+        letterSpacing: 0.1,
+        height: 1.4,
+      ),
+      titleSmall: GoogleFonts.manrope(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: primaryText,
+        letterSpacing: 0.1,
+        height: 1.4,
+      ),
       bodyLarge: GoogleFonts.manrope(
         fontSize: 16,
         fontWeight: FontWeight.w400,
