@@ -2017,6 +2017,12 @@ abstract class AppLocalizations {
   /// **'Sign In'**
   String get signIn;
 
+  /// No description provided for @welcomeBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome back'**
+  String get welcomeBack;
+
   /// No description provided for @signInDesc.
   ///
   /// In en, this message translates to:

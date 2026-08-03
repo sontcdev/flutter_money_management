@@ -320,6 +320,7 @@
   "logoutDesc": "サインアウトしてログイン画面に戻ります",
   "allowOverdraftDesc": "予算超過でも続行",
   "signIn": "サインイン",
+  "welcomeBack": "おかえりなさい",
   "signInDesc": "データを同期するにはサインインしてください",
   "signOutTitle": "サインアウト",
   "signOutConfirm": "サインアウトしてもよろしいですか？\n\nローカルデータは保持され、再度サインインしたときに同期されます。",

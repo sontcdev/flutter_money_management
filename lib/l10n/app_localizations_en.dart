@@ -989,6 +989,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signIn => 'Sign In';
 
   @override
+  String get welcomeBack => 'Welcome back';
+
+  @override
   String get signInDesc => 'Sign in to sync your data';
 
   @override

@@ -236,7 +236,7 @@ class SignInScreen extends HookConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.xl),
 
               // Brand icon
               Container(
@@ -256,7 +256,7 @@ class SignInScreen extends HookConsumerWidget {
               const SizedBox(height: AppSpacing.xl),
 
               Text(
-                l10n.appTitle,
+                l10n.welcomeBack,
                 style: textTheme.headlineLarge,
               ),
 

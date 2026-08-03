@@ -989,6 +989,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get signIn => 'Đăng nhập';
 
   @override
+  String get welcomeBack => 'Chào mừng trở lại';
+
+  @override
   String get signInDesc => 'Đăng nhập để đồng bộ dữ liệu của bạn';
 
   @override

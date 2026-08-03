@@ -989,6 +989,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get signIn => 'サインイン';
 
   @override
+  String get welcomeBack => 'おかえりなさい';
+
+  @override
   String get signInDesc => 'データを同期するにはサインインしてください';
 
   @override

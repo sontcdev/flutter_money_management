@@ -320,6 +320,7 @@
   "logoutDesc": "Đăng xuất và quay lại màn hình đăng nhập",
   "allowOverdraftDesc": "Vượt ngân sách - vẫn tiếp tục",
   "signIn": "Đăng nhập",
+  "welcomeBack": "Chào mừng trở lại",
   "signInDesc": "Đăng nhập để đồng bộ dữ liệu của bạn",
   "signOutTitle": "Đăng xuất",
   "signOutConfirm": "Bạn có chắc muốn đăng xuất?\n\nDữ liệu cục bộ của bạn sẽ được giữ lại và đồng bộ khi bạn đăng nhập lại.",

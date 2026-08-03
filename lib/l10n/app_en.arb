@@ -320,6 +320,7 @@
   "logoutDesc": "Sign out and return to login",
   "allowOverdraftDesc": "Budget exceeded - proceed",
   "signIn": "Sign In",
+  "welcomeBack": "Welcome back",
   "signInDesc": "Sign in to sync your data",
   "signOutTitle": "Sign Out",
   "signOutConfirm": "Are you sure you want to sign out?\n\nYour local data will be kept and synced when you sign in again.",
