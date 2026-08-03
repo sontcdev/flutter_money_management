@@ -49,19 +49,21 @@ class _RecurringTransactionsScreenState
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.recurringTransactions),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final created = await Navigator.pushNamed(
-            context,
-            '/recurring-transaction-edit',
-          );
-          if (created == true) {
-            ref.invalidate(recurringTransactionsProvider);
-            ref.invalidate(upcomingRecurringOccurrencesProvider);
-          }
-        },
-        child: const Icon(Icons.add),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () async {
+              final created = await Navigator.pushNamed(
+                context,
+                '/recurring-transaction-edit',
+              );
+              if (created == true) {
+                ref.invalidate(recurringTransactionsProvider);
+                ref.invalidate(upcomingRecurringOccurrencesProvider);
+              }
+            },
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
