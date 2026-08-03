@@ -12,8 +12,10 @@ _$TransactionImpl _$$TransactionImplFromJson(Map<String, dynamic> json) =>
       amountCents: (json['amountCents'] as num).toInt(),
       currency: json['currency'] as String,
       dateTime: DateTime.parse(json['dateTime'] as String),
-      categoryId: json['categoryId'] as String,
+      categoryId: json['categoryId'] as String?,
       type: $enumDecode(_$TransactionTypeEnumMap, json['type']),
+      walletId: json['walletId'] as String?,
+      toWalletId: json['toWalletId'] as String?,
       note: json['note'] as String?,
       receiptPath: json['receiptPath'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
@@ -38,6 +40,8 @@ Map<String, dynamic> _$$TransactionImplToJson(_$TransactionImpl instance) =>
       'dateTime': instance.dateTime.toIso8601String(),
       'categoryId': instance.categoryId,
       'type': _$TransactionTypeEnumMap[instance.type]!,
+      'walletId': instance.walletId,
+      'toWalletId': instance.toWalletId,
       'note': instance.note,
       'receiptPath': instance.receiptPath,
       'createdAt': instance.createdAt.toIso8601String(),
@@ -51,6 +55,7 @@ Map<String, dynamic> _$$TransactionImplToJson(_$TransactionImpl instance) =>
 const _$TransactionTypeEnumMap = {
   TransactionType.expense: 'expense',
   TransactionType.income: 'income',
+  TransactionType.transfer: 'transfer',
 };
 
 const _$SyncStatusEnumMap = {

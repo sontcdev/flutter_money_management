@@ -9,6 +9,7 @@ targets:
           json_serializable: true
         generate_for:
           - lib/src/models/*.dart
+          - lib/src/features/*/models/*.dart
 
       drift_dev:
         enabled: true

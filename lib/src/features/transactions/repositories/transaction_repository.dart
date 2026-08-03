@@ -106,6 +106,8 @@ class TransactionRepository implements TransactionCreationGateway {
         'p_currency_code': transaction.currency,
         'p_transaction_type': transaction.type.name,
         'p_transaction_at': transaction.dateTime.toIso8601String(),
+        'p_wallet_id': transaction.walletId,
+        'p_to_wallet_id': transaction.toWalletId,
         'p_note': transaction.note,
         'p_client_reference_id': id,
         'p_allow_overdraft_override': allowOverdraft,
@@ -147,6 +149,8 @@ class TransactionRepository implements TransactionCreationGateway {
         'p_currency_code': transaction.currency,
         'p_transaction_type': transaction.type.name,
         'p_transaction_at': transaction.dateTime.toIso8601String(),
+        'p_wallet_id': transaction.walletId,
+        'p_to_wallet_id': transaction.toWalletId,
         'p_note': transaction.note,
         'p_allow_overdraft_override': allowOverdraft,
         'p_updated_at': transaction.updatedAt.toIso8601String(),
@@ -203,12 +207,14 @@ class TransactionRepository implements TransactionCreationGateway {
     required bool allowOverdraft,
     String? workspaceIdOverride,
   }) async {
-    if (transaction.type != model.TransactionType.expense) {
+    final categoryId = transaction.categoryId;
+    if (transaction.type != model.TransactionType.expense ||
+        categoryId == null) {
       return;
     }
 
     final budget = await _getActiveBudget(
-      transaction.categoryId,
+      categoryId,
       transaction.dateTime,
       workspaceIdOverride: workspaceIdOverride,
     );
@@ -297,16 +303,28 @@ class TransactionRepository implements TransactionCreationGateway {
     }
   }
 
+  model.TransactionType _parseTransactionType(String value) {
+    switch (value) {
+      case 'income':
+        return model.TransactionType.income;
+      case 'transfer':
+        return model.TransactionType.transfer;
+      case 'expense':
+      default:
+        return model.TransactionType.expense;
+    }
+  }
+
   model.Transaction _mapTransaction(Map<String, dynamic> item) {
     return model.Transaction(
       id: item['id'] as String,
       amountCents: item['amount_minor'] as int,
       currency: item['currency_code'] as String,
       dateTime: DateTime.parse(item['transaction_at'] as String),
-      categoryId: item['category_id'] as String,
-      type: (item['transaction_type'] as String) == 'income'
-          ? model.TransactionType.income
-          : model.TransactionType.expense,
+      categoryId: item['category_id'] as String?,
+      type: _parseTransactionType(item['transaction_type'] as String),
+      walletId: item['wallet_id'] as String?,
+      toWalletId: item['to_wallet_id'] as String?,
       note: item['note'] as String?,
       receiptPath: item['receipt_path'] as String?,
       createdAt: DateTime.parse(item['created_at'] as String),

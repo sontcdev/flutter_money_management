@@ -4,6 +4,7 @@ import 'package:flutter_money_management/src/features/settings/providers/setting
 import 'package:flutter_money_management/src/features/workspace/services/workspace_sync_helper.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
+import 'package:flutter_money_management/src/utils/category_color_codec.dart';
 import 'package:flutter_money_management/src/utils/cycle_utils.dart';
 
 // Tính toán tháng chu kỳ dựa trên ngày hiện tại và monthStartDay
@@ -58,9 +59,11 @@ final calendarDataProvider =
     final date =
         DateTime(txn.dateTime.year, txn.dateTime.month, txn.dateTime.day);
 
+    // Transfers only move money between wallets, so they belong to neither
+    // total.
     if (txn.type == TransactionType.income) {
       dailyIncome[date] = (dailyIncome[date] ?? 0) + txn.amountCents;
-    } else {
+    } else if (txn.type == TransactionType.expense) {
       dailyExpense[date] = (dailyExpense[date] ?? 0) + txn.amountCents;
     }
   }
@@ -119,9 +122,10 @@ final monthlySummaryProvider =
   int totalExpense = 0;
 
   for (final txn in transactions) {
+    // Transfers are excluded from both totals.
     if (txn.type == TransactionType.income) {
       totalIncome += txn.amountCents;
-    } else {
+    } else if (txn.type == TransactionType.expense) {
       totalExpense += txn.amountCents;
     }
   }
@@ -165,17 +169,18 @@ final transactionGroupsProvider =
       groups[date] = [];
     }
 
-    // Get category name
+    // Get category name. Transfers carry no category, so they get a neutral
+    // placeholder; the UI renders them as "Wallet A → Wallet B" instead.
     final categoryRepo = ref.read(categoryRepositoryProvider);
     final categories = await categoryRepo.getAllCategories();
-    final category = categories.firstWhere((c) => c.id == txn.categoryId,
-        orElse: () => categories.first);
+    final category =
+        categories.where((c) => c.id == txn.categoryId).firstOrNull;
 
     groups[date]!.add(TransactionWithCategory(
       transaction: txn,
-      categoryName: category.name,
-      categoryIconName: category.iconName,
-      categoryColorValue: category.colorValue,
+      categoryName: category?.name ?? '',
+      categoryIconName: category?.iconName ?? 'swap_horiz',
+      categoryColorValue: category?.colorValue ?? kDefaultCategoryColorValue,
     ));
   }
 
@@ -187,9 +192,10 @@ final transactionGroupsProvider =
     int totalExpense = 0;
 
     for (final txnWithCat in dayTransactions) {
+      // Transfers are excluded from both totals.
       if (txnWithCat.transaction.type == TransactionType.income) {
         totalIncome += txnWithCat.transaction.amountCents;
-      } else {
+      } else if (txnWithCat.transaction.type == TransactionType.expense) {
         totalExpense += txnWithCat.transaction.amountCents;
       }
     }

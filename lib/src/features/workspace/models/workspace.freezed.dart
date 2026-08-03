@@ -288,9 +288,8 @@ class _$WorkspaceImpl implements _Workspace {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, name, type, ownerId, role, description,
-          avatarPath, memberCount, createdAt, updatedAt);
+  int get hashCode => Object.hash(runtimeType, id, name, type, ownerId, role,
+      description, avatarPath, memberCount, createdAt, updatedAt);
 
   /// Create a copy of Workspace
   /// with the given fields replaced by the non-null parameter values.

@@ -706,8 +706,13 @@ class ReportsScreen extends HookConsumerWidget {
                       // Group by category
                       final Map<String, int> categoryTotals = {};
                       for (final t in filteredTransactions) {
-                        categoryTotals[t.categoryId] =
-                            (categoryTotals[t.categoryId] ?? 0) + t.amountCents;
+                        // Transfers carry no category and never reach here.
+                        final categoryId = t.categoryId;
+                        if (categoryId == null) {
+                          continue;
+                        }
+                        categoryTotals[categoryId] =
+                            (categoryTotals[categoryId] ?? 0) + t.amountCents;
                       }
 
                       final totalExpense = filteredTransactions.fold<int>(

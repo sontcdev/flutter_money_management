@@ -24,10 +24,15 @@ mixin _$Transaction {
       throw _privateConstructorUsedError; // Changed from int to String (UUID)
   int get amountCents => throw _privateConstructorUsedError;
   String get currency => throw _privateConstructorUsedError;
-  DateTime get dateTime => throw _privateConstructorUsedError;
-  String get categoryId =>
-      throw _privateConstructorUsedError; // Changed from int to String (UUID)
-  TransactionType get type => throw _privateConstructorUsedError;
+  DateTime get dateTime =>
+      throw _privateConstructorUsedError; // Null only for transfers, which have no category.
+  String? get categoryId => throw _privateConstructorUsedError;
+  TransactionType get type =>
+      throw _privateConstructorUsedError; // Source wallet. Required by the database, nullable here so older rows and
+// in-flight form state stay representable.
+  String? get walletId =>
+      throw _privateConstructorUsedError; // Destination wallet, set only for transfers.
+  String? get toWalletId => throw _privateConstructorUsedError;
   String? get note => throw _privateConstructorUsedError;
   String? get receiptPath => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
@@ -58,8 +63,10 @@ abstract class $TransactionCopyWith<$Res> {
       int amountCents,
       String currency,
       DateTime dateTime,
-      String categoryId,
+      String? categoryId,
       TransactionType type,
+      String? walletId,
+      String? toWalletId,
       String? note,
       String? receiptPath,
       DateTime createdAt,
@@ -89,8 +96,10 @@ class _$TransactionCopyWithImpl<$Res, $Val extends Transaction>
     Object? amountCents = null,
     Object? currency = null,
     Object? dateTime = null,
-    Object? categoryId = null,
+    Object? categoryId = freezed,
     Object? type = null,
+    Object? walletId = freezed,
+    Object? toWalletId = freezed,
     Object? note = freezed,
     Object? receiptPath = freezed,
     Object? createdAt = null,
@@ -117,14 +126,22 @@ class _$TransactionCopyWithImpl<$Res, $Val extends Transaction>
           ? _value.dateTime
           : dateTime // ignore: cast_nullable_to_non_nullable
               as DateTime,
-      categoryId: null == categoryId
+      categoryId: freezed == categoryId
           ? _value.categoryId
           : categoryId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       type: null == type
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
               as TransactionType,
+      walletId: freezed == walletId
+          ? _value.walletId
+          : walletId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      toWalletId: freezed == toWalletId
+          ? _value.toWalletId
+          : toWalletId // ignore: cast_nullable_to_non_nullable
+              as String?,
       note: freezed == note
           ? _value.note
           : note // ignore: cast_nullable_to_non_nullable
@@ -174,8 +191,10 @@ abstract class _$$TransactionImplCopyWith<$Res>
       int amountCents,
       String currency,
       DateTime dateTime,
-      String categoryId,
+      String? categoryId,
       TransactionType type,
+      String? walletId,
+      String? toWalletId,
       String? note,
       String? receiptPath,
       DateTime createdAt,
@@ -203,8 +222,10 @@ class __$$TransactionImplCopyWithImpl<$Res>
     Object? amountCents = null,
     Object? currency = null,
     Object? dateTime = null,
-    Object? categoryId = null,
+    Object? categoryId = freezed,
     Object? type = null,
+    Object? walletId = freezed,
+    Object? toWalletId = freezed,
     Object? note = freezed,
     Object? receiptPath = freezed,
     Object? createdAt = null,
@@ -231,14 +252,22 @@ class __$$TransactionImplCopyWithImpl<$Res>
           ? _value.dateTime
           : dateTime // ignore: cast_nullable_to_non_nullable
               as DateTime,
-      categoryId: null == categoryId
+      categoryId: freezed == categoryId
           ? _value.categoryId
           : categoryId // ignore: cast_nullable_to_non_nullable
-              as String,
+              as String?,
       type: null == type
           ? _value.type
           : type // ignore: cast_nullable_to_non_nullable
               as TransactionType,
+      walletId: freezed == walletId
+          ? _value.walletId
+          : walletId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      toWalletId: freezed == toWalletId
+          ? _value.toWalletId
+          : toWalletId // ignore: cast_nullable_to_non_nullable
+              as String?,
       note: freezed == note
           ? _value.note
           : note // ignore: cast_nullable_to_non_nullable
@@ -283,8 +312,10 @@ class _$TransactionImpl implements _Transaction {
       required this.amountCents,
       required this.currency,
       required this.dateTime,
-      required this.categoryId,
+      this.categoryId,
       required this.type,
+      this.walletId,
+      this.toWalletId,
       this.note,
       this.receiptPath,
       required this.createdAt,
@@ -306,11 +337,18 @@ class _$TransactionImpl implements _Transaction {
   final String currency;
   @override
   final DateTime dateTime;
+// Null only for transfers, which have no category.
   @override
-  final String categoryId;
-// Changed from int to String (UUID)
+  final String? categoryId;
   @override
   final TransactionType type;
+// Source wallet. Required by the database, nullable here so older rows and
+// in-flight form state stay representable.
+  @override
+  final String? walletId;
+// Destination wallet, set only for transfers.
+  @override
+  final String? toWalletId;
   @override
   final String? note;
   @override
@@ -331,7 +369,7 @@ class _$TransactionImpl implements _Transaction {
 
   @override
   String toString() {
-    return 'Transaction(id: $id, amountCents: $amountCents, currency: $currency, dateTime: $dateTime, categoryId: $categoryId, type: $type, note: $note, receiptPath: $receiptPath, createdAt: $createdAt, updatedAt: $updatedAt, syncStatus: $syncStatus, syncedAt: $syncedAt, lastSyncError: $lastSyncError, deletedAt: $deletedAt)';
+    return 'Transaction(id: $id, amountCents: $amountCents, currency: $currency, dateTime: $dateTime, categoryId: $categoryId, type: $type, walletId: $walletId, toWalletId: $toWalletId, note: $note, receiptPath: $receiptPath, createdAt: $createdAt, updatedAt: $updatedAt, syncStatus: $syncStatus, syncedAt: $syncedAt, lastSyncError: $lastSyncError, deletedAt: $deletedAt)';
   }
 
   @override
@@ -349,6 +387,10 @@ class _$TransactionImpl implements _Transaction {
             (identical(other.categoryId, categoryId) ||
                 other.categoryId == categoryId) &&
             (identical(other.type, type) || other.type == type) &&
+            (identical(other.walletId, walletId) ||
+                other.walletId == walletId) &&
+            (identical(other.toWalletId, toWalletId) ||
+                other.toWalletId == toWalletId) &&
             (identical(other.note, note) || other.note == note) &&
             (identical(other.receiptPath, receiptPath) ||
                 other.receiptPath == receiptPath) &&
@@ -376,6 +418,8 @@ class _$TransactionImpl implements _Transaction {
       dateTime,
       categoryId,
       type,
+      walletId,
+      toWalletId,
       note,
       receiptPath,
       createdAt,
@@ -407,8 +451,10 @@ abstract class _Transaction implements Transaction {
       required final int amountCents,
       required final String currency,
       required final DateTime dateTime,
-      required final String categoryId,
+      final String? categoryId,
       required final TransactionType type,
+      final String? walletId,
+      final String? toWalletId,
       final String? note,
       final String? receiptPath,
       required final DateTime createdAt,
@@ -428,11 +474,17 @@ abstract class _Transaction implements Transaction {
   @override
   String get currency;
   @override
-  DateTime get dateTime;
+  DateTime get dateTime; // Null only for transfers, which have no category.
   @override
-  String get categoryId; // Changed from int to String (UUID)
+  String? get categoryId;
   @override
-  TransactionType get type;
+  TransactionType
+      get type; // Source wallet. Required by the database, nullable here so older rows and
+// in-flight form state stay representable.
+  @override
+  String? get walletId; // Destination wallet, set only for transfers.
+  @override
+  String? get toWalletId;
   @override
   String? get note;
   @override
