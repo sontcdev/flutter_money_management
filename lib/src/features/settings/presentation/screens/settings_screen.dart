@@ -217,6 +217,12 @@ class SettingsScreen extends HookConsumerWidget {
           _SettingsListCard(
             children: [
               _SettingsRow(
+                icon: Icons.account_balance_wallet_outlined,
+                title: l10n.manageWallets,
+                subtitle: l10n.manageWalletsSubtitle,
+                onTap: () => Navigator.pushNamed(context, '/wallets'),
+              ),
+              _SettingsRow(
                 icon: Icons.category_outlined,
                 title: l10n.manageCategories,
                 subtitle: l10n.manageCategoriesDesc,

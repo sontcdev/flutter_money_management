@@ -4,6 +4,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
 import 'package:flutter_money_management/src/features/transactions/presentation/widgets/transaction_item.dart';
+import 'package:flutter_money_management/src/features/wallets/models/wallet.dart';
+import 'package:flutter_money_management/src/features/wallets/providers/wallet_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/services/workspace_sync_helper.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
@@ -25,6 +27,11 @@ class TransactionsScreen extends HookConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final transactionsAsync = ref.watch(transactionsProvider);
     final categoriesAsync = ref.watch(categoriesProvider);
+    // Wallets are only needed to label transfers, so a missing value is fine.
+    final walletMap = {
+      for (final w in ref.watch(walletsProvider).valueOrNull ?? const <Wallet>[])
+        w.id: w,
+    };
 
     final selectedFilter = useState(TransactionFilter.all);
     final searchQuery = useState('');
@@ -211,6 +218,7 @@ class TransactionsScreen extends HookConsumerWidget {
                             date: group.date,
                             transactions: group.transactions,
                             categoryMap: categoryMap,
+                            walletMap: walletMap,
                           );
                         },
                       ),
@@ -274,11 +282,13 @@ class _TransactionGroup extends StatelessWidget {
   final DateTime date;
   final List<Transaction> transactions;
   final Map<String, Category> categoryMap;
+  final Map<String, Wallet> walletMap;
 
   const _TransactionGroup({
     required this.date,
     required this.transactions,
     required this.categoryMap,
+    required this.walletMap,
   });
 
   @override
@@ -363,14 +373,25 @@ class _TransactionGroup extends StatelessWidget {
                       Builder(builder: (context) {
                         final transaction = transactions[i];
                         final category = categoryMap[transaction.categoryId];
+                        final isTransfer =
+                            transaction.type == TransactionType.transfer;
+                        // Transfers have no category: label them "from -> to".
+                        final fromWallet = walletMap[transaction.walletId];
+                        final toWallet = walletMap[transaction.toWalletId];
 
                         return TransactionItem(
                           transaction: transaction,
-                          categoryName: category?.name ?? l10n.unknown,
-                          categoryIconName: category?.iconName,
-                          categoryColor: category != null
-                              ? getCategoryColor(category.colorValue)
-                              : null,
+                          categoryName: isTransfer
+                              ? '${fromWallet?.name ?? l10n.unknown} → '
+                                  '${toWallet?.name ?? l10n.unknown}'
+                              : category?.name ?? l10n.unknown,
+                          categoryIconName: isTransfer ? null : category?.iconName,
+                          categoryIcon: isTransfer ? Icons.swap_horiz : null,
+                          categoryColor: isTransfer
+                              ? Theme.of(context).colorScheme.primary
+                              : category != null
+                                  ? getCategoryColor(category.colorValue)
+                                  : null,
                           showDate: true, // Show date in subtitle
                           showChevron: true,
                           onTap: () {

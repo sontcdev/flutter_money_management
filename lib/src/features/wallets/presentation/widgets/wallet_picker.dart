@@ -18,6 +18,8 @@ Future<Wallet?> showWalletPicker(
   String? selectedWalletId,
   /// Hidden from the list so a transfer cannot pick the same wallet twice.
   String? excludeWalletId,
+  /// Lists another workspace's wallets; defaults to the active workspace.
+  String? workspaceId,
 }) {
   return showModalBottomSheet<Wallet>(
     context: context,
@@ -26,6 +28,7 @@ Future<Wallet?> showWalletPicker(
       title: title,
       selectedWalletId: selectedWalletId,
       excludeWalletId: excludeWalletId,
+      workspaceId: workspaceId,
     ),
   );
 }
@@ -35,17 +38,21 @@ class _WalletPickerSheet extends ConsumerWidget {
     required this.title,
     this.selectedWalletId,
     this.excludeWalletId,
+    this.workspaceId,
   });
 
   final String title;
   final String? selectedWalletId;
   final String? excludeWalletId;
+  final String? workspaceId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final walletsAsync = ref.watch(walletsProvider);
+    final walletsAsync = workspaceId == null
+        ? ref.watch(walletsProvider)
+        : ref.watch(walletsForWorkspaceProvider(workspaceId!));
     final balances = ref.watch(walletBalancesProvider).valueOrNull ??
         const <String, int>{};
 

@@ -4,6 +4,8 @@ import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
+import 'package:flutter_money_management/src/features/wallets/models/wallet.dart';
+import 'package:flutter_money_management/src/features/wallets/providers/wallet_providers.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
@@ -31,6 +33,7 @@ class TransactionDetailScreen extends ConsumerWidget {
     final receiptImageUrlAsync = ref.watch(
       transactionReceiptImageUrlProvider(transactionId),
     );
+    final wallets = ref.watch(walletsProvider).valueOrNull ?? const <Wallet>[];
 
     return FutureBuilder(
       future: Future.wait([
@@ -59,9 +62,34 @@ class TransactionDetailScreen extends ConsumerWidget {
           // Category not found
         }
 
-        final isExpense = transaction.type == TransactionType.expense;
-        final amountColor = isExpense ? AppColors.expense : AppColors.income;
-        final amountPrefix = isExpense ? '-' : '+';
+        final isTransfer = transaction.type == TransactionType.transfer;
+
+        // Transfers are neither income nor expense: neutral colour, no sign.
+        final Color amountColor;
+        final String amountPrefix;
+        final String typeLabel;
+        switch (transaction.type) {
+          case TransactionType.expense:
+            amountColor = AppColors.expense;
+            amountPrefix = '-';
+            typeLabel = l10n.expense;
+            break;
+          case TransactionType.income:
+            amountColor = AppColors.income;
+            amountPrefix = '+';
+            typeLabel = l10n.income;
+            break;
+          case TransactionType.transfer:
+            amountColor = Theme.of(context).colorScheme.onSurface;
+            amountPrefix = '';
+            typeLabel = l10n.transfer;
+            break;
+        }
+
+        final fromWallet =
+            wallets.where((w) => w.id == transaction.walletId).firstOrNull;
+        final toWallet =
+            wallets.where((w) => w.id == transaction.toWalletId).firstOrNull;
 
         Future<void> handleEdit() async {
           final result = await Navigator.pushNamed(
@@ -136,8 +164,26 @@ class TransactionDetailScreen extends ConsumerWidget {
                   ),
                   child: Column(
                     children: [
-                      // Category Icon
-                      if (category != null)
+                      // Category Icon (transfers use a neutral swap glyph)
+                      if (isTransfer)
+                        Container(
+                          width: 64,
+                          height: 64,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withValues(alpha: 0.15),
+                            borderRadius:
+                                BorderRadius.circular(AppSpacing.radiusLg),
+                          ),
+                          child: Icon(
+                            Icons.swap_horiz,
+                            size: 30,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        )
+                      else if (category != null)
                         Container(
                           width: 64,
                           height: 64,
@@ -168,9 +214,12 @@ class TransactionDetailScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.xs),
 
-                      // Category Name
+                      // Category name, or "from -> to" for transfers
                       Text(
-                        category?.name ?? l10n.unknown,
+                        isTransfer
+                            ? '${fromWallet?.name ?? l10n.unknown} → '
+                                '${toWallet?.name ?? l10n.unknown}'
+                            : category?.name ?? l10n.unknown,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: Theme.of(context)
                                   .colorScheme
@@ -200,9 +249,29 @@ class TransactionDetailScreen extends ConsumerWidget {
                             children: [
                               _DetailRow(
                                 label: l10n.type,
-                                value: isExpense ? l10n.expense : l10n.income,
+                                value: typeLabel,
                                 valueColor: amountColor,
                               ),
+                              if (fromWallet != null) ...[
+                                Divider(
+                                    height: 1,
+                                    color: Theme.of(context).dividerColor),
+                                _DetailRow(
+                                  label: isTransfer
+                                      ? l10n.fromWallet
+                                      : l10n.wallets,
+                                  value: fromWallet.name,
+                                ),
+                              ],
+                              if (toWallet != null) ...[
+                                Divider(
+                                    height: 1,
+                                    color: Theme.of(context).dividerColor),
+                                _DetailRow(
+                                  label: l10n.toWallet,
+                                  value: toWallet.name,
+                                ),
+                              ],
                               Divider(
                                   height: 1, color: Theme.of(context).dividerColor),
                               _DetailRow(

@@ -11,6 +11,10 @@ import 'package:flutter_money_management/src/features/categories/models/category
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart'
     as model;
 import 'package:flutter_money_management/src/features/transactions/models/transaction_attachment.dart';
+import 'package:flutter_money_management/src/features/wallets/models/wallet.dart';
+import 'package:flutter_money_management/src/features/wallets/presentation/widgets/wallet_field.dart';
+import 'package:flutter_money_management/src/features/wallets/presentation/widgets/wallet_picker.dart';
+import 'package:flutter_money_management/src/features/wallets/providers/wallet_providers.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/features/budgets/services/budget_service.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
@@ -40,6 +44,8 @@ class EditTransactionScreen extends HookConsumerWidget {
     final selectedDate = useState(DateTime.now());
     final selectedType = useState(model.TransactionType.expense);
     final selectedCategoryId = useState<String?>(null);
+    final selectedWallet = useState<Wallet?>(null);
+    final selectedToWallet = useState<Wallet?>(null);
     final localReceiptPath = useState<String?>(null);
     final existingReceiptAttachment = useState<TransactionAttachment?>(null);
     final shouldRemoveReceipt = useState(false);
@@ -70,6 +76,15 @@ class EditTransactionScreen extends HookConsumerWidget {
         selectedType.value = transaction.type;
         selectedCategoryId.value = transaction.categoryId;
         existingReceiptAttachment.value = attachment;
+
+        // Resolve the wallet ids into full wallets for the picker fields.
+        final wallets = await ref.read(walletsProvider.future);
+        selectedWallet.value = wallets
+            .where((w) => w.id == transaction.walletId)
+            .firstOrNull;
+        selectedToWallet.value = wallets
+            .where((w) => w.id == transaction.toWalletId)
+            .firstOrNull;
       });
       return null;
     }, [transactionId, attachmentRepository, repository]);
@@ -82,11 +97,35 @@ class EditTransactionScreen extends HookConsumerWidget {
         return;
       }
 
-      if (selectedCategoryId.value == null) {
+      final isTransfer = selectedType.value == model.TransactionType.transfer;
+
+      if (!isTransfer && selectedCategoryId.value == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.selectCategoryError)),
         );
         return;
+      }
+
+      if (selectedWallet.value == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.walletRequired)),
+        );
+        return;
+      }
+
+      if (isTransfer) {
+        if (selectedToWallet.value == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.walletRequired)),
+          );
+          return;
+        }
+        if (selectedToWallet.value!.id == selectedWallet.value!.id) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.sameWalletError)),
+          );
+          return;
+        }
       }
 
       isLoading.value = true;
@@ -104,8 +143,10 @@ class EditTransactionScreen extends HookConsumerWidget {
           amountCents: amountCents,
           currency: 'VND',
           dateTime: selectedDate.value,
-          categoryId: selectedCategoryId.value!,
+          categoryId: isTransfer ? null : selectedCategoryId.value,
           type: selectedType.value,
+          walletId: selectedWallet.value!.id,
+          toWalletId: isTransfer ? selectedToWallet.value!.id : null,
           note: noteController.text.isEmpty ? null : noteController.text,
           receiptPath: null,
           createdAt: DateTime.now(),
@@ -145,6 +186,7 @@ class EditTransactionScreen extends HookConsumerWidget {
         ref.invalidate(budgetsProvider);
         ref.invalidate(budgetsWithConsumedProvider);
         ref.invalidate(transactionsProvider);
+        ref.invalidate(walletBalancesProvider);
         ref.invalidate(transactionReceiptAttachmentProvider(transactionId));
         ref.invalidate(transactionReceiptImageUrlProvider(transactionId));
 
@@ -191,7 +233,8 @@ class EditTransactionScreen extends HookConsumerWidget {
             screen: 'edit_transaction_screen',
             extraContext: {
               'transaction_id': transactionId,
-              'category_id': selectedCategoryId.value!,
+              'category_id': selectedCategoryId.value,
+              'wallet_id': selectedWallet.value?.id,
               'has_local_receipt': localReceiptPath.value != null,
               'should_remove_receipt': shouldRemoveReceipt.value,
             },
@@ -215,10 +258,19 @@ class EditTransactionScreen extends HookConsumerWidget {
       }
     }
 
-    final isExpenseType =
-        selectedType.value == model.TransactionType.expense;
-    final amountColor =
-        isExpenseType ? AppColors.expense : AppColors.income;
+    // Transfers are neither income nor expense, so they use the theme accent.
+    final Color amountColor;
+    switch (selectedType.value) {
+      case model.TransactionType.expense:
+        amountColor = AppColors.expense;
+        break;
+      case model.TransactionType.income:
+        amountColor = AppColors.income;
+        break;
+      case model.TransactionType.transfer:
+        amountColor = Theme.of(context).colorScheme.primary;
+        break;
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -236,9 +288,13 @@ class EditTransactionScreen extends HookConsumerWidget {
               value: selectedType.value,
               expenseLabel: l10n.expense,
               incomeLabel: l10n.income,
+              transferLabel: l10n.transfer,
               onChanged: (type) {
                 selectedType.value = type;
                 selectedCategoryId.value = null;
+                if (type != model.TransactionType.transfer) {
+                  selectedToWallet.value = null;
+                }
               },
             ),
             const SizedBox(height: AppSpacing.sectionGap),
@@ -291,8 +347,49 @@ class EditTransactionScreen extends HookConsumerWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
 
-            // Category Selector - Priority 2
-            categoriesAsync.when(
+            // Wallet Selector - required for every transaction.
+            WalletField(
+              label: selectedType.value == model.TransactionType.transfer
+                  ? l10n.fromWallet
+                  : l10n.selectWallet,
+              wallet: selectedWallet.value,
+              onTap: () async {
+                final picked = await showWalletPicker(
+                  context,
+                  title: selectedType.value == model.TransactionType.transfer
+                      ? l10n.fromWallet
+                      : l10n.selectWallet,
+                  selectedWalletId: selectedWallet.value?.id,
+                  excludeWalletId: selectedToWallet.value?.id,
+                );
+                if (picked != null) {
+                  selectedWallet.value = picked;
+                }
+              },
+            ),
+            if (selectedType.value == model.TransactionType.transfer) ...[
+              const SizedBox(height: AppSpacing.lg),
+              WalletField(
+                label: l10n.toWallet,
+                wallet: selectedToWallet.value,
+                onTap: () async {
+                  final picked = await showWalletPicker(
+                    context,
+                    title: l10n.toWallet,
+                    selectedWalletId: selectedToWallet.value?.id,
+                    excludeWalletId: selectedWallet.value?.id,
+                  );
+                  if (picked != null) {
+                    selectedToWallet.value = picked;
+                  }
+                },
+              ),
+            ],
+            const SizedBox(height: AppSpacing.lg),
+
+            // Category Selector - Priority 2. Transfers carry no category.
+            if (selectedType.value != model.TransactionType.transfer)
+              categoriesAsync.when(
               data: (categories) {
                 final filteredCategories = categories.where((c) {
                   if (selectedType.value == model.TransactionType.expense) {
@@ -394,10 +491,11 @@ class EditTransactionScreen extends HookConsumerWidget {
                   ],
                 );
               },
-              loading: () => const CircularProgressIndicator(),
-              error: (err, stack) => Text(l10n.errorWithMessage('$err')),
-            ),
-            const SizedBox(height: AppSpacing.lg),
+                loading: () => const CircularProgressIndicator(),
+                error: (err, stack) => Text(l10n.errorWithMessage('$err')),
+              ),
+            if (selectedType.value != model.TransactionType.transfer)
+              const SizedBox(height: AppSpacing.lg),
 
             // Date Picker - Priority 3
             Column(

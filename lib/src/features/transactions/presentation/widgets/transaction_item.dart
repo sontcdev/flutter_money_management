@@ -58,9 +58,19 @@ class TransactionItem extends StatelessWidget {
       transaction.currency,
     );
 
-    final color = transaction.type == TransactionType.expense
-        ? AppColors.expense
-        : AppColors.income;
+    // Transfers move money between wallets, so they are neither red nor green.
+    final Color color;
+    switch (transaction.type) {
+      case TransactionType.expense:
+        color = AppColors.expense;
+        break;
+      case TransactionType.income:
+        color = AppColors.income;
+        break;
+      case TransactionType.transfer:
+        color = Theme.of(context).colorScheme.onSurface;
+        break;
+    }
 
     final isCompact = density == TransactionItemDensity.compact;
 
@@ -168,7 +178,7 @@ class TransactionItem extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            '${transaction.type == TransactionType.expense ? '-' : '+'}$formattedAmount',
+            '$_amountPrefix$formattedAmount',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: color,
                   fontWeight: FontWeight.w700,
@@ -194,7 +204,7 @@ class TransactionItem extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
-          '${transaction.type == TransactionType.expense ? '-' : '+'}$formattedAmount',
+          '$_amountPrefix$formattedAmount',
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 color: color,
                 fontWeight: FontWeight.w700,
@@ -209,6 +219,18 @@ class TransactionItem extends StatelessWidget {
         ],
       ],
     );
+  }
+
+  /// Transfers keep no sign: the money stays inside the workspace.
+  String get _amountPrefix {
+    switch (transaction.type) {
+      case TransactionType.expense:
+        return '-';
+      case TransactionType.income:
+        return '+';
+      case TransactionType.transfer:
+        return '';
+    }
   }
 
   String _formatDate(BuildContext context) {

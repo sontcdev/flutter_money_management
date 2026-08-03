@@ -7,11 +7,13 @@ import '../../theme/app_spacing.dart';
 
 /// Pill-shaped expense/income switch on a surface2 track, matching the
 /// mockup's "Chi tiêu / Thu nhập" toggle used on the add/edit transaction
-/// screens.
+/// screens. Passing [transferLabel] adds a third "Chuyển khoản" segment.
 class TransactionTypeToggle extends StatelessWidget {
   final TransactionType value;
   final String expenseLabel;
   final String incomeLabel;
+  /// Null hides the transfer segment, keeping the original two-way toggle.
+  final String? transferLabel;
   final ValueChanged<TransactionType> onChanged;
 
   const TransactionTypeToggle({
@@ -19,6 +21,7 @@ class TransactionTypeToggle extends StatelessWidget {
     required this.value,
     required this.expenseLabel,
     required this.incomeLabel,
+    this.transferLabel,
     required this.onChanged,
   });
 
@@ -50,6 +53,16 @@ class TransactionTypeToggle extends StatelessWidget {
               onTap: () => onChanged(TransactionType.income),
             ),
           ),
+          if (transferLabel != null)
+            Expanded(
+              child: _Segment(
+                label: transferLabel!,
+                icon: Icons.swap_horiz,
+                color: Theme.of(context).colorScheme.primary,
+                selected: value == TransactionType.transfer,
+                onTap: () => onChanged(TransactionType.transfer),
+              ),
+            ),
         ],
       ),
     );
@@ -107,16 +120,20 @@ class _Segment extends StatelessWidget {
                       ),
             ),
             const SizedBox(width: AppSpacing.xs),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: selected
-                        ? color
-                        : Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.5),
-                  ),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                      color: selected
+                          ? color
+                          : Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.5),
+                    ),
+              ),
             ),
           ],
         ),

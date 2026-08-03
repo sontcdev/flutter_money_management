@@ -22,6 +22,10 @@ import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 import 'package:flutter_money_management/src/utils/vnd_input_formatter.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
+import 'package:flutter_money_management/src/features/wallets/models/wallet.dart';
+import 'package:flutter_money_management/src/features/wallets/presentation/widgets/wallet_field.dart';
+import 'package:flutter_money_management/src/features/wallets/presentation/widgets/wallet_picker.dart';
+import 'package:flutter_money_management/src/features/wallets/providers/wallet_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 
 class AddTransactionScreen extends HookConsumerWidget {
@@ -45,12 +49,17 @@ class AddTransactionScreen extends HookConsumerWidget {
     final selectedType = useState(initialType ?? model.TransactionType.expense);
     final selectedWorkspaceId = useState<String?>(activeWorkspace?.id);
     final selectedCategoryId = useState<String?>(null);
+    final selectedWallet = useState<Wallet?>(null);
+    final selectedToWallet = useState<Wallet?>(null);
     final localReceiptPath = useState<String?>(null);
     final isLoading = useState(false);
     final allowOverdraft = useState(false);
     final categoriesAsync = selectedWorkspaceId.value == null
         ? const AsyncValue<List<Category>>.data([])
         : ref.watch(categoriesForWorkspaceProvider(selectedWorkspaceId.value!));
+    final walletsAsync = selectedWorkspaceId.value == null
+        ? const AsyncValue<List<Wallet>>.data([])
+        : ref.watch(walletsForWorkspaceProvider(selectedWorkspaceId.value!));
 
     useEffect(() {
       if (selectedWorkspaceId.value == null && activeWorkspace != null) {
@@ -58,6 +67,23 @@ class AddTransactionScreen extends HookConsumerWidget {
       }
       return null;
     }, [activeWorkspace]);
+
+    // Pre-select the default wallet so the extra required field costs no taps.
+    final wallets = walletsAsync.valueOrNull;
+    useEffect(() {
+      if (wallets == null || wallets.isEmpty) {
+        return null;
+      }
+      final current = selectedWallet.value;
+      if (current == null || !wallets.any((w) => w.id == current.id)) {
+        selectedWallet.value = wallets.firstWhere(
+          (w) => w.isDefault,
+          orElse: () => wallets.first,
+        );
+        selectedToWallet.value = null;
+      }
+      return null;
+    }, [wallets]);
 
     Future<void> handleSubmit() async {
       if (amountController.text.isEmpty) {
@@ -67,11 +93,35 @@ class AddTransactionScreen extends HookConsumerWidget {
         return;
       }
 
-      if (selectedCategoryId.value == null) {
+      final isTransfer = selectedType.value == model.TransactionType.transfer;
+
+      if (!isTransfer && selectedCategoryId.value == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(l10n.selectCategoryError)),
         );
         return;
+      }
+
+      if (selectedWallet.value == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.walletRequired)),
+        );
+        return;
+      }
+
+      if (isTransfer) {
+        if (selectedToWallet.value == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.walletRequired)),
+          );
+          return;
+        }
+        if (selectedToWallet.value!.id == selectedWallet.value!.id) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.sameWalletError)),
+          );
+          return;
+        }
       }
 
       isLoading.value = true;
@@ -90,8 +140,10 @@ class AddTransactionScreen extends HookConsumerWidget {
           amountCents: amountCents,
           currency: 'VND',
           dateTime: selectedDate.value,
-          categoryId: selectedCategoryId.value!,
+          categoryId: isTransfer ? null : selectedCategoryId.value,
           type: selectedType.value,
+          walletId: selectedWallet.value!.id,
+          toWalletId: isTransfer ? selectedToWallet.value!.id : null,
           note: noteController.text.isEmpty ? null : noteController.text,
           receiptPath: null,
           createdAt: DateTime.now(),
@@ -126,6 +178,7 @@ class AddTransactionScreen extends HookConsumerWidget {
         ref.invalidate(budgetsProvider);
         ref.invalidate(budgetsWithConsumedProvider);
         ref.invalidate(transactionsProvider);
+        ref.invalidate(walletBalancesProvider);
         ref.invalidate(
             transactionReceiptAttachmentProvider(createdTransaction.id));
         ref.invalidate(
@@ -174,7 +227,8 @@ class AddTransactionScreen extends HookConsumerWidget {
             screen: 'add_transaction_screen',
             extraContext: {
               'workspace_id': selectedWorkspaceId.value,
-              'category_id': selectedCategoryId.value!,
+              'category_id': selectedCategoryId.value,
+              'wallet_id': selectedWallet.value?.id,
               'transaction_type': selectedType.value.toString(),
               'has_receipt': localReceiptPath.value != null,
             },
@@ -212,9 +266,13 @@ class AddTransactionScreen extends HookConsumerWidget {
               value: selectedType.value,
               expenseLabel: l10n.expense,
               incomeLabel: l10n.income,
+              transferLabel: l10n.transfer,
               onChanged: (type) {
                 selectedType.value = type;
                 selectedCategoryId.value = null;
+                if (type != model.TransactionType.transfer) {
+                  selectedToWallet.value = null;
+                }
               },
             ),
             const SizedBox(height: AppSpacing.sectionGap),
@@ -281,9 +339,7 @@ class AddTransactionScreen extends HookConsumerWidget {
               ],
               prefixIcon: Icon(
                 Icons.attach_money,
-                color: selectedType.value == model.TransactionType.expense
-                    ? AppColors.expense
-                    : AppColors.income,
+                color: _amountAccent(context, selectedType.value),
               ),
               suffixIcon: Padding(
                 padding: const EdgeInsets.symmetric(
@@ -291,18 +347,58 @@ class AddTransactionScreen extends HookConsumerWidget {
                 child: Text(
                   CurrencyFormatter.getCurrencySymbol('VND'),
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        color:
-                            selectedType.value == model.TransactionType.expense
-                                ? AppColors.expense
-                                : AppColors.income,
+                        color: _amountAccent(context, selectedType.value),
                       ),
                 ),
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
 
-            // Category Selector - Priority 2
-            categoriesAsync.when(
+            // Wallet Selector - required; pre-filled with the default wallet.
+            WalletField(
+              label: selectedType.value == model.TransactionType.transfer
+                  ? l10n.fromWallet
+                  : l10n.selectWallet,
+              wallet: selectedWallet.value,
+              onTap: () async {
+                final picked = await showWalletPicker(
+                  context,
+                  title: selectedType.value == model.TransactionType.transfer
+                      ? l10n.fromWallet
+                      : l10n.selectWallet,
+                  selectedWalletId: selectedWallet.value?.id,
+                  excludeWalletId: selectedToWallet.value?.id,
+                  workspaceId: selectedWorkspaceId.value,
+                );
+                if (picked != null) {
+                  selectedWallet.value = picked;
+                }
+              },
+            ),
+            if (selectedType.value == model.TransactionType.transfer) ...[
+              const SizedBox(height: AppSpacing.lg),
+              WalletField(
+                label: l10n.toWallet,
+                wallet: selectedToWallet.value,
+                onTap: () async {
+                  final picked = await showWalletPicker(
+                    context,
+                    title: l10n.toWallet,
+                    selectedWalletId: selectedToWallet.value?.id,
+                    excludeWalletId: selectedWallet.value?.id,
+                    workspaceId: selectedWorkspaceId.value,
+                  );
+                  if (picked != null) {
+                    selectedToWallet.value = picked;
+                  }
+                },
+              ),
+            ],
+            const SizedBox(height: AppSpacing.lg),
+
+            // Category Selector - Priority 2. Transfers carry no category.
+            if (selectedType.value != model.TransactionType.transfer)
+              categoriesAsync.when(
               data: (categories) {
                 // Filter categories by selected transaction type
                 final filteredCategories = categories.where((c) {
@@ -410,10 +506,11 @@ class AddTransactionScreen extends HookConsumerWidget {
                   ],
                 );
               },
-              loading: () => const CircularProgressIndicator(),
-              error: (err, stack) => Text(l10n.errorWithMessage('$err')),
-            ),
-            const SizedBox(height: AppSpacing.lg),
+                loading: () => const CircularProgressIndicator(),
+                error: (err, stack) => Text(l10n.errorWithMessage('$err')),
+              ),
+            if (selectedType.value != model.TransactionType.transfer)
+              const SizedBox(height: AppSpacing.lg),
 
             // Date Picker - Priority 3 with Quick Select
             Column(
@@ -605,6 +702,19 @@ class AddTransactionScreen extends HookConsumerWidget {
         ),
       ),
     );
+  }
+
+  /// Tint of the amount field: red for expense, green for income, and the
+  /// theme primary for transfers, which are neither.
+  Color _amountAccent(BuildContext context, model.TransactionType type) {
+    switch (type) {
+      case model.TransactionType.expense:
+        return AppColors.expense;
+      case model.TransactionType.income:
+        return AppColors.income;
+      case model.TransactionType.transfer:
+        return Theme.of(context).colorScheme.primary;
+    }
   }
 
   bool _isSameDay(DateTime date1, DateTime date2) {

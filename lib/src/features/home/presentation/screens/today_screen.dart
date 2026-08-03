@@ -8,6 +8,8 @@ import 'package:flutter_money_management/src/features/categories/presentation/wi
 import 'package:flutter_money_management/src/features/home/providers/home_tab_provider.dart';
 import 'package:flutter_money_management/src/features/settings/providers/settings_preferences_providers.dart';
 import 'package:flutter_money_management/src/features/transactions/presentation/widgets/transaction_item.dart';
+import 'package:flutter_money_management/src/features/wallets/models/wallet.dart';
+import 'package:flutter_money_management/src/features/wallets/providers/wallet_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/presentation/widgets/workspace_invite_notification_section.dart';
 import 'package:flutter_money_management/src/features/workspace/presentation/widgets/workspace_switcher.dart';
 import 'package:flutter_money_management/src/features/workspace/services/workspace_sync_helper.dart';
@@ -21,6 +23,7 @@ import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_metric_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_section_header.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
+import 'package:flutter_money_management/src/utils/category_icons.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/cycle_utils.dart';
 
@@ -86,6 +89,8 @@ class TodayScreen extends ConsumerWidget {
                   // Hero Summary
                   _buildHeroSummary(
                       context, l10n, transactions, budgetsAsync, monthStartDay),
+
+                  const _WalletBalanceStrip(),
 
                   const SizedBox(height: AppSpacing.sectionGap),
 
@@ -613,9 +618,37 @@ class TodayScreen extends ConsumerWidget {
             return Consumer(
               builder: (context, ref, _) {
                 final categoriesAsync = ref.watch(categoriesProvider);
+                final wallets =
+                    ref.watch(walletsProvider).valueOrNull ?? const <Wallet>[];
 
                 return categoriesAsync.when(
                   data: (categories) {
+                    // Transfers carry no category: label them "from -> to".
+                    if (transaction.type == model.TransactionType.transfer) {
+                      final from = wallets
+                          .where((w) => w.id == transaction.walletId)
+                          .firstOrNull;
+                      final to = wallets
+                          .where((w) => w.id == transaction.toWalletId)
+                          .firstOrNull;
+
+                      return TransactionItem.compact(
+                        transaction: transaction,
+                        categoryName:
+                            '${from?.name ?? l10n.unknown} → ${to?.name ?? l10n.unknown}',
+                        categoryIcon: Icons.swap_horiz,
+                        categoryColor: Theme.of(context).colorScheme.primary,
+                        showChevron: true,
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            '/transaction-detail',
+                            arguments: transaction.id,
+                          );
+                        },
+                      );
+                    }
+
                     final category = categories.firstWhere(
                       (c) => c.id == transaction.categoryId,
                       orElse: () => categories.first,
@@ -643,6 +676,116 @@ class TodayScreen extends ConsumerWidget {
             );
           }),
         ],
+      ),
+    );
+  }
+}
+
+/// Horizontally scrolling per-wallet balance cards shown under the hero
+/// summary. Renders nothing while loading, on error, or when the workspace has
+/// no wallets yet, so the home screen layout never jumps.
+class _WalletBalanceStrip extends ConsumerWidget {
+  const _WalletBalanceStrip();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final wallets = ref.watch(walletsProvider).valueOrNull;
+    if (wallets == null || wallets.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final balances =
+        ref.watch(walletBalancesProvider).valueOrNull ?? const <String, int>{};
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppSectionHeader(
+          title: l10n.wallets,
+          trailing: Text(
+            l10n.manageWallets,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+          ),
+          onTrailingTap: () => Navigator.pushNamed(context, '/wallets'),
+        ),
+        SizedBox(
+          height: 96,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.screenPadding,
+            ),
+            itemCount: wallets.length,
+            separatorBuilder: (context, index) =>
+                const SizedBox(width: AppSpacing.md),
+            itemBuilder: (context, index) {
+              final wallet = wallets[index];
+              return _WalletBalanceCard(
+                wallet: wallet,
+                balance: balances[wallet.id] ?? wallet.openingBalanceMinor,
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _WalletBalanceCard extends StatelessWidget {
+  const _WalletBalanceCard({required this.wallet, required this.balance});
+
+  final Wallet wallet;
+  final int balance;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = Color(wallet.colorValue);
+
+    return InkWell(
+      onTap: () => Navigator.pushNamed(context, '/wallets'),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      child: Container(
+        width: 160,
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Icon(CategoryIcons.getIcon(wallet.iconName),
+                    size: AppSpacing.iconSizeSm, color: color),
+                const SizedBox(width: AppSpacing.xs),
+                Expanded(
+                  child: Text(
+                    wallet.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.labelLarge,
+                  ),
+                ),
+              ],
+            ),
+            Text(
+              CurrencyFormatter.formatVNDFromCents(balance),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: balance < 0 ? theme.colorScheme.error : null,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
