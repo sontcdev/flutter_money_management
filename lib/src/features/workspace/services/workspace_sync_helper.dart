@@ -4,6 +4,7 @@ import 'package:flutter_money_management/src/features/budgets/providers/budget_p
 import 'package:flutter_money_management/src/features/categories/providers/category_providers.dart';
 import 'package:flutter_money_management/src/features/recurring/providers/recurring_providers.dart';
 import 'package:flutter_money_management/src/features/transactions/providers/transaction_providers.dart';
+import 'package:flutter_money_management/src/features/wallets/providers/wallet_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/utils/app_logger.dart';
 
@@ -63,6 +64,10 @@ void invalidateCoreDataProviders(Object ref) {
   _invalidate(ref, budgetsWithConsumedProvider);
   _invalidate(ref, recurringTransactionsProvider);
   _invalidate(ref, upcomingRecurringOccurrencesProvider);
+  // Wallets are workspace-scoped too: without this the previous workspace's
+  // wallets stay cached after switching workspace.
+  _invalidate(ref, walletsProvider);
+  _invalidate(ref, allWalletsIncludingArchivedProvider);
 }
 
 T _read<T>(Object ref, ProviderListenable<T> provider) {

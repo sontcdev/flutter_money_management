@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/notifications/providers/notification_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
+import 'package:flutter_money_management/src/features/workspace/services/workspace_sync_helper.dart';
 
 /// Widget to display current workspace and allow switching
 class WorkspaceSwitcher extends ConsumerWidget {
@@ -146,8 +147,11 @@ class WorkspaceSwitcher extends ConsumerWidget {
               // Switch to selected workspace
               ref.read(activeWorkspaceIdProvider.notifier).state = value;
 
-              // Refresh data after switching
+              // Refresh data after switching: every core provider is
+              // workspace-scoped, so keeping the old cache shows the previous
+              // workspace's wallets/categories/transactions.
               ref.invalidate(workspaceListProvider);
+              invalidateCoreDataProviders(ref);
 
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
