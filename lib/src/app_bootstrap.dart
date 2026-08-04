@@ -10,6 +10,7 @@ import 'i18n/locale_provider.dart';
 import 'i18n/theme_provider.dart';
 import 'config/supabase_config.dart';
 import 'ui/widgets/app_lifecycle_sync_coordinator.dart';
+import 'app/presentation/widgets/splash_view.dart';
 
 class AppBootstrap extends StatefulWidget {
   const AppBootstrap({super.key});
@@ -20,14 +21,12 @@ class AppBootstrap extends StatefulWidget {
 
 class _AppBootstrapState extends State<AppBootstrap> {
   SharedPreferences? _sharedPreferences;
-  bool _minDurationPassed = false;
   ThemeMode _themeMode = ThemeMode.light; // Default light mode
 
   @override
   void initState() {
     super.initState();
     _init();
-    _enforceMinimumSplashDuration();
   }
 
   Future<void> _init() async {
@@ -76,63 +75,14 @@ class _AppBootstrapState extends State<AppBootstrap> {
     }
   }
 
-  Future<void> _enforceMinimumSplashDuration() async {
-    // Ensure splash screen is shown for at least 1.5 seconds
-    await Future.delayed(const Duration(milliseconds: 1500));
-    if (mounted) {
-      AppLogger.debug('Minimum splash duration elapsed', name: 'MM.App');
-      setState(() {
-        _minDurationPassed = true;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    // Show splash screen until both initialization is complete AND minimum duration has passed
-    if (_sharedPreferences == null || !_minDurationPassed) {
-      // Determine background color based on theme mode
-      final backgroundColor = _themeMode == ThemeMode.dark
-          ? const Color(0xFF121212) // Dark background
-          : Colors.white; // Light background
-
-      // Determine loading indicator and text color based on theme mode
-      final accentColor = _themeMode == ThemeMode.dark
-          ? Colors.white // White for dark mode
-          : const Color(0xFFE91E63); // Pink for light mode
-
+    // Show the splash only while bootstrap is still running; the route gate
+    // (SplashScreen) keeps showing the very same visual afterwards.
+    if (_sharedPreferences == null) {
       return MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          backgroundColor: backgroundColor,
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // App Icon
-                Image.asset(
-                  'assets/icon/icon.png',
-                  width: 120,
-                  height: 120,
-                ),
-                const SizedBox(height: 32),
-                // Loading Indicator
-                CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(accentColor),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'MyMoney',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: accentColor,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        home: SplashView(isDark: _themeMode == ThemeMode.dark),
       );
     }
 
