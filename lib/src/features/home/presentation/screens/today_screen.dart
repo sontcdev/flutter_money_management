@@ -323,6 +323,10 @@ class TodayScreen extends ConsumerWidget {
                     '${occurrences.length} ${l10n.notification.toLowerCase()}',
                 icon: Icons.schedule,
                 tone: MetricCardTone.warning,
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.pushNamed(context, '/recurring-transactions');
+                },
               ),
             ],
           ),
