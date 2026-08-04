@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
@@ -5,6 +7,10 @@ import 'package:flutter_money_management/l10n/app_localizations.dart';
 class PieChartWidget extends StatelessWidget {
   final List<ChartData> data;
   final String? title;
+
+  /// Slices thinner than this are left unlabelled: the text would not fit
+  /// inside the arc and would spill over the neighbouring slices.
+  static const double _minLabelPercentage = 5;
 
   const PieChartWidget({
     super.key,
@@ -20,27 +26,45 @@ class PieChartWidget extends StatelessWidget {
       );
     }
 
-    return AspectRatio(
-      aspectRatio: 1.3,
-      child: PieChart(
-        PieChartData(
-          sections: data.map((item) {
-            return PieChartSectionData(
-              value: item.value,
-              title: '${item.percentage.toStringAsFixed(1)}%',
-              color: item.color,
-              radius: 100,
-              titleStyle: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            );
-          }).toList(),
-          sectionsSpace: 2,
-          centerSpaceRadius: 40,
-        ),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // The chart must fit the box it is given; a fixed radius overflows on
+        // narrow phones, which is what clipped the old chart.
+        final width = constraints.maxWidth.isFinite && constraints.maxWidth > 0
+            ? constraints.maxWidth
+            : 280.0;
+        final diameter = math.min(width, 260.0);
+        final centerSpaceRadius = diameter * 0.18;
+        final sectionRadius = diameter / 2 - centerSpaceRadius;
+        final labelFontSize = math.max(10.0, sectionRadius * 0.2);
+
+        return SizedBox(
+          height: diameter,
+          child: PieChart(
+            PieChartData(
+              sections: data.map((item) {
+                final showLabel = item.percentage >= _minLabelPercentage;
+                return PieChartSectionData(
+                  value: item.value,
+                  title: showLabel
+                      ? '${item.percentage.toStringAsFixed(1)}%'
+                      : '',
+                  color: item.color,
+                  radius: sectionRadius,
+                  titlePositionPercentageOffset: 0.6,
+                  titleStyle: TextStyle(
+                    fontSize: labelFontSize,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                );
+              }).toList(),
+              sectionsSpace: 2,
+              centerSpaceRadius: centerSpaceRadius,
+            ),
+          ),
+        );
+      },
     );
   }
 }
