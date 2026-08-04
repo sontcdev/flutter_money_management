@@ -176,7 +176,9 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
           side: const BorderSide(color: AppColors.border, width: 1),
         ),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        // No horizontal margin: screens already apply AppSpacing.screenPadding
+        // to their scroll view, so a card margin would double the edge inset.
+        margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -365,7 +367,9 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
           side: const BorderSide(color: AppColors.borderDark, width: 1),
         ),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        // No horizontal margin: screens already apply AppSpacing.screenPadding
+        // to their scroll view, so a card margin would double the edge inset.
+        margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
