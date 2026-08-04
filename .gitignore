@@ -123,3 +123,7 @@ app.*.symbols
 /.vscode/settings.json
 /logs/log.txt
 /.idea/
+
+# Local build artifacts and Supabase CLI state
+build_output/
+supabase/.temp/

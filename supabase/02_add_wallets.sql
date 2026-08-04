@@ -414,3 +414,7 @@ grant execute on all routines in schema public to authenticated;
 grant all on all routines in schema public to service_role;
 
 commit;
+
+-- PostgREST caches the schema; without this reload the client keeps returning
+-- PGRST205 "Could not find the table 'public.wallets' in the schema cache".
+notify pgrst, 'reload schema';
