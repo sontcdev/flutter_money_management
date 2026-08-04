@@ -73,22 +73,51 @@ class TransactionItem extends StatelessWidget {
     }
 
     final isCompact = density == TransactionItemDensity.compact;
+    final leading = _buildLeading(context);
+    final subtitle = _buildSubtitle(context);
 
-    return ListTile(
+    // ListTile's trailing/leading slots are hard-capped at 56px tall by
+    // Flutter internally (unaffected by isThreeLine), so a two-line
+    // trailing (amount + date) overflows it. A plain Row avoids that cap.
+    return InkWell(
       onTap: onTap,
-      contentPadding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.screenPadding,
-        vertical: isCompact ? AppSpacing.compactGap : AppSpacing.sm,
-      ),
-      leading: _buildLeading(context),
-      title: Text(
-        categoryName,
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.w600,
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppSpacing.screenPadding,
+          vertical: isCompact ? AppSpacing.compactGap : AppSpacing.sm,
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            if (leading != null) ...[
+              leading,
+              const SizedBox(width: AppSpacing.sm),
+            ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    categoryName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
+                    subtitle,
+                  ],
+                ],
+              ),
             ),
+            const SizedBox(width: AppSpacing.sm),
+            _buildTrailing(context, formattedAmount, color),
+          ],
+        ),
       ),
-      subtitle: _buildSubtitle(context),
-      trailing: _buildTrailing(context, formattedAmount, color),
     );
   }
 
