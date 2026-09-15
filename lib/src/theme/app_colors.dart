@@ -20,7 +20,7 @@ class AppColors {
   static const Color primarySoftDark = Color(0xFF12301E);
 
   // Surfaces
-  static const Color background = Color(0xFFF8F6F2);
+  static const Color background = Color(0xFFF2F1EE);
   static const Color backgroundDark = Color(0xFF110F09);
   static const Color surface = Color(0xFFFFFFFF);
   static const Color surfaceDark = Color(0xFF1D1A13);
@@ -39,6 +39,12 @@ class AppColors {
   // Borders
   static const Color border = Color(0xFFE0DED7);
   static const Color borderDark = Color(0xFF35332C);
+
+  // iOS separators & fills
+  static const Color separator = Color(0xFFE4E2DC);
+  static const Color separatorDark = Color(0xFF35332C);
+  static const Color iosFill = Color(0x1F78766E);
+  static const Color iosFillDark = Color(0x3D8F8C83);
 
   // Status
   static const Color error = Color(0xFFCF4040);

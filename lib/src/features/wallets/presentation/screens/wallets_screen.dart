@@ -223,7 +223,7 @@ class _WalletRow extends StatelessWidget {
         height: 40,
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
         ),
         child: Icon(CategoryIcons.getIcon(wallet.iconName),
             size: 20, color: color),

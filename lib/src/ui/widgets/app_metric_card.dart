@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_colors.dart';
+import 'app_card.dart';
 
 enum MetricCardSize {
   hero, // Large display for main metrics
@@ -76,16 +77,11 @@ class AppMetricCard extends StatelessWidget {
     final effectiveColor = _getEffectiveColor(context);
     final effectiveBackgroundColor = _getEffectiveBackgroundColor(context);
 
-    final card = Card(
+    final card = AppCard(
       color: effectiveBackgroundColor,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        child: Padding(
-          padding: _getPadding(),
-          child: _buildContent(context, effectiveColor),
-        ),
-      ),
+      onTap: onTap,
+      padding: _getPadding(),
+      child: _buildContent(context, effectiveColor),
     );
 
     return card;
@@ -163,7 +159,7 @@ class AppMetricCard extends StatelessWidget {
                 padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
                   color: effectiveColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
                 ),
                 child: Icon(
                   icon,
@@ -224,7 +220,7 @@ class AppMetricCard extends StatelessWidget {
                 padding: const EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
                   color: effectiveColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
                 ),
                 child: Icon(
                   icon,

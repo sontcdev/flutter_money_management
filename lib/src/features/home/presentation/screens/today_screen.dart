@@ -223,7 +223,7 @@ class TodayScreen extends ConsumerWidget {
                               decoration: BoxDecoration(
                                 color: tint.withValues(alpha: 0.15),
                                 borderRadius:
-                                    BorderRadius.circular(AppSpacing.radiusSm),
+                                    BorderRadius.circular(AppSpacing.radiusCard),
                               ),
                               alignment: Alignment.center,
                               child: category != null
@@ -415,7 +415,7 @@ class TodayScreen extends ConsumerWidget {
             end: Alignment.bottomRight,
             colors: gradientColors,
           ),
-          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusHero),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -475,7 +475,7 @@ class TodayScreen extends ConsumerWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -752,13 +752,13 @@ class _WalletBalanceCard extends StatelessWidget {
 
     return InkWell(
       onTap: () => Navigator.pushNamed(context, '/wallets'),
-      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
       child: Container(
         width: 160,
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           color: theme.colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

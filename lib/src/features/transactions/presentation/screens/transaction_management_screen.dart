@@ -6,9 +6,12 @@ import 'package:flutter_money_management/src/features/budgets/models/budget.dart
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
+import 'package:flutter_money_management/src/features/transactions/presentation/widgets/transaction_item.dart';
 import 'package:flutter_money_management/src/features/workspace/services/workspace_sync_helper.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
-import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
+import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
@@ -145,25 +148,28 @@ class TransactionManagementScreen extends HookConsumerWidget {
                   );
 
                   if (filteredTransactions.isEmpty) {
+                    final hasFilter = searchQuery.value.isNotEmpty ||
+                        selectedCategoryId.value != null ||
+                        selectedBudgetId.value != null;
+                    final emptyState = hasFilter
+                        ? EmptyState.noSearchResult(
+                            icon: Icons.search_off,
+                            title: l10n.noTransactionsMatch,
+                            message: l10n.adjustSearchTerms,
+                            compact: true,
+                          )
+                        : EmptyState(
+                            icon: Icons.receipt_long,
+                            title: l10n.noTransactions,
+                            message: l10n.onboardingSubtitle,
+                            compact: true,
+                          );
                     return ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
                         SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.5,
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.receipt_long,
-                                    size: 64, color: Colors.grey[400]),
-                                const SizedBox(height: 16),
-                                Text(
-                                  l10n.noTransactions,
-                                  style: Theme.of(context).textTheme.titleLarge,
-                                ),
-                              ],
-                            ),
-                          ),
+                          height: MediaQuery.of(context).size.height * 0.6,
+                          child: emptyState,
                         ),
                       ],
                     );
@@ -171,107 +177,46 @@ class TransactionManagementScreen extends HookConsumerWidget {
 
                   return categoriesAsync.when(
                     data: (categories) {
-                      return ListView.builder(
+                      final categoryMap = {
+                        for (final c in categories) c.id: c
+                      };
+                      return ListView(
                         physics: const AlwaysScrollableScrollPhysics(),
-                        itemCount: filteredTransactions.length,
-                        itemBuilder: (context, index) {
-                          final transaction = filteredTransactions[index];
-                          final category = categories.firstWhere(
-                            (c) => c.id == transaction.categoryId,
-                            orElse: () => Category(
-                              id: '',
-                              name: l10n.unknown,
-                              iconName: '📦',
-                              colorValue: Colors.grey.toARGB32(),
-                              createdAt: DateTime.now(),
-                              updatedAt: DateTime.now(),
-                            ),
-                          );
-
-                          final isSelected = selectedTransactionIds.value
-                              .contains(transaction.id);
-                          final isExpense =
-                              transaction.type == TransactionType.expense;
-                          final amountColor =
-                              isExpense ? AppColors.expense : AppColors.income;
-                          final amountPrefix = isExpense ? '-' : '+';
-
-                          return ListTile(
-                            leading: isSelectionMode.value
-                                ? Checkbox(
-                                    value: isSelected,
-                                    onChanged: (value) {
-                                      final newSet = Set<String>.from(
-                                          selectedTransactionIds.value);
-                                      if (value == true) {
-                                        newSet.add(transaction.id);
-                                      } else {
-                                        newSet.remove(transaction.id);
-                                      }
-                                      selectedTransactionIds.value = newSet;
-                                    },
-                                  )
-                                : CircleAvatar(
-                                    backgroundColor:
-                                        getCategoryColor(category.colorValue)
-                                            .withValues(alpha: 0.1),
-                                    child: CategoryIconWidget(
-                                      iconName: category.iconName,
-                                      size: 20,
-                                      color:
-                                          getCategoryColor(category.colorValue),
-                                    ),
-                                  ),
-                            title: Text(
-                              transaction.note?.isNotEmpty == true
-                                  ? transaction.note!
-                                  : category.name,
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.screenPadding,
+                          vertical: AppSpacing.md,
+                        ),
+                        children: [
+                          AppCard(
+                            margin: EdgeInsets.zero,
+                            clipBehavior: Clip.antiAlias,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: AppSpacing.xs),
+                            child: Column(
                               children: [
-                                Text(category.name),
-                                Text(
-                                  formatLocalizedDate(
-                                      context, transaction.dateTime),
-                                  style: Theme.of(context).textTheme.bodySmall,
-                                ),
+                                for (var i = 0;
+                                    i < filteredTransactions.length;
+                                    i++) ...[
+                                  if (i > 0)
+                                    Divider(
+                                      height: 1,
+                                      color: Theme.of(context).dividerColor,
+                                      indent: AppSpacing.lg,
+                                      endIndent: AppSpacing.lg,
+                                    ),
+                                  _buildTransactionRow(
+                                    context,
+                                    l10n,
+                                    filteredTransactions[i],
+                                    categoryMap,
+                                    selectedTransactionIds,
+                                    isSelectionMode,
+                                  ),
+                                ],
                               ],
                             ),
-                            trailing: Text(
-                              '$amountPrefix${CurrencyFormatter.formatVNDFromCents(transaction.amountCents, locale: l10n.localeName)}',
-                              style: TextStyle(
-                                color: amountColor,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            isThreeLine: true,
-                            onTap: () {
-                              if (isSelectionMode.value) {
-                                final newSet = Set<String>.from(
-                                    selectedTransactionIds.value);
-                                if (isSelected) {
-                                  newSet.remove(transaction.id);
-                                } else {
-                                  newSet.add(transaction.id);
-                                }
-                                selectedTransactionIds.value = newSet;
-                              } else {
-                                Navigator.pushNamed(
-                                  context,
-                                  '/transaction-detail',
-                                  arguments: transaction.id,
-                                );
-                              }
-                            },
-                            onLongPress: () {
-                              if (!isSelectionMode.value) {
-                                isSelectionMode.value = true;
-                                selectedTransactionIds.value = {transaction.id};
-                              }
-                            },
-                          );
-                        },
+                          ),
+                        ],
                       );
                     },
                     loading: () =>
@@ -288,6 +233,79 @@ class TransactionManagementScreen extends HookConsumerWidget {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionRow(
+    BuildContext context,
+    AppLocalizations l10n,
+    Transaction transaction,
+    Map<String, Category> categoryMap,
+    ValueNotifier<Set<String>> selectedTransactionIds,
+    ValueNotifier<bool> isSelectionMode,
+  ) {
+    final category = categoryMap[transaction.categoryId];
+    final categoryColor =
+        category != null ? getCategoryColor(category.colorValue) : null;
+    final isSelected =
+        selectedTransactionIds.value.contains(transaction.id);
+
+    void toggle() {
+      final newSet = Set<String>.from(selectedTransactionIds.value);
+      if (isSelected) {
+        newSet.remove(transaction.id);
+      } else {
+        newSet.add(transaction.id);
+      }
+      selectedTransactionIds.value = newSet;
+    }
+
+    final item = TransactionItem(
+      transaction: transaction,
+      categoryName: category?.name ?? l10n.unknown,
+      categoryIconName: category?.iconName ?? '📦',
+      categoryColor: categoryColor,
+      showDate: true,
+      showChevron: !isSelectionMode.value,
+      onTap: () {
+        if (isSelectionMode.value) {
+          toggle();
+        } else {
+          Navigator.pushNamed(
+            context,
+            '/transaction-detail',
+            arguments: transaction.id,
+          );
+        }
+      },
+    );
+
+    if (!isSelectionMode.value) {
+      return GestureDetector(
+        onLongPress: () {
+          isSelectionMode.value = true;
+          selectedTransactionIds.value = {transaction.id};
+        },
+        child: item,
+      );
+    }
+
+    return Container(
+      color: isSelected
+          ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.08)
+          : null,
+      child: Row(
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: AppSpacing.sm),
+            child: Checkbox(
+              value: isSelected,
+              onChanged: (_) => toggle(),
+            ),
+          ),
+          Expanded(child: item),
         ],
       ),
     );
@@ -312,7 +330,6 @@ class TransactionManagementScreen extends HookConsumerWidget {
             decoration: InputDecoration(
               prefixIcon: const Icon(Icons.search),
               hintText: l10n.searchByNameOrAmount,
-              border: const OutlineInputBorder(),
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               suffixIcon: searchController.text.isNotEmpty
@@ -334,7 +351,6 @@ class TransactionManagementScreen extends HookConsumerWidget {
                   initialValue: selectedCategoryId.value,
                   decoration: InputDecoration(
                     labelText: l10n.category,
-                    border: const OutlineInputBorder(),
                     contentPadding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
@@ -363,7 +379,6 @@ class TransactionManagementScreen extends HookConsumerWidget {
                   initialValue: selectedBudgetId.value,
                   decoration: InputDecoration(
                     labelText: l10n.budget,
-                    border: const OutlineInputBorder(),
                     contentPadding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),

@@ -295,7 +295,7 @@ class WalletEditScreen extends HookConsumerWidget {
                       color: isSelected
                           ? previewColor.withValues(alpha: 0.15)
                           : theme.colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
                       border: Border.all(
                         color: isSelected
                             ? previewColor

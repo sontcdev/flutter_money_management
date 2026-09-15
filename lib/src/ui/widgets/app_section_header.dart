@@ -63,7 +63,7 @@ class AppSectionHeader extends StatelessWidget {
             onTrailingTap != null
                 ? InkWell(
                     onTap: onTrailingTap,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
                     child: Padding(
                       padding: const EdgeInsets.all(AppSpacing.sm),
                       child: trailing,

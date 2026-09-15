@@ -246,53 +246,53 @@ class TransactionDetailScreen extends ConsumerWidget {
                           vertical: AppSpacing.xs,
                         ),
                         child: Column(
-                            children: [
-                              _DetailRow(
-                                label: l10n.type,
-                                value: typeLabel,
-                                valueColor: amountColor,
-                              ),
-                              if (fromWallet != null) ...[
-                                Divider(
-                                    height: 1,
-                                    color: Theme.of(context).dividerColor),
-                                _DetailRow(
-                                  label: isTransfer
-                                      ? l10n.fromWallet
-                                      : l10n.wallets,
-                                  value: fromWallet.name,
-                                ),
-                              ],
-                              if (toWallet != null) ...[
-                                Divider(
-                                    height: 1,
-                                    color: Theme.of(context).dividerColor),
-                                _DetailRow(
-                                  label: l10n.toWallet,
-                                  value: toWallet.name,
-                                ),
-                              ],
+                          children: [
+                            _DetailRow(
+                              label: l10n.type,
+                              value: typeLabel,
+                              valueColor: amountColor,
+                            ),
+                            if (fromWallet != null) ...[
                               Divider(
-                                  height: 1, color: Theme.of(context).dividerColor),
+                                  height: 1,
+                                  color: Theme.of(context).dividerColor),
                               _DetailRow(
-                                label: l10n.date,
-                                value: formatLocalizedFullDate(
-                                    context, transaction.dateTime),
+                                label:
+                                    isTransfer ? l10n.fromWallet : l10n.wallets,
+                                value: fromWallet.name,
                               ),
-                              if (transaction.note != null &&
-                                  transaction.note!.isNotEmpty) ...[
-                                Divider(
-                                    height: 1,
-                                    color: Theme.of(context).dividerColor),
-                                _DetailRow(
-                                  label: l10n.note,
-                                  value: transaction.note!,
-                                  isMultiline: true,
-                                ),
-                              ],
                             ],
-                          ),
+                            if (toWallet != null) ...[
+                              Divider(
+                                  height: 1,
+                                  color: Theme.of(context).dividerColor),
+                              _DetailRow(
+                                label: l10n.toWallet,
+                                value: toWallet.name,
+                              ),
+                            ],
+                            Divider(
+                                height: 1,
+                                color: Theme.of(context).dividerColor),
+                            _DetailRow(
+                              label: l10n.date,
+                              value: formatLocalizedFullDate(
+                                  context, transaction.dateTime),
+                            ),
+                            if (transaction.note != null &&
+                                transaction.note!.isNotEmpty) ...[
+                              Divider(
+                                  height: 1,
+                                  color: Theme.of(context).dividerColor),
+                              _DetailRow(
+                                label: l10n.note,
+                                value: transaction.note!,
+                                isMultiline: true,
+                              ),
+                            ],
+                          ],
                         ),
+                      ),
                       const SizedBox(height: AppSpacing.lg),
 
                       // Delete / Edit action buttons
@@ -352,30 +352,29 @@ class TransactionDetailScreen extends ConsumerWidget {
                                     return const SizedBox.shrink();
                                   }
 
-                                  return Card(
+                                  return AppCard(
                                     clipBehavior: Clip.antiAlias,
-                                    child: InkWell(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                _FullScreenImage(
-                                              imageUrl: imageUrl,
-                                            ),
+                                    padding: EdgeInsets.zero,
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              _FullScreenImage(
+                                            imageUrl: imageUrl,
                                           ),
-                                        );
-                                      },
-                                      child: Image.network(
-                                        imageUrl,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) =>
-                                            const SizedBox(
-                                          height: 120,
-                                          child: Center(
-                                              child: Icon(
-                                                  Icons.broken_image_outlined)),
                                         ),
+                                      );
+                                    },
+                                    child: Image.network(
+                                      imageUrl,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, __, ___) =>
+                                          const SizedBox(
+                                        height: 120,
+                                        child: Center(
+                                            child: Icon(
+                                                Icons.broken_image_outlined)),
                                       ),
                                     ),
                                   );

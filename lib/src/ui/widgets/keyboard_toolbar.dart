@@ -23,7 +23,7 @@ class KeyboardToolbar extends StatelessWidget {
         color: Theme.of(context).scaffoldBackgroundColor,
         border: Border(
           top: BorderSide(
-            color: Colors.grey.shade300,
+            color: Theme.of(context).dividerColor,
             width: 0.5,
           ),
         ),

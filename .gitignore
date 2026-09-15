@@ -127,3 +127,8 @@ app.*.symbols
 # Local build artifacts and Supabase CLI state
 build_output/
 supabase/.temp/
+
+# Environment secrets
+.env
+.env.*
+!.env.example

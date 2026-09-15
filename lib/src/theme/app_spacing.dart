@@ -35,6 +35,13 @@ class AppSpacing {
   static const double radiusXl = 28.0;
   static const double radiusFull = 999.0;
 
+  // iOS design tokens
+  static const double radiusCard = 12.0;
+  static const double radiusCta = 14.0;
+  static const double radiusHero = 20.0;
+  static const double cellMinHeight = 56.0;
+  static const double cellInset = 66.0;
+
   // Additional spacing for hero sections and compact lists
   static const double heroSpacing = 40.0; // For large hero sections
   static const double compactGap = 6.0; // Tighter spacing for compact lists

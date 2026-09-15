@@ -206,7 +206,7 @@ class WorkspaceManagementScreen extends HookConsumerWidget {
                           decoration: BoxDecoration(
                             color: Theme.of(context).colorScheme.primary,
                             borderRadius:
-                                BorderRadius.circular(AppSpacing.radiusMd),
+                                BorderRadius.circular(AppSpacing.radiusCard),
                           ),
                           alignment: Alignment.center,
                           child: Text(

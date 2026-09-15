@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../theme/app_spacing.dart';
 
 class ConfirmDeleteDialog extends StatelessWidget {
   final String? title;
@@ -20,14 +21,17 @@ class ConfirmDeleteDialog extends StatelessWidget {
       title: Text(title ?? l10n.confirmDelete),
       content: Text(message ?? l10n.confirmDeleteTransaction),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusHero),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
           child: Text(
             l10n.cancel,
-            style: TextStyle(color: Colors.grey[600]),
+            style: TextStyle(
+              color:
+                  Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
           ),
         ),
         TextButton(

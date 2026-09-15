@@ -6,6 +6,7 @@ import 'package:flutter_money_management/src/features/notifications/providers/no
 import 'package:flutter_money_management/src/features/workspace/models/workspace_management_models.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_management_providers.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_section_header.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
@@ -58,21 +59,13 @@ class WorkspaceInviteNotificationSection extends ConsumerWidget {
               showWhenEmpty: showWhenEmpty,
             ),
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, _) => Card(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.cardPadding),
-                child: Text(l10n.errorWithMessage('$error')),
-              ),
-            ),
+            error: (error, _) =>
+                AppCard(child: Text(l10n.errorWithMessage('$error'))),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Card(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.cardPadding),
-            child: Text(l10n.errorWithMessage('$error')),
-          ),
-        ),
+        error: (error, _) =>
+            AppCard(child: Text(l10n.errorWithMessage('$error'))),
       ),
     );
   }
@@ -104,12 +97,7 @@ class _InviteNotificationList extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         if (invites.isEmpty)
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.cardPadding),
-              child: Text(l10n.noWorkspaceInviteNotifications),
-            ),
-          )
+          AppCard(child: Text(l10n.noWorkspaceInviteNotifications))
         else
           ...invites.map(
             (invite) => Padding(
@@ -142,73 +130,70 @@ class _InviteNotificationCardState
     final invite = widget.invite;
     final invitedBy = invite.invitedByDisplayName ?? invite.invitedByEmail;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.cardPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.sm),
+                decoration: BoxDecoration(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .primaryContainer
+                      .withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+                ),
+                child: Icon(
+                  Icons.group_add_outlined,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  l10n.workspaceInviteMessage(invite.workspaceName),
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+            ],
+          ),
+          if (invitedBy != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              l10n.workspaceInviteFrom(invitedBy),
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
+          const SizedBox(height: AppSpacing.md),
+          SizedBox(
+            width: double.infinity,
+            child: Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.sm),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .primaryContainer
-                        .withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                  ),
-                  child: Icon(
-                    Icons.group_add_outlined,
-                    color: Theme.of(context).colorScheme.primary,
+                Expanded(
+                  child: FilledButton(
+                    onPressed: _isSubmitting ? null : _acceptInvite,
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(l10n.join),
                   ),
                 ),
-                const SizedBox(width: AppSpacing.md),
+                const SizedBox(width: AppSpacing.sm),
                 Expanded(
-                  child: Text(
-                    l10n.workspaceInviteMessage(invite.workspaceName),
-                    style: Theme.of(context).textTheme.titleMedium,
+                  child: OutlinedButton(
+                    onPressed: _isSubmitting ? null : _declineInvite,
+                    child: Text(l10n.declineInvite),
                   ),
                 ),
               ],
             ),
-            if (invitedBy != null) ...[
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                l10n.workspaceInviteFrom(invitedBy),
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-            ],
-            const SizedBox(height: AppSpacing.md),
-            SizedBox(
-              width: double.infinity,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: FilledButton(
-                      onPressed: _isSubmitting ? null : _acceptInvite,
-                      child: _isSubmitting
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Text(l10n.join),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: _isSubmitting ? null : _declineInvite,
-                      child: Text(l10n.declineInvite),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

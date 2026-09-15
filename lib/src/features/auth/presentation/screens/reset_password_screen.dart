@@ -187,7 +187,7 @@ class ResetPasswordScreen extends HookConsumerWidget {
                   decoration: BoxDecoration(
                     color: (isDark ? AppColors.errorDark : AppColors.error)
                         .withValues(alpha: isDark ? 0.18 : 0.08),
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
                   ),
                   child: Row(
                     children: [

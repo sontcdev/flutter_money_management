@@ -5,6 +5,7 @@ import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_management_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/services/workspace_sync_helper.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 
@@ -48,7 +49,8 @@ class WorkspaceActivityTab extends ConsumerWidget {
               final item = items[index];
               final actor =
                   item.actorDisplayName ?? item.actorEmail ?? l10n.unknown;
-              return Card(
+              return AppCard(
+                padding: EdgeInsets.zero,
                 child: ListTile(
                   leading: CircleAvatar(
                     child: Text(actor.substring(0, 1).toUpperCase()),

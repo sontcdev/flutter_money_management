@@ -525,6 +525,8 @@
   "usernameAlreadyRegistered": "Tên người dùng này đã được đăng ký",
   "weakPassword": "Mật khẩu quá yếu. Vui lòng dùng mật khẩu mạnh hơn",
   "genericTryAgainError": "Đã xảy ra lỗi. Vui lòng thử lại",
+  "dataLoadFailed": "Không thể tải dữ liệu",
+  "dataLoadFailedHint": "Vui lòng kiểm tra kết nối mạng và thử lại.",
   "transactionSavedReceiptUploadFailed": "Đã lưu giao dịch nhưng tải ảnh hóa đơn lên thất bại.",
   "transactionSavedReceiptUpdateFailed": "Đã lưu giao dịch nhưng cập nhật hóa đơn thất bại.",
   "errorWithMessage": "Lỗi: {error}",
@@ -605,5 +607,13 @@
   "walletTypeSavings": "Tiết kiệm",
   "walletTypeOther": "Khác",
   "walletRequired": "Vui lòng chọn ví",
-  "negativeOpeningBalance": "Số dư ban đầu âm (đang nợ)"
+  "negativeOpeningBalance": "Số dư ban đầu âm (đang nợ)",
+  "voiceInputTooltip": "Thêm bằng giọng nói",
+  "voiceInputTitle": "Nhập bằng giọng nói",
+  "voiceInputHintIdle": "Nhấn micro và nói, ví dụ \"hôm nay đi chợ hết 150k\"",
+  "voiceInputListening": "Đang nghe...",
+  "voiceInputNoSpeechDetected": "Không nghe rõ, vui lòng thử lại",
+  "voiceInputPermissionDenied": "Cần quyền micro để dùng nhập bằng giọng nói",
+  "voiceInputApply": "Áp dụng",
+  "voiceInputTryAgain": "Thử lại"
 }

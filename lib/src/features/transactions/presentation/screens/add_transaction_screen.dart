@@ -10,6 +10,7 @@ import 'package:flutter_money_management/src/features/categories/presentation/wi
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart'
     as model;
+import 'package:flutter_money_management/src/features/transactions/presentation/widgets/voice_input_sheet.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/features/budgets/services/budget_service.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
@@ -239,6 +240,33 @@ class AddTransactionScreen extends HookConsumerWidget {
       }
     }
 
+    Future<void> handleVoiceInput() async {
+      final categories = categoriesAsync.valueOrNull ?? const <Category>[];
+      final result = await showVoiceInputSheet(context, categories: categories);
+      if (result == null || !context.mounted) return;
+
+      if (result.type != null && result.type != selectedType.value) {
+        selectedType.value = result.type!;
+        selectedCategoryId.value = null;
+        if (result.type != model.TransactionType.transfer) {
+          selectedToWallet.value = null;
+        }
+      }
+      if (result.date != null) {
+        selectedDate.value = result.date!;
+      }
+      if (result.amountVnd != null) {
+        amountController.text =
+            CurrencyFormatter.formatInputVND(result.amountVnd!.round().toString());
+      }
+      if (result.categoryId != null) {
+        selectedCategoryId.value = result.categoryId;
+      }
+      if (result.note != null) {
+        noteController.text = result.note!;
+      }
+    }
+
     Future<void> pickReceipt() async {
       AppLogger.info('Receipt capture started', name: 'MM.UI');
       final ImagePicker picker = ImagePicker();
@@ -254,6 +282,13 @@ class AddTransactionScreen extends HookConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.addTransaction),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.mic_none_outlined),
+            tooltip: l10n.voiceInputTooltip,
+            onPressed: isLoading.value ? null : handleVoiceInput,
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
@@ -591,7 +626,7 @@ class AddTransactionScreen extends HookConsumerWidget {
                   ),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -655,7 +690,7 @@ class AddTransactionScreen extends HookConsumerWidget {
                                   const SizedBox(height: AppSpacing.sm),
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(
-                                        AppSpacing.radiusMd),
+                                        AppSpacing.radiusCard),
                                     child: Image.file(
                                       File(localReceiptPath.value!),
                                       height: 160,

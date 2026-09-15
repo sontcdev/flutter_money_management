@@ -131,7 +131,7 @@ class TransactionItem extends StatelessWidget {
       height: 42,
       decoration: BoxDecoration(
         color: tint.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
       ),
       alignment: Alignment.center,
       child: categoryIconName != null

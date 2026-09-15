@@ -244,7 +244,7 @@ class SignInScreen extends HookConsumerWidget {
                 height: 52,
                 decoration: BoxDecoration(
                   color: colorScheme.primary,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
                 ),
                 child: const Icon(
                   Icons.account_balance_wallet_outlined,
@@ -347,7 +347,7 @@ class SignInScreen extends HookConsumerWidget {
                   decoration: BoxDecoration(
                     color: (isDark ? AppColors.errorDark : AppColors.error)
                         .withValues(alpha: isDark ? 0.18 : 0.08),
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
                   ),
                   child: Row(
                     children: [

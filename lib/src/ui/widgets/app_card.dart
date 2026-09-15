@@ -6,17 +6,21 @@ import '../../theme/app_spacing.dart';
 class AppCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
+  final EdgeInsetsGeometry? margin;
   final VoidCallback? onTap;
   final Color? color;
   final double? elevation;
+  final Clip? clipBehavior;
 
   const AppCard({
     super.key,
     required this.child,
     this.padding,
+    this.margin,
     this.onTap,
     this.color,
     this.elevation,
+    this.clipBehavior,
   });
 
   @override
@@ -30,9 +34,11 @@ class AppCard extends StatelessWidget {
       return Card(
         color: color,
         elevation: elevation,
+        margin: margin,
+        clipBehavior: clipBehavior,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
           child: content,
         ),
       );
@@ -41,6 +47,8 @@ class AppCard extends StatelessWidget {
     return Card(
       color: color,
       elevation: elevation,
+      margin: margin,
+      clipBehavior: clipBehavior,
       child: content,
     );
   }

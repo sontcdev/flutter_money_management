@@ -11,6 +11,7 @@ import 'package:flutter_money_management/src/features/transactions/presentation/
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/confirm_delete_dialog.dart';
+import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
 import 'package:flutter_money_management/src/utils/cycle_utils.dart';
 
 /// Check if two dates are the same day
@@ -175,12 +176,11 @@ class ReportCalendarScreen extends HookConsumerWidget {
                   ? ListView(
                       // Empty ListView để RefreshIndicator hoạt động
                       children: [
-                        const SizedBox(height: 100),
-                        Center(
-                          child: Text(
-                            l10n.noTransactionsThisMonth,
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
+                        const SizedBox(height: 80),
+                        EmptyState.compact(
+                          icon: Icons.event_busy_outlined,
+                          title: l10n.noTransactionsThisMonth,
+                          message: '',
                         ),
                       ],
                     )
@@ -575,11 +575,11 @@ class _MonthYearPickerSheet extends HookWidget {
                           : Theme.of(context)
                               .colorScheme
                               .surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
                   child: InkWell(
                     onTap: () =>
                         onMonthSelected(DateTime(selectedYear.value, monthNum)),
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
                     child: Center(
                       child: Text(
                         months[index],

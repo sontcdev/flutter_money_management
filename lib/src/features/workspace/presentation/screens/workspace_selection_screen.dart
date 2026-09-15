@@ -177,7 +177,7 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
                   margin: const EdgeInsets.only(bottom: AppSpacing.md),
                   decoration: BoxDecoration(
                     color: isDark ? AppColors.surfaceDark : AppColors.surface,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
                     border: Border.all(
                       color: isDark ? AppColors.borderDark : AppColors.border,
                       width: 1.5,
@@ -185,10 +185,10 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
                   ),
                   child: Material(
                     color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
                     child: InkWell(
                       borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusLg),
+                          BorderRadius.circular(AppSpacing.radiusCard),
                       onTap: () {
                         // Set active workspace and navigate to home
                         ref.read(activeWorkspaceIdProvider.notifier).state =
@@ -208,7 +208,7 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
                               decoration: BoxDecoration(
                                 color: colorScheme.primary,
                                 borderRadius:
-                                    BorderRadius.circular(AppSpacing.radiusMd),
+                                    BorderRadius.circular(AppSpacing.radiusCard),
                               ),
                               alignment: Alignment.center,
                               child: Text(
@@ -321,7 +321,6 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
               decoration: InputDecoration(
                 labelText: l10n.inviteCode,
                 hintText: l10n.pasteWorkspaceInviteCode,
-                border: const OutlineInputBorder(),
               ),
               onSubmitted: (_) async {
                 await _acceptInvite(

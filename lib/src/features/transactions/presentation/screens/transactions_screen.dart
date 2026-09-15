@@ -12,6 +12,7 @@ import 'package:flutter_money_management/src/features/transactions/models/transa
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_segmented_filter.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
@@ -29,7 +30,8 @@ class TransactionsScreen extends HookConsumerWidget {
     final categoriesAsync = ref.watch(categoriesProvider);
     // Wallets are only needed to label transfers, so a missing value is fine.
     final walletMap = {
-      for (final w in ref.watch(walletsProvider).valueOrNull ?? const <Wallet>[])
+      for (final w
+          in ref.watch(walletsProvider).valueOrNull ?? const <Wallet>[])
         w.id: w,
     };
 
@@ -360,61 +362,60 @@ class _TransactionGroup extends StatelessWidget {
 
           // Transactions grouped in a rounded, bordered card (matches design)
           Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-            child: Card(
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.screenPadding),
+            child: AppCard(
               margin: EdgeInsets.zero,
               clipBehavior: Clip.antiAlias,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-                child: Column(
-                  children: [
-                    for (var i = 0; i < transactions.length; i++) ...[
-                      Builder(builder: (context) {
-                        final transaction = transactions[i];
-                        final category = categoryMap[transaction.categoryId];
-                        final isTransfer =
-                            transaction.type == TransactionType.transfer;
-                        // Transfers have no category: label them "from -> to".
-                        final fromWallet = walletMap[transaction.walletId];
-                        final toWallet = walletMap[transaction.toWalletId];
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+              child: Column(
+                children: [
+                  for (var i = 0; i < transactions.length; i++) ...[
+                    Builder(builder: (context) {
+                      final transaction = transactions[i];
+                      final category = categoryMap[transaction.categoryId];
+                      final isTransfer =
+                          transaction.type == TransactionType.transfer;
+                      // Transfers have no category: label them "from -> to".
+                      final fromWallet = walletMap[transaction.walletId];
+                      final toWallet = walletMap[transaction.toWalletId];
 
-                        return TransactionItem(
-                          transaction: transaction,
-                          categoryName: isTransfer
-                              ? '${fromWallet?.name ?? l10n.unknown} → '
-                                  '${toWallet?.name ?? l10n.unknown}'
-                              : category?.name ?? l10n.unknown,
-                          categoryIconName: isTransfer ? null : category?.iconName,
-                          categoryIcon: isTransfer ? Icons.swap_horiz : null,
-                          categoryColor: isTransfer
-                              ? Theme.of(context).colorScheme.primary
-                              : category != null
-                                  ? getCategoryColor(category.colorValue)
-                                  : null,
-                          showDate: true, // Show date in subtitle
-                          showChevron: true,
-                          onTap: () {
-                            Navigator.pushNamed(
-                              context,
-                              '/transaction-detail',
-                              arguments: transaction.id,
-                            );
-                          },
-                        );
-                      }),
-                      if (i != transactions.length - 1)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: AppSpacing.lg),
-                          child: Divider(
-                            height: 1,
-                            color: theme.dividerColor,
-                          ),
+                      return TransactionItem(
+                        transaction: transaction,
+                        categoryName: isTransfer
+                            ? '${fromWallet?.name ?? l10n.unknown} → '
+                                '${toWallet?.name ?? l10n.unknown}'
+                            : category?.name ?? l10n.unknown,
+                        categoryIconName:
+                            isTransfer ? null : category?.iconName,
+                        categoryIcon: isTransfer ? Icons.swap_horiz : null,
+                        categoryColor: isTransfer
+                            ? Theme.of(context).colorScheme.primary
+                            : category != null
+                                ? getCategoryColor(category.colorValue)
+                                : null,
+                        showDate: true, // Show date in subtitle
+                        showChevron: true,
+                        onTap: () {
+                          Navigator.pushNamed(
+                            context,
+                            '/transaction-detail',
+                            arguments: transaction.id,
+                          );
+                        },
+                      );
+                    }),
+                    if (i != transactions.length - 1)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.lg),
+                        child: Divider(
+                          height: 1,
+                          color: theme.dividerColor,
                         ),
-                    ],
+                      ),
                   ],
-                ),
+                ],
               ),
             ),
           ),

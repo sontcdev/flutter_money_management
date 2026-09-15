@@ -538,7 +538,7 @@ class EditTransactionScreen extends HookConsumerWidget {
                                 .colorScheme
                                 .surfaceContainerHighest,
                             borderRadius:
-                                BorderRadius.circular(AppSpacing.radiusMd),
+                                BorderRadius.circular(AppSpacing.radiusCard),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -598,7 +598,7 @@ class EditTransactionScreen extends HookConsumerWidget {
                 const SizedBox(height: AppSpacing.sm),
                 if (localReceiptPath.value != null)
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
                     child: Image.file(
                       File(localReceiptPath.value!),
                       height: 180,
@@ -615,7 +615,7 @@ class EditTransactionScreen extends HookConsumerWidget {
                       }
                       return ClipRRect(
                         borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusMd),
+                            BorderRadius.circular(AppSpacing.radiusCard),
                         child: Image.network(
                           imageUrl,
                           height: 180,

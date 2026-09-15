@@ -1521,6 +1521,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get genericTryAgainError => 'エラーが発生しました。もう一度お試しください';
 
   @override
+  String get dataLoadFailed => 'データを読み込めません';
+
+  @override
+  String get dataLoadFailedHint => '接続を確認して、もう一度お試しください。';
+
+  @override
   String get transactionSavedReceiptUploadFailed => '取引は保存されましたが、レシートのアップロードに失敗しました。';
 
   @override
@@ -1756,4 +1762,28 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get negativeOpeningBalance => '初期残高をマイナスにする（借入）';
+
+  @override
+  String get voiceInputTooltip => '音声で追加';
+
+  @override
+  String get voiceInputTitle => '音声入力';
+
+  @override
+  String get voiceInputHintIdle => 'マイクをタップして話してください（例：「今日 食料品 150k」）';
+
+  @override
+  String get voiceInputListening => '聞き取り中...';
+
+  @override
+  String get voiceInputNoSpeechDetected => '聞き取れませんでした。もう一度お試しください';
+
+  @override
+  String get voiceInputPermissionDenied => '音声入力にはマイクの権限が必要です';
+
+  @override
+  String get voiceInputApply => '適用';
+
+  @override
+  String get voiceInputTryAgain => 'もう一度';
 }

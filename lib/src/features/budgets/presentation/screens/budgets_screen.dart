@@ -14,6 +14,7 @@ import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
+import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/cycle_utils.dart';
@@ -23,6 +24,27 @@ import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 enum BudgetFilter { all, onTrack, nearLimit, exceeded }
 
 enum BudgetSort { name, amount, percentage }
+
+Widget _buildBudgetsLoadError({
+  required BuildContext context,
+  required AppLocalizations l10n,
+  required VoidCallback onRetry,
+}) {
+  return ListView(
+    physics: const AlwaysScrollableScrollPhysics(),
+    children: [
+      SizedBox(
+        height: MediaQuery.of(context).size.height * 0.6,
+        child: LoadErrorState(
+          title: l10n.dataLoadFailed,
+          message: l10n.dataLoadFailedHint,
+          retryLabel: l10n.retry,
+          onRetry: onRetry,
+        ),
+      ),
+    ],
+  );
+}
 
 class BudgetsScreen extends ConsumerWidget {
   final bool showBackButton;
@@ -108,8 +130,11 @@ class BudgetsScreen extends ConsumerWidget {
                 itemCount: 3,
                 itemBuilder: (context, index) => const ShimmerCard(),
               ),
-              error: (error, stack) =>
-                  Center(child: Text(l10n.errorWithMessage('$error'))),
+              error: (error, stack) => _buildBudgetsLoadError(
+                context: context,
+                l10n: l10n,
+                onRetry: () => ref.invalidate(categoriesProvider),
+              ),
             );
           },
           loading: () => ListView.builder(
@@ -117,8 +142,14 @@ class BudgetsScreen extends ConsumerWidget {
             itemCount: 3,
             itemBuilder: (context, index) => const ShimmerCard(),
           ),
-          error: (error, stack) => Center(
-            child: Text(l10n.errorWithMessage('$error')),
+          error: (error, stack) => _buildBudgetsLoadError(
+            context: context,
+            l10n: l10n,
+            onRetry: () {
+              ref.invalidate(budgetsProvider);
+              ref.invalidate(transactionsProvider);
+              ref.invalidate(budgetsWithConsumedProvider);
+            },
           ),
         ),
       ),
@@ -434,7 +465,7 @@ class _StatusCard extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
@@ -502,7 +533,7 @@ class _BudgetHeroCard extends StatelessWidget {
               ? [AppColors.primaryDark, AppColors.primaryStrong]
               : [AppColors.primary, AppColors.primaryStrong],
         ),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusHero),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -644,8 +675,8 @@ class _SwipeableBudgetCard extends ConsumerWidget {
             icon: Icons.delete,
             label: l10n.delete,
             borderRadius: const BorderRadius.only(
-              topRight: Radius.circular(AppSpacing.radiusLg),
-              bottomRight: Radius.circular(AppSpacing.radiusLg),
+              topRight: Radius.circular(AppSpacing.radiusCard),
+              bottomRight: Radius.circular(AppSpacing.radiusCard),
             ),
           ),
         ],
@@ -734,14 +765,16 @@ class _BudgetCard extends ConsumerWidget {
     final theme = Theme.of(context);
     final isExceeded = budget.isExceeded;
     final progress = budget.progressPercentage / 100;
-    final amountColor =
-        isExceeded ? AppColors.error : theme.colorScheme.onSurface.withValues(alpha: 0.6);
+    final amountColor = isExceeded
+        ? AppColors.error
+        : theme.colorScheme.onSurface.withValues(alpha: 0.6);
 
     return AppCard(
       padding: const EdgeInsets.all(AppSpacing.md),
       onTap: () => _showBudgetTransactions(context, ref),
       color: isExceeded
-          ? AppColors.error.withValues(alpha: theme.brightness == Brightness.dark ? 0.08 : 0.03)
+          ? AppColors.error.withValues(
+              alpha: theme.brightness == Brightness.dark ? 0.08 : 0.03)
           : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -760,7 +793,7 @@ class _BudgetCard extends ConsumerWidget {
                             color: getCategoryColor(category.colorValue)
                                 .withValues(alpha: 0.15),
                             borderRadius:
-                                BorderRadius.circular(AppSpacing.radiusSm),
+                                BorderRadius.circular(AppSpacing.radiusCard),
                           ),
                           child: Center(
                             child: CategoryIconWidget(
@@ -1076,8 +1109,9 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                     final dayTotal = dayTransactions.fold<int>(
                         0, (sum, t) => sum + t.amountCents);
 
-                    return Card(
+                    return AppCard(
                       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+                      padding: EdgeInsets.zero,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -1088,7 +1122,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                                   .colorScheme
                                   .surfaceContainerHighest,
                               borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(AppSpacing.radiusMd),
+                                top: Radius.circular(AppSpacing.radiusCard),
                               ),
                             ),
                             child: Row(
@@ -1110,7 +1144,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                                         .primary
                                         .withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(
-                                        AppSpacing.radiusSm),
+                                        AppSpacing.radiusCard),
                                   ),
                                   child: Text(
                                     '-${CurrencyFormatter.formatVNDFromCents(dayTotal, locale: l10n.localeName)}',
@@ -1132,7 +1166,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                                     color: AppColors.expense
                                         .withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(
-                                        AppSpacing.radiusSm),
+                                        AppSpacing.radiusCard),
                                   ),
                                   child: const Icon(
                                     Icons.shopping_cart,
@@ -1158,7 +1192,8 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                                   '-${CurrencyFormatter.formatVNDFromCents(t.amountCents, locale: l10n.localeName)}',
                                   style: TextStyle(
                                     fontWeight: FontWeight.w600,
-                                    color: Theme.of(context).colorScheme.onSurface,
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
                                   ),
                                 ),
                                 onTap: () {
@@ -1176,8 +1211,12 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (err, _) =>
-                  Center(child: Text(l10n.errorWithMessage('$err'))),
+              error: (err, _) => LoadErrorState(
+                title: l10n.dataLoadFailed,
+                message: l10n.dataLoadFailedHint,
+                retryLabel: l10n.retry,
+                onRetry: () => ref.invalidate(transactionsProvider),
+              ),
             ),
           ),
         ],

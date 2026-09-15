@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
+import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/theme/report_theme.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
@@ -47,7 +49,6 @@ class TransactionGroupHeader extends StatelessWidget {
             _formatDateLabel(context, date),
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey[800],
                 ),
           ),
           Row(
@@ -57,14 +58,15 @@ class TransactionGroupHeader extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppColors.income.withValues(alpha: 0.1),
+                    borderRadius:
+                        BorderRadius.circular(AppSpacing.radiusCard),
                   ),
                   child: Text(
                     '+$incomeAmount',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFF4CAF50),
+                          color: AppColors.income,
                         ),
                   ),
                 ),
@@ -75,14 +77,15 @@ class TransactionGroupHeader extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFF6B3D).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppColors.expense.withValues(alpha: 0.1),
+                    borderRadius:
+                        BorderRadius.circular(AppSpacing.radiusCard),
                   ),
                   child: Text(
                     '-$expenseAmount',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFFFF6B3D),
+                          color: AppColors.expense,
                         ),
                   ),
                 ),

@@ -121,7 +121,7 @@ class _WalletPickerSheet extends ConsumerWidget {
                           decoration: BoxDecoration(
                             color: color.withValues(alpha: 0.15),
                             borderRadius:
-                                BorderRadius.circular(AppSpacing.radiusMd),
+                                BorderRadius.circular(AppSpacing.radiusCard),
                           ),
                           child: Icon(
                             CategoryIcons.getIcon(wallet.iconName),

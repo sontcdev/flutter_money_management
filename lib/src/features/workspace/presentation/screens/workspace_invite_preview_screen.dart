@@ -5,6 +5,7 @@ import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/notifications/providers/notification_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_management_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
 class WorkspaceInvitePreviewScreen extends ConsumerStatefulWidget {
@@ -33,7 +34,8 @@ class _WorkspaceInvitePreviewScreenState
         data: (preview) => ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Card(
+            AppCard(
+              padding: EdgeInsets.zero,
               child: ListTile(
                 leading: CircleAvatar(
                   child:

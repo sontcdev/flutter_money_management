@@ -525,6 +525,8 @@
   "usernameAlreadyRegistered": "This username is already registered",
   "weakPassword": "Password is too weak. Please use a stronger password",
   "genericTryAgainError": "An error occurred. Please try again",
+  "dataLoadFailed": "Unable to load data",
+  "dataLoadFailedHint": "Please check your connection and try again.",
   "transactionSavedReceiptUploadFailed": "Transaction saved, but receipt upload failed.",
   "transactionSavedReceiptUpdateFailed": "Transaction saved, but receipt update failed.",
   "errorWithMessage": "Error: {error}",
@@ -605,5 +607,13 @@
   "walletTypeSavings": "Savings",
   "walletTypeOther": "Other",
   "walletRequired": "Please select a wallet",
-  "negativeOpeningBalance": "Negative opening balance (money owed)"
+  "negativeOpeningBalance": "Negative opening balance (money owed)",
+  "voiceInputTooltip": "Add by voice",
+  "voiceInputTitle": "Voice input",
+  "voiceInputHintIdle": "Tap the microphone and say something like \"today groceries 150k\"",
+  "voiceInputListening": "Listening...",
+  "voiceInputNoSpeechDetected": "Couldn't hear anything, please try again",
+  "voiceInputPermissionDenied": "Microphone permission is required for voice input",
+  "voiceInputApply": "Apply",
+  "voiceInputTryAgain": "Try again"
 }

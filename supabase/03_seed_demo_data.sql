@@ -21,7 +21,7 @@
 
 do $$
 declare
-  v_user_email    text := null;  -- e.g. 'tcson.dev@gmail.com'
+  v_user_email    text := 'tcson.dev@gmail.com';
 
   v_user_id       uuid;
   v_workspace_id  uuid;

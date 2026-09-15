@@ -27,7 +27,7 @@ class CategoryItem extends StatelessWidget {
 
     return InkWell(
       onTap: onTap ?? onEdit,
-      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.sm,
@@ -40,7 +40,7 @@ class CategoryItem extends StatelessWidget {
               height: 38,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
               ),
               child: Icon(
                 iconData,

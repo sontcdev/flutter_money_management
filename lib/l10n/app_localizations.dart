@@ -2965,6 +2965,18 @@ abstract class AppLocalizations {
   /// **'An error occurred. Please try again'**
   String get genericTryAgainError;
 
+  /// No description provided for @dataLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load data'**
+  String get dataLoadFailed;
+
+  /// No description provided for @dataLoadFailedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Please check your connection and try again.'**
+  String get dataLoadFailedHint;
+
   /// No description provided for @transactionSavedReceiptUploadFailed.
   ///
   /// In en, this message translates to:
@@ -3414,6 +3426,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Negative opening balance (money owed)'**
   String get negativeOpeningBalance;
+
+  /// No description provided for @voiceInputTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Add by voice'**
+  String get voiceInputTooltip;
+
+  /// No description provided for @voiceInputTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice input'**
+  String get voiceInputTitle;
+
+  /// No description provided for @voiceInputHintIdle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the microphone and say something like \"today groceries 150k\"'**
+  String get voiceInputHintIdle;
+
+  /// No description provided for @voiceInputListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening...'**
+  String get voiceInputListening;
+
+  /// No description provided for @voiceInputNoSpeechDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t hear anything, please try again'**
+  String get voiceInputNoSpeechDetected;
+
+  /// No description provided for @voiceInputPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone permission is required for voice input'**
+  String get voiceInputPermissionDenied;
+
+  /// No description provided for @voiceInputApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get voiceInputApply;
+
+  /// No description provided for @voiceInputTryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get voiceInputTryAgain;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

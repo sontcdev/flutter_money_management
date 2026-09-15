@@ -51,10 +51,25 @@ Shared and app-level code:
 
 ### Requirements
 
-- Flutter SDK compatible with the repo's `pubspec.yaml`
+- Flutter SDK 3.41.7 (with its bundled Dart SDK)
 - Dart SDK included with Flutter
 - Android Studio or VS Code with Flutter tooling
 - Xcode on macOS for iOS builds
+- JDK 17 for Android release builds
+
+On macOS, configure Flutter to use JDK 17 and verify the toolchain before an
+Android release build:
+
+```bash
+flutter config --jdk-dir="$(/usr/libexec/java_home -v 17)"
+flutter doctor -v
+```
+
+If `java_home` is unavailable, pass the local JDK 17 installation directly:
+
+```bash
+flutter config --jdk-dir="/path/to/jdk-17"
+```
 
 ### Initial bootstrap
 
@@ -130,6 +145,31 @@ flutter build apk --release
 flutter build appbundle --release
 ```
 
+For the Google Play release AAB, use JDK 17 and run the repository's full
+release validation sequence:
+
+```bash
+flutter config --jdk-dir="$(/usr/libexec/java_home -v 17)"
+flutter doctor -v
+flutter pub get
+flutter gen-l10n
+dart run build_runner build --delete-conflicting-outputs
+flutter analyze
+flutter test --coverage
+flutter build appbundle --release
+```
+
+The upload artifact is generated at:
+
+```text
+build/app/outputs/bundle/release/app-release.aab
+```
+
+Release signing is configured locally through `android/key.properties` and a
+keystore. Keep both files out of Git; `android/key.properties`, `*.jks`, and
+`*.keystore` are ignored by this repository. A Play Store upload must use a
+valid release keystore rather than the debug fallback.
+
 ### iOS
 
 Common commands:
@@ -152,6 +192,8 @@ Guidance:
 
 - Use `build_play_store_aab.sh` to produce the signed release AAB for Google Play.
 - Use `build_release_apk.sh` to produce the signed release APK.
+- Configure JDK 17 and verify `flutter doctor -v` before running either Android
+  release helper.
 
 ## Localization
 
@@ -264,6 +306,18 @@ dart run build_runner build --delete-conflicting-outputs
 flutter analyze
 flutter test
 ```
+
+If Gradle reports an unsupported Java version or Flutter selects JDK 25+, point
+Flutter back to JDK 17 and verify again:
+
+```bash
+flutter config --jdk-dir="$(/usr/libexec/java_home -v 17)"
+flutter doctor -v
+```
+
+If the AAB is not release-signed, check that `android/key.properties` exists
+locally, points to the intended keystore, and contains all required signing
+properties. Do not commit that file or the keystore.
 
 Useful checks:
 

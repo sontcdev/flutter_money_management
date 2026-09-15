@@ -43,6 +43,10 @@
 	<string>The app uses the camera to scan or take photos of receipts, allowing you to save them as attachments to your expenses for personal finance tracking.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs access to your photo library to upload or select images.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>The app uses the microphone to let you add transactions by voice.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>The app uses speech recognition to convert your voice into transaction details.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

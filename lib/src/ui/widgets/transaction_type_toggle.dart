@@ -31,7 +31,7 @@ class TransactionTypeToggle extends StatelessWidget {
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         children: [
@@ -93,7 +93,7 @@ class _Segment extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         decoration: BoxDecoration(
           color: selected ? Theme.of(context).colorScheme.surface : null,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+          borderRadius: BorderRadius.circular(8),
           boxShadow: selected
               ? [
                   BoxShadow(

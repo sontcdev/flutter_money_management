@@ -44,7 +44,8 @@ class SummaryBar extends StatelessWidget {
               AppColors.income, // Green for income
             ),
           ),
-          Container(width: 1, height: 40, color: Colors.grey[300]),
+          Container(
+              width: 1, height: 40, color: Theme.of(context).dividerColor),
           Expanded(
             child: _buildSummaryItem(
               context,
@@ -53,7 +54,8 @@ class SummaryBar extends StatelessWidget {
               AppColors.expense, // Red for expense
             ),
           ),
-          Container(width: 1, height: 40, color: Colors.grey[300]),
+          Container(
+              width: 1, height: 40, color: Theme.of(context).dividerColor),
           Expanded(
             child: _buildSummaryItem(
               context,
@@ -74,7 +76,8 @@ class SummaryBar extends StatelessWidget {
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
+                color:
+                    Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                 fontSize: 12,
               ),
         ),

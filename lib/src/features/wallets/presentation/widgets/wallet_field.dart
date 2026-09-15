@@ -35,7 +35,7 @@ class WalletField extends StatelessWidget {
         const SizedBox(height: AppSpacing.sm),
         InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
           child: Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.lg,
@@ -43,7 +43,7 @@ class WalletField extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
             ),
             child: Row(
               children: [

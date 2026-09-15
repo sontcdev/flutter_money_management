@@ -282,7 +282,7 @@ class CategoryEditScreen extends HookConsumerWidget {
                       color: isSelected
                           ? iconColor.withValues(alpha: 0.15)
                           : theme.colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
                       border: isSelected
                           ? Border.all(color: iconColor, width: 2)
                           : Border.all(

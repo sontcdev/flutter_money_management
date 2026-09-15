@@ -525,6 +525,8 @@
   "usernameAlreadyRegistered": "このユーザー名はすでに登録されています",
   "weakPassword": "パスワードが弱すぎます。より強いパスワードを使用してください",
   "genericTryAgainError": "エラーが発生しました。もう一度お試しください",
+  "dataLoadFailed": "データを読み込めません",
+  "dataLoadFailedHint": "接続を確認して、もう一度お試しください。",
   "transactionSavedReceiptUploadFailed": "取引は保存されましたが、レシートのアップロードに失敗しました。",
   "transactionSavedReceiptUpdateFailed": "取引は保存されましたが、レシートの更新に失敗しました。",
   "errorWithMessage": "エラー: {error}",
@@ -605,5 +607,13 @@
   "walletTypeSavings": "貯蓄",
   "walletTypeOther": "その他",
   "walletRequired": "ウォレットを選択してください",
-  "negativeOpeningBalance": "初期残高をマイナスにする（借入）"
+  "negativeOpeningBalance": "初期残高をマイナスにする（借入）",
+  "voiceInputTooltip": "音声で追加",
+  "voiceInputTitle": "音声入力",
+  "voiceInputHintIdle": "マイクをタップして話してください（例：「今日 食料品 150k」）",
+  "voiceInputListening": "聞き取り中...",
+  "voiceInputNoSpeechDetected": "聞き取れませんでした。もう一度お試しください",
+  "voiceInputPermissionDenied": "音声入力にはマイクの権限が必要です",
+  "voiceInputApply": "適用",
+  "voiceInputTryAgain": "もう一度"
 }

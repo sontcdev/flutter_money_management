@@ -98,7 +98,7 @@ class SettingsScreen extends HookConsumerWidget {
                 children: [
                   _SettingsRow(
                     icon: Icons.logout,
-                    iconColor: warningColor,
+                    tint: warningColor,
                     title: l10n.leaveWorkspace,
                     titleColor: warningColor,
                     subtitle: 'Leave the current shared workspace',
@@ -121,6 +121,7 @@ class SettingsScreen extends HookConsumerWidget {
             children: [
               _SettingsRow(
                 icon: Icons.language,
+                tint: const Color(0xFF4678CC),
                 title: l10n.language,
                 trailing: DropdownButton<String>(
                   value: locale.languageCode,
@@ -144,6 +145,7 @@ class SettingsScreen extends HookConsumerWidget {
               ),
               _SettingsRow(
                 icon: Icons.brightness_6_outlined,
+                tint: const Color(0xFF5B6470),
                 title: l10n.theme,
                 trailing: DropdownButton<ThemeMode>(
                   value: themeMode,
@@ -165,6 +167,7 @@ class SettingsScreen extends HookConsumerWidget {
               ),
               _SettingsRow(
                 icon: Icons.palette_outlined,
+                tint: const Color(0xFFEC4899),
                 title: l10n.themeColor,
                 subtitle: l10n.selectThemeColor,
                 trailing: Container(
@@ -182,6 +185,7 @@ class SettingsScreen extends HookConsumerWidget {
               ),
               _SettingsRow(
                 icon: Icons.text_fields_outlined,
+                tint: const Color(0xFFF97316),
                 title: l10n.fontSize,
                 subtitle: _fontScaleLabel(fontScale, l10n),
                 onTap: () => _showFontScalePicker(context, ref, fontScale, l10n),
@@ -196,6 +200,7 @@ class SettingsScreen extends HookConsumerWidget {
             children: [
               _SettingsRow(
                 icon: Icons.calendar_month_outlined,
+                tint: const Color(0xFFCF4040),
                 title: l10n.monthStartDay,
                 subtitle: l10n.monthStartDayDesc(monthStartDay),
                 onTap: () => _showMonthStartDayPicker(
@@ -203,6 +208,7 @@ class SettingsScreen extends HookConsumerWidget {
               ),
               _SettingsRow(
                 icon: Icons.pie_chart_outline,
+                tint: const Color(0xFF14B8A6),
                 title: l10n.manageBudgets,
                 subtitle: l10n.manageBudgetsDesc,
                 onTap: () => Navigator.pushNamed(context, '/budgets'),
@@ -217,18 +223,21 @@ class SettingsScreen extends HookConsumerWidget {
             children: [
               _SettingsRow(
                 icon: Icons.account_balance_wallet_outlined,
+                tint: const Color(0xFF00884B),
                 title: l10n.manageWallets,
                 subtitle: l10n.manageWalletsSubtitle,
                 onTap: () => Navigator.pushNamed(context, '/wallets'),
               ),
               _SettingsRow(
                 icon: Icons.category_outlined,
+                tint: const Color(0xFF8B5CF6),
                 title: l10n.manageCategories,
                 subtitle: l10n.manageCategoriesDesc,
                 onTap: () => Navigator.pushNamed(context, '/categories'),
               ),
               _SettingsRow(
                 icon: Icons.receipt_long_outlined,
+                tint: const Color(0xFF4678CC),
                 title: l10n.manageTransactions,
                 subtitle: l10n.manageTransactionsDesc,
                 onTap: () =>
@@ -236,6 +245,7 @@ class SettingsScreen extends HookConsumerWidget {
               ),
               _SettingsRow(
                 icon: Icons.schedule_outlined,
+                tint: const Color(0xFFD3A329),
                 title: l10n.recurringTransactions,
                 subtitle: l10n.recurringTransactionsDesc,
                 onTap: () =>
@@ -252,6 +262,7 @@ class SettingsScreen extends HookConsumerWidget {
               children: [
                 _SettingsRow(
                   icon: Icons.login,
+                  tint: const Color(0xFF00884B),
                   title: l10n.signIn,
                   subtitle: l10n.signInDesc,
                   onTap: () => Navigator.pushNamed(context, '/sign-in'),
@@ -267,6 +278,7 @@ class SettingsScreen extends HookConsumerWidget {
               children: [
                 _SettingsRow(
                   icon: Icons.info_outline,
+                  tint: const Color(0xFF8F8C83),
                   title: packageInfo.data!.appName,
                   subtitle: l10n.versionLabel(
                     packageInfo.data!.version,
@@ -447,7 +459,7 @@ class SettingsScreen extends HookConsumerWidget {
                         color: isSelected
                             ? Theme.of(context).colorScheme.primary
                             : Theme.of(context).colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
                         border: isSelected
                             ? null
                             : Border.all(
@@ -640,8 +652,8 @@ class SettingsScreen extends HookConsumerWidget {
   }
 }
 
-/// Small uppercase caption used above a group of settings rows,
-/// matching the mockup's section labels.
+/// Grouped-list section header (iOS style): a short, non-uppercase gray
+/// footnote sitting above a group of settings rows.
 class _SectionCaption extends StatelessWidget {
   const _SectionCaption({required this.title});
 
@@ -650,12 +662,11 @@ class _SectionCaption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10, left: 4),
+      padding: const EdgeInsets.only(bottom: 8, left: 16, top: 4),
       child: Text(
-        title.toUpperCase(),
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+        title,
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: AppColors.textFaint,
-              letterSpacing: 0.6,
             ),
       ),
     );
@@ -663,7 +674,7 @@ class _SectionCaption extends StatelessWidget {
 }
 
 /// Card that hosts a tight vertical list of [_SettingsRow]s, separated by
-/// hairline dividers, matching the mockup's grouped-row cards.
+/// hairline separators inset to align with the row's text.
 class _SettingsListCard extends StatelessWidget {
   const _SettingsListCard({required this.children});
 
@@ -672,14 +683,14 @@ class _SettingsListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+      padding: EdgeInsets.zero,
       child: Column(
         children: [
           for (var i = 0; i < children.length; i++) ...[
             if (i > 0)
               Container(
-                height: 1,
-                margin: const EdgeInsets.symmetric(horizontal: 12),
+                height: 0.5,
+                margin: const EdgeInsets.only(left: AppSpacing.cellInset),
                 color: Theme.of(context).dividerColor,
               ),
             children[i],
@@ -690,9 +701,9 @@ class _SettingsListCard extends StatelessWidget {
   }
 }
 
-/// A single settings row: optional leading icon/badge, title, optional
-/// subtitle, and a trailing widget (defaults to a chevron when [onTap] is
-/// set).
+/// A single settings row: a colored rounded-square icon tile, a title,
+/// optional subtitle, and a trailing widget (defaults to a chevron when
+/// [onTap] is set) — matching the iOS Settings cell.
 class _SettingsRow extends StatelessWidget {
   const _SettingsRow({
     this.icon,
@@ -701,7 +712,7 @@ class _SettingsRow extends StatelessWidget {
     this.subtitle,
     this.trailing,
     this.onTap,
-    this.iconColor,
+    this.tint,
     this.titleColor,
   });
 
@@ -711,19 +722,29 @@ class _SettingsRow extends StatelessWidget {
   final String? subtitle;
   final Widget? trailing;
   final VoidCallback? onTap;
-  final Color? iconColor;
+  final Color? tint;
   final Color? titleColor;
 
   @override
   Widget build(BuildContext context) {
+    final tileColor = tint ?? Theme.of(context).colorScheme.primary;
     final row = Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      padding: const EdgeInsets.fromLTRB(14, 8, 12, 8),
       child: Row(
         children: [
           if (leading != null)
             leading!
           else if (icon != null)
-            Icon(icon, size: 20, color: iconColor),
+            Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: tileColor,
+                borderRadius: BorderRadius.circular(7),
+              ),
+              alignment: Alignment.center,
+              child: Icon(icon, size: 18, color: Colors.white),
+            ),
           if (leading != null || icon != null) const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -732,13 +753,12 @@ class _SettingsRow extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                         color: titleColor,
                       ),
                 ),
                 if (subtitle != null) ...[
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 1),
                   Text(
                     subtitle!,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -762,14 +782,18 @@ class _SettingsRow extends StatelessWidget {
       ),
     );
 
+    final content = ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: AppSpacing.cellMinHeight),
+      child: row,
+    );
+
     if (onTap == null) {
-      return row;
+      return content;
     }
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      child: row,
+      child: content,
     );
   }
 }

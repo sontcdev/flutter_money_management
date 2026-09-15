@@ -1521,6 +1521,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get genericTryAgainError => 'Đã xảy ra lỗi. Vui lòng thử lại';
 
   @override
+  String get dataLoadFailed => 'Không thể tải dữ liệu';
+
+  @override
+  String get dataLoadFailedHint => 'Vui lòng kiểm tra kết nối mạng và thử lại.';
+
+  @override
   String get transactionSavedReceiptUploadFailed => 'Đã lưu giao dịch nhưng tải ảnh hóa đơn lên thất bại.';
 
   @override
@@ -1756,4 +1762,28 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get negativeOpeningBalance => 'Số dư ban đầu âm (đang nợ)';
+
+  @override
+  String get voiceInputTooltip => 'Thêm bằng giọng nói';
+
+  @override
+  String get voiceInputTitle => 'Nhập bằng giọng nói';
+
+  @override
+  String get voiceInputHintIdle => 'Nhấn micro và nói, ví dụ \"hôm nay đi chợ hết 150k\"';
+
+  @override
+  String get voiceInputListening => 'Đang nghe...';
+
+  @override
+  String get voiceInputNoSpeechDetected => 'Không nghe rõ, vui lòng thử lại';
+
+  @override
+  String get voiceInputPermissionDenied => 'Cần quyền micro để dùng nhập bằng giọng nói';
+
+  @override
+  String get voiceInputApply => 'Áp dụng';
+
+  @override
+  String get voiceInputTryAgain => 'Thử lại';
 }

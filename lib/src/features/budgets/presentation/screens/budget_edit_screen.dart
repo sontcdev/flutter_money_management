@@ -11,6 +11,7 @@ import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
@@ -311,7 +312,8 @@ class BudgetEditScreen extends HookConsumerWidget {
                   icon: const Icon(Icons.add, size: 18),
                   label: Text(l10n.add),
                   style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                     visualDensity: VisualDensity.compact,
                   ),
                 ),
@@ -328,17 +330,21 @@ class BudgetEditScreen extends HookConsumerWidget {
                   decoration: InputDecoration(
                     labelText: l10n.category,
                     filled: true,
-                    fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    fillColor:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.radiusCard),
                       borderSide: BorderSide.none,
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.radiusCard),
                       borderSide: BorderSide.none,
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.radiusCard),
                       borderSide: BorderSide(
                         color: Theme.of(context).colorScheme.primary,
                         width: 1.5,
@@ -499,22 +505,21 @@ class BudgetEditScreen extends HookConsumerWidget {
                         .colorScheme
                         .onSurface
                         .withValues(alpha: 0.6);
-                    return Card(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                      child: Padding(
-                        padding: const EdgeInsets.all(AppSpacing.lg),
-                        child: Row(
-                          children: [
-                            Icon(Icons.info_outline, color: onSurfaceFaint),
-                            const SizedBox(width: AppSpacing.md),
-                            Expanded(
-                              child: Text(
-                                l10n.noExpenseTransactionInPeriod,
-                                style: TextStyle(color: onSurfaceFaint),
-                              ),
+                    return AppCard(
+                      color:
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      child: Row(
+                        children: [
+                          Icon(Icons.info_outline, color: onSurfaceFaint),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: Text(
+                              l10n.noExpenseTransactionInPeriod,
+                              style: TextStyle(color: onSurfaceFaint),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     );
                   }
@@ -523,7 +528,8 @@ class BudgetEditScreen extends HookConsumerWidget {
                   final allSelected = selectedTransactionIds.value.length ==
                       categoryTransactions.length;
 
-                  return Card(
+                  return AppCard(
+                    padding: EdgeInsets.zero,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -653,7 +659,8 @@ class BudgetEditScreen extends HookConsumerWidget {
                     foregroundColor: AppColors.error,
                     side: const BorderSide(color: AppColors.error),
                   ),
-                  icon: const Icon(Icons.delete_outline, size: AppSpacing.iconSizeSm),
+                  icon: const Icon(Icons.delete_outline,
+                      size: AppSpacing.iconSizeSm),
                   label: Text(l10n.deleteBudget),
                 ),
               ),
@@ -735,12 +742,12 @@ class _DatePickerField extends StatelessWidget {
     final theme = Theme.of(context);
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           border: Border.all(color: theme.dividerColor),
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

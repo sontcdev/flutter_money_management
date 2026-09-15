@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
 import 'package:flutter_money_management/src/features/reports/providers/report_providers.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
+import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 
 class TransactionListItem extends StatelessWidget {
@@ -25,29 +27,48 @@ class TransactionListItem extends StatelessWidget {
         ? '${locale.languageCode}_${locale.countryCode}'
         : locale.languageCode;
 
-    final isExpense = transaction.type == TransactionType.expense;
-    final amountText = isExpense
-        ? '-${CurrencyFormatter.formatFromCents(transaction.amountCents.abs(), transaction.currency, locale: localeName)}'
-        : '+${CurrencyFormatter.formatFromCents(transaction.amountCents.abs(), transaction.currency, locale: localeName)}';
-    // Transaction amounts are black, only prefix +/- shows the type
-    const amountColor = Colors.black87;
+    final Color amountColor;
+    final String amountPrefix;
+    switch (transaction.type) {
+      case TransactionType.expense:
+        amountColor = AppColors.expense;
+        amountPrefix = '-';
+        break;
+      case TransactionType.income:
+        amountColor = AppColors.income;
+        amountPrefix = '+';
+        break;
+      case TransactionType.transfer:
+        amountColor = Theme.of(context).colorScheme.onSurface;
+        amountPrefix = '';
+        break;
+    }
+
+    final amountText =
+        '$amountPrefix${CurrencyFormatter.formatFromCents(transaction.amountCents.abs(), transaction.currency, locale: localeName)}';
 
     return InkWell(
       onTap: onTap,
       onLongPress: onLongPress,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.screenPadding,
+          vertical: AppSpacing.sm,
+        ),
         child: Row(
           children: [
             _buildCategoryIcon(context),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     categoryName,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
                   ),
@@ -57,8 +78,10 @@ class TransactionListItem extends StatelessWidget {
                       child: Text(
                         transaction.note!,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.grey[600],
-                              fontSize: 12,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.6),
                             ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -67,16 +90,21 @@ class TransactionListItem extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppSpacing.sm),
             Text(
               amountText,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
                     color: amountColor,
                   ),
             ),
-            const SizedBox(width: 4),
-            Icon(Icons.chevron_right, size: 20, color: Colors.grey[400]),
+            const SizedBox(width: AppSpacing.xs),
+            Icon(
+              Icons.chevron_right,
+              size: AppSpacing.iconSizeSm,
+              color:
+                  Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+            ),
           ],
         ),
       ),
@@ -84,23 +112,21 @@ class TransactionListItem extends StatelessWidget {
   }
 
   Widget _buildCategoryIcon(BuildContext context) {
-    // Use getCategoryColor for fallback to light gray
     final categoryColor =
         getCategoryColor(transactionWithCategory.categoryColorValue);
 
     return Container(
-      width: 40,
-      height: 40,
+      width: 42,
+      height: 42,
       decoration: BoxDecoration(
         color: categoryColor.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
       ),
-      child: Center(
-        child: CategoryIconWidget(
-          iconName: transactionWithCategory.categoryIconName,
-          size: 24,
-          color: categoryColor,
-        ),
+      alignment: Alignment.center,
+      child: CategoryIconWidget(
+        iconName: transactionWithCategory.categoryIconName,
+        size: 20,
+        color: categoryColor,
       ),
     );
   }

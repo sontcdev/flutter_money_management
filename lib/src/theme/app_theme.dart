@@ -1,22 +1,45 @@
 // path: lib/src/theme/app_theme.dart
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 import 'app_spacing.dart';
 
 class AppTheme {
-  /// Monospace style for currency amount fields (IBM Plex Mono), matching
-  /// the `.mono` class used across the Claude Design mockups.
+  /// Tabular-figure style for currency amounts, using the platform's system
+  /// font (SF Pro on iOS, Roboto on Android) so digits align in columns.
   static TextStyle monoAmountStyle({
     required Color color,
     double fontSize = 15,
     FontWeight fontWeight = FontWeight.w600,
   }) {
-    return GoogleFonts.ibmPlexMono(
+    return TextStyle(
       color: color,
       fontSize: fontSize,
       fontWeight: fontWeight,
+      letterSpacing: -0.2,
+      fontFeatures: const [FontFeature.tabularFigures()],
+    );
+  }
+
+  /// Builds an SF Pro-style text style. Passing `fontFamily: null` lets the
+  /// platform resolve its native system font (SF Pro on iOS, Roboto on
+  /// Android), which is the foundation of the iOS visual language.
+  static TextStyle _sf({
+    required double fontSize,
+    required FontWeight fontWeight,
+    required Color color,
+    double letterSpacing = 0,
+    double height = 1.3,
+    bool tabular = false,
+  }) {
+    return TextStyle(
+      fontFamilyFallback: const ['-apple-system', 'SF Pro Text', 'Roboto'],
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color,
+      letterSpacing: letterSpacing,
+      height: height,
+      fontFeatures: tabular ? const [FontFeature.tabularFigures()] : null,
     );
   }
 
@@ -24,113 +47,124 @@ class AppTheme {
     required Color primaryText,
     required Color secondaryText,
   }) {
-    final base = GoogleFonts.manropeTextTheme();
-    return base.copyWith(
-      displayLarge: GoogleFonts.sora(
-        fontSize: 48,
+    return TextTheme(
+      // Hero amounts / very large numbers
+      displayLarge: _sf(
+        fontSize: 40,
         fontWeight: FontWeight.w700,
         color: primaryText,
-        letterSpacing: -1.5,
-        height: 1.1,
-        fontFeatures: const [FontFeature.tabularFigures()],
+        letterSpacing: 0.37,
+        height: 1.05,
+        tabular: true,
       ),
-      displayMedium: GoogleFonts.sora(
-        fontSize: 36,
+      // Large title (iOS 34pt)
+      displayMedium: _sf(
+        fontSize: 34,
         fontWeight: FontWeight.w700,
         color: primaryText,
-        letterSpacing: -1.0,
+        letterSpacing: 0.37,
         height: 1.2,
-        fontFeatures: const [FontFeature.tabularFigures()],
       ),
-      displaySmall: GoogleFonts.sora(
+      // Title 1
+      displaySmall: _sf(
         fontSize: 28,
-        fontWeight: FontWeight.w600,
-        color: primaryText,
-        letterSpacing: -0.5,
-        height: 1.3,
-        fontFeatures: const [FontFeature.tabularFigures()],
-      ),
-      headlineLarge: GoogleFonts.sora(
-        fontSize: 24,
         fontWeight: FontWeight.w700,
         color: primaryText,
-        letterSpacing: -0.5,
-        height: 1.3,
+        letterSpacing: 0.36,
+        height: 1.2,
       ),
-      headlineMedium: GoogleFonts.sora(
+      headlineLarge: _sf(
+        fontSize: 28,
+        fontWeight: FontWeight.w700,
+        color: primaryText,
+        letterSpacing: 0.36,
+        height: 1.2,
+      ),
+      // Title 2
+      headlineMedium: _sf(
+        fontSize: 22,
+        fontWeight: FontWeight.w700,
+        color: primaryText,
+        letterSpacing: -0.26,
+        height: 1.25,
+      ),
+      // Title 3
+      headlineSmall: _sf(
         fontSize: 20,
         fontWeight: FontWeight.w600,
         color: primaryText,
-        letterSpacing: -0.3,
-        height: 1.4,
+        letterSpacing: -0.45,
+        height: 1.25,
       ),
-      headlineSmall: GoogleFonts.sora(
-        fontSize: 18,
+      // Headline / inline nav title
+      titleLarge: _sf(
+        fontSize: 17,
         fontWeight: FontWeight.w600,
         color: primaryText,
-        letterSpacing: -0.2,
-        height: 1.4,
+        letterSpacing: -0.43,
+        height: 1.3,
       ),
-      titleLarge: GoogleFonts.sora(
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-        color: primaryText,
-        letterSpacing: -0.2,
-        height: 1.4,
-      ),
-      titleMedium: GoogleFonts.manrope(
+      titleMedium: _sf(
         fontSize: 16,
         fontWeight: FontWeight.w600,
         color: primaryText,
-        letterSpacing: 0.1,
-        height: 1.4,
+        letterSpacing: -0.32,
+        height: 1.3,
       ),
-      titleSmall: GoogleFonts.manrope(
-        fontSize: 14,
+      titleSmall: _sf(
+        fontSize: 15,
         fontWeight: FontWeight.w600,
         color: primaryText,
-        letterSpacing: 0.1,
+        letterSpacing: -0.24,
+        height: 1.3,
+      ),
+      // Body (iOS 17pt)
+      bodyLarge: _sf(
+        fontSize: 17,
+        fontWeight: FontWeight.w400,
+        color: primaryText,
+        letterSpacing: -0.43,
         height: 1.4,
       ),
-      bodyLarge: GoogleFonts.manrope(
-        fontSize: 16,
+      // Callout / subhead
+      bodyMedium: _sf(
+        fontSize: 15,
         fontWeight: FontWeight.w400,
         color: primaryText,
-        letterSpacing: 0.2,
-        height: 1.5,
+        letterSpacing: -0.24,
+        height: 1.4,
       ),
-      bodyMedium: GoogleFonts.manrope(
-        fontSize: 14,
-        fontWeight: FontWeight.w400,
-        color: primaryText,
-        letterSpacing: 0.2,
-        height: 1.5,
-      ),
-      bodySmall: GoogleFonts.manrope(
-        fontSize: 12,
+      // Footnote
+      bodySmall: _sf(
+        fontSize: 13,
         fontWeight: FontWeight.w400,
         color: secondaryText,
-        letterSpacing: 0.3,
-        height: 1.5,
+        letterSpacing: -0.08,
+        height: 1.4,
       ),
-      labelLarge: GoogleFonts.manrope(
-        fontSize: 14,
+      // Button label
+      labelLarge: _sf(
+        fontSize: 17,
         fontWeight: FontWeight.w600,
         color: primaryText,
-        letterSpacing: 0.3,
+        letterSpacing: -0.43,
+        height: 1.2,
       ),
-      labelMedium: GoogleFonts.manrope(
-        fontSize: 12,
+      // Segmented / small controls
+      labelMedium: _sf(
+        fontSize: 13,
         fontWeight: FontWeight.w600,
         color: primaryText,
-        letterSpacing: 0.5,
-        textBaseline: TextBaseline.alphabetic,
+        letterSpacing: -0.08,
+        height: 1.2,
       ),
-      labelSmall: GoogleFonts.manrope(
+      // Caption / tab bar
+      labelSmall: _sf(
         fontSize: 11,
         fontWeight: FontWeight.w500,
         color: secondaryText,
-        letterSpacing: 0.5,
+        letterSpacing: 0.06,
+        height: 1.2,
       ),
     );
   }
@@ -141,6 +175,8 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
+      splashFactory: NoSplash.splashFactory,
+      highlightColor: Colors.transparent,
       colorScheme: ColorScheme.light(
         primary: primary,
         secondary: primary.withValues(alpha: 0.8),
@@ -157,14 +193,15 @@ class AppTheme {
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
-        centerTitle: false,
+        scrolledUnderElevation: 0,
+        centerTitle: true,
         shadowColor: AppColors.shadow,
         surfaceTintColor: Colors.transparent,
-        titleTextStyle: GoogleFonts.sora(
-          color: AppColors.textPrimary,
-          fontSize: 18,
+        titleTextStyle: _sf(
+          fontSize: 17,
           fontWeight: FontWeight.w600,
-          letterSpacing: -0.5,
+          color: AppColors.textPrimary,
+          letterSpacing: -0.43,
         ),
       ),
       cardTheme: CardThemeData(
@@ -173,11 +210,8 @@ class AppTheme {
         shadowColor: AppColors.shadow,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          side: const BorderSide(color: AppColors.border, width: 1),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
         ),
-        // No horizontal margin: screens already apply AppSpacing.screenPadding
-        // to their scroll view, so a card margin would double the edge inset.
         margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -186,69 +220,77 @@ class AppTheme {
           foregroundColor: AppColors.textLight,
           elevation: 0,
           shadowColor: Colors.transparent,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          minimumSize: const Size(0, 50),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusCta),
           ),
-          textStyle: GoogleFonts.manrope(
-            fontSize: 16,
+          textStyle: _sf(
+            fontSize: 17,
             fontWeight: FontWeight.w600,
-            letterSpacing: 0.2,
+            color: AppColors.textLight,
+            letterSpacing: -0.43,
           ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.textPrimary,
-          side: const BorderSide(color: AppColors.border, width: 1.5),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          side: const BorderSide(color: AppColors.separator, width: 1),
+          minimumSize: const Size(0, 50),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusCta),
           ),
-          textStyle: GoogleFonts.manrope(
-            fontSize: 16,
+          textStyle: _sf(
+            fontSize: 17,
             fontWeight: FontWeight.w600,
-            letterSpacing: 0.2,
+            color: AppColors.textPrimary,
+            letterSpacing: -0.43,
           ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: primary,
-          textStyle: GoogleFonts.manrope(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
+          textStyle: _sf(
+            fontSize: 17,
+            fontWeight: FontWeight.w400,
+            color: primary,
+            letterSpacing: -0.43,
           ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surface2,
+        fillColor: AppColors.surface,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+          borderSide: const BorderSide(color: AppColors.separator, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+          borderSide: const BorderSide(color: AppColors.separator, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
           borderSide: BorderSide(color: primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
           borderSide: const BorderSide(color: AppColors.error, width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
           borderSide: const BorderSide(color: AppColors.error, width: 1.5),
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        hintStyle: GoogleFonts.manrope(
+        hintStyle: _sf(
+          fontSize: 17,
+          fontWeight: FontWeight.w400,
           color: AppColors.textFaint,
-          fontSize: 14,
+          letterSpacing: -0.43,
         ),
       ),
       textTheme: _textTheme(
@@ -256,9 +298,19 @@ class AppTheme {
         secondaryText: AppColors.textSecondary,
       ),
       dividerTheme: const DividerThemeData(
-        color: AppColors.border,
-        thickness: 1,
-        space: 16,
+        color: AppColors.separator,
+        thickness: 0.5,
+        space: 0.5,
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.surface,
+        surfaceTintColor: Colors.transparent,
+        showDragHandle: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppSpacing.radiusHero),
+          ),
+        ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primary,
@@ -272,13 +324,15 @@ class AppTheme {
         unselectedItemColor: AppColors.textFaint,
         elevation: 0,
         type: BottomNavigationBarType.fixed,
-        selectedLabelStyle: GoogleFonts.manrope(
-          fontSize: 12,
+        selectedLabelStyle: _sf(
+          fontSize: 11,
           fontWeight: FontWeight.w600,
+          color: primary,
         ),
-        unselectedLabelStyle: GoogleFonts.manrope(
-          fontSize: 12,
+        unselectedLabelStyle: _sf(
+          fontSize: 11,
           fontWeight: FontWeight.w500,
+          color: AppColors.textFaint,
         ),
       ),
       tabBarTheme: TabBarThemeData(
@@ -286,13 +340,17 @@ class AppTheme {
         unselectedLabelColor: AppColors.textSecondary,
         indicatorColor: primary,
         indicatorSize: TabBarIndicatorSize.label,
-        labelStyle: GoogleFonts.manrope(
-          fontSize: 14,
+        labelStyle: _sf(
+          fontSize: 15,
           fontWeight: FontWeight.w600,
+          color: primary,
+          letterSpacing: -0.24,
         ),
-        unselectedLabelStyle: GoogleFonts.manrope(
-          fontSize: 14,
+        unselectedLabelStyle: _sf(
+          fontSize: 15,
           fontWeight: FontWeight.w500,
+          color: AppColors.textSecondary,
+          letterSpacing: -0.24,
         ),
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
@@ -301,28 +359,18 @@ class AppTheme {
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surface2,
         selectedColor: primary.withValues(alpha: 0.15),
-        labelStyle: GoogleFonts.manrope(
+        labelStyle: _sf(
           fontSize: 13,
           fontWeight: FontWeight.w500,
+          color: AppColors.textPrimary,
+          letterSpacing: -0.08,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
         ),
       ),
-      switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected)
-              ? AppColors.surface
-              : AppColors.surface,
-        ),
-        trackColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected)
-              ? primary
-              : AppColors.border,
-        ),
-        trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
-      ),
+      switchTheme: _switchTheme(primary, AppColors.surface, AppColors.border),
     );
   }
 
@@ -332,6 +380,8 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
+      splashFactory: NoSplash.splashFactory,
+      highlightColor: Colors.transparent,
       colorScheme: ColorScheme.dark(
         primary: primary,
         secondary: primary.withValues(alpha: 0.8),
@@ -348,14 +398,15 @@ class AppTheme {
         backgroundColor: AppColors.backgroundDark,
         foregroundColor: AppColors.textLight,
         elevation: 0,
-        centerTitle: false,
+        scrolledUnderElevation: 0,
+        centerTitle: true,
         shadowColor: AppColors.shadowDark,
         surfaceTintColor: Colors.transparent,
-        titleTextStyle: GoogleFonts.sora(
-          color: AppColors.textLight,
-          fontSize: 18,
+        titleTextStyle: _sf(
+          fontSize: 17,
           fontWeight: FontWeight.w600,
-          letterSpacing: -0.5,
+          color: AppColors.textLight,
+          letterSpacing: -0.43,
         ),
       ),
       cardTheme: CardThemeData(
@@ -364,11 +415,8 @@ class AppTheme {
         shadowColor: AppColors.shadowDark,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          side: const BorderSide(color: AppColors.borderDark, width: 1),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
         ),
-        // No horizontal margin: screens already apply AppSpacing.screenPadding
-        // to their scroll view, so a card margin would double the edge inset.
         margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -377,70 +425,77 @@ class AppTheme {
           foregroundColor: AppColors.textDark,
           elevation: 0,
           shadowColor: Colors.transparent,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          minimumSize: const Size(0, 50),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusCta),
           ),
-          textStyle: GoogleFonts.manrope(
-            fontSize: 16,
+          textStyle: _sf(
+            fontSize: 17,
             fontWeight: FontWeight.w600,
-            letterSpacing: 0.2,
+            color: AppColors.textDark,
+            letterSpacing: -0.43,
           ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.textLight,
-          side: const BorderSide(color: AppColors.borderDark, width: 1.5),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          side: const BorderSide(color: AppColors.separatorDark, width: 1),
+          minimumSize: const Size(0, 50),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusCta),
           ),
-          textStyle: GoogleFonts.manrope(
-            fontSize: 16,
+          textStyle: _sf(
+            fontSize: 17,
             fontWeight: FontWeight.w600,
-            letterSpacing: 0.2,
+            color: AppColors.textLight,
+            letterSpacing: -0.43,
           ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: primary,
-          textStyle: GoogleFonts.manrope(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
+          textStyle: _sf(
+            fontSize: 17,
+            fontWeight: FontWeight.w400,
+            color: primary,
+            letterSpacing: -0.43,
           ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surface2Dark,
+        fillColor: AppColors.surfaceDark,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+          borderSide: const BorderSide(color: AppColors.separatorDark, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+          borderSide: const BorderSide(color: AppColors.separatorDark, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
           borderSide: BorderSide(color: primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
           borderSide: const BorderSide(color: AppColors.errorDark, width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          borderSide:
-              const BorderSide(color: AppColors.errorDark, width: 1.5),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+          borderSide: const BorderSide(color: AppColors.errorDark, width: 1.5),
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        hintStyle: GoogleFonts.manrope(
+        hintStyle: _sf(
+          fontSize: 17,
+          fontWeight: FontWeight.w400,
           color: AppColors.textLightFaint,
-          fontSize: 14,
+          letterSpacing: -0.43,
         ),
       ),
       textTheme: _textTheme(
@@ -448,9 +503,19 @@ class AppTheme {
         secondaryText: AppColors.textLightSecondary,
       ),
       dividerTheme: const DividerThemeData(
-        color: AppColors.borderDark,
-        thickness: 1,
-        space: 16,
+        color: AppColors.separatorDark,
+        thickness: 0.5,
+        space: 0.5,
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.surfaceDark,
+        surfaceTintColor: Colors.transparent,
+        showDragHandle: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppSpacing.radiusHero),
+          ),
+        ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primary,
@@ -464,13 +529,15 @@ class AppTheme {
         unselectedItemColor: AppColors.textLightFaint,
         elevation: 0,
         type: BottomNavigationBarType.fixed,
-        selectedLabelStyle: GoogleFonts.manrope(
-          fontSize: 12,
+        selectedLabelStyle: _sf(
+          fontSize: 11,
           fontWeight: FontWeight.w600,
+          color: primary,
         ),
-        unselectedLabelStyle: GoogleFonts.manrope(
-          fontSize: 12,
+        unselectedLabelStyle: _sf(
+          fontSize: 11,
           fontWeight: FontWeight.w500,
+          color: AppColors.textLightFaint,
         ),
       ),
       tabBarTheme: TabBarThemeData(
@@ -478,13 +545,17 @@ class AppTheme {
         unselectedLabelColor: AppColors.textLightSecondary,
         indicatorColor: primary,
         indicatorSize: TabBarIndicatorSize.label,
-        labelStyle: GoogleFonts.manrope(
-          fontSize: 14,
+        labelStyle: _sf(
+          fontSize: 15,
           fontWeight: FontWeight.w600,
+          color: primary,
+          letterSpacing: -0.24,
         ),
-        unselectedLabelStyle: GoogleFonts.manrope(
-          fontSize: 14,
+        unselectedLabelStyle: _sf(
+          fontSize: 15,
           fontWeight: FontWeight.w500,
+          color: AppColors.textLightSecondary,
+          letterSpacing: -0.24,
         ),
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(
@@ -493,26 +564,31 @@ class AppTheme {
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surface2Dark,
         selectedColor: primary.withValues(alpha: 0.2),
-        labelStyle: GoogleFonts.manrope(
+        labelStyle: _sf(
           fontSize: 13,
           fontWeight: FontWeight.w500,
+          color: AppColors.textLight,
+          letterSpacing: -0.08,
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
         ),
       ),
-      switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith(
-          (states) => AppColors.surfaceDark,
-        ),
-        trackColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected)
-              ? primary
-              : AppColors.borderDark,
-        ),
-        trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
+      switchTheme:
+          _switchTheme(primary, AppColors.surfaceDark, AppColors.borderDark),
+    );
+  }
+
+  static SwitchThemeData _switchTheme(
+      Color primary, Color thumb, Color offTrack) {
+    return SwitchThemeData(
+      thumbColor: const WidgetStatePropertyAll(Colors.white),
+      trackColor: WidgetStateProperty.resolveWith(
+        (states) =>
+            states.contains(WidgetState.selected) ? primary : offTrack,
       ),
+      trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
     );
   }
 }

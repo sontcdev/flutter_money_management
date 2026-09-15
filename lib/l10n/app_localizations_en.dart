@@ -1521,6 +1521,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get genericTryAgainError => 'An error occurred. Please try again';
 
   @override
+  String get dataLoadFailed => 'Unable to load data';
+
+  @override
+  String get dataLoadFailedHint => 'Please check your connection and try again.';
+
+  @override
   String get transactionSavedReceiptUploadFailed => 'Transaction saved, but receipt upload failed.';
 
   @override
@@ -1756,4 +1762,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get negativeOpeningBalance => 'Negative opening balance (money owed)';
+
+  @override
+  String get voiceInputTooltip => 'Add by voice';
+
+  @override
+  String get voiceInputTitle => 'Voice input';
+
+  @override
+  String get voiceInputHintIdle => 'Tap the microphone and say something like \"today groceries 150k\"';
+
+  @override
+  String get voiceInputListening => 'Listening...';
+
+  @override
+  String get voiceInputNoSpeechDetected => 'Couldn\'t hear anything, please try again';
+
+  @override
+  String get voiceInputPermissionDenied => 'Microphone permission is required for voice input';
+
+  @override
+  String get voiceInputApply => 'Apply';
+
+  @override
+  String get voiceInputTryAgain => 'Try again';
 }

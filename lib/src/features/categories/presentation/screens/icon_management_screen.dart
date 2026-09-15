@@ -33,7 +33,7 @@ class IconManagementScreen extends HookConsumerWidget {
                 hintText: l10n.searchIconHint,
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
                   borderSide: BorderSide.none,
                 ),
                 filled: true,
@@ -218,7 +218,7 @@ class _IconTile extends StatelessWidget {
       message: iconKey,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
         child: Container(
           width: 56,
           height: 56,
@@ -226,7 +226,7 @@ class _IconTile extends StatelessWidget {
             color: isAdded
                 ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.15)
                 : Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
             border: Border.all(
               color: isAdded
                   ? Theme.of(context).colorScheme.primary

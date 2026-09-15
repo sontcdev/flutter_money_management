@@ -70,7 +70,10 @@ class WorkspaceSwitcher extends ConsumerWidget {
                       size: 20,
                       color: isActive
                           ? Theme.of(context).colorScheme.primary
-                          : Colors.grey,
+                          : Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.6),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -91,7 +94,10 @@ class WorkspaceSwitcher extends ConsumerWidget {
                                 : workspace.role,
                             style:
                                 Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: Colors.grey,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface
+                                          .withValues(alpha: 0.6),
                                     ),
                           ),
                         ],

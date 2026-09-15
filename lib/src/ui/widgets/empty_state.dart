@@ -124,27 +124,28 @@ class EmptyState extends StatelessWidget {
             else
               _buildTitle(context),
 
-            SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
-
             // Message with optional fade animation
-            if (shouldAnimate)
-              TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0.0, end: 1.0),
-                duration: const Duration(milliseconds: 600),
-                curve: Curves.easeOut,
-                builder: (context, value, child) {
-                  return Opacity(
-                    opacity: value,
-                    child: Transform.translate(
-                      offset: Offset(0, 20 * (1 - value)),
-                      child: child,
-                    ),
-                  );
-                },
-                child: _buildMessage(context),
-              )
-            else
-              _buildMessage(context),
+            if (message.isNotEmpty) ...[
+              SizedBox(height: compact ? AppSpacing.sm : AppSpacing.md),
+              if (shouldAnimate)
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  duration: const Duration(milliseconds: 600),
+                  curve: Curves.easeOut,
+                  builder: (context, value, child) {
+                    return Opacity(
+                      opacity: value,
+                      child: Transform.translate(
+                        offset: Offset(0, 20 * (1 - value)),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: _buildMessage(context),
+                )
+              else
+                _buildMessage(context),
+            ],
 
             // Action buttons
             if (actionLabel != null && onAction != null) ...[
