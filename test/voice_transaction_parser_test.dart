@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
 import 'package:flutter_money_management/src/utils/voice_transaction_parser.dart';
+import 'package:flutter_money_management/src/features/wallets/models/wallet.dart';
 
 Category _category(String name, CategoryType type) {
   final now = DateTime(2026, 1, 1);
@@ -102,7 +103,7 @@ final _sentenceCorpus = [
     amount: 2000000,
     days: null,
     type: TransactionType.income,
-    category: 'Lương',
+    category: 'Thưởng',
     wallet: null
   ),
   (
@@ -499,15 +500,48 @@ final _sentenceCorpus = [
   ),
 ];
 
+Wallet _wallet(String name, WalletType type,
+    {bool archived = false, bool isDefault = false}) {
+  return Wallet(
+      id: name,
+      workspaceId: 'workspace',
+      name: name,
+      walletType: type,
+      iconName: 'wallet',
+      colorValue: 0,
+      isArchived: archived,
+      isDefault: isDefault,
+      createdAt: DateTime(2026),
+      updatedAt: DateTime(2026));
+}
+
 void main() {
   group('Natural-language rule corpus', () {
     for (final fixture in _sentenceCorpus) {
       test(fixture.text, () {
         final now = DateTime(2026, 10, 9, 14);
-        final result =
-            VoiceTransactionParser.parse(fixture.text, clock: () => now);
+        final result = VoiceTransactionParser.parse(
+          fixture.text,
+          clock: () => now,
+          categories: [
+            _category('Ăn uống', CategoryType.expense),
+            _category('Di chuyển', CategoryType.expense),
+            _category('Lương', CategoryType.income),
+            _category('Thưởng', CategoryType.income),
+            _category('Nhà', CategoryType.expense),
+            _category('Sách', CategoryType.expense)
+          ],
+          wallets: [
+            _wallet('MoMo', WalletType.ewallet),
+            _wallet('Bank', WalletType.bank),
+            _wallet('Tiền mặt', WalletType.cash),
+            _wallet('Tiết kiệm', WalletType.savings)
+          ],
+        );
         expect(result.amountVnd, fixture.amount);
         expect(result.type, fixture.type);
+        expect(result.categoryName, fixture.category);
+        expect(result.walletName, fixture.wallet);
         expect(
             result.date,
             fixture.days == null
@@ -544,6 +578,39 @@ void main() {
       expect(VoiceTransactionParser.parse(r'coffee $30').amountVnd, 30);
       expect(VoiceTransactionParser.parse('mua 50.5 vnd').amountVnd, 50.5);
     });
+  });
+
+  test('wallet aliases avoid arbitrary choices and archived wallets', () {
+    final wallets = [
+      _wallet('First', WalletType.bank),
+      _wallet('Second', WalletType.bank)
+    ];
+    expect(
+        VoiceTransactionParser.parse('mua 50k ck', wallets: wallets).walletId,
+        isNull);
+    expect(
+        VoiceTransactionParser.parse('mua 50k ck', wallets: [
+          ...wallets,
+          _wallet('Default', WalletType.bank, isDefault: true)
+        ]).walletName,
+        'Default');
+    expect(
+        VoiceTransactionParser.parse('mua 50k momo',
+                wallets: [_wallet('MoMo', WalletType.ewallet, archived: true)])
+            .walletId,
+        isNull);
+  });
+
+  test('matches multi-word names with a typo', () {
+    expect(
+        VoiceTransactionParser.parse('mua 50k vi tiet kiem',
+            wallets: [_wallet('Ví tiết kiệm', WalletType.savings)]).walletName,
+        'Ví tiết kiệm');
+    expect(
+        VoiceTransactionParser.parse('giai tri 50k',
+                categories: [_category('Giải trí', CategoryType.expense)])
+            .categoryName,
+        'Giải trí');
   });
 
   group('VoiceTransactionParser amount parsing', () {

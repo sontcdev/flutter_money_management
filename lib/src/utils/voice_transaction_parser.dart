@@ -2,6 +2,8 @@
 
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
+import 'package:flutter_money_management/src/features/wallets/models/wallet.dart';
+import 'package:flutter_money_management/src/utils/text_similarity.dart';
 
 /// Kết quả parse một câu nói tiếng Việt thành các trường của giao dịch.
 /// Mọi trường đều có thể null nếu không nhận diện được — màn hình luôn để
@@ -15,6 +17,8 @@ class VoiceParseResult {
     this.categoryId,
     this.categoryName,
     this.note,
+    this.walletId,
+    this.walletName,
   });
 
   final String rawText;
@@ -24,6 +28,8 @@ class VoiceParseResult {
   final String? categoryId;
   final String? categoryName;
   final String? note;
+  final String? walletId;
+  final String? walletName;
 }
 
 /// Parser rule-based cho câu nói tiếng Việt kiểu:
@@ -80,6 +86,7 @@ class VoiceTransactionParser {
     String text, {
     List<Category> categories = const [],
     DateTime Function()? clock,
+    List<Wallet> wallets = const [],
   }) {
     final trimmed = text.trim();
     final normalized = _normalize(trimmed);
@@ -94,6 +101,7 @@ class VoiceTransactionParser {
             .where((c) => c.type == _categoryTypeFor(type))
             .toList();
     final category = _matchCategory(normalized, relevantCategories);
+    final wallet = _matchWallet(normalized, wallets);
 
     return VoiceParseResult(
       rawText: trimmed,
@@ -103,6 +111,8 @@ class VoiceTransactionParser {
       categoryId: category?.id,
       categoryName: category?.name,
       note: trimmed.isEmpty ? null : trimmed,
+      walletId: wallet?.id,
+      walletName: wallet?.name,
     );
   }
 
@@ -275,6 +285,8 @@ class VoiceTransactionParser {
     'an trua': ['an', 'uong'],
     'an toi': ['an', 'uong'],
     'ca phe': ['an', 'uong'],
+    'ca fe': ['an', 'uong'],
+    'cafe': ['an', 'uong'],
     'nha hang': ['an', 'uong'],
     'quan an': ['an', 'uong'],
     'sieu thi': ['an', 'uong', 'thuc', 'pham'],
@@ -296,6 +308,8 @@ class VoiceTransactionParser {
     String normalizedText,
     List<Category> categories,
   ) {
+    final explicit = bestTextMatch(normalizedText, categories, (c) => c.name);
+    if (explicit != null) return explicit.value;
     final textTokens = normalizedText.split(_tokenSplitter).toSet()
       ..removeWhere((t) => t.isEmpty);
 
@@ -314,7 +328,9 @@ class VoiceTransactionParser {
           .where((t) => t.isNotEmpty);
       var score = 0;
       for (final token in nameTokens) {
-        if (textTokens.contains(token)) {
+        if (textTokens.any((textToken) =>
+            textToken == token ||
+            (token.length >= 4 && levenshteinRatio(textToken, token) >= 0.8))) {
           score++;
         }
       }
@@ -327,41 +343,32 @@ class VoiceTransactionParser {
     return bestScore > 0 ? best : null;
   }
 
+  static Wallet? _matchWallet(String text, List<Wallet> wallets) {
+    final available =
+        wallets.where((w) => !w.isArchived && w.deletedAt == null).toList();
+    final named = bestTextMatch(text, available, (w) => w.name);
+    if (named != null) return named.value;
+    WalletType? type;
+    if (['ck', 'chuyen khoan'].any((phrase) => _containsPhrase(text, phrase))) {
+      type = WalletType.bank;
+    } else if (['tien mat', 'cash']
+        .any((phrase) => _containsPhrase(text, phrase))) {
+      type = WalletType.cash;
+    }
+    if (type == null) return null;
+    final candidates = available.where((w) => w.walletType == type).toList();
+    if (candidates.length == 1) return candidates.single;
+    final defaults = candidates.where((w) => w.isDefault).toList();
+    return defaults.length == 1 ? defaults.single : null;
+  }
+
   static final RegExp _tokenSplitter = RegExp(r'\s+');
 
   // ---------------------------------------------------------------------
   // Normalization
   // ---------------------------------------------------------------------
 
-  static const Map<String, String> _diacriticsMap = {
-    'à': 'a', 'á': 'a', 'ả': 'a', 'ã': 'a', 'ạ': 'a',
-    'ă': 'a', 'ằ': 'a', 'ắ': 'a', 'ẳ': 'a', 'ẵ': 'a', 'ặ': 'a',
-    'â': 'a', 'ầ': 'a', 'ấ': 'a', 'ẩ': 'a', 'ẫ': 'a', 'ậ': 'a',
-    'đ': 'd',
-    'è': 'e', 'é': 'e', 'ẻ': 'e', 'ẽ': 'e', 'ẹ': 'e',
-    'ê': 'e', 'ề': 'e', 'ế': 'e', 'ể': 'e', 'ễ': 'e', 'ệ': 'e',
-    'ì': 'i', 'í': 'i', 'ỉ': 'i', 'ĩ': 'i', 'ị': 'i',
-    'ò': 'o', 'ó': 'o', 'ỏ': 'o', 'õ': 'o', 'ọ': 'o',
-    'ô': 'o', 'ồ': 'o', 'ố': 'o', 'ổ': 'o', 'ỗ': 'o', 'ộ': 'o',
-    'ơ': 'o', 'ờ': 'o', 'ớ': 'o', 'ở': 'o', 'ỡ': 'o', 'ợ': 'o',
-    'ù': 'u', 'ú': 'u', 'ủ': 'u', 'ũ': 'u', 'ụ': 'u',
-    'ư': 'u', 'ừ': 'u', 'ứ': 'u', 'ử': 'u', 'ữ': 'u', 'ự': 'u',
-    'ỳ': 'y', 'ý': 'y', 'ỷ': 'y', 'ỹ': 'y', 'ỵ': 'y',
-  };
-
   /// Chuyển về chữ thường, bỏ dấu tiếng Việt, chuẩn hoá khoảng trắng —
   /// dùng để so khớp từ khóa/category, không dùng để hiển thị.
-  static String _normalize(String input) {
-    final lower = input.toLowerCase();
-    final buffer = StringBuffer();
-    for (final rune in lower.runes) {
-      final char = String.fromCharCode(rune);
-      buffer.write(_diacriticsMap[char] ?? char);
-    }
-    return buffer
-        .toString()
-        .replaceAll(RegExp(r'[^\w\s.,/\-$]'), ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
-  }
+  static String _normalize(String input) => normalizeVi(input);
 }

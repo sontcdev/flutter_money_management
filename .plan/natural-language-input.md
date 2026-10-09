@@ -58,11 +58,11 @@ Key decisions:
 - [x] Unit tests for every new pattern.
 
 ### Phase 2 — Fuzzy wallet & category name matching
-- [ ] Add `lib/src/utils/text_similarity.dart`: `normalizeVi()` (move/reuse `_normalize`), Levenshtein ratio, best-match helper with threshold.
-- [ ] Add `wallets` param to `parse`; add `walletId`/`walletName` to `VoiceParseResult` (plain class, no codegen).
-- [ ] Wallet match: n-gram (1–3 tokens) vs wallet names, ratio ≥ 0.8, plus aliases (`ck`/`chuyển khoản` → bank-type wallet, `tiền mặt`/`cash`).
-- [ ] Category match: replace exact token overlap with fuzzy token match (handles `cafe`/`ca phe`/`cà fê`), keep synonym table.
-- [ ] Tests: typos, missing diacritics, multi-word wallet names.
+- [x] Add `lib/src/utils/text_similarity.dart`: `normalizeVi()` (move/reuse `_normalize`), Levenshtein ratio, best-match helper with threshold.
+- [x] Add `wallets` param to `parse`; add `walletId`/`walletName` to `VoiceParseResult` (plain class, no codegen).
+- [x] Wallet match: n-gram (1–3 tokens) vs wallet names, ratio ≥ 0.8, plus aliases (`ck`/`chuyển khoản` → bank-type wallet, `tiền mặt`/`cash`).
+- [x] Category match: replace exact token overlap with fuzzy token match (handles `cafe`/`ca phe`/`cà fê`), keep synonym table.
+- [x] Tests: typos, missing diacritics, multi-word wallet names.
 
 ### Phase 3 — Learn from history (Naive Bayes)
 - [ ] Add `lib/src/features/transactions/services/category_suggestion_service.dart`:
@@ -110,3 +110,5 @@ Phase 1: 0.5d · Phase 2: 0.5d · Phase 3: 0.5–1d · Phase 4: 0.5d · Phase 5:
 - Phase 0: 60 representative fixtures recorded in `test/voice_transaction_parser_test.dart`, including Vietnamese, English, and Japanese. These are synthetic acceptance examples, not collected private user data. First 16 preserve baseline amount/type expectations; later phases activate the expanded expectations. Date offsets use 2026-10-09.
 
 - Phase 1: 80 parser tests pass; fixed clock covers all 60 corpus amount/type/date expectations, invalid dates and year/leap-month boundaries. Currency markers retain the entered number in the VND form; no exchange-rate conversion. Weekdays use the current Monday-based week unless `tuần trước` is explicit. Duckling reference: https://github.com/facebook/duckling/blob/main/Duckling/Time/VI/Corpus.hs and https://github.com/facebook/duckling/blob/main/Duckling/AmountOfMoney/VI/Corpus.hs (independent rules, no copied implementation).
+
+- Phase 2: 85 focused tests pass and focused analysis is clean. All 60 fixtures now assert category/wallet too. Vietnamese normalization preserves Japanese text; wallet aliases resolve only unique/default eligible wallets, excluding archived/deleted wallets.
