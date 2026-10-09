@@ -220,7 +220,7 @@ final _sentenceCorpus = [
   ),
   (
     text: r'coffee 30$',
-    amount: 30,
+    amount: null,
     days: null,
     type: null,
     category: null,
@@ -285,7 +285,7 @@ final _sentenceCorpus = [
   (
     text: 'cuối tháng mua 50k',
     amount: 50000,
-    days: 22,
+    days: -9,
     type: TransactionType.expense,
     category: null,
     wallet: null
@@ -293,7 +293,7 @@ final _sentenceCorpus = [
   (
     text: 'ngày 15 mua 50k',
     amount: 50000,
-    days: 6,
+    days: -24,
     type: TransactionType.expense,
     category: null,
     wallet: null
@@ -515,7 +515,186 @@ Wallet _wallet(String name, WalletType type,
       updatedAt: DateTime(2026));
 }
 
+const _formatCorpus = [
+  ('1tr2', 1200000, null, null, null, false),
+  ('1tr25', 1250000, null, null, null, false),
+  ('1tr200', 1200000, null, null, null, false),
+  ('1,5tr', 1500000, null, null, null, false),
+  ('30 ngàn', 30000, null, null, null, false),
+  ('2 trăm nghìn', 200000, null, null, null, false),
+  ('2 trăm ngàn', 200000, null, null, null, false),
+  ('1m', 1000000, null, null, null, false),
+  ('1 tỷ', 1000000000, null, null, null, false),
+  ('2 lít', 200000, null, null, null, false),
+  ('30 000 vnd', 30000, null, null, null, false),
+  ('vay', null, null, null, null, false),
+  ('cho vay', null, null, null, null, false),
+  ('trả nợ', null, null, null, null, false),
+  ('tháng 10', null, null, null, 'Tháng 10', false),
+  ('cafe 30k 90 ngày trước', 30000, '2026-07-11', null, 'Cafe', false),
+  ('cafe 30k 12 tuần trước', 30000, '2026-07-17', null, 'Cafe', false),
+  ('cafe 30k hôm nay', 30000, '2026-10-09', null, 'Cafe', false),
+  ('cafe 30k hôm qua', 30000, '2026-10-08', null, 'Cafe', false),
+  ('cafe 30k hôm kia', 30000, '2026-10-07', null, 'Cafe', false),
+  ('cafe 30k hôm trước', 30000, '2026-10-08', null, 'Cafe', false),
+  ('cafe 30k sáng nay', 30000, '2026-10-09', null, 'Cafe', false),
+  ('cafe 30k trưa nay', 30000, '2026-10-09', null, 'Cafe', false),
+  ('cafe 30k tối nay', 30000, '2026-10-09', null, 'Cafe', false),
+  ('cafe 30k tuần trước', 30000, '2026-10-02', null, 'Cafe', false),
+  ('cafe 30k đầu tháng', 30000, '2026-10-01', null, 'Cafe', false),
+  ('cafe 30k cuối tháng', 30000, '2026-09-30', null, 'Cafe', false),
+  ('cafe 30k ngày 15 tháng 10', 30000, '2025-10-15', null, 'Cafe', false),
+  ('cafe 30k 15/10/2026', 30000, '2026-10-15', null, 'Cafe', false),
+  ('cafe 30k thứ 2', 30000, '2026-10-05', null, 'Cafe', false),
+  ('an   voi ban 200k!', 200000, null, TransactionType.expense, null, false),
+  (
+    'đóng học phí 1.500.000 đồng',
+    1500000,
+    null,
+    TransactionType.expense,
+    null,
+    false
+  ),
+  (':cafe 30k;-', 30000, null, null, 'Cafe', false),
+  ('30 000', 30000, null, null, null, false),
+  ('cafe 1 500 000', 1500000, null, null, 'Cafe', false),
+  ('phòng 12 500', 12, null, null, null, true),
+  ('1tr rưỡi', 1500000, null, null, null, false),
+  ('cafe 1 triệu rưỡi', 1500000, null, null, 'Cafe', false),
+  ('2 củ rưỡi', 2500000, null, null, null, false),
+  ('30 nghìn rưỡi', 30500, null, null, null, false),
+  ('5 trăm rưỡi', 550000, null, null, null, false),
+  (r'$20 sách', null, null, null, r'$20 sách', false),
+  (
+    'mua 2 đồ chơi 100k',
+    100000,
+    null,
+    TransactionType.expense,
+    'Mua 2 đồ chơi',
+    false
+  ),
+  (
+    'mua 20 đồ ăn 50k',
+    50000,
+    null,
+    TransactionType.expense,
+    'Mua 20 đồ ăn',
+    false
+  ),
+  (
+    'mua 20 do an 50k',
+    50000,
+    null,
+    TransactionType.expense,
+    'Mua 20 do an',
+    false
+  ),
+  ('20 do', null, null, null, null, false),
+  ('cafe 20 usd', null, null, null, null, false),
+  ('cafe ban 50k', 50000, null, null, 'Cafe ban', false),
+  ('gui ban 50k', 50000, null, null, 'Gui ban', false),
+  (
+    'an com voi ban 50k',
+    50000,
+    null,
+    TransactionType.expense,
+    'An com voi ban',
+    false
+  ),
+  ('ban xe 5tr', 5000000, null, null, 'Ban xe', false),
+  ('bán xe 5tr', 5000000, null, TransactionType.income, 'Bán xe', false),
+  ('20 đô', null, null, null, null, false),
+  ('20 usd', null, null, null, null, false),
+  ('0k cafe', null, null, null, null, false),
+  ('0đ', null, null, null, null, false),
+  ('cafe năm 2026 30000', 30000, null, null, 'Cafe', false),
+  ('tiền nhà tháng 10/2026 5tr', 5000000, null, null, null, false),
+  ('cafe 30k ngày 25', 30000, '2026-09-25', null, 'Cafe', false),
+  ('cafe 30k 15/10', 30000, '2025-10-15', null, 'Cafe', false),
+  ('cafe 30k ngày 31', 30000, '2026-08-31', null, 'Cafe', false),
+  ('cafe 30k ngày 5', 30000, '2026-10-05', null, 'Cafe', false),
+  ('cafe 30k ngày 15 tháng 9', 30000, '2026-09-15', null, 'Cafe', false),
+  (
+    'cafe 30k ngày 15 tháng 10 năm 2026',
+    30000,
+    '2026-10-15',
+    null,
+    'Cafe',
+    false
+  ),
+  ('cafe 30k tháng trước', 30000, '2026-09-09', null, 'Cafe', false),
+  ('cafe 30k 3 ngày trước', 30000, '2026-10-06', null, 'Cafe', false),
+  ('cafe 30k 2 tuần trước', 30000, '2026-09-25', null, 'Cafe', false),
+  ('cafe 30k ngày mai', 30000, '2026-10-10', null, 'Cafe', false),
+  ('cafe 30k v.v.', 30000, null, null, 'Cafe', false),
+  ('cafe 30k etc.;', 30000, null, null, 'Cafe', false),
+  ('1.500.000 đồng', 1500000, null, null, null, false),
+  ('đóng học phí 1tr', 1000000, null, TransactionType.expense, null, false),
+  ('bán đồ cũ 300k', 300000, null, TransactionType.income, null, false),
+  ('ăn với bạn 200k', 200000, null, TransactionType.expense, null, false),
+  ('an voi ban 200k', 200000, null, TransactionType.expense, null, false),
+  ('30k', 30000, null, null, null, false),
+  ('30 nghìn', 30000, null, null, null, false),
+  ('30.000', 30000, null, null, null, false),
+  ('30,000', 30000, null, null, null, false),
+  ('30.000đ', 30000, null, null, null, false),
+  ('30 000 đ', 30000, null, null, null, false),
+  ('1tr5', 1500000, null, null, null, false),
+  ('1tr 5', 1500000, null, null, null, false),
+  ('1 triệu 5', 1500000, null, null, null, false),
+  ('1.5tr', 1500000, null, null, null, false),
+  ('2 củ', 2000000, null, null, null, false),
+  ('5 trăm', 500000, null, null, null, false),
+  ('1.2 tỷ', 1200000000, null, null, null, false),
+  ('1.500.000', 1500000, null, null, null, false),
+  ('iphone 15 20tr', 20000000, null, null, null, false),
+  ('xăng 95 50k', 50000, null, null, null, false),
+  ('grab 7h 50k', 50000, null, null, null, false),
+  ('cafe lúc 9h30 30k', 30000, null, null, null, false),
+  ('tiền nhà tháng 10 5tr', 5000000, null, null, null, false),
+  ('mua 3 ly cafe 90k', 90000, null, null, null, false),
+  ('500', 500, null, null, null, false),
+  ('ba mươi nghìn', null, null, null, null, false),
+  ('hai triệu', null, null, null, null, false),
+  ('vay 50k', 50000, null, null, null, false),
+  ('cho vay 50k', 50000, null, null, null, false),
+  ('trả nợ 50k', 50000, null, null, null, false),
+  ('tiền nhà 2026 5tr', 5000000, null, null, null, true),
+  ('phòng 1203 tiền điện 500k', 500000, null, null, null, true),
+  ('cafe 30k và 50k', 30000, null, null, null, true),
+  ('cafe 30k + 50k', 30000, null, null, null, true),
+  ('cafe 30k; 50k', 30000, null, null, null, true),
+  ('cafe 30k bánh 20k', 30000, null, null, null, true),
+];
+
 void main() {
+  group('Format corpus', () {
+    for (final row in _formatCorpus) {
+      test(row.$1, () {
+        final result = VoiceTransactionParser.parse(row.$1,
+            clock: () => DateTime(2026, 10, 9));
+        expect(result.amountVnd, row.$2);
+        if (row.$3 != null) expect(result.date, DateTime.parse(row.$3!));
+        if (row.$4 != null ||
+            [
+              '1.500.000 đồng',
+              'vay',
+              'cho vay',
+              'trả nợ',
+              'vay 50k',
+              'cho vay 50k',
+              'trả nợ 50k',
+              'cafe ban 50k',
+              'gui ban 50k',
+              'ban xe 5tr'
+            ].contains(row.$1)) {
+          expect(result.type, row.$4);
+        }
+        if (row.$5 != null) expect(result.note, row.$5);
+        expect(result.hasExtraAmounts, row.$6);
+      });
+    }
+  });
   group('Weekday date resolution', () {
     for (final fixture in [
       (text: 'thứ 6', now: DateTime(2026, 10, 5), date: DateTime(2026, 10, 2)),
@@ -543,12 +722,16 @@ void main() {
         expect(result.date, fixture.date);
       });
     }
-    test('preserves future explicit calendar dates', () {
-      for (final dateText in ['ngày 15', '15/10']) {
+    test('resolves dates without a year to the past', () {
+      for (final fixture in [
+        (text: 'ngày 15', date: DateTime(2026, 9, 15)),
+        (text: '15/10', date: DateTime(2025, 10, 15)),
+        (text: '15/10/2026', date: DateTime(2026, 10, 15)),
+      ]) {
         expect(
-            VoiceTransactionParser.parse('cafe 30k $dateText',
-                clock: () => DateTime(2026, 10, 5)).date,
-            DateTime(2026, 10, 15));
+            VoiceTransactionParser.parse('cafe 30k ${fixture.text}',
+                clock: () => DateTime(2026, 10, 9)).date,
+            fixture.date);
       }
     });
   });
@@ -600,7 +783,7 @@ void main() {
             '15/10${punctuation}cafe 30k, grab 45k',
             clock: () => DateTime(2026, 10, 9));
         expect(results.map((r) => r.date),
-            [DateTime(2026, 10, 15), DateTime(2026, 10, 15)]);
+            [DateTime(2025, 10, 15), DateTime(2025, 10, 15)]);
         expect(results.first.note, 'Cafe');
       }
       expect(VoiceTransactionParser.parse('15/10,5 cafe 30k').date, isNull);
@@ -839,14 +1022,14 @@ void main() {
       expect(
           VoiceTransactionParser.parse('cuối tháng',
               clock: () => DateTime(2024, 2, 15)).date,
-          DateTime(2024, 2, 29));
+          DateTime(2024, 1, 31));
     });
     test('type keywords require word boundaries', () {
       expect(VoiceTransactionParser.parse('phim 50k').type, isNull);
       expect(VoiceTransactionParser.parse('shipper 50k').type, isNull);
     });
     test('currency prefix and decimal amount', () {
-      expect(VoiceTransactionParser.parse(r'coffee $30').amountVnd, 30);
+      expect(VoiceTransactionParser.parse(r'coffee $30').amountVnd, isNull);
       expect(VoiceTransactionParser.parse('mua 50.5 vnd').amountVnd, 50.5);
     });
   });
