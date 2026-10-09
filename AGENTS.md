@@ -56,7 +56,7 @@ High-signal guidance for working in `flutter_money_management`.
 
 ## Tests and Focused Verification
 
-- Current test files live in `test/`: `category_color_codec_test.dart`, `recurring_reminder_service_test.dart`, `recurring_schedule_calculator_test.dart`, `recurring_transaction_edit_screen_test.dart`, `recurring_transaction_service_test.dart`, `recurring_transactions_screen_test.dart`, `report_calendar_widget_test.dart`.
+- Current test files live in `test/`: `category_color_codec_test.dart`, `recurring_reminder_service_test.dart`, `recurring_schedule_calculator_test.dart`, `recurring_transaction_edit_screen_test.dart`, `recurring_transaction_service_test.dart`, `recurring_transactions_screen_test.dart`, `report_calendar_widget_test.dart`, `text_similarity_test.dart`, `category_suggestion_service_test.dart`, `quick_input_sheet_test.dart`.
 - Run one test file: `flutter test test/recurring_transaction_service_test.dart`
 - If you touch reports/calendar refresh logic, also verify `lib/src/features/reports/providers/report_providers.dart` because it has its own invalidation flow.
 

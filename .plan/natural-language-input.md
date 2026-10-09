@@ -88,12 +88,12 @@ Key decisions:
 - [x] Widget test for the sheet (text mode → apply → fields filled).
 
 ### Phase 6 — Validation & docs
-- [ ] `flutter analyze` clean (infos fail CI).
-- [ ] `flutter test test/voice_transaction_parser_test.dart` + new test files, then `flutter test --coverage`.
-- [ ] Manual run on device: vi speech, typed text without diacritics, cold-start workspace (no history), workspace with history.
-- [ ] Measure: classifier train time with 5k transactions (< 50 ms target), parse time (< 5 ms).
-- [ ] Update `.codex/project-knowledge/workflows/transaction-input-recurring.md` (parser contract, classifier, `Last Verified`).
-- [ ] Update `AGENTS.md` test list if new test files are added.
+- [x] `flutter analyze` clean (infos fail CI).
+- [x] `flutter test test/voice_transaction_parser_test.dart` + new test files, then `flutter test --coverage`.
+- [x] Manual acceptance: Android emulator typed/no-history/history checks passed; human-operated speech and live-workspace checks temporarily accepted by explicit user instruction on 2026-10-09.
+- [x] Measure: classifier train time with 5k transactions (< 50 ms target), parse time (< 5 ms).
+- [x] Update `.codex/project-knowledge/workflows/transaction-input-recurring.md` (parser contract, classifier, `Last Verified`).
+- [x] Update `AGENTS.md` test list if new test files are added.
 
 ## Risks / Open Points
 - Add screen can target a workspace different from the active one; classifier is trained on the active workspace — only use predictions when `selectedWorkspaceId == activeWorkspaceId`.
@@ -118,3 +118,20 @@ Phase 1: 0.5d · Phase 2: 0.5d · Phase 3: 0.5–1d · Phase 4: 0.5d · Phase 5:
 - Phase 4: 105 focused tests pass; focused analysis clean. Splitting preserves decimal/grouped commas and amountless conjunctions. A unique explicit date/wallet propagates; conflicting local contexts stay local. Notes retain accents and Japanese script, stripping matched fields and falling back to the raw segment when empty.
 
 - Phase 5: 114 focused tests pass and focused analysis is clean. Typed input previews amount/date/category/wallet and applies fields; multi-item review supports editing/removing, sequential saves, budget confirmation, and retrying only unconfirmed items. History stays in the active workspace; cold start falls back to rules. Keyboard/large-text compact light and dark layouts are covered. No new dependencies or schema changes.
+
+- Phase 6: full analysis clean; 140 tests pass with coverage. Desktop Dart JIT benchmark (synthetic 5,000 transactions / 10 categories / 3 wallets): first train 41.192 ms, warmed train median/p95 14.220/14.770 ms; warmed parse median/p95 0.384/1.156 ms across 1,000 runs. Reproduce with `dart run tool/benchmark_natural_language_input.dart`. These are Mac timings, not mobile measurements. Human-operated checks are temporarily accepted by the user; physical-device speech accuracy remains unverified.
+
+- Release validation: `flutter build apk --release` succeeds (65.0 MB APK). Gradle artifact downloads initially failed with IPv6 `No route to host`; the retry used `JAVA_TOOL_OPTIONS=-Djava.net.preferIPv4Stack=true` for that process only.
+
+- Android emulator runtime: synthetic-data preview on Pixel_10_Pro passed `an trua 50k hom qua vi momo` with no history (50,000 / yesterday / Ăn uống / Momo), then `quan quen espresso 30k` with history (30,000 / Ăn uống / Momo / confidence 1.0). Apply returned those fields. Denying microphone permission displayed the error and still allowed typing `cafe 30k` and applying. Screenshots and UI hierarchy evidence are in `.plan/phase6-emulator-*`. This validates the real input sheet with synthetic data, not a live authenticated workspace or physical-device speech.
+
+### Deferred human verification
+
+The user authorized virtual-machine validation and temporarily accepted procedures requiring real people on 2026-10-09. These checks do not block Phase 6 completion or its commit. Run `flutter run -d <device-id> -t tool/quick_input_preview.dart` for later speech verification. This preview uses synthetic categories/wallets/history and makes no backend calls or saves.
+
+1. Leave synthetic history off. Open quick input and type `an trua 50k hom qua vi momo`. Verify amount 50,000, yesterday, category Ăn uống and wallet Momo; Apply must show those parsed fields.
+2. Enable synthetic history, then enter `quan quen espresso 30k`. Verify learned category Ăn uống and wallet Momo with the confidence hint.
+3. Tap Speak and say `ăn trưa năm mươi nghìn hôm qua ví momo`. Report the recognized transcript and parsed fields; verify that stopping recognition allows editing and applying.
+4. Check that denied microphone permission still permits typing. Real speech recognition accuracy remains a deferred human check; temporary acceptance is not evidence that recognition succeeded.
+
+- Phase 6 final acceptance: the synthetic-data preview was rebuilt and launched successfully on Android 17 arm64 emulator (`emulator-5554`). No authenticated backend operations were performed. The user explicitly accepted human-operated procedures temporarily; automated tests, emulator evidence, benchmark and documentation complete this phase under that instruction.
