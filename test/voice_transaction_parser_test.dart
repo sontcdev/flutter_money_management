@@ -16,7 +16,500 @@ Category _category(String name, CategoryType type) {
   );
 }
 
+final _sentenceCorpus = [
+  (
+    text: 'hôm nay đi chợ hết 150k',
+    amount: 150000,
+    days: 0,
+    type: TransactionType.expense,
+    category: 'Ăn uống',
+    wallet: null
+  ),
+  (
+    text: 'mua cà phê hết 30 nghìn',
+    amount: 30000,
+    days: null,
+    type: TransactionType.expense,
+    category: 'Ăn uống',
+    wallet: null
+  ),
+  (
+    text: 'hôm qua nhận lương 5 triệu',
+    amount: 5000000,
+    days: -1,
+    type: TransactionType.income,
+    category: 'Lương',
+    wallet: null
+  ),
+  (
+    text: 'nhận lương 5 triệu 2',
+    amount: 5200000,
+    days: null,
+    type: TransactionType.income,
+    category: 'Lương',
+    wallet: null
+  ),
+  (
+    text: 'trả tiền điện 250.000',
+    amount: 250000,
+    days: null,
+    type: TransactionType.expense,
+    category: 'Nhà',
+    wallet: null
+  ),
+  (
+    text: 'mua đồ hết 50000',
+    amount: 50000,
+    days: null,
+    type: TransactionType.expense,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'hom nay di cho het 150k',
+    amount: 150000,
+    days: 0,
+    type: TransactionType.expense,
+    category: 'Ăn uống',
+    wallet: null
+  ),
+  (
+    text: 'hom qua mua sach 100k',
+    amount: 100000,
+    days: -1,
+    type: TransactionType.expense,
+    category: 'Sách',
+    wallet: null
+  ),
+  (
+    text: 'ăn trưa 50k hôm qua ví momo',
+    amount: 50000,
+    days: -1,
+    type: TransactionType.expense,
+    category: 'Ăn uống',
+    wallet: 'MoMo'
+  ),
+  (
+    text: 'mua vé xe 80 ngàn',
+    amount: 80000,
+    days: null,
+    type: TransactionType.expense,
+    category: 'Di chuyển',
+    wallet: null
+  ),
+  (
+    text: 'thưởng 2tr',
+    amount: 2000000,
+    days: null,
+    type: TransactionType.income,
+    category: 'Lương',
+    wallet: null
+  ),
+  (
+    text: 'đóng tiền nước 120,000',
+    amount: 120000,
+    days: null,
+    type: TransactionType.expense,
+    category: 'Nhà',
+    wallet: null
+  ),
+  (
+    text: 'mua sách 1,5 triệu',
+    amount: 1500000,
+    days: null,
+    type: TransactionType.expense,
+    category: 'Sách',
+    wallet: null
+  ),
+  (
+    text: 'nạp 200 k',
+    amount: 200000,
+    days: null,
+    type: TransactionType.expense,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'hôm kia mua 20k',
+    amount: 20000,
+    days: -2,
+    type: TransactionType.expense,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: '150k tiền linh tinh',
+    amount: 150000,
+    days: null,
+    type: null,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'mua điện thoại 2 củ',
+    amount: 2000000,
+    days: null,
+    type: TransactionType.expense,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'do xang 2 lit',
+    amount: 200000,
+    days: null,
+    type: TransactionType.expense,
+    category: 'Di chuyển',
+    wallet: null
+  ),
+  (
+    text: 'mua nhà 1 tỷ',
+    amount: 1000000000,
+    days: null,
+    type: TransactionType.expense,
+    category: 'Nhà',
+    wallet: null
+  ),
+  (
+    text: 'mua đồ 5 trăm',
+    amount: 500000,
+    days: null,
+    type: TransactionType.expense,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'nhận lương 1tr2',
+    amount: 1200000,
+    days: null,
+    type: TransactionType.income,
+    category: 'Lương',
+    wallet: null
+  ),
+  (
+    text: 'salary 2m',
+    amount: 2000000,
+    days: null,
+    type: null,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'mua cafe 50.5k',
+    amount: 50500,
+    days: null,
+    type: TransactionType.expense,
+    category: 'Ăn uống',
+    wallet: null
+  ),
+  (
+    text: 'mua sách 50000đ',
+    amount: 50000,
+    days: null,
+    type: TransactionType.expense,
+    category: 'Sách',
+    wallet: null
+  ),
+  (
+    text: 'mua sách 50000 vnd',
+    amount: 50000,
+    days: null,
+    type: TransactionType.expense,
+    category: 'Sách',
+    wallet: null
+  ),
+  (
+    text: r'coffee 30$',
+    amount: 30,
+    days: null,
+    type: null,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'thứ 2 mua đồ 50k',
+    amount: 50000,
+    days: -4,
+    type: TransactionType.expense,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'ngày mai mua đồ 50k',
+    amount: 50000,
+    days: 1,
+    type: TransactionType.expense,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'hôm trước mua đồ 50k',
+    amount: 50000,
+    days: -1,
+    type: TransactionType.expense,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'thứ 3 tuần trước mua 50k',
+    amount: 50000,
+    days: -10,
+    type: TransactionType.expense,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'CN tuần này mua 50k',
+    amount: 50000,
+    days: 2,
+    type: TransactionType.expense,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'tuần trước mua 50k',
+    amount: 50000,
+    days: -7,
+    type: TransactionType.expense,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'đầu tháng mua 50k',
+    amount: 50000,
+    days: -8,
+    type: TransactionType.expense,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'cuối tháng mua 50k',
+    amount: 50000,
+    days: 22,
+    type: TransactionType.expense,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'ngày 15 mua 50k',
+    amount: 50000,
+    days: 6,
+    type: TransactionType.expense,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: '15/9 mua 50k',
+    amount: 50000,
+    days: -24,
+    type: TransactionType.expense,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: '15-9-2026 mua 50k',
+    amount: 50000,
+    days: -24,
+    type: TransactionType.expense,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'sáng nay mua 50k',
+    amount: 50000,
+    days: 0,
+    type: TransactionType.expense,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'trưa nay ăn 50k',
+    amount: 50000,
+    days: 0,
+    type: TransactionType.expense,
+    category: 'Ăn uống',
+    wallet: null
+  ),
+  (
+    text: 'tối nay ăn 50k',
+    amount: 50000,
+    days: 0,
+    type: TransactionType.expense,
+    category: 'Ăn uống',
+    wallet: null
+  ),
+  (
+    text: 'được cho 500k',
+    amount: 500000,
+    days: null,
+    type: TransactionType.income,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'lãi 100k',
+    amount: 100000,
+    days: null,
+    type: TransactionType.income,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'cổ tức 2 triệu',
+    amount: 2000000,
+    days: null,
+    type: TransactionType.income,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'nhận chuyển khoản 1tr',
+    amount: 1000000,
+    days: null,
+    type: TransactionType.income,
+    category: null,
+    wallet: 'Bank'
+  ),
+  (
+    text: 'trả lại cho tôi 50k',
+    amount: 50000,
+    days: null,
+    type: TransactionType.income,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'ship 30k',
+    amount: 30000,
+    days: null,
+    type: TransactionType.expense,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'phí 10k',
+    amount: 10000,
+    days: null,
+    type: TransactionType.expense,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'mua cafe 30k ví momo',
+    amount: 30000,
+    days: null,
+    type: TransactionType.expense,
+    category: 'Ăn uống',
+    wallet: 'MoMo'
+  ),
+  (
+    text: 'mua cà fê 30k ví momoo',
+    amount: 30000,
+    days: null,
+    type: TransactionType.expense,
+    category: 'Ăn uống',
+    wallet: 'MoMo'
+  ),
+  (
+    text: 'mua sách 100k tiền mặt',
+    amount: 100000,
+    days: null,
+    type: TransactionType.expense,
+    category: 'Sách',
+    wallet: 'Tiền mặt'
+  ),
+  (
+    text: 'mua sách 100k ck',
+    amount: 100000,
+    days: null,
+    type: TransactionType.expense,
+    category: 'Sách',
+    wallet: 'Bank'
+  ),
+  (
+    text: 'mua sách 100k ví tiết kiệm',
+    amount: 100000,
+    days: null,
+    type: TransactionType.expense,
+    category: 'Sách',
+    wallet: 'Tiết kiệm'
+  ),
+  (
+    text: 'lunch 50k cash',
+    amount: 50000,
+    days: null,
+    type: null,
+    category: null,
+    wallet: 'Tiền mặt'
+  ),
+  (
+    text: 'coffee 30k momo',
+    amount: 30000,
+    days: null,
+    type: null,
+    category: null,
+    wallet: 'MoMo'
+  ),
+  (
+    text: 'lunch 50k',
+    amount: 50000,
+    days: null,
+    type: null,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'ランチ 50000',
+    amount: 50000,
+    days: null,
+    type: null,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'コーヒー 30000',
+    amount: 30000,
+    days: null,
+    type: null,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: '給与 5000000',
+    amount: 5000000,
+    days: null,
+    type: null,
+    category: null,
+    wallet: null
+  ),
+  (
+    text: 'ăn trưa 50k ví momo hôm nay',
+    amount: 50000,
+    days: 0,
+    type: TransactionType.expense,
+    category: 'Ăn uống',
+    wallet: 'MoMo'
+  ),
+  (
+    text: 'mua grab 45k ví momo hôm qua',
+    amount: 45000,
+    days: -1,
+    type: TransactionType.expense,
+    category: 'Di chuyển',
+    wallet: 'MoMo'
+  ),
+];
+
 void main() {
+  group('Natural-language baseline corpus', () {
+    for (final fixture in _sentenceCorpus.take(16)) {
+      test(fixture.text, () {
+        final result = VoiceTransactionParser.parse(fixture.text);
+        expect(result.amountVnd, fixture.amount);
+        expect(result.type, fixture.type);
+      });
+    }
+  });
+
   group('VoiceTransactionParser amount parsing', () {
     test('parses "k" suffix', () {
       final result = VoiceTransactionParser.parse('hôm nay đi chợ hết 150k');
