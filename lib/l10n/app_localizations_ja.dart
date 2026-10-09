@@ -1786,4 +1786,42 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get voiceInputTryAgain => 'もう一度';
+
+  @override
+  String get quickInputTitle => 'クイック入力';
+
+  @override
+  String get quickInputTextLabel => '取引を入力';
+
+  @override
+  String get quickInputExample => 'cafe 30k và grab 45k hôm qua ví momo';
+
+  @override
+  String get quickInputSpeak => '音声入力';
+
+  @override
+  String get quickInputStop => '音声入力を停止';
+
+  @override
+  String quickInputLearned(int confidence) {
+    return '履歴からの提案 ($confidence%)';
+  }
+
+  @override
+  String get quickInputReview => '取引を確認';
+
+  @override
+  String get quickInputReviewHint => '保存する前に各取引を確認してください。';
+
+  @override
+  String get quickInputMissingFields => '金額、カテゴリ、ウォレットを選択してください。';
+
+  @override
+  String get quickInputSaveAll => '残りの取引を保存';
+
+  @override
+  String get quickInputSaveStopped => '保存を停止しました。保存済みの取引は削除され、残りの取引を確認または再試行できます。';
+
+  @override
+  String get quickInputTooltip => '取引を文字または音声で入力';
 }

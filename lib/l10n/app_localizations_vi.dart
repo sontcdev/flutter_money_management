@@ -1786,4 +1786,42 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get voiceInputTryAgain => 'Thử lại';
+
+  @override
+  String get quickInputTitle => 'Nhập nhanh';
+
+  @override
+  String get quickInputTextLabel => 'Nhập giao dịch';
+
+  @override
+  String get quickInputExample => 'cafe 30k và grab 45k hôm qua ví momo';
+
+  @override
+  String get quickInputSpeak => 'Nói';
+
+  @override
+  String get quickInputStop => 'Dừng nghe';
+
+  @override
+  String quickInputLearned(int confidence) {
+    return 'Gợi ý từ lịch sử ($confidence%)';
+  }
+
+  @override
+  String get quickInputReview => 'Xem lại giao dịch';
+
+  @override
+  String get quickInputReviewHint => 'Xem lại từng giao dịch trước khi lưu.';
+
+  @override
+  String get quickInputMissingFields => 'Chọn số tiền, danh mục và ví.';
+
+  @override
+  String get quickInputSaveAll => 'Lưu các giao dịch còn lại';
+
+  @override
+  String get quickInputSaveStopped => 'Đã dừng lưu. Các mục đã lưu được loại bỏ; các mục còn lại có thể xem lại hoặc thử lưu lại.';
+
+  @override
+  String get quickInputTooltip => 'Nhập hoặc nói giao dịch';
 }

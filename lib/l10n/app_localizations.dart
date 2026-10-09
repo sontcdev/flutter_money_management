@@ -3474,6 +3474,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Try again'**
   String get voiceInputTryAgain;
+
+  /// No description provided for @quickInputTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick input'**
+  String get quickInputTitle;
+
+  /// No description provided for @quickInputTextLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a transaction'**
+  String get quickInputTextLabel;
+
+  /// No description provided for @quickInputExample.
+  ///
+  /// In en, this message translates to:
+  /// **'cafe 30k và grab 45k hôm qua ví momo'**
+  String get quickInputExample;
+
+  /// No description provided for @quickInputSpeak.
+  ///
+  /// In en, this message translates to:
+  /// **'Speak'**
+  String get quickInputSpeak;
+
+  /// No description provided for @quickInputStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop listening'**
+  String get quickInputStop;
+
+  /// No description provided for @quickInputLearned.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested from history ({confidence}%)'**
+  String quickInputLearned(int confidence);
+
+  /// No description provided for @quickInputReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Review transactions'**
+  String get quickInputReview;
+
+  /// No description provided for @quickInputReviewHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Review each item before saving.'**
+  String get quickInputReviewHint;
+
+  /// No description provided for @quickInputMissingFields.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an amount, category and wallet.'**
+  String get quickInputMissingFields;
+
+  /// No description provided for @quickInputSaveAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Save remaining transactions'**
+  String get quickInputSaveAll;
+
+  /// No description provided for @quickInputSaveStopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving stopped. Saved items were removed; the remaining items are ready to review or retry.'**
+  String get quickInputSaveStopped;
+
+  /// No description provided for @quickInputTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Type or speak a transaction'**
+  String get quickInputTooltip;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

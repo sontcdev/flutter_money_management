@@ -80,12 +80,12 @@ Key decisions:
 - [x] Tests for splitting and propagation.
 
 ### Phase 5 — UI
-- [ ] Add a text input mode to the input sheet (rename to a generic "quick input" sheet or add a text field + mic toggle); live preview chips: amount · date · category · wallet, with confidence hint for learned category.
-- [ ] `add_transaction_screen.dart` `handleVoiceInput()`: also apply `walletId` (only if wallet exists in the selected workspace).
-- [ ] Multi-result: if > 1 result, show a review list (edit/remove each) and save sequentially through the existing create path; reuse budget-exceeded handling. Decide: batch save in sheet vs. open add screen per item — prefer review list with batch save.
-- [ ] Entry point from home/transactions FAB (optional, small).
-- [ ] l10n: add all strings to `app_en.arb`, `app_vi.arb`, `app_ja.arb`; run `flutter gen-l10n`.
-- [ ] Widget test for the sheet (text mode → apply → fields filled).
+- [x] Add a text input mode to the input sheet (rename to a generic "quick input" sheet or add a text field + mic toggle); live preview chips: amount · date · category · wallet, with confidence hint for learned category.
+- [x] `add_transaction_screen.dart` `handleVoiceInput()`: also apply `walletId` (only if wallet exists in the selected workspace).
+- [x] Multi-result: if > 1 result, show a review list (edit/remove each) and save sequentially through the existing create path; reuse budget-exceeded handling. Decide: batch save in sheet vs. open add screen per item — prefer review list with batch save.
+- [x] Entry point from home/transactions FAB (optional, small): deferred; existing add-screen entry opens typed or speech input.
+- [x] l10n: add all strings to `app_en.arb`, `app_vi.arb`, `app_ja.arb`; run `flutter gen-l10n`.
+- [x] Widget test for the sheet (text mode → apply → fields filled).
 
 ### Phase 6 — Validation & docs
 - [ ] `flutter analyze` clean (infos fail CI).
@@ -116,3 +116,5 @@ Phase 1: 0.5d · Phase 2: 0.5d · Phase 3: 0.5–1d · Phase 4: 0.5d · Phase 5:
 - Phase 3: 92 focused tests pass; focused analysis clean. In-memory classifier uses unigram/bigram counts, Laplace-smoothed log probabilities, six-month recency weights, three-sample cold-start minimum and 0.65 confidence cutoff. Provider invalidation, rule precedence, Japanese history, ambiguity, deleted categories/transfers and eligible-wallet fallback are covered. UI workspace guard remains Phase 5.
 
 - Phase 4: 105 focused tests pass; focused analysis clean. Splitting preserves decimal/grouped commas and amountless conjunctions. A unique explicit date/wallet propagates; conflicting local contexts stay local. Notes retain accents and Japanese script, stripping matched fields and falling back to the raw segment when empty.
+
+- Phase 5: 114 focused tests pass and focused analysis is clean. Typed input previews amount/date/category/wallet and applies fields; multi-item review supports editing/removing, sequential saves, budget confirmation, and retrying only unconfirmed items. History stays in the active workspace; cold start falls back to rules. Keyboard/large-text compact light and dark layouts are covered. No new dependencies or schema changes.

@@ -11,6 +11,9 @@ import 'package:flutter_money_management/src/features/categories/models/category
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart'
     as model;
 import 'package:flutter_money_management/src/features/transactions/presentation/widgets/voice_input_sheet.dart';
+import 'package:flutter_money_management/src/features/transactions/presentation/widgets/quick_input_review_sheet.dart';
+import 'package:flutter_money_management/src/features/workspace/services/workspace_sync_helper.dart';
+import 'package:flutter_money_management/src/utils/voice_transaction_parser.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/features/budgets/services/budget_service.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
@@ -62,6 +65,11 @@ class AddTransactionScreen extends HookConsumerWidget {
         ? const AsyncValue<List<Wallet>>.data([])
         : ref.watch(walletsForWorkspaceProvider(selectedWorkspaceId.value!));
 
+    if (selectedWorkspaceId.value != null &&
+        selectedWorkspaceId.value == ref.watch(activeWorkspaceIdProvider)) {
+      ref.watch(categoryClassifierProvider);
+    }
+
     useEffect(() {
       if (selectedWorkspaceId.value == null && activeWorkspace != null) {
         selectedWorkspaceId.value = activeWorkspace.id;
@@ -85,6 +93,26 @@ class AddTransactionScreen extends HookConsumerWidget {
       }
       return null;
     }, [wallets]);
+
+    Future<bool?> confirmBudgetExceeded(BudgetExceededException error) {
+      return showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(l10n.budgetExceeded),
+          content: Text(error.message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l10n.cancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l10n.proceed),
+            ),
+          ],
+        ),
+      );
+    }
 
     Future<void> handleSubmit() async {
       if (amountController.text.isEmpty) {
@@ -193,23 +221,7 @@ class AddTransactionScreen extends HookConsumerWidget {
         }
       } on BudgetExceededException catch (e) {
         if (context.mounted) {
-          final shouldProceed = await showDialog<bool>(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text(l10n.budgetExceeded),
-              content: Text(e.message),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: Text(l10n.cancel),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: Text(l10n.proceed),
-                ),
-              ],
-            ),
-          );
+          final shouldProceed = await confirmBudgetExceeded(e);
 
           if (shouldProceed == true) {
             allowOverdraft.value = true;
@@ -240,15 +252,141 @@ class AddTransactionScreen extends HookConsumerWidget {
       }
     }
 
-    Future<void> handleVoiceInput() async {
-      final categories = categoriesAsync.valueOrNull ?? const <Category>[];
-      final result = await showVoiceInputSheet(context, categories: categories);
-      if (result == null || !context.mounted) return;
+    Future<bool> saveQuickInput(
+      VoiceParseResult result,
+      String workspaceId,
+    ) async {
+      final now = DateTime.now();
+      final transaction = model.Transaction(
+        id: '',
+        amountCents: CurrencyFormatter.toCents(result.amountVnd!),
+        currency: 'VND',
+        dateTime: result.date ?? now,
+        categoryId: result.categoryId,
+        type: result.type!,
+        walletId: result.walletId!,
+        note: result.note,
+        createdAt: now,
+        updatedAt: now,
+      );
+      final repository = ref.read(transactionRepositoryProvider);
+      try {
+        try {
+          await repository.createTransaction(
+            transaction,
+            workspaceIdOverride: workspaceId,
+          );
+        } on BudgetExceededException catch (error) {
+          if (!context.mounted || await confirmBudgetExceeded(error) != true) {
+            return false;
+          }
+          await repository.createTransaction(
+            transaction,
+            workspaceIdOverride: workspaceId,
+            allowOverdraft: true,
+          );
+        }
+        invalidateCoreDataProviders(ref);
+        ref.invalidate(walletBalancesProvider);
+        return true;
+      } catch (error, stackTrace) {
+        if (context.mounted) {
+          await ErrorReportHelper.handleApiError(
+            context: context,
+            ref: ref,
+            error: error,
+            stackTrace: stackTrace,
+            feature: 'transaction',
+            action: 'create_transaction',
+            screen: 'add_transaction_screen',
+            extraContext: {
+              'workspace_id': workspaceId,
+              'category_id': result.categoryId,
+              'wallet_id': result.walletId,
+              'transaction_type': result.type.toString(),
+              'has_receipt': false,
+            },
+          );
+        }
+        return false;
+      }
+    }
 
-      if (result.type != null && result.type != selectedType.value) {
-        selectedType.value = result.type!;
+    Future<void> handleVoiceInput() async {
+      final workspaceId = selectedWorkspaceId.value;
+      final categories = categoriesAsync.valueOrNull ?? const <Category>[];
+      final availableWallets = (walletsAsync.valueOrNull ?? const <Wallet>[])
+          .where((wallet) => !wallet.isArchived && wallet.deletedAt == null)
+          .toList();
+      final history = workspaceId == ref.read(activeWorkspaceIdProvider)
+          ? ref.read(categoryClassifierProvider)
+          : null;
+      final classifier =
+          history?.isLoading == false ? history?.valueOrNull : null;
+      final results = await showQuickInputSheet(
+        context,
+        categories: categories,
+        wallets: availableWallets,
+        classifier: classifier,
+      );
+      if (results == null || results.isEmpty || !context.mounted) return;
+
+      model.TransactionType? resolvedType(VoiceParseResult result) {
+        final category = categories
+            .where((category) => category.id == result.categoryId)
+            .firstOrNull;
+        return result.type ??
+            (category == null
+                ? null
+                : category.type == CategoryType.income
+                    ? model.TransactionType.income
+                    : model.TransactionType.expense);
+      }
+
+      if (results.length > 1 && workspaceId != null) {
+        final reviewItems = results.map((result) {
+          final wallet = availableWallets
+                  .where((wallet) => wallet.id == result.walletId)
+                  .firstOrNull ??
+              selectedWallet.value;
+          return VoiceParseResult(
+            rawText: result.rawText,
+            amountVnd: result.amountVnd,
+            date: result.date ?? selectedDate.value,
+            type: resolvedType(result) ??
+                (selectedType.value == model.TransactionType.income
+                    ? model.TransactionType.income
+                    : model.TransactionType.expense),
+            categoryId: result.categoryId,
+            categoryName: result.categoryName,
+            walletId: wallet?.id,
+            walletName: wallet?.name,
+            note: result.note,
+            categoryConfidence: result.categoryConfidence,
+          );
+        }).toList();
+        final saved = await showQuickInputReviewSheet(
+          context,
+          results: reviewItems,
+          categories: categories,
+          wallets: availableWallets,
+          onSave: (result) => saveQuickInput(result, workspaceId),
+        );
+        if (saved == true && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.success)),
+          );
+          Navigator.of(context).pop(true);
+        }
+        return;
+      }
+
+      final result = results.first;
+      final type = resolvedType(result);
+      if (type != null && type != selectedType.value) {
+        selectedType.value = type;
         selectedCategoryId.value = null;
-        if (result.type != model.TransactionType.transfer) {
+        if (type != model.TransactionType.transfer) {
           selectedToWallet.value = null;
         }
       }
@@ -262,6 +400,10 @@ class AddTransactionScreen extends HookConsumerWidget {
       if (result.categoryId != null) {
         selectedCategoryId.value = result.categoryId;
       }
+      final wallet = availableWallets
+          .where((wallet) => wallet.id == result.walletId)
+          .firstOrNull;
+      if (wallet != null) selectedWallet.value = wallet;
       if (result.note != null) {
         noteController.text = result.note!;
       }
@@ -284,8 +426,8 @@ class AddTransactionScreen extends HookConsumerWidget {
         title: Text(l10n.addTransaction),
         actions: [
           IconButton(
-            icon: const Icon(Icons.mic_none_outlined),
-            tooltip: l10n.voiceInputTooltip,
+            icon: const Icon(Icons.bolt_outlined),
+            tooltip: l10n.quickInputTooltip,
             onPressed: isLoading.value ? null : handleVoiceInput,
           ),
         ],

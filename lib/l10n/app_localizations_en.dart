@@ -1786,4 +1786,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get voiceInputTryAgain => 'Try again';
+
+  @override
+  String get quickInputTitle => 'Quick input';
+
+  @override
+  String get quickInputTextLabel => 'Type a transaction';
+
+  @override
+  String get quickInputExample => 'cafe 30k và grab 45k hôm qua ví momo';
+
+  @override
+  String get quickInputSpeak => 'Speak';
+
+  @override
+  String get quickInputStop => 'Stop listening';
+
+  @override
+  String quickInputLearned(int confidence) {
+    return 'Suggested from history ($confidence%)';
+  }
+
+  @override
+  String get quickInputReview => 'Review transactions';
+
+  @override
+  String get quickInputReviewHint => 'Review each item before saving.';
+
+  @override
+  String get quickInputMissingFields => 'Choose an amount, category and wallet.';
+
+  @override
+  String get quickInputSaveAll => 'Save remaining transactions';
+
+  @override
+  String get quickInputSaveStopped => 'Saving stopped. Saved items were removed; the remaining items are ready to review or retry.';
+
+  @override
+  String get quickInputTooltip => 'Type or speak a transaction';
 }

@@ -6,6 +6,10 @@ import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/transactions/services/voice_input_service.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/features/wallets/models/wallet.dart';
+import 'package:flutter_money_management/src/features/transactions/services/category_suggestion_service.dart';
+import 'package:flutter_money_management/src/utils/currency_formatter.dart';
+import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 import 'package:flutter_money_management/src/utils/voice_transaction_parser.dart';
 
 /// Bottom sheet: nhấn mic để nói, hiển thị transcript đang nghe, rồi trả
@@ -14,131 +18,171 @@ import 'package:flutter_money_management/src/utils/voice_transaction_parser.dart
 Future<VoiceParseResult?> showVoiceInputSheet(
   BuildContext context, {
   required List<Category> categories,
+}) async {
+  final results = await showQuickInputSheet(context, categories: categories);
+  return results?.firstOrNull;
+}
+
+Future<List<VoiceParseResult>?> showQuickInputSheet(
+  BuildContext context, {
+  required List<Category> categories,
+  List<Wallet> wallets = const [],
+  CategoryClassifier? classifier,
 }) {
-  return showModalBottomSheet<VoiceParseResult>(
+  return showModalBottomSheet<List<VoiceParseResult>>(
     context: context,
     isScrollControlled: true,
-    builder: (context) => VoiceInputSheet(categories: categories),
+    useSafeArea: true,
+    builder: (context) => VoiceInputSheet(
+      categories: categories,
+      wallets: wallets,
+      classifier: classifier,
+    ),
   );
 }
 
 class VoiceInputSheet extends HookWidget {
-  const VoiceInputSheet({super.key, required this.categories});
+  const VoiceInputSheet({
+    super.key,
+    required this.categories,
+    this.wallets = const [],
+    this.classifier,
+  });
 
   final List<Category> categories;
+  final List<Wallet> wallets;
+  final CategoryClassifier? classifier;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final service = useMemoized(() => VoiceInputService());
     useEffect(() => service.dispose, [service]);
-
+    final controller = useTextEditingController();
+    useListenable(controller);
     final status = useState(VoiceInputStatus.idle);
-    final transcript = useState('');
+    final initializing = useState(false);
+    final errorText = useState<String?>(null);
 
-    Future<void> startListening() async {
-      transcript.value = '';
+    Future<void> toggleListening() async {
+      if (status.value == VoiceInputStatus.listening) {
+        await service.stopListening();
+        if (context.mounted) status.value = VoiceInputStatus.done;
+        return;
+      }
+      errorText.value = null;
+      initializing.value = true;
       final ready = await service.initialize();
+      if (!context.mounted) return;
+      initializing.value = false;
       if (!ready) {
+        errorText.value = l10n.voiceInputPermissionDenied;
         status.value = VoiceInputStatus.error;
         return;
       }
       status.value = VoiceInputStatus.listening;
       await service.startListening(
         onResult: (text, isFinal) {
-          transcript.value = text;
+          if (!context.mounted) return;
+          controller.value = TextEditingValue(
+            text: text,
+            selection: TextSelection.collapsed(offset: text.length),
+          );
           if (isFinal) {
-            status.value =
-                text.trim().isEmpty ? VoiceInputStatus.error : VoiceInputStatus.done;
+            errorText.value =
+                text.trim().isEmpty ? l10n.voiceInputNoSpeechDetected : null;
+            status.value = text.trim().isEmpty
+                ? VoiceInputStatus.error
+                : VoiceInputStatus.done;
           }
         },
       );
     }
 
-    useEffect(() {
-      startListening();
-      return null;
-    }, const []);
-
-    final parseResult = transcript.value.trim().isEmpty
-        ? null
-        : VoiceTransactionParser.parse(transcript.value, categories: categories);
+    final results = controller.text.trim().isEmpty
+        ? const <VoiceParseResult>[]
+        : VoiceTransactionParser.parseMany(
+            controller.text,
+            categories: categories,
+            wallets: wallets,
+            classifier: classifier,
+          );
 
     return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: AppSpacing.screenPadding,
-          right: AppSpacing.screenPadding,
-          top: AppSpacing.screenPadding,
-          bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.screenPadding,
+      child: SingleChildScrollView(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.screenPadding,
+          AppSpacing.screenPadding,
+          AppSpacing.screenPadding,
+          MediaQuery.of(context).viewInsets.bottom + AppSpacing.screenPadding,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              l10n.voiceInputTitle,
-              style: Theme.of(context).textTheme.titleLarge,
-              textAlign: TextAlign.center,
-            ),
+            Text(l10n.quickInputTitle,
+                style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: AppSpacing.lg),
-            Center(
-              child: GestureDetector(
-                onTap: status.value == VoiceInputStatus.listening
-                    ? null
-                    : startListening,
-                child: CircleAvatar(
-                  radius: 40,
-                  backgroundColor: status.value == VoiceInputStatus.listening
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.surfaceContainerHighest,
-                  child: Icon(
-                    Icons.mic,
-                    size: 36,
-                    color: status.value == VoiceInputStatus.listening
-                        ? Theme.of(context).colorScheme.onPrimary
-                        : Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
+            TextField(
+              controller: controller,
+              minLines: 2,
+              maxLines: 5,
+              enabled: status.value != VoiceInputStatus.listening,
+              decoration: InputDecoration(
+                labelText: l10n.quickInputTextLabel,
+                hintText: l10n.quickInputExample,
+                border: const OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              status.value == VoiceInputStatus.listening
-                  ? l10n.voiceInputListening
-                  : (transcript.value.isEmpty
-                      ? l10n.voiceInputHintIdle
-                      : transcript.value),
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge,
+            const SizedBox(height: AppSpacing.sm),
+            OutlinedButton.icon(
+              onPressed: initializing.value ? null : toggleListening,
+              icon: Icon(status.value == VoiceInputStatus.listening
+                  ? Icons.stop
+                  : Icons.mic_none_outlined),
+              label: Text(status.value == VoiceInputStatus.listening
+                  ? l10n.quickInputStop
+                  : l10n.quickInputSpeak),
             ),
-            if (status.value == VoiceInputStatus.error) ...[
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                l10n.voiceInputNoSpeechDetected,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
+            if (status.value == VoiceInputStatus.listening)
+              Text(l10n.voiceInputListening),
+            if (status.value == VoiceInputStatus.error)
+              Text(errorText.value ?? l10n.voiceInputNoSpeechDetected,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            for (final result in results) ...[
+              const SizedBox(height: AppSpacing.md),
+              Text(result.note ?? result.rawText),
+              Wrap(
+                spacing: AppSpacing.sm,
+                children: [
+                  if (result.amountVnd != null)
+                    Chip(
+                        label: Text(
+                            CurrencyFormatter.formatVND(result.amountVnd!))),
+                  if (result.date != null)
+                    Chip(
+                        label:
+                            Text(formatLocalizedDate(context, result.date!))),
+                  if (result.categoryName != null)
+                    Chip(label: Text(result.categoryName!)),
+                  if (result.walletName != null)
+                    Chip(label: Text(result.walletName!)),
+                ],
               ),
+              if (result.categoryConfidence != null)
+                Text(l10n.quickInputLearned(
+                    (result.categoryConfidence! * 100).round())),
             ],
             const SizedBox(height: AppSpacing.lg),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: startListening,
-                    child: Text(l10n.voiceInputTryAgain),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: parseResult == null
-                        ? null
-                        : () => Navigator.of(context).pop(parseResult),
-                    child: Text(l10n.voiceInputApply),
-                  ),
-                ),
-              ],
+            FilledButton(
+              onPressed: results.isEmpty ||
+                      status.value == VoiceInputStatus.listening ||
+                      initializing.value
+                  ? null
+                  : () => Navigator.of(context).pop(results),
+              child: Text(results.length > 1
+                  ? l10n.quickInputReview
+                  : l10n.voiceInputApply),
             ),
           ],
         ),

@@ -615,5 +615,24 @@
   "voiceInputNoSpeechDetected": "Couldn't hear anything, please try again",
   "voiceInputPermissionDenied": "Microphone permission is required for voice input",
   "voiceInputApply": "Apply",
-  "voiceInputTryAgain": "Try again"
+  "voiceInputTryAgain": "Try again",
+  "quickInputTitle": "Quick input",
+  "quickInputTextLabel": "Type a transaction",
+  "quickInputExample": "cafe 30k và grab 45k hôm qua ví momo",
+  "quickInputSpeak": "Speak",
+  "quickInputStop": "Stop listening",
+  "quickInputLearned": "Suggested from history ({confidence}%)",
+  "quickInputReview": "Review transactions",
+  "quickInputReviewHint": "Review each item before saving.",
+  "quickInputMissingFields": "Choose an amount, category and wallet.",
+  "quickInputSaveAll": "Save remaining transactions",
+  "quickInputSaveStopped": "Saving stopped. Saved items were removed; the remaining items are ready to review or retry.",
+  "quickInputTooltip": "Type or speak a transaction",
+  "@quickInputLearned": {
+    "placeholders": {
+      "confidence": {
+        "type": "int"
+      }
+    }
+  }
 }

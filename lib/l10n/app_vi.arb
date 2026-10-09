@@ -615,5 +615,17 @@
   "voiceInputNoSpeechDetected": "Không nghe rõ, vui lòng thử lại",
   "voiceInputPermissionDenied": "Cần quyền micro để dùng nhập bằng giọng nói",
   "voiceInputApply": "Áp dụng",
-  "voiceInputTryAgain": "Thử lại"
+  "voiceInputTryAgain": "Thử lại",
+  "quickInputTitle": "Nhập nhanh",
+  "quickInputTextLabel": "Nhập giao dịch",
+  "quickInputExample": "cafe 30k và grab 45k hôm qua ví momo",
+  "quickInputSpeak": "Nói",
+  "quickInputStop": "Dừng nghe",
+  "quickInputLearned": "Gợi ý từ lịch sử ({confidence}%)",
+  "quickInputReview": "Xem lại giao dịch",
+  "quickInputReviewHint": "Xem lại từng giao dịch trước khi lưu.",
+  "quickInputMissingFields": "Chọn số tiền, danh mục và ví.",
+  "quickInputSaveAll": "Lưu các giao dịch còn lại",
+  "quickInputSaveStopped": "Đã dừng lưu. Các mục đã lưu được loại bỏ; các mục còn lại có thể xem lại hoặc thử lưu lại.",
+  "quickInputTooltip": "Nhập hoặc nói giao dịch"
 }

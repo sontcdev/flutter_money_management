@@ -615,5 +615,17 @@
   "voiceInputNoSpeechDetected": "聞き取れませんでした。もう一度お試しください",
   "voiceInputPermissionDenied": "音声入力にはマイクの権限が必要です",
   "voiceInputApply": "適用",
-  "voiceInputTryAgain": "もう一度"
+  "voiceInputTryAgain": "もう一度",
+  "quickInputTitle": "クイック入力",
+  "quickInputTextLabel": "取引を入力",
+  "quickInputExample": "cafe 30k và grab 45k hôm qua ví momo",
+  "quickInputSpeak": "音声入力",
+  "quickInputStop": "音声入力を停止",
+  "quickInputLearned": "履歴からの提案 ({confidence}%)",
+  "quickInputReview": "取引を確認",
+  "quickInputReviewHint": "保存する前に各取引を確認してください。",
+  "quickInputMissingFields": "金額、カテゴリ、ウォレットを選択してください。",
+  "quickInputSaveAll": "残りの取引を保存",
+  "quickInputSaveStopped": "保存を停止しました。保存済みの取引は削除され、残りの取引を確認または再試行できます。",
+  "quickInputTooltip": "取引を文字または音声で入力"
 }
