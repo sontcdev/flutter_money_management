@@ -47,6 +47,11 @@ class VoiceTransactionParser {
     'kiếm được',
     'nhận được',
     'hoàn tiền',
+    'được cho',
+    'lãi',
+    'cổ tức',
+    'nhận chuyển khoản',
+    'trả lại cho tôi',
   ];
 
   static const List<String> _expenseKeywords = [
@@ -60,6 +65,9 @@ class VoiceTransactionParser {
     'thanh toán',
     'đi chợ',
     'ăn',
+    'đổ xăng',
+    'ship',
+    'phí',
   ];
 
   /// Parse [text] (kết quả từ speech-to-text) thành các trường giao dịch.
@@ -71,11 +79,12 @@ class VoiceTransactionParser {
   static VoiceParseResult parse(
     String text, {
     List<Category> categories = const [],
+    DateTime Function()? clock,
   }) {
     final trimmed = text.trim();
     final normalized = _normalize(trimmed);
 
-    final date = _extractDate(normalized);
+    final date = _extractDate(normalized, (clock ?? DateTime.now)());
     final type = _extractType(normalized);
     final amount = _extractAmount(normalized);
 
@@ -107,20 +116,73 @@ class VoiceTransactionParser {
   // Date
   // ---------------------------------------------------------------------
 
-  static DateTime? _extractDate(String normalized) {
-    final now = DateTime.now();
-    if (normalized.contains('hom kia')) {
-      return DateTime(now.year, now.month, now.day)
-          .subtract(const Duration(days: 2));
+  static final RegExp _calendarDate = RegExp(
+    r'(?<![\d.,])([0-3]?\d)[/\-]([01]?\d)(?:[/\-](\d{4}))?(?![\d.,])',
+  );
+  static final RegExp _dayOfMonth = RegExp(r'\bngay\s+(\d{1,2})\b');
+  static final RegExp _weekday = RegExp(
+    r'\b(?:thu\s+([2-7]|hai|ba|tu|nam|sau|bay)|chu nhat|cn)\b(?:\s+tuan\s+(nay|truoc))?',
+  );
+
+  static DateTime? _validDate(int year, int month, int day) {
+    final date = DateTime(year, month, day);
+    return date.year == year && date.month == month && date.day == day
+        ? date
+        : null;
+  }
+
+  static DateTime? _extractDate(String normalized, DateTime now) {
+    final today = DateTime(now.year, now.month, now.day);
+    final calendar = _calendarDate.firstMatch(normalized);
+    if (calendar != null) {
+      return _validDate(
+        int.parse(calendar.group(3) ?? '${now.year}'),
+        int.parse(calendar.group(2)!),
+        int.parse(calendar.group(1)!),
+      );
     }
-    if (normalized.contains('hom qua')) {
-      return DateTime(now.year, now.month, now.day)
-          .subtract(const Duration(days: 1));
+    final day = _dayOfMonth.firstMatch(normalized);
+    if (day != null) {
+      return _validDate(now.year, now.month, int.parse(day.group(1)!));
     }
-    if (normalized.contains('hom nay')) {
-      return DateTime(now.year, now.month, now.day);
+    final weekday = _weekday.firstMatch(normalized);
+    if (weekday != null) {
+      const names = {'hai': 2, 'ba': 3, 'tu': 4, 'nam': 5, 'sau': 6, 'bay': 7};
+      final token = weekday.group(1);
+      final target =
+          token == null ? 7 : (int.tryParse(token) ?? names[token]!) - 1;
+      final offset = weekday.group(2) == 'truoc' ? 7 : 0;
+      return DateTime(
+          now.year, now.month, now.day + target - now.weekday - offset);
+    }
+    const relative = {
+      'hom kia': -2,
+      'hom qua': -1,
+      'hom truoc': -1,
+      'ngay mai': 1,
+      'hom nay': 0,
+      'sang nay': 0,
+      'trua nay': 0,
+      'toi nay': 0,
+      'tuan truoc': -7,
+    };
+    for (final entry in relative.entries) {
+      if (_containsPhrase(normalized, entry.key)) {
+        return DateTime(today.year, today.month, today.day + entry.value);
+      }
+    }
+    if (_containsPhrase(normalized, 'dau thang')) {
+      return DateTime(now.year, now.month);
+    }
+    if (_containsPhrase(normalized, 'cuoi thang')) {
+      return DateTime(now.year, now.month + 1, 0);
     }
     return null;
+  }
+
+  static bool _containsPhrase(String text, String phrase) {
+    return RegExp('(?<![a-z0-9])${RegExp.escape(phrase)}(?![a-z0-9])')
+        .hasMatch(text);
   }
 
   // ---------------------------------------------------------------------
@@ -129,12 +191,12 @@ class VoiceTransactionParser {
 
   static TransactionType? _extractType(String normalized) {
     for (final keyword in _incomeKeywords) {
-      if (normalized.contains(_normalize(keyword))) {
+      if (_containsPhrase(normalized, _normalize(keyword))) {
         return TransactionType.income;
       }
     }
     for (final keyword in _expenseKeywords) {
-      if (normalized.contains(_normalize(keyword))) {
+      if (_containsPhrase(normalized, _normalize(keyword))) {
         return TransactionType.expense;
       }
     }
@@ -146,58 +208,56 @@ class VoiceTransactionParser {
   // ---------------------------------------------------------------------
 
   // "1 trieu 5", "1tr5", "1.5tr", "1,5 trieu" -> 1_500_000
-  static final RegExp _millionWithSub =
-      RegExp(r'(\d+(?:[.,]\d+)?)\s*(?:trieu|tr)\s*(\d{1,3})?');
-
   // "150k", "150 k", "150 nghin", "150 ngan" -> 150_000
-  static final RegExp _thousand =
-      RegExp(r'(\d+(?:[.,]\d+)?)\s*(?:k|nghin|ngan)\b');
-
   // Số thuần với dấu chấm/phẩy phân cách nghìn: "150.000", "1.500.000"
-  static final RegExp _plainGrouped = RegExp(r'\d{1,3}(?:[.,]\d{3})+');
-
   // Số thuần không có phân cách: "150000"
-  static final RegExp _plainDigits = RegExp(r'\d+');
+  static final RegExp _amountWithUnit = RegExp(
+    r'(?<![\d.,])([0-9]+(?:[.,][0-9]+)?)\s*(trieu|tr|cu|ty|lit|tram|m|nghin|ngan|k)(?![a-z])(?:\s*(\d{1,3})(?![\d.,/\-]))?',
+  );
+  static final RegExp _currencyAmount = RegExp(
+    r'(?<![\d.,])(?:\$\s*)?(\d+(?:[.,]\d+)*)(?:\s*(?:vnd|dong|d|\$))?(?![a-z0-9])',
+  );
 
   static double? _extractAmount(String normalized) {
-    final millionMatch = _millionWithSub.firstMatch(normalized);
-    if (millionMatch != null) {
-      final whole = double.tryParse(millionMatch.group(1)!.replaceAll(',', '.'));
-      if (whole != null) {
-        var amount = whole * 1000000;
-        final sub = millionMatch.group(2);
-        if (sub != null && sub.isNotEmpty) {
+    final text = normalized
+        .replaceAll(_calendarDate, ' ')
+        .replaceAll(_dayOfMonth, ' ')
+        .replaceAll(_weekday, ' ');
+    final unit = _amountWithUnit.firstMatch(text);
+    if (unit != null) {
+      final whole = double.parse(unit.group(1)!.replaceAll(',', '.'));
+      final suffix = unit.group(2)!;
+      const multipliers = {
+        'trieu': 1000000,
+        'tr': 1000000,
+        'cu': 1000000,
+        'm': 1000000,
+        'ty': 1000000000,
+        'lit': 100000,
+        'tram': 100000,
+        'nghin': 1000,
+        'ngan': 1000,
+        'k': 1000,
+      };
+      var amount = whole * multipliers[suffix]!;
+      if (['trieu', 'tr', 'cu', 'm'].contains(suffix)) {
+        final sub = unit.group(3);
+        if (sub != null) {
           // "1 trieu 5" => 1 trieu + 500 nghin (chu so le sau trieu la tram nghin)
-          final subValue = int.tryParse(sub) ?? 0;
-          amount += subValue * 100000;
+          amount += int.parse(sub) * 100000;
         }
-        return amount;
       }
+      return amount;
     }
-
-    final thousandMatch = _thousand.firstMatch(normalized);
-    if (thousandMatch != null) {
-      final value =
-          double.tryParse(thousandMatch.group(1)!.replaceAll(',', '.'));
-      if (value != null) {
-        return value * 1000;
-      }
-    }
-
-    final groupedMatch = _plainGrouped.firstMatch(normalized);
-    if (groupedMatch != null) {
-      final cleaned = groupedMatch.group(0)!.replaceAll(RegExp(r'[.,]'), '');
-      final value = double.tryParse(cleaned);
-      if (value != null) return value;
-    }
-
-    final digitsMatch = _plainDigits.firstMatch(normalized);
-    if (digitsMatch != null) {
-      final value = double.tryParse(digitsMatch.group(0)!);
-      if (value != null) return value;
-    }
-
-    return null;
+    final currency = _currencyAmount.firstMatch(text);
+    if (currency == null) return null;
+    final digits = currency.group(1)!;
+    final grouped = RegExp(r'^\d{1,3}(?:[.,]\d{3})+$').hasMatch(digits);
+    return double.tryParse(
+      grouped
+          ? digits.replaceAll(RegExp(r'[.,]'), '')
+          : digits.replaceAll(',', '.'),
+    );
   }
 
   // ---------------------------------------------------------------------
@@ -300,7 +360,7 @@ class VoiceTransactionParser {
     }
     return buffer
         .toString()
-        .replaceAll(RegExp(r'[^\w\s.,]'), ' ')
+        .replaceAll(RegExp(r'[^\w\s.,/\-$]'), ' ')
         .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
   }

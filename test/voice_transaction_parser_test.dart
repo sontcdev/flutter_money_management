@@ -500,14 +500,50 @@ final _sentenceCorpus = [
 ];
 
 void main() {
-  group('Natural-language baseline corpus', () {
-    for (final fixture in _sentenceCorpus.take(16)) {
+  group('Natural-language rule corpus', () {
+    for (final fixture in _sentenceCorpus) {
       test(fixture.text, () {
-        final result = VoiceTransactionParser.parse(fixture.text);
+        final now = DateTime(2026, 10, 9, 14);
+        final result =
+            VoiceTransactionParser.parse(fixture.text, clock: () => now);
         expect(result.amountVnd, fixture.amount);
         expect(result.type, fixture.type);
+        expect(
+            result.date,
+            fixture.days == null
+                ? null
+                : DateTime(2026, 10, 9 + fixture.days!));
       });
     }
+    test('rejects invalid dates and does not use their digits as amounts', () {
+      for (final text in ['ngày 32', '31/2', '15/13/2026', 'thứ 2']) {
+        final result = VoiceTransactionParser.parse(text,
+            clock: () => DateTime(2026, 10, 9));
+        expect(result.amountVnd, isNull);
+        if (text != 'thứ 2') expect(result.date, isNull);
+      }
+    });
+    test('calendar boundaries and named weekdays', () {
+      final now = DateTime(2026, 1, 1);
+      expect(VoiceTransactionParser.parse('hôm qua', clock: () => now).date,
+          DateTime(2025, 12, 31));
+      expect(
+          VoiceTransactionParser.parse('thứ hai tuần trước', clock: () => now)
+              .date,
+          DateTime(2025, 12, 22));
+      expect(
+          VoiceTransactionParser.parse('cuối tháng',
+              clock: () => DateTime(2024, 2, 15)).date,
+          DateTime(2024, 2, 29));
+    });
+    test('type keywords require word boundaries', () {
+      expect(VoiceTransactionParser.parse('phim 50k').type, isNull);
+      expect(VoiceTransactionParser.parse('shipper 50k').type, isNull);
+    });
+    test('currency prefix and decimal amount', () {
+      expect(VoiceTransactionParser.parse(r'coffee $30').amountVnd, 30);
+      expect(VoiceTransactionParser.parse('mua 50.5 vnd').amountVnd, 50.5);
+    });
   });
 
   group('VoiceTransactionParser amount parsing', () {

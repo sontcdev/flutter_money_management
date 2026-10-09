@@ -51,11 +51,11 @@ Key decisions:
 - [x] Collect a test corpus of ~60 real sentences (vi with/without diacritics, en, ja basics) into the test file as fixtures; mark expected amount/date/type/category/wallet.
 
 ### Phase 1 — Stronger rules (parser only, no UI)
-- [ ] Amount: support `củ`, `lít` (=100k slang), `tỷ`, `trăm` (`5 trăm` = 500k context), `1tr2`, `2m`, `50.5k`, `$`/`đ`/`vnd` suffixes; choose the number nearest to an amount unit instead of the first digit (avoid matching `2` in `thứ 2`).
-- [ ] Date: `ngày mai`, `hôm trước`, `thứ 2..CN (tuần này/tuần trước)`, `tuần trước`, `đầu/cuối tháng`, `ngày 15`, `15/9`, `15-9-2026`, `sáng/trưa/tối nay` (date only).
-- [ ] Type: add income keywords (`được cho`, `lãi`, `cổ tức`, `nhận chuyển khoản`) and expense ones (`đổ xăng`, `ship`, `phí`); negative context (`trả lại cho tôi` → income).
-- [ ] Make `now` injectable (`DateTime Function() clock` param, default `DateTime.now`) for deterministic date tests.
-- [ ] Unit tests for every new pattern.
+- [x] Amount: support `củ`, `lít` (=100k slang), `tỷ`, `trăm` (`5 trăm` = 500k context), `1tr2`, `2m`, `50.5k`, `$`/`đ`/`vnd` suffixes; choose the number nearest to an amount unit instead of the first digit (avoid matching `2` in `thứ 2`).
+- [x] Date: `ngày mai`, `hôm trước`, `thứ 2..CN (tuần này/tuần trước)`, `tuần trước`, `đầu/cuối tháng`, `ngày 15`, `15/9`, `15-9-2026`, `sáng/trưa/tối nay` (date only).
+- [x] Type: add income keywords (`được cho`, `lãi`, `cổ tức`, `nhận chuyển khoản`) and expense ones (`đổ xăng`, `ship`, `phí`); negative context (`trả lại cho tôi` → income).
+- [x] Make `now` injectable (`DateTime Function() clock` param, default `DateTime.now`) for deterministic date tests.
+- [x] Unit tests for every new pattern.
 
 ### Phase 2 — Fuzzy wallet & category name matching
 - [ ] Add `lib/src/utils/text_similarity.dart`: `normalizeVi()` (move/reuse `_normalize`), Levenshtein ratio, best-match helper with threshold.
@@ -108,3 +108,5 @@ Phase 1: 0.5d · Phase 2: 0.5d · Phase 3: 0.5–1d · Phase 4: 0.5d · Phase 5:
 ## Execution evidence
 
 - Phase 0: 60 representative fixtures recorded in `test/voice_transaction_parser_test.dart`, including Vietnamese, English, and Japanese. These are synthetic acceptance examples, not collected private user data. First 16 preserve baseline amount/type expectations; later phases activate the expanded expectations. Date offsets use 2026-10-09.
+
+- Phase 1: 80 parser tests pass; fixed clock covers all 60 corpus amount/type/date expectations, invalid dates and year/leap-month boundaries. Currency markers retain the entered number in the VND form; no exchange-rate conversion. Weekdays use the current Monday-based week unless `tuần trước` is explicit. Duckling reference: https://github.com/facebook/duckling/blob/main/Duckling/Time/VI/Corpus.hs and https://github.com/facebook/duckling/blob/main/Duckling/AmountOfMoney/VI/Corpus.hs (independent rules, no copied implementation).
