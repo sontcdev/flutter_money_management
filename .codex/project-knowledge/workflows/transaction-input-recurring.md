@@ -20,6 +20,10 @@
 - Spoken word numbers (`ba mươi nghìn`, `hai triệu`) have a null amount; supported speech transcripts use digits.
 - Bare numbers are literal VND (`500` means 500 VND). A bare count before a bare amount retains the first number and flags extras (`mua 3 ly cafe 90000` keeps 3 and warns); use `90k` for the amount.
 - Unaccented `ban` does not decide the type; the user chooses on review. Accented `bán` remains income.
+- Foreign currency `đô` matches both composed NFC (`đô`) and decomposed NFD (`đô`); a following letter or combining mark blocks the currency match.
+- A foreign-currency chunk prevents comma splitting (`nhận 20 đô, cafe 30k` stays one segment with a null amount); the user enters the amount on review.
+- Unaccented `N do` beside a unit amount is not flagged (`cafe 30k, 20 do` stays one segment with 30,000 VND, note `Cafe, 20 do` and no warning).
+- Accented input with unaccented `do` treats the number as VND (`mua sách 20 do` keeps 20 and note `Mua sách do`).
 - Fully unaccented `N do` is foreign currency only when the chunk has no unit amount; `20 do` has no amount, while `mua 20 do an 50k` keeps 50,000 VND.
 - Space grouping is disabled only after `phòng N`; `số 12 500` and `bàn 12 500` read as 12,500 VND.
 - `vay`, `cho vay` and `trả nợ` have no type; the user chooses on review.
@@ -75,3 +79,5 @@
 2026-10-10 — final consolidated formats verified against [voice_transaction_parser.dart](../../../lib/src/utils/voice_transaction_parser.dart), [voice_transaction_parser_test.dart](../../../test/voice_transaction_parser_test.dart) and [quick_input_sheet_test.dart](../../../test/quick_input_sheet_test.dart): 97 frozen-format corpus rows, 277 passing parser/widget tests and clean full analysis. Android emulator synthetic preview builds and launches; typed `cafe 1 500 000` displays 1,500,000 VND with note `Cafe`. Human-operated procedures remain temporarily accepted; physical-device speech remains unverified. Existing explicit-year and explicit-week exceptions are documented above.
 
 2026-10-10 — diacritic currency/type guards verified against the parser and parser/widget tests: 107 frozen-format corpus rows, 287 passing tests and clean full analysis. `đồ` no longer triggers foreign currency; unaccented `ban` leaves type undecided. Raw-text currency guards also apply during comma splitting. Physical-device speech remains unverified.
+
+2026-10-10 — residual currency guard verified against the parser and parser/widget tests: 112 frozen-format corpus rows, 292 passing tests and clean full analysis. NFC/NFD `đô` is foreign currency while NFD `đôi` remains note text. Foreign comma chunks, unaccented `N do` beside unit amounts and mixed accented/unaccented input retain the documented limitations. Physical-device speech remains unverified.

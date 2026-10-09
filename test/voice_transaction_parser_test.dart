@@ -589,6 +589,11 @@ const _formatCorpus = [
     'Mua 20 do an',
     false
   ),
+  ('20 đô', null, null, null, null, false),
+  ('mua 2 đôi giày 500k', 500000, null, null, null, false),
+  ('nhận 20 đô, cafe 30k', null, null, null, null, false),
+  ('cafe 30k, 20 do', 30000, null, null, 'Cafe, 20 do', false),
+  ('mua sách 20 do', 20, null, null, 'Mua sách do', false),
   ('20 do', null, null, null, null, false),
   ('cafe 20 usd', null, null, null, null, false),
   ('cafe ban 50k', 50000, null, null, 'Cafe ban', false),
@@ -692,6 +697,17 @@ void main() {
         }
         if (row.$5 != null) expect(result.note, row.$5);
         expect(result.hasExtraAmounts, row.$6);
+        if ([
+          '20 đô',
+          'mua 2 đôi giày 500k',
+          'nhận 20 đô, cafe 30k',
+          'cafe 30k, 20 do',
+          'mua sách 20 do'
+        ].contains(row.$1)) {
+          final results = VoiceTransactionParser.parseMany(row.$1,
+              clock: () => DateTime(2026, 10, 9));
+          expect(results, hasLength(1));
+        }
       });
     }
   });

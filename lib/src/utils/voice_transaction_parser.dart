@@ -481,7 +481,7 @@ class VoiceTransactionParser {
   );
 
   static final RegExp _foreignCurrency = RegExp(
-    r'\$\s*\d|\d\s*(?:đô|usd|\$)(?![\p{L}0-9])',
+    r'\$\s*\d|\d\s*(?:đô|đô|usd|\$)(?![\p{L}\p{M}0-9])',
     unicode: true,
   );
   static final RegExp _unaccentedForeignCurrency =
