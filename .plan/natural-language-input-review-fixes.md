@@ -26,7 +26,25 @@ Cause: `parseMany` splits on every separator, then requires every part to have a
   - "ví tiền mặt và thẻ 50k" (no amount before first "và") → 1 result.
   - Existing corpus tests in `test/voice_transaction_parser_test.dart` still pass.
 
+## Fix 3 — Amount-first phrasing splits inside "và" names
+
+Source: review of `d495032`. Cause: `_splitSegments` cuts at the first separator once the accumulated segment has an amount; with amount-first phrasing "50k ăn và uống, 30k cafe" the `và` inside the category already follows `50k` → `[50k ăn]` `[uống, 30k cafe]`.
+
+- [x] Add a lookahead condition in `_splitSegments`: cut at a separator only if the accumulated segment has an amount **and** the next chunk (text from this separator's end to the next separator match, or end of text) also has an amount. Otherwise keep accumulating.
+- [x] Remove the trailing-merge branch only if it becomes unreachable; keep the `< 2 segments → [text.trim()]` fallback.
+- [x] Hoist the separator `RegExp` to a `static final` field next to `_weekday` and the other patterns.
+- [x] Tests:
+  - "50k ăn và uống, 30k cafe" → 2 results: 50k (Ăn và uống), 30k.
+  - "50k ăn và uống" → 1 result.
+  - "30k cafe và 50k ăn trưa" → 2 results (amount-first both sides).
+  - Fix 2 cases stay green ("Ăn và uống 50k và cafe 30k", "cafe 30k, ăn trưa 50k", "cafe 30k + grab 45k", shared date, "mua 1,5tr", "ví tiền mặt và thẻ 50k").
+- [x] Known limitation (document in project knowledge, no fix): mixed phrasing such as "cafe 30k và ăn trưa và uống 50k" stays ambiguous and splits at the last `và`.
+- [x] Update `.codex/project-knowledge/workflows/transaction-input-recurring.md` split rule + `Last Verified`.
+- [x] Validation: `flutter test test/voice_transaction_parser_test.dart`, `flutter analyze`.
+- [x] Commit: `fix(transactions): split only between amount-bearing chunks`
+
 ## Follow-up (not in this fix)
+- [ ] Explicit dates (`ngày 15`, `dd/mm`) may resolve to the future; decide past-only rule consistently for both.
 - [ ] Review UI changes in `b477a40` (`quick_input_review_sheet.dart`, `voice_input_sheet.dart`, `add_transaction_screen.dart`), which the review skipped.
 - [ ] Unrelated uncommitted changes: `applicationId` rename in `android/app/build.gradle.kts`, uncaught `launchUrl` exception in `settings_screen.dart:358`.
 
@@ -42,3 +60,11 @@ Cause: `parseMany` splits on every separator, then requires every part to have a
 - `ngày 15` and `dd/mm` both allow future explicit dates. Their behavior is preserved; changing explicit dates to past-only remains a follow-up.
 - Human-operated procedures are temporarily accepted by the user; no physical-device result is claimed.
 - UI review and unrelated working-tree findings remain outside this fix.
+
+### Fix 3 verification
+
+- Before the fix, the amount-first regression failed: `50k ăn và uống` was truncated to `50k ăn`.
+- After the fix, all 110 parser tests pass; `flutter analyze` reports no issues.
+- The lookahead requires an amount in the next chunk, so no cut occurs before amountless trailing text; the now-unreachable trailing-merge branch was removed.
+- The previous mixed-phrasing test is retained with the newly specified split behavior; trailing-text preservation is also tested separately.
+- All in-scope requirements are complete; the explicitly excluded follow-ups remain open.

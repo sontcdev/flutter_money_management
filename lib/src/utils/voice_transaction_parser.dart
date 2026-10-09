@@ -130,28 +130,23 @@ class VoiceTransactionParser {
   }
 
   static List<String> _splitSegments(String text) {
-    final separators = RegExp(
-      r'(?<!\p{L})(?:và|va|rồi|roi|xong)(?!\p{L})|,(?!\d)|[;+\n]',
-      unicode: true,
-      caseSensitive: false,
-    );
+    final separators = _segmentSeparator.allMatches(text).toList();
     final segments = <String>[];
     var start = 0;
-    var lastSegmentStart = 0;
-    for (final separator in separators.allMatches(text)) {
+    for (var index = 0; index < separators.length; index++) {
+      final separator = separators[index];
       final segment = text.substring(start, separator.start).trim();
-      if (_extractAmount(_normalize(segment)) != null) {
+      final nextEnd = index + 1 < separators.length
+          ? separators[index + 1].start
+          : text.length;
+      final nextChunk = text.substring(separator.end, nextEnd).trim();
+      if (_extractAmount(_normalize(segment)) != null &&
+          _extractAmount(_normalize(nextChunk)) != null) {
         segments.add(segment);
-        lastSegmentStart = start;
         start = separator.end;
       }
     }
-    final trailing = text.substring(start).trim();
-    if (_extractAmount(_normalize(trailing)) != null) {
-      segments.add(trailing);
-    } else if (segments.isNotEmpty) {
-      segments[segments.length - 1] = text.substring(lastSegmentStart).trim();
-    }
+    segments.add(text.substring(start).trim());
     return segments.length > 1 ? segments : [text.trim()];
   }
 
@@ -301,6 +296,12 @@ class VoiceTransactionParser {
   static final RegExp _dayOfMonth = RegExp(r'\bngay\s+(\d{1,2})\b');
   static final RegExp _weekday = RegExp(
     r'\b(?:thu\s+([2-7]|hai|ba|tu|nam|sau|bay)|chu nhat|cn)\b(?:\s+tuan\s+(nay|truoc))?',
+  );
+
+  static final RegExp _segmentSeparator = RegExp(
+    r'(?<!\p{L})(?:và|va|rồi|roi|xong)(?!\p{L})|,(?!\d)|[;+\n]',
+    unicode: true,
+    caseSensitive: false,
   );
 
   static DateTime? _validDate(int year, int month, int day) {

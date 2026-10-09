@@ -596,11 +596,52 @@ void main() {
       expect(results.map((result) => result.amountVnd), [50000, 30000]);
       expect(results.first.categoryId, category.id);
     });
-    test('merges amountless trailing text into the last transaction', () {
+    test('preserves amount-first category names across separators', () {
+      final category = _category('Ăn và uống', CategoryType.expense);
       final results = VoiceTransactionParser.parseMany(
-          'cafe 30k và bánh và sữa 50k và mang về');
+          '50k ăn và uống, 30k cafe',
+          categories: [category]);
+      expect(results.map((result) => result.amountVnd), [50000, 30000]);
+      expect(results.first.rawText, '50k ăn và uống');
+      expect(results.first.categoryId, category.id);
+    });
+    test('keeps a single amount-first category name intact', () {
+      final category = _category('Ăn và uống', CategoryType.expense);
+      final results = VoiceTransactionParser.parseMany('50k ăn và uống',
+          categories: [category]);
+      expect(results, hasLength(1));
+      expect(results.single.amountVnd, 50000);
+      expect(results.single.rawText, '50k ăn và uống');
+      expect(results.single.categoryId, category.id);
+    });
+    test('splits when both chunks start with an amount', () {
+      final results =
+          VoiceTransactionParser.parseMany('30k cafe và 50k ăn trưa');
       expect(results.map((result) => result.amountVnd), [30000, 50000]);
-      expect(results.last.rawText, 'bánh và sữa 50k và mang về');
+      expect(
+          results.map((result) => result.rawText), ['30k cafe', '50k ăn trưa']);
+    });
+    test('merges amountless trailing text into the last transaction', () {
+      final results =
+          VoiceTransactionParser.parseMany('cafe 30k và sữa 50k và mang về');
+      expect(results.map((result) => result.amountVnd), [30000, 50000]);
+      expect(results.last.rawText, 'sữa 50k và mang về');
+    });
+    test('splits ambiguous mixed phrasing at the last conjunction', () {
+      for (final fixture in [
+        (
+          text: 'cafe 30k và ăn trưa và uống 50k',
+          segments: ['cafe 30k và ăn trưa', 'uống 50k']
+        ),
+        (
+          text: 'cafe 30k và bánh và sữa 50k và mang về',
+          segments: ['cafe 30k và bánh', 'sữa 50k và mang về']
+        ),
+      ]) {
+        final results = VoiceTransactionParser.parseMany(fixture.text);
+        expect(results.map((result) => result.amountVnd), [30000, 50000]);
+        expect(results.map((result) => result.rawText), fixture.segments);
+      }
     });
     test('keeps single amounts and wallet conjunctions intact', () {
       expect(VoiceTransactionParser.parseMany('mua 1,5tr'), hasLength(1));
