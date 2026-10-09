@@ -884,6 +884,70 @@ void main() {
         'Giải trí');
   });
 
+  group('Unit tails and spaced amounts', () {
+    for (final fixture in [
+      ('1tr2', 1200000),
+      ('1tr25', 1250000),
+      ('1tr200', 1200000),
+      ('1tr025', 1025000),
+      ('1 triệu 5', 1500000),
+      ('1 tỷ 2', 1200000000),
+      ('1ty25', 1250000000),
+      ('1ty200', 1200000000),
+      ('1cu25', 1250000),
+      ('1m200', 1200000),
+    ]) {
+      test('scales tail in ${fixture.$1}', () {
+        final result = VoiceTransactionParser.parse(fixture.$1);
+        expect(result.amountVnd, fixture.$2);
+        expect(result.hasExtraAmounts, isFalse);
+      });
+    }
+    for (final fixture in [
+      ('cafe 1tr 200k', 1000000, 'Cafe'),
+      ('1 triệu 500k', 1000000, '1 triệu 500k'),
+      ('cafe 30k 50k', 30000, 'Cafe'),
+      ('đổ xăng 2 lít 50k', 200000, 'Đổ xăng'),
+      ('cafe 1ty 200k', 1000000000, 'Cafe'),
+    ]) {
+      test('keeps first spaced amount in ${fixture.$1}', () {
+        final result = VoiceTransactionParser.parse(fixture.$1);
+        expect(result.amountVnd, fixture.$2);
+        expect(result.hasExtraAmounts, isTrue);
+        expect(result.note, fixture.$3);
+      });
+    }
+    for (final unit in ['trăm nghìn', 'trăm ngàn']) {
+      test('consumes compound unit $unit', () {
+        final result = VoiceTransactionParser.parse('cafe 2 $unit');
+        expect(result.amountVnd, 200000);
+        expect(result.note, 'Cafe');
+        expect(result.hasExtraAmounts, isFalse);
+      });
+    }
+    for (final text in [
+      'cafe 30k năm 2026',
+      'tiền nhà tháng 10/2026 5tr',
+      'tiền nhà 10/2026 5tr',
+    ]) {
+      test('does not flag year context in $text', () {
+        final result = VoiceTransactionParser.parse(text);
+        expect(result.amountVnd, text.startsWith('cafe') ? 30000 : 5000000);
+        expect(result.hasExtraAmounts, isFalse);
+      });
+    }
+    test('retains ambiguous bare numbers as extra amounts', () {
+      final result = VoiceTransactionParser.parse('phòng 1203 tiền điện 500k');
+      expect(result.amountVnd, 500000);
+      expect(result.hasExtraAmounts, isTrue);
+    });
+    test('preserves the accepted letter-comma-digit split', () {
+      final results = VoiceTransactionParser.parseMany('mua 2tr,5 cafe 30k');
+      expect(results.map((r) => r.amountVnd), [2000000, 30000]);
+      expect(results.map((r) => r.note), ['Mua', '5 cafe']);
+    });
+  });
+
   group('VoiceTransactionParser amount parsing', () {
     test('parses "k" suffix', () {
       final result = VoiceTransactionParser.parse('hôm nay đi chợ hết 150k');

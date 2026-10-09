@@ -249,7 +249,7 @@ class VoiceTransactionParser {
           r'\b(?:hom\s+(?:kia|qua|truoc|nay)|ngay\s+mai|(?:sang|trua|toi)\s+nay|tuan\s+truoc|(?:dau|cuoi)\s+thang)\b'));
     }
     if (_amountWithUnit.hasMatch(remaining)) {
-      remove(_amountWithUnit, firstOnly: true);
+      remove(_amountWithUnit);
     } else {
       remove(_currencyAmount, firstOnly: true);
     }
@@ -398,7 +398,7 @@ class VoiceTransactionParser {
   // Số thuần với dấu chấm/phẩy phân cách nghìn: "150.000", "1.500.000"
   // Số thuần không có phân cách: "150000"
   static final RegExp _amountWithUnit = RegExp(
-    r'(?<!\d)(?<!\d[.,])([0-9]+(?:[.,][0-9]+)?)\s*(trieu|tr|cu|ty|lit|tram|m|nghin|ngan|k)(?![a-z])(?:\s*(\d{1,3})(?![\d.,/\-]))?',
+    r'(?<!\d)(?<!\d[.,])([0-9]+(?:[.,][0-9]+)?)\s*(trieu|tr|cu|ty|lit|tram\s+(?:nghin|ngan)|tram|m|nghin|ngan|k)(?![a-z])(?:(?<=trieu|tr|cu|m|ty)\s*(\d{1,3})(?![\d.,/\-])(?!\s*(?:trieu|tr|cu|ty|lit|tram|m|nghin|ngan|k)(?![a-z])))?',
   );
   static final RegExp _currencyAmount = RegExp(
     r'(?<!\d)(?<!\d[.,])(?:\$\s*)?(\d+(?:[.,]\d+)*)(?:\s*(?:vnd|dong|d|\$))?(?![a-z0-9])',
@@ -408,7 +408,10 @@ class VoiceTransactionParser {
     final text = normalized
         .replaceAll(_calendarDate, ' ')
         .replaceAll(_dayOfMonth, ' ')
-        .replaceAll(_weekday, ' ');
+        .replaceAll(_weekday, ' ')
+        .replaceAll(
+            RegExp(r'\b(?:nam|thang\s+\d{1,2}[/\-])\s*(?:19|20)\d{2}\b'), ' ')
+        .replaceAll(RegExp(r'\b\d{1,2}[/\-](?:19|20)\d{2}\b'), ' ');
     final unitCount = _amountWithUnit.allMatches(text).length;
     final remaining = text.replaceAll(_amountWithUnit, ' ');
     final currencyCount = _currencyAmount
@@ -426,7 +429,8 @@ class VoiceTransactionParser {
     final unit = _amountWithUnit.firstMatch(text);
     if (unit != null) {
       final whole = double.parse(unit.group(1)!.replaceAll(',', '.'));
-      final suffix = unit.group(2)!;
+      final suffix =
+          unit.group(2)!.startsWith('tram') ? 'tram' : unit.group(2)!;
       const multipliers = {
         'trieu': 1000000,
         'tr': 1000000,
@@ -440,11 +444,11 @@ class VoiceTransactionParser {
         'k': 1000,
       };
       var amount = whole * multipliers[suffix]!;
-      if (['trieu', 'tr', 'cu', 'm'].contains(suffix)) {
+      if (['trieu', 'tr', 'cu', 'm', 'ty'].contains(suffix)) {
         final sub = unit.group(3);
         if (sub != null) {
           // "1 trieu 5" => 1 trieu + 500 nghin (chu so le sau trieu la tram nghin)
-          amount += int.parse(sub) * 100000;
+          amount += double.parse('0.$sub') * multipliers[suffix]!;
         }
       }
       return amount;
