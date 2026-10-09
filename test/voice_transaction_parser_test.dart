@@ -886,6 +886,32 @@ void main() {
 
   group('Unit tails and spaced amounts', () {
     for (final fixture in [
+      ('cafe 2 trăm 5', 200000, 'Cafe 5', true),
+      ('2 trăm nghìn', 200000, '2 trăm nghìn', false),
+      ('1.5tr 2', 1500000, '2', true),
+      ('1,5tr', 1500000, '1,5tr', false),
+      ('mua 1tr 2 cái áo', 1000000, 'Mua 2 cái áo', true),
+      ('cafe 1 triệu 5', 1500000, 'Cafe', false),
+      ('1 triệu 5 cafe', 1000000, '5 cafe', true),
+      ('1tr2 cafe', 1200000, 'Cafe', false),
+      ('cafe 1tr 25', 1250000, 'Cafe', false),
+      ('cafe 1tr 200', 1200000, 'Cafe', false),
+      ('cafe 1.5tr2', 1500000, 'Cafe 2', true),
+      ('cafe 1,5tr 2', 1500000, 'Cafe 2', true),
+      ('cafe 2tram5', 200000, 'Cafe 5', true),
+      ('cafe 30k 2 ly', 30000, 'Cafe 2 ly', false),
+    ]) {
+      test('guards tail in ${fixture.$1}', () {
+        final result = VoiceTransactionParser.parse(
+          fixture.$1,
+          clock: () => DateTime(2026, 10, 9),
+        );
+        expect(result.amountVnd, fixture.$2);
+        expect(result.note, fixture.$3);
+        expect(result.hasExtraAmounts, fixture.$4);
+      });
+    }
+    for (final fixture in [
       ('1tr2', 1200000),
       ('1tr25', 1250000),
       ('1tr200', 1200000),

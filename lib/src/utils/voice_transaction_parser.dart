@@ -398,8 +398,12 @@ class VoiceTransactionParser {
   // Số thuần với dấu chấm/phẩy phân cách nghìn: "150.000", "1.500.000"
   // Số thuần không có phân cách: "150000"
   static final RegExp _amountWithUnit = RegExp(
-    r'(?<!\d)(?<!\d[.,])([0-9]+(?:[.,][0-9]+)?)\s*(trieu|tr|cu|ty|lit|tram\s+(?:nghin|ngan)|tram|m|nghin|ngan|k)(?![a-z])(?:(?<=trieu|tr|cu|m|ty)\s*(\d{1,3})(?![\d.,/\-])(?!\s*(?:trieu|tr|cu|ty|lit|tram|m|nghin|ngan|k)(?![a-z])))?',
+    r'(?<!\d)(?<!\d[.,])([0-9]+(?:[.,][0-9]+)?)\s*(trieu|tr|cu|ty|lit|tram\s+(?:nghin|ngan)|tram|m|nghin|ngan|k)(?![a-z])(?:(?<=(?<![\d.,])\d+\s*(?:trieu|tr|cu|ty|(?<![a-z])m))(?:(\d{1,3})(?![\d.,/\-])(?!\s*(?:trieu|tr|cu|ty|lit|tram|m|nghin|ngan|k)(?![a-z]))|\s+(\d{1,3})(?=\s*$)))?',
   );
+  static final RegExp _yearContext = RegExp(
+    r'\b(?:nam|thang\s+\d{1,2}[/\-])\s*(?:19|20)\d{2}\b',
+  );
+  static final RegExp _monthYear = RegExp(r'\b\d{1,2}[/\-](?:19|20)\d{2}\b');
   static final RegExp _currencyAmount = RegExp(
     r'(?<!\d)(?<!\d[.,])(?:\$\s*)?(\d+(?:[.,]\d+)*)(?:\s*(?:vnd|dong|d|\$))?(?![a-z0-9])',
   );
@@ -409,16 +413,22 @@ class VoiceTransactionParser {
         .replaceAll(_calendarDate, ' ')
         .replaceAll(_dayOfMonth, ' ')
         .replaceAll(_weekday, ' ')
-        .replaceAll(
-            RegExp(r'\b(?:nam|thang\s+\d{1,2}[/\-])\s*(?:19|20)\d{2}\b'), ' ')
-        .replaceAll(RegExp(r'\b\d{1,2}[/\-](?:19|20)\d{2}\b'), ' ');
-    final unitCount = _amountWithUnit.allMatches(text).length;
-    final remaining = text.replaceAll(_amountWithUnit, ' ');
+        .replaceAll(_yearContext, ' ')
+        .replaceAll(_monthYear, ' ');
+    final units = _amountWithUnit.allMatches(text).toList();
+    final remaining = text.replaceAllMapped(
+        _amountWithUnit, (match) => ' ' * (match.end - match.start));
     final currencyCount = _currencyAmount
         .allMatches(remaining)
-        .where((match) => (_extractAmount(match.group(0)!) ?? 0) >= 1000)
+        .where((match) =>
+            (_extractAmount(match.group(0)!) ?? 0) >= 1000 ||
+            units.any((unit) =>
+                ['trieu', 'tr', 'cu', 'ty', 'tram', 'm']
+                    .contains(unit.group(2)) &&
+                unit.end <= match.start &&
+                text.substring(unit.end, match.start).trim().isEmpty))
         .length;
-    return unitCount + currencyCount >= 2;
+    return units.length + currencyCount >= 2;
   }
 
   static double? _extractAmount(String normalized) {
@@ -445,7 +455,7 @@ class VoiceTransactionParser {
       };
       var amount = whole * multipliers[suffix]!;
       if (['trieu', 'tr', 'cu', 'm', 'ty'].contains(suffix)) {
-        final sub = unit.group(3);
+        final sub = unit.group(3) ?? unit.group(4);
         if (sub != null) {
           // "1 trieu 5" => 1 trieu + 500 nghin (chu so le sau trieu la tram nghin)
           amount += double.parse('0.$sub') * multipliers[suffix]!;
