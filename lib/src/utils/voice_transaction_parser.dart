@@ -108,19 +108,7 @@ class VoiceTransactionParser {
     CategoryClassifier? classifier,
   }) {
     final now = (clock ?? DateTime.now)();
-    final parts = text
-        .split(RegExp(
-          r'(?<!\p{L})(?:và|va|rồi|roi|xong)(?!\p{L})|,(?!\d)|[;+\n]',
-          unicode: true,
-          caseSensitive: false,
-        ))
-        .map((part) => part.trim())
-        .where((part) => part.isNotEmpty)
-        .toList();
-    final segments = parts.length > 1 &&
-            parts.every((part) => _extractAmount(_normalize(part)) != null)
-        ? parts
-        : [text.trim()];
+    final segments = _splitSegments(text);
     final dates = segments
         .map((part) => _extractDate(_normalize(part), now))
         .whereType<DateTime>()
@@ -139,6 +127,32 @@ class VoiceTransactionParser {
             sharedDate: dates.length == 1 ? dates.single : null,
             sharedWallet: walletIds.length == 1 ? explicitWallets.first : null))
         .toList();
+  }
+
+  static List<String> _splitSegments(String text) {
+    final separators = RegExp(
+      r'(?<!\p{L})(?:và|va|rồi|roi|xong)(?!\p{L})|,(?!\d)|[;+\n]',
+      unicode: true,
+      caseSensitive: false,
+    );
+    final segments = <String>[];
+    var start = 0;
+    var lastSegmentStart = 0;
+    for (final separator in separators.allMatches(text)) {
+      final segment = text.substring(start, separator.start).trim();
+      if (_extractAmount(_normalize(segment)) != null) {
+        segments.add(segment);
+        lastSegmentStart = start;
+        start = separator.end;
+      }
+    }
+    final trailing = text.substring(start).trim();
+    if (_extractAmount(_normalize(trailing)) != null) {
+      segments.add(trailing);
+    } else if (segments.isNotEmpty) {
+      segments[segments.length - 1] = text.substring(lastSegmentStart).trim();
+    }
+    return segments.length > 1 ? segments : [text.trim()];
   }
 
   static VoiceParseResult _parseSingle(
@@ -317,8 +331,11 @@ class VoiceTransactionParser {
       final target =
           token == null ? 7 : (int.tryParse(token) ?? names[token]!) - 1;
       final offset = weekday.group(2) == 'truoc' ? 7 : 0;
-      return DateTime(
+      final date = DateTime(
           now.year, now.month, now.day + target - now.weekday - offset);
+      return weekday.group(2) == null && date.isAfter(today)
+          ? DateTime(date.year, date.month, date.day - 7)
+          : date;
     }
     const relative = {
       'hom kia': -2,

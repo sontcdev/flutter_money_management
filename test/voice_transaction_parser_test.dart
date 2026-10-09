@@ -516,6 +516,43 @@ Wallet _wallet(String name, WalletType type,
 }
 
 void main() {
+  group('Weekday date resolution', () {
+    for (final fixture in [
+      (text: 'thứ 6', now: DateTime(2026, 10, 5), date: DateTime(2026, 10, 2)),
+      (text: 'thứ 6', now: DateTime(2026, 10, 9), date: DateTime(2026, 10, 9)),
+      (text: 'thứ 2', now: DateTime(2026, 10, 7), date: DateTime(2026, 10, 5)),
+      (
+        text: 'chủ nhật',
+        now: DateTime(2026, 10, 10),
+        date: DateTime(2026, 10, 4)
+      ),
+      (
+        text: 'thứ 6 tuần này',
+        now: DateTime(2026, 10, 5),
+        date: DateTime(2026, 10, 9)
+      ),
+      (
+        text: 'thứ 6 tuần trước',
+        now: DateTime(2026, 10, 5),
+        date: DateTime(2026, 10, 2)
+      ),
+    ]) {
+      test('${fixture.text} on ${fixture.now}', () {
+        final result = VoiceTransactionParser.parse('cafe 30k ${fixture.text}',
+            clock: () => fixture.now);
+        expect(result.date, fixture.date);
+      });
+    }
+    test('preserves future explicit calendar dates', () {
+      for (final dateText in ['ngày 15', '15/10']) {
+        expect(
+            VoiceTransactionParser.parse('cafe 30k $dateText',
+                clock: () => DateTime(2026, 10, 5)).date,
+            DateTime(2026, 10, 15));
+      }
+    });
+  });
+
   group('Multiple transactions and notes', () {
     for (final separator in [
       'và',
@@ -539,6 +576,38 @@ void main() {
             30000);
       });
     }
+    test('preserves amount splitting and shared dates in review examples', () {
+      for (final text in ['cafe 30k, ăn trưa 50k', 'cafe 30k + grab 45k']) {
+        final results = VoiceTransactionParser.parseMany(text);
+        expect(results.map((result) => result.amountVnd),
+            text.contains('+') ? [30000, 45000] : [30000, 50000]);
+      }
+      final results = VoiceTransactionParser.parseMany(
+          'hôm qua cafe 30k và ăn trưa 50k',
+          clock: () => DateTime(2026, 10, 9));
+      expect(results.map((result) => result.date),
+          [DateTime(2026, 10, 8), DateTime(2026, 10, 8)]);
+    });
+    test('preserves conjunctions in category names before an amount', () {
+      final category = _category('Ăn và uống', CategoryType.expense);
+      final results = VoiceTransactionParser.parseMany(
+          'Ăn và uống 50k và cafe 30k',
+          categories: [category]);
+      expect(results.map((result) => result.amountVnd), [50000, 30000]);
+      expect(results.first.categoryId, category.id);
+    });
+    test('merges amountless trailing text into the last transaction', () {
+      final results = VoiceTransactionParser.parseMany(
+          'cafe 30k và bánh và sữa 50k và mang về');
+      expect(results.map((result) => result.amountVnd), [30000, 50000]);
+      expect(results.last.rawText, 'bánh và sữa 50k và mang về');
+    });
+    test('keeps single amounts and wallet conjunctions intact', () {
+      expect(VoiceTransactionParser.parseMany('mua 1,5tr'), hasLength(1));
+      expect(VoiceTransactionParser.parse('mua 1,5tr').amountVnd, 1500000);
+      expect(VoiceTransactionParser.parseMany('ví tiền mặt và thẻ 50k'),
+          hasLength(1));
+    });
     test('keeps amountless conjunction and numeric commas intact', () {
       expect(VoiceTransactionParser.parseMany('mua bánh và sữa 50k'),
           hasLength(1));
