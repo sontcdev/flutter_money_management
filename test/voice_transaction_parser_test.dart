@@ -565,11 +565,16 @@ void main() {
       '+',
       '\n'
     ]) {
-      test('splits transactions at $separator', () {
+      test('only splits transactions at commas: $separator', () {
         final results =
             VoiceTransactionParser.parseMany('cafe 30k $separator grab 45k');
-        expect(results.map((r) => r.amountVnd), [30000, 45000]);
-        expect(results.map((r) => r.note), ['Cafe', 'Grab']);
+        expect(results.map((r) => r.amountVnd),
+            separator == ',' ? [30000, 45000] : [30000]);
+        if (separator == ',') {
+          expect(results.map((r) => r.note), ['Cafe', 'Grab']);
+        } else {
+          expect(results.single.rawText, 'cafe 30k $separator grab 45k');
+        }
         expect(
             VoiceTransactionParser.parse('cafe 30k $separator grab 45k')
                 .amountVnd,
@@ -577,13 +582,13 @@ void main() {
       });
     }
     test('preserves amount splitting and shared dates in review examples', () {
-      for (final text in ['cafe 30k, ăn trưa 50k', 'cafe 30k + grab 45k']) {
+      for (final text in ['cafe 30k, ăn trưa 50k', 'cafe 30k, grab 45k']) {
         final results = VoiceTransactionParser.parseMany(text);
         expect(results.map((result) => result.amountVnd),
-            text.contains('+') ? [30000, 45000] : [30000, 50000]);
+            text.contains('grab') ? [30000, 45000] : [30000, 50000]);
       }
       final results = VoiceTransactionParser.parseMany(
-          'hôm qua cafe 30k và ăn trưa 50k',
+          'hôm qua cafe 30k, ăn trưa 50k',
           clock: () => DateTime(2026, 10, 9));
       expect(results.map((result) => result.date),
           [DateTime(2026, 10, 8), DateTime(2026, 10, 8)]);
@@ -591,7 +596,7 @@ void main() {
     test('preserves conjunctions in category names before an amount', () {
       final category = _category('Ăn và uống', CategoryType.expense);
       final results = VoiceTransactionParser.parseMany(
-          'Ăn và uống 50k và cafe 30k',
+          'Ăn và uống 50k, cafe 30k',
           categories: [category]);
       expect(results.map((result) => result.amountVnd), [50000, 30000]);
       expect(results.first.categoryId, category.id);
@@ -615,32 +620,42 @@ void main() {
       expect(results.single.categoryId, category.id);
     });
     test('splits when both chunks start with an amount', () {
-      final results =
-          VoiceTransactionParser.parseMany('30k cafe và 50k ăn trưa');
+      final results = VoiceTransactionParser.parseMany('30k cafe, 50k ăn trưa');
       expect(results.map((result) => result.amountVnd), [30000, 50000]);
       expect(
           results.map((result) => result.rawText), ['30k cafe', '50k ăn trưa']);
     });
     test('merges amountless trailing text into the last transaction', () {
       final results =
-          VoiceTransactionParser.parseMany('cafe 30k và sữa 50k và mang về');
+          VoiceTransactionParser.parseMany('cafe 30k, sữa 50k, mang về');
       expect(results.map((result) => result.amountVnd), [30000, 50000]);
-      expect(results.last.rawText, 'sữa 50k và mang về');
+      expect(results.last.rawText, 'sữa 50k, mang về');
     });
-    test('splits ambiguous mixed phrasing at the last conjunction', () {
+    test('preserves conjunctions in the second category name', () {
+      final category = _category('Bánh và sữa', CategoryType.expense);
+      final results = VoiceTransactionParser.parseMany(
+          'cafe 30k, bánh và sữa 50k',
+          categories: [category]);
+      expect(results.map((result) => result.amountVnd), [30000, 50000]);
+      expect(results.last.rawText, 'bánh và sữa 50k');
+      expect(results.last.categoryId, category.id);
+    });
+    test('keeps multiple amounts without a comma in one transaction', () {
+      final results =
+          VoiceTransactionParser.parseMany('cafe 30k và bánh và sữa 50k');
+      expect(results, hasLength(1));
+      expect(results.single.amountVnd, 30000);
+      expect(results.single.rawText, 'cafe 30k và bánh và sữa 50k');
+    });
+    test('keeps amountless comma chunks with the transaction', () {
       for (final fixture in [
-        (
-          text: 'cafe 30k và ăn trưa và uống 50k',
-          segments: ['cafe 30k và ăn trưa', 'uống 50k']
-        ),
-        (
-          text: 'cafe 30k và bánh và sữa 50k và mang về',
-          segments: ['cafe 30k và bánh', 'sữa 50k và mang về']
-        ),
+        (text: 'ví tiền mặt, thẻ 50k', amount: 50000),
+        (text: 'cafe 30k, mang về', amount: 30000),
       ]) {
         final results = VoiceTransactionParser.parseMany(fixture.text);
-        expect(results.map((result) => result.amountVnd), [30000, 50000]);
-        expect(results.map((result) => result.rawText), fixture.segments);
+        expect(results, hasLength(1));
+        expect(results.single.amountVnd, fixture.amount);
+        expect(results.single.rawText, fixture.text);
       }
     });
     test('keeps single amounts and wallet conjunctions intact', () {
@@ -657,15 +672,15 @@ void main() {
               .map((r) => r.amountVnd),
           [30500, 45000]);
       expect(
-          VoiceTransactionParser.parseMany('sách 150,000 và cafe 30k')
+          VoiceTransactionParser.parseMany('sách 150,000, cafe 30k')
               .map((r) => r.amountVnd),
           [150000, 30000]);
       expect(VoiceTransactionParser.parseMany(''), hasLength(1));
     });
     test('propagates shared explicit context from either end', () {
       for (final text in [
-        'hôm qua ví momo cafe 30k và ăn trưa 50k',
-        'cafe 30k và ăn trưa 50k hôm qua ví momo'
+        'hôm qua ví momo cafe 30k, ăn trưa 50k',
+        'cafe 30k, ăn trưa 50k hôm qua ví momo'
       ]) {
         final results = VoiceTransactionParser.parseMany(text,
             clock: () => DateTime(2026, 10, 9),
@@ -678,7 +693,7 @@ void main() {
     test('keeps local contexts and does not guess conflicting shared contexts',
         () {
       final results = VoiceTransactionParser.parseMany(
-          'hôm qua cafe 30k ví momo và grab 45k hôm nay cash và sách 100k',
+          'hôm qua cafe 30k ví momo, grab 45k hôm nay cash, sách 100k',
           clock: () => DateTime(2026, 10, 9),
           wallets: [
             _wallet('MoMo', WalletType.ewallet),

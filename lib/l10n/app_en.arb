@@ -618,7 +618,7 @@
   "voiceInputTryAgain": "Try again",
   "quickInputTitle": "Quick input",
   "quickInputTextLabel": "Type a transaction",
-  "quickInputExample": "cafe 30k và grab 45k hôm qua ví momo",
+  "quickInputExample": "cafe 30k, grab 45k hôm qua ví momo",
   "quickInputSpeak": "Speak",
   "quickInputStop": "Stop listening",
   "quickInputLearned": "Suggested from history ({confidence}%)",

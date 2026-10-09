@@ -3490,7 +3490,7 @@ abstract class AppLocalizations {
   /// No description provided for @quickInputExample.
   ///
   /// In en, this message translates to:
-  /// **'cafe 30k và grab 45k hôm qua ví momo'**
+  /// **'cafe 30k, grab 45k hôm qua ví momo'**
   String get quickInputExample;
 
   /// No description provided for @quickInputSpeak.

@@ -618,7 +618,7 @@
   "voiceInputTryAgain": "Thử lại",
   "quickInputTitle": "Nhập nhanh",
   "quickInputTextLabel": "Nhập giao dịch",
-  "quickInputExample": "cafe 30k và grab 45k hôm qua ví momo",
+  "quickInputExample": "cafe 30k, grab 45k hôm qua ví momo",
   "quickInputSpeak": "Nói",
   "quickInputStop": "Dừng nghe",
   "quickInputLearned": "Gợi ý từ lịch sử ({confidence}%)",

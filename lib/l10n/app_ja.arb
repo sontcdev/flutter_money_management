@@ -618,7 +618,7 @@
   "voiceInputTryAgain": "もう一度",
   "quickInputTitle": "クイック入力",
   "quickInputTextLabel": "取引を入力",
-  "quickInputExample": "cafe 30k và grab 45k hôm qua ví momo",
+  "quickInputExample": "cafe 30k, grab 45k hôm qua ví momo",
   "quickInputSpeak": "音声入力",
   "quickInputStop": "音声入力を停止",
   "quickInputLearned": "履歴からの提案 ({confidence}%)",

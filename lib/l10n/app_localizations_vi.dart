@@ -1794,7 +1794,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get quickInputTextLabel => 'Nhập giao dịch';
 
   @override
-  String get quickInputExample => 'cafe 30k và grab 45k hôm qua ví momo';
+  String get quickInputExample => 'cafe 30k, grab 45k hôm qua ví momo';
 
   @override
   String get quickInputSpeak => 'Nói';

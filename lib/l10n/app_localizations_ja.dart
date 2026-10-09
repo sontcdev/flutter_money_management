@@ -1794,7 +1794,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get quickInputTextLabel => '取引を入力';
 
   @override
-  String get quickInputExample => 'cafe 30k và grab 45k hôm qua ví momo';
+  String get quickInputExample => 'cafe 30k, grab 45k hôm qua ví momo';
 
   @override
   String get quickInputSpeak => '音声入力';

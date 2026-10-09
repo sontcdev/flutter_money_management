@@ -298,11 +298,7 @@ class VoiceTransactionParser {
     r'\b(?:thu\s+([2-7]|hai|ba|tu|nam|sau|bay)|chu nhat|cn)\b(?:\s+tuan\s+(nay|truoc))?',
   );
 
-  static final RegExp _segmentSeparator = RegExp(
-    r'(?<!\p{L})(?:và|va|rồi|roi|xong)(?!\p{L})|,(?!\d)|[;+\n]',
-    unicode: true,
-    caseSensitive: false,
-  );
+  static final RegExp _segmentSeparator = RegExp(r',(?!\d)');
 
   static DateTime? _validDate(int year, int month, int day) {
     final date = DateTime(year, month, day);

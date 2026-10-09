@@ -293,7 +293,7 @@ void main() {
           find.descendant(
               of: find.byType(VoiceInputSheet),
               matching: find.byType(TextField)),
-          'cafe 30k va grab 45k vi momo');
+          'cafe 30k, grab 45k vi momo');
       await tester.pumpAndSettle();
       await tester
           .tap(find.widgetWithText(FilledButton, 'Review transactions'));
@@ -337,7 +337,7 @@ void main() {
                         const Scaffold(body: VoiceInputSheet(categories: [])),
                   )),
           brightness: brightness));
-      await tester.enterText(find.byType(TextField), 'cafe 30k va grab 45k');
+      await tester.enterText(find.byType(TextField), 'cafe 30k, grab 45k');
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       await tester.ensureVisible(find.text('Review transactions'));

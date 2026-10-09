@@ -1794,7 +1794,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quickInputTextLabel => 'Type a transaction';
 
   @override
-  String get quickInputExample => 'cafe 30k và grab 45k hôm qua ví momo';
+  String get quickInputExample => 'cafe 30k, grab 45k hôm qua ví momo';
 
   @override
   String get quickInputSpeak => 'Speak';
