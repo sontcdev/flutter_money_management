@@ -2,6 +2,7 @@
 
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
+import 'package:flutter_money_management/src/features/transactions/services/category_suggestion_service.dart';
 import 'package:flutter_money_management/src/features/wallets/models/wallet.dart';
 import 'package:flutter_money_management/src/utils/text_similarity.dart';
 
@@ -19,6 +20,7 @@ class VoiceParseResult {
     this.note,
     this.walletId,
     this.walletName,
+    this.categoryConfidence,
   });
 
   final String rawText;
@@ -30,6 +32,7 @@ class VoiceParseResult {
   final String? note;
   final String? walletId;
   final String? walletName;
+  final double? categoryConfidence;
 }
 
 /// Parser rule-based cho câu nói tiếng Việt kiểu:
@@ -87,6 +90,7 @@ class VoiceTransactionParser {
     List<Category> categories = const [],
     DateTime Function()? clock,
     List<Wallet> wallets = const [],
+    CategoryClassifier? classifier,
   }) {
     final trimmed = text.trim();
     final normalized = _normalize(trimmed);
@@ -95,13 +99,29 @@ class VoiceTransactionParser {
     final type = _extractType(normalized);
     final amount = _extractAmount(normalized);
 
-    final relevantCategories = type == null
-        ? categories
-        : categories
-            .where((c) => c.type == _categoryTypeFor(type))
-            .toList();
-    final category = _matchCategory(normalized, relevantCategories);
-    final wallet = _matchWallet(normalized, wallets);
+    final relevantCategories = categories
+        .where((category) =>
+            category.deletedAt == null &&
+            (type == null || category.type == _categoryTypeFor(type)))
+        .toList();
+    final explicitCategory = _matchCategory(normalized, relevantCategories);
+    final learned = explicitCategory == null
+        ? classifier?.predict(normalized,
+            type: type == null ? null : _categoryTypeFor(type),
+            categoryIds: relevantCategories.map((c) => c.id).toSet())
+        : null;
+    final category = explicitCategory ??
+        relevantCategories
+            .where((c) => c.id == learned?.categoryId)
+            .firstOrNull;
+    final availableWallets =
+        wallets.where((w) => !w.isArchived && w.deletedAt == null).toList();
+    final learnedWalletId = category == null
+        ? null
+        : classifier?.suggestWallet(normalized, category.id,
+            walletIds: availableWallets.map((w) => w.id).toSet());
+    final wallet = _matchWallet(normalized, availableWallets) ??
+        availableWallets.where((w) => w.id == learnedWalletId).firstOrNull;
 
     return VoiceParseResult(
       rawText: trimmed,
@@ -113,6 +133,7 @@ class VoiceTransactionParser {
       note: trimmed.isEmpty ? null : trimmed,
       walletId: wallet?.id,
       walletName: wallet?.name,
+      categoryConfidence: learned?.confidence,
     );
   }
 

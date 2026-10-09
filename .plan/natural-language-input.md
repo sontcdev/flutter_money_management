@@ -65,13 +65,13 @@ Key decisions:
 - [x] Tests: typos, missing diacritics, multi-word wallet names.
 
 ### Phase 3 — Learn from history (Naive Bayes)
-- [ ] Add `lib/src/features/transactions/services/category_suggestion_service.dart`:
+- [x] Add `lib/src/features/transactions/services/category_suggestion_service.dart`:
   - `CategoryClassifier.train(List<Transaction>)` — features = normalized unigrams + bigrams of `note` (strip numbers/date words); label = `categoryId`; also learn `walletId` per category/token for wallet fallback.
   - Multinomial Naive Bayes with Laplace smoothing, log-probabilities; ignore transfers and empty notes; recency weight (e.g. last 6 months ×2).
   - `predict(text, {CategoryType? type}) → (categoryId, confidence)`; return null under min confidence or with < N training samples.
-- [ ] Add `categoryClassifierProvider` (FutureProvider) in `transactions/providers/transaction_providers.dart`, derived from `transactionsProvider`; auto-invalidated through `invalidateCoreDataProviders`.
-- [ ] `CategoryResolver` order: explicit name/synonym match (high confidence) → classifier → null.
-- [ ] Tests with `_txn(...)` factory helpers: learns `cà phê` → Ăn uống, respects type filter, returns null on cold start, handles deleted categories (id not in current list → ignore).
+- [x] Add `categoryClassifierProvider` (FutureProvider) in `transactions/providers/transaction_providers.dart`, derived from `transactionsProvider`; auto-invalidated through `invalidateCoreDataProviders`.
+- [x] `CategoryResolver` order: explicit name/synonym match (high confidence) → classifier → null.
+- [x] Tests with `_txn(...)` factory helpers: learns `cà phê` → Ăn uống, respects type filter, returns null on cold start, handles deleted categories (id not in current list → ignore).
 
 ### Phase 4 — Multiple transactions in one sentence
 - [ ] Splitter on `và`, `,`, `;`, `+`, `rồi`, `xong`, newline — only when each segment has its own amount; shared date/wallet propagate to segments missing them (`hôm qua cafe 30k và ăn trưa 50k`).
@@ -112,3 +112,5 @@ Phase 1: 0.5d · Phase 2: 0.5d · Phase 3: 0.5–1d · Phase 4: 0.5d · Phase 5:
 - Phase 1: 80 parser tests pass; fixed clock covers all 60 corpus amount/type/date expectations, invalid dates and year/leap-month boundaries. Currency markers retain the entered number in the VND form; no exchange-rate conversion. Weekdays use the current Monday-based week unless `tuần trước` is explicit. Duckling reference: https://github.com/facebook/duckling/blob/main/Duckling/Time/VI/Corpus.hs and https://github.com/facebook/duckling/blob/main/Duckling/AmountOfMoney/VI/Corpus.hs (independent rules, no copied implementation).
 
 - Phase 2: 85 focused tests pass and focused analysis is clean. All 60 fixtures now assert category/wallet too. Vietnamese normalization preserves Japanese text; wallet aliases resolve only unique/default eligible wallets, excluding archived/deleted wallets.
+
+- Phase 3: 92 focused tests pass; focused analysis clean. In-memory classifier uses unigram/bigram counts, Laplace-smoothed log probabilities, six-month recency weights, three-sample cold-start minimum and 0.65 confidence cutoff. Provider invalidation, rule precedence, Japanese history, ambiguity, deleted categories/transfers and eligible-wallet fallback are covered. UI workspace guard remains Phase 5.

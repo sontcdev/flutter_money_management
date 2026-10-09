@@ -4,6 +4,7 @@ import 'package:flutter_money_management/src/features/auth/providers/auth_provid
 import 'package:flutter_money_management/src/features/transactions/repositories/transaction_attachment_repository.dart';
 import 'package:flutter_money_management/src/features/transactions/repositories/transaction_repository.dart';
 import 'package:flutter_money_management/src/features/transactions/services/transaction_receipt_service.dart';
+import 'package:flutter_money_management/src/features/transactions/services/category_suggestion_service.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction_attachment.dart';
@@ -41,6 +42,12 @@ final transactionReceiptServiceProvider =
 final transactionsProvider = FutureProvider<List<Transaction>>((ref) async {
   final repository = ref.watch(transactionRepositoryProvider);
   return repository.getAllTransactions();
+});
+
+final categoryClassifierProvider =
+    FutureProvider<CategoryClassifier>((ref) async {
+  final transactions = await ref.watch(transactionsProvider.future);
+  return CategoryClassifier.train(transactions);
 });
 
 final transactionCanManageProvider =
