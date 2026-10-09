@@ -1817,6 +1817,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get quickInputMissingFields => '金額、カテゴリ、ウォレットを選択してください。';
 
   @override
+  String get quickInputExtraAmounts => '複数の金額があります。取引はカンマで区切ってください。';
+
+  @override
   String get quickInputSaveAll => '残りの取引を保存';
 
   @override

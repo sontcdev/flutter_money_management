@@ -1817,6 +1817,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quickInputMissingFields => 'Choose an amount, category and wallet.';
 
   @override
+  String get quickInputExtraAmounts => 'Several amounts found. Separate transactions with commas.';
+
+  @override
   String get quickInputSaveAll => 'Save remaining transactions';
 
   @override

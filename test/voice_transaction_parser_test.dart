@@ -554,6 +554,73 @@ void main() {
   });
 
   group('Multiple transactions and notes', () {
+    for (final text in [
+      'cafe 30k và bánh 50k',
+      'cafe 30k và bánh và sữa 50k',
+      'cafe 30k bánh 50000',
+      'cafe 30000 bánh 50,000',
+    ]) {
+      test('flags extra amounts: $text', () {
+        expect(VoiceTransactionParser.parse(text).hasExtraAmounts, isTrue);
+      });
+    }
+    for (final text in [
+      'cafe 30k, 2 ly trà 50k',
+      'cafe 30k,2 ly trà 50k',
+      '1 triệu 5',
+      'cafe 30k hôm 15/10',
+      'cafe 30k thứ 2',
+      'cafe 30k ngày 15',
+      '2 ly trà 50k',
+      'mua 1,5tr',
+      'sách 150,000',
+    ]) {
+      test('does not flag single amounts or counts: $text', () {
+        expect(
+            VoiceTransactionParser.parseMany(text)
+                .every((r) => !r.hasExtraAmounts),
+            isTrue);
+      });
+    }
+
+    for (final text in [
+      'cafe 30k,50k bánh',
+      'cafe 30k,2 ly trà 50k',
+      'cafe 30k、grab 45k',
+      'cafe 30k，grab 45k',
+    ]) {
+      test('splits comma edge case: $text', () {
+        expect(VoiceTransactionParser.parseMany(text).map((r) => r.amountVnd),
+            text.contains('grab') ? [30000, 45000] : [30000, 50000]);
+      });
+    }
+    test('recognizes dates adjacent to punctuation and shares them', () {
+      for (final punctuation in [',', '.']) {
+        final results = VoiceTransactionParser.parseMany(
+            '15/10${punctuation}cafe 30k, grab 45k',
+            clock: () => DateTime(2026, 10, 9));
+        expect(results.map((r) => r.date),
+            [DateTime(2026, 10, 15), DateTime(2026, 10, 15)]);
+        expect(results.first.note, 'Cafe');
+      }
+      expect(VoiceTransactionParser.parse('15/10,5 cafe 30k').date, isNull);
+    });
+    test('detects amounts after non-numeric commas', () {
+      expect(VoiceTransactionParser.parse('bánh,50k').amountVnd, 50000);
+      expect(VoiceTransactionParser.parse('bánh,50000').amountVnd, 50000);
+    });
+    test('cleans note punctuation', () {
+      for (final punctuation in ['.', ',', '。', '，', '、']) {
+        expect(
+            VoiceTransactionParser.parse('cafe 30k$punctuation').note, 'Cafe');
+      }
+      expect(
+          VoiceTransactionParser.parseMany('cafe 30k, sữa 50k, mang về')
+              .last
+              .note,
+          'Sữa, mang về');
+    });
+
     for (final separator in [
       'và',
       'va',
@@ -646,6 +713,7 @@ void main() {
       expect(results, hasLength(1));
       expect(results.single.amountVnd, 30000);
       expect(results.single.rawText, 'cafe 30k và bánh và sữa 50k');
+      expect(results.single.hasExtraAmounts, isTrue);
     });
     test('keeps amountless comma chunks with the transaction', () {
       for (final fixture in [

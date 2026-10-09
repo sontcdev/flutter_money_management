@@ -3529,6 +3529,12 @@ abstract class AppLocalizations {
   /// **'Choose an amount, category and wallet.'**
   String get quickInputMissingFields;
 
+  /// No description provided for @quickInputExtraAmounts.
+  ///
+  /// In en, this message translates to:
+  /// **'Several amounts found. Separate transactions with commas.'**
+  String get quickInputExtraAmounts;
+
   /// No description provided for @quickInputSaveAll.
   ///
   /// In en, this message translates to:

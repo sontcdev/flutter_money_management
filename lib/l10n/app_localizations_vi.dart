@@ -1817,6 +1817,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get quickInputMissingFields => 'Chọn số tiền, danh mục và ví.';
 
   @override
+  String get quickInputExtraAmounts => 'Có nhiều số tiền. Dùng dấu phẩy để tách giao dịch.';
+
+  @override
   String get quickInputSaveAll => 'Lưu các giao dịch còn lại';
 
   @override

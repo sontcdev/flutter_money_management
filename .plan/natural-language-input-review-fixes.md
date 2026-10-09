@@ -65,6 +65,72 @@ Decision: the only segment separator is a comma not followed by a digit (`,(?!\d
 - [x] Validation: `flutter test test/voice_transaction_parser_test.dart test/quick_input_sheet_test.dart`, `flutter analyze`.
 - [x] Commit: `fix(transactions): split quick input only at commas`
 
+## Fix 5 — Comma-only follow-ups: lost amounts, comma edge cases, note punctuation
+
+Source: detailed review of `7a24ab6` (2026-10-09). The comma-only decision stays: no word-based splitting comes back. Probe results (clock 2026-10-09):
+
+| Input | Current result | Problem |
+|-------|----------------|---------|
+| `cafe 30k và bánh 50k` | 1 × 30k, note `Cafe và bánh 50k` | 50k dropped silently (speech-to-text rarely emits commas) |
+| `cafe 30k,50k bánh` | 1 × 30k, note `Cafe ,50k bánh` | `,(?!\d)` blocks the cut; amount lookbehind `(?<![\d.,])` also hides `50k` |
+| `cafe 30k,2 ly trà 50k` | 1 × 30k | same as above |
+| `cafe 30k、grab 45k` / `cafe 30k，grab 45k` | 1 × 30k | CJK / full-width commas are not separators |
+| `15/10, cafe 30k, grab 45k` | date null, note `15/10, cafe` | `_calendarDate` lookahead `(?![\d.,])` rejects a date followed by a comma, so the date is lost and not shared |
+| `cafe 30k, sữa 50k, mang về` | note `Sữa , mang về` | orphan space before punctuation |
+| `cafe 30k.` | note `Cafe .` | trailing `.` not trimmed |
+
+### A. Separators (`_segmentSeparator`)
+- [x] Change it to `RegExp(r'[,，、](?!\d)|(?<=\p{L})[,，、](?=\d)', unicode: true)`: any comma not followed by a digit, or a comma between a letter and a digit (`30k,50k`, `cafe 30k,2 ly`). `1,5tr`, `30,5k` and `150,000` keep their decimal/thousands comma because a digit precedes it.
+- [x] Keep `_splitSegments` unchanged (cut only when both chunks have an amount), so amountless comma chunks still merge.
+
+### B. Comma-adjacent number boundaries
+- [x] `_amountWithUnit` and `_currencyAmount`: replace the lookbehind `(?<![\d.,])` with `(?<!\d)(?<!\d[.,])`, so an amount right after a non-numeric comma (`bánh,50k`) is still detected, while `1,5tr` / `150,000` stay single numbers.
+- [x] `_calendarDate`: lookbehind becomes `(?<!\d)(?<!\d[.,])`, lookahead becomes `(?!\d|[.,]\d)`, so `15/10,` and `15/10.` parse as dates but `15/10,5` is still rejected.
+
+### C. Flag segments with extra amounts (no silent loss)
+- [x] Add `final bool hasExtraAmounts` to `VoiceParseResult` (constructor default `false`).
+- [x] Add private `_hasExtraAmounts(String normalized)`: drop dates the same way as `_extractAmount`. Count every `_amountWithUnit` match, then blank those matches and count `_currencyAmount` matches whose parsed value is at least 1000, so small bare counts such as `2 ly` are ignored. Return `count >= 2`.
+- [x] Set it in `_parseSingle`. `_QuickInputEditDialog` rebuilds the result without the flag, so the warning clears once the user edits and confirms. This is intended.
+- [x] Add l10n key `quickInputExtraAmounts` to `app_en.arb`, `app_vi.arb`, `app_ja.arb`, then run `flutter gen-l10n`. Stage only this hunk, because the ARB files have unrelated uncommitted changes.
+  - en: "Several amounts found. Separate transactions with commas."
+  - vi: "Có nhiều số tiền. Dùng dấu phẩy để tách giao dịch."
+  - ja: "複数の金額があります。取引はカンマで区切ってください。"
+- [x] Show it in error color under the affected result:
+  - in `voice_input_sheet.dart`, in the results loop next to `quickInputLearned`;
+  - in `quick_input_review_sheet.dart`, on the card next to `quickInputMissingFields`.
+
+  It is a warning only. Saving is not blocked, and no comma is inserted automatically, since guessing the cut point is the ambiguity Fix 4 removed.
+
+### D. Note punctuation
+- [x] In `_cleanNote`'s final cleanup:
+  - collapse whitespace before punctuation: `\s+([,;.、，。])` → `$1`;
+  - extend the edge-trim class to `[\s,;.+\-、，。]`.
+
+  Expected results: `Sữa, mang về`, `Cafe`, `Cafe,` → `Cafe`. Leave the `cleaned.isEmpty → raw` fallback unchanged.
+
+### E. Tests
+- [x] `test/voice_transaction_parser_test.dart`:
+  - Separators: `cafe 30k,50k bánh` → `[30000, 50000]`; `cafe 30k,2 ly trà 50k` → `[30000, 50000]`; `cafe 30k、grab 45k` and `cafe 30k，grab 45k` → `[30000, 45000]`.
+  - Regression: `mua 1,5tr` → 1 result (1,500,000); `cafe 30,5k, grab 45k` → `[30500, 45000]`; `sách 150,000, cafe 30k` → `[150000, 30000]`; `ví tiền mặt, thẻ 50k` → 1 result.
+  - Dates: `15/10, cafe 30k, grab 45k` → both dated 2026-10-15, first note `Cafe`; `15/10,5` is not a date.
+  - Extra amounts:
+    - `cafe 30k và bánh 50k` → `hasExtraAmounts` true;
+    - `cafe 30k và bánh và sữa 50k`: extend the existing test to assert the flag;
+    - `cafe 30k, 2 ly trà 50k` → no result flagged;
+    - `1 triệu 5` → false;
+    - `cafe 30k hôm 15/10` → false.
+  - Notes: `cafe 30k, sữa 50k, mang về` → second note `Sữa, mang về`; `cafe 30k.` → `Cafe`.
+- [x] `test/quick_input_sheet_test.dart`: typing `cafe 30k và bánh 50k` shows the `quickInputExtraAmounts` text; `cafe 30k, bánh 50k` does not.
+
+### F. Docs and wrap-up
+- [x] Update `.codex/project-knowledge/workflows/transaction-input-recurring.md`:
+  - separator set (`,` `，` `、`, including the letter-comma-digit case);
+  - the extra-amount warning;
+  - `Last Verified`.
+- [x] Out of scope: `quickInputExample` in `app_ja.arb` stays Vietnamese, because the parser only understands Vietnamese input.
+- [x] Validation: `flutter test test/voice_transaction_parser_test.dart test/quick_input_sheet_test.dart`, then `flutter analyze` (infos fail CI).
+- [x] Commit: `fix(transactions): flag extra amounts and harden comma splitting`
+
 ## Follow-up (not in this fix)
 - [ ] Explicit dates (`ngày 15`, `dd/mm`) may resolve to the future; decide past-only rule consistently for both.
 - [ ] Review UI changes in `b477a40` (`quick_input_review_sheet.dart`, `voice_input_sheet.dart`, `add_transaction_screen.dart`), which the review skipped.
@@ -99,3 +165,12 @@ Decision: the only segment separator is a comma not followed by a digit (`,(?!\d
 - All three localized examples use commas. The input and review sheets contain no other copy promising conjunction-based splitting.
 - Speech-to-text rarely emits commas; spoken multi-transaction input needs transcript editing to split. Human-operated procedures remain temporarily accepted, without physical-device speech evidence.
 - Unrelated localization changes are excluded from the commit. All Fix 4 requirements are complete; follow-ups remain excluded.
+
+### Fix 5 verification
+
+- Regression tests reproduced seven failures before the fix; all 144 focused parser/widget tests pass afterward.
+- `flutter analyze`: no issues found.
+- Warning tests cover light/dark themes, compact layouts with keyboard and enlarged text, saving despite the warning, and clearing it after confirmed edits.
+- Android emulator preview builds and launches; typed multi-amount input shows the warning, and comma-separated input produces two results without the warning.
+- Human-operated procedures remain temporarily accepted; physical-device Vietnamese speech remains unverified.
+- Unrelated working-tree and localization changes are excluded from the commit. All Fix 5 requirements are complete; follow-ups remain excluded.

@@ -625,6 +625,7 @@
   "quickInputReview": "Xem lại giao dịch",
   "quickInputReviewHint": "Xem lại từng giao dịch trước khi lưu.",
   "quickInputMissingFields": "Chọn số tiền, danh mục và ví.",
+  "quickInputExtraAmounts": "Có nhiều số tiền. Dùng dấu phẩy để tách giao dịch.",
   "quickInputSaveAll": "Lưu các giao dịch còn lại",
   "quickInputSaveStopped": "Đã dừng lưu. Các mục đã lưu được loại bỏ; các mục còn lại có thể xem lại hoặc thử lưu lại.",
   "quickInputTooltip": "Nhập hoặc nói giao dịch"

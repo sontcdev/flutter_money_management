@@ -625,6 +625,7 @@
   "quickInputReview": "取引を確認",
   "quickInputReviewHint": "保存する前に各取引を確認してください。",
   "quickInputMissingFields": "金額、カテゴリ、ウォレットを選択してください。",
+  "quickInputExtraAmounts": "複数の金額があります。取引はカンマで区切ってください。",
   "quickInputSaveAll": "残りの取引を保存",
   "quickInputSaveStopped": "保存を停止しました。保存済みの取引は削除され、残りの取引を確認または再試行できます。",
   "quickInputTooltip": "取引を文字または音声で入力"

@@ -625,6 +625,7 @@
   "quickInputReview": "Review transactions",
   "quickInputReviewHint": "Review each item before saving.",
   "quickInputMissingFields": "Choose an amount, category and wallet.",
+  "quickInputExtraAmounts": "Several amounts found. Separate transactions with commas.",
   "quickInputSaveAll": "Save remaining transactions",
   "quickInputSaveStopped": "Saving stopped. Saved items were removed; the remaining items are ready to review or retry.",
   "quickInputTooltip": "Type or speak a transaction",

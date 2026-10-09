@@ -169,6 +169,10 @@ class VoiceInputSheet extends HookWidget {
                     Chip(label: Text(result.walletName!)),
                 ],
               ),
+              if (result.hasExtraAmounts)
+                Text(l10n.quickInputExtraAmounts,
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error)),
               if (result.categoryConfidence != null)
                 Text(l10n.quickInputLearned(
                     (result.categoryConfidence! * 100).round())),

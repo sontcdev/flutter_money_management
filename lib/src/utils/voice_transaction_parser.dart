@@ -21,6 +21,7 @@ class VoiceParseResult {
     this.walletId,
     this.walletName,
     this.categoryConfidence,
+    this.hasExtraAmounts = false,
   });
 
   final String rawText;
@@ -33,6 +34,7 @@ class VoiceParseResult {
   final String? walletId;
   final String? walletName;
   final double? categoryConfidence;
+  final bool hasExtraAmounts;
 }
 
 /// Parser rule-based cho câu nói tiếng Việt kiểu:
@@ -202,6 +204,7 @@ class VoiceTransactionParser {
       walletId: wallet?.id,
       walletName: wallet?.name,
       categoryConfidence: learned?.confidence,
+      hasExtraAmounts: _hasExtraAmounts(normalized),
     );
   }
 
@@ -273,7 +276,8 @@ class VoiceTransactionParser {
     final cleaned = buffer
         .toString()
         .replaceAll(RegExp(r'\s+'), ' ')
-        .replaceAll(RegExp(r'^[\s,;+\-]+|[\s,;+\-]+$'), '')
+        .replaceAllMapped(RegExp(r'\s+([,;.、，。])'), (match) => match[1]!)
+        .replaceAll(RegExp(r'^[\s,;.+\-、，。]+|[\s,;.+\-、，。]+$'), '')
         .trim();
     if (cleaned.isEmpty) return raw;
     final first = String.fromCharCode(cleaned.runes.first);
@@ -291,14 +295,17 @@ class VoiceTransactionParser {
   // ---------------------------------------------------------------------
 
   static final RegExp _calendarDate = RegExp(
-    r'(?<![\d.,])([0-3]?\d)[/\-]([01]?\d)(?:[/\-](\d{4}))?(?![\d.,])',
+    r'(?<!\d)(?<!\d[.,])([0-3]?\d)[/\-]([01]?\d)(?:[/\-](\d{4}))?(?!\d|[.,]\d)',
   );
   static final RegExp _dayOfMonth = RegExp(r'\bngay\s+(\d{1,2})\b');
   static final RegExp _weekday = RegExp(
     r'\b(?:thu\s+([2-7]|hai|ba|tu|nam|sau|bay)|chu nhat|cn)\b(?:\s+tuan\s+(nay|truoc))?',
   );
 
-  static final RegExp _segmentSeparator = RegExp(r',(?!\d)');
+  static final RegExp _segmentSeparator = RegExp(
+    r'[,，、](?!\d)|(?<=\p{L})[,，、](?=\d)',
+    unicode: true,
+  );
 
   static DateTime? _validDate(int year, int month, int day) {
     final date = DateTime(year, month, day);
@@ -391,11 +398,25 @@ class VoiceTransactionParser {
   // Số thuần với dấu chấm/phẩy phân cách nghìn: "150.000", "1.500.000"
   // Số thuần không có phân cách: "150000"
   static final RegExp _amountWithUnit = RegExp(
-    r'(?<![\d.,])([0-9]+(?:[.,][0-9]+)?)\s*(trieu|tr|cu|ty|lit|tram|m|nghin|ngan|k)(?![a-z])(?:\s*(\d{1,3})(?![\d.,/\-]))?',
+    r'(?<!\d)(?<!\d[.,])([0-9]+(?:[.,][0-9]+)?)\s*(trieu|tr|cu|ty|lit|tram|m|nghin|ngan|k)(?![a-z])(?:\s*(\d{1,3})(?![\d.,/\-]))?',
   );
   static final RegExp _currencyAmount = RegExp(
-    r'(?<![\d.,])(?:\$\s*)?(\d+(?:[.,]\d+)*)(?:\s*(?:vnd|dong|d|\$))?(?![a-z0-9])',
+    r'(?<!\d)(?<!\d[.,])(?:\$\s*)?(\d+(?:[.,]\d+)*)(?:\s*(?:vnd|dong|d|\$))?(?![a-z0-9])',
   );
+
+  static bool _hasExtraAmounts(String normalized) {
+    final text = normalized
+        .replaceAll(_calendarDate, ' ')
+        .replaceAll(_dayOfMonth, ' ')
+        .replaceAll(_weekday, ' ');
+    final unitCount = _amountWithUnit.allMatches(text).length;
+    final remaining = text.replaceAll(_amountWithUnit, ' ');
+    final currencyCount = _currencyAmount
+        .allMatches(remaining)
+        .where((match) => (_extractAmount(match.group(0)!) ?? 0) >= 1000)
+        .length;
+    return unitCount + currencyCount >= 2;
+  }
 
   static double? _extractAmount(String normalized) {
     final text = normalized

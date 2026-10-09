@@ -123,6 +123,10 @@ class QuickInputReviewSheet extends HookWidget {
                               Text(pending.value[index].walletName!),
                           ],
                         ),
+                        if (pending.value[index].hasExtraAmounts)
+                          Text(l10n.quickInputExtraAmounts,
+                              style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error)),
                         if (!isComplete(pending.value[index]))
                           Text(l10n.quickInputMissingFields,
                               style: TextStyle(

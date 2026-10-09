@@ -127,6 +127,69 @@ void main() {
     ));
   });
 
+  for (final brightness in [Brightness.light, Brightness.dark]) {
+    testWidgets('extra amount warning updates with commas in $brightness',
+        (tester) async {
+      await tester.pumpWidget(_app(
+          const Scaffold(body: VoiceInputSheet(categories: [])),
+          brightness: brightness));
+      await tester.enterText(find.byType(TextField), 'cafe 30k và bánh 50k');
+      await tester.pumpAndSettle();
+      final warning = find
+          .text('Several amounts found. Separate transactions with commas.');
+      expect(warning, findsOneWidget);
+      expect(tester.widget<Text>(warning).style!.color,
+          Theme.of(tester.element(warning)).colorScheme.error);
+      expect(tester.widget<FilledButton>(find.byType(FilledButton)).onPressed,
+          isNotNull);
+      await tester.enterText(find.byType(TextField), 'cafe 30k, bánh 50k');
+      await tester.pumpAndSettle();
+      expect(warning, findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('review warning allows saving and clears after confirmed edit',
+      (tester) async {
+    final item = VoiceParseResult(
+      rawText: 'cafe 30k và bánh 50k',
+      note: 'Cafe và bánh 50k',
+      amountVnd: 30000,
+      date: _now,
+      type: TransactionType.expense,
+      categoryId: 'food',
+      categoryName: 'Ăn uống',
+      walletId: 'momo',
+      walletName: 'Momo',
+      hasExtraAmounts: true,
+    );
+    final saved = <VoiceParseResult>[];
+    await tester.pumpWidget(_app(Scaffold(
+        body: QuickInputReviewSheet(
+      results: [item],
+      categories: _categories,
+      wallets: _wallets,
+      onSave: (value) async {
+        saved.add(value);
+        return false;
+      },
+    ))));
+    final warning =
+        find.text('Several amounts found. Separate transactions with commas.');
+    expect(warning, findsOneWidget);
+    await tester.tap(find.text('Save remaining transactions'));
+    await tester.pumpAndSettle();
+    expect(saved.single.hasExtraAmounts, isTrue);
+    await tester.tap(find.text('Edit'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Apply'));
+    await tester.pumpAndSettle();
+    expect(warning, findsNothing);
+    await tester.tap(find.text('Save remaining transactions'));
+    await tester.pumpAndSettle();
+    expect(saved.last.hasExtraAmounts, isFalse);
+  });
+
   testWidgets('typed input fills amount, cleaned note, category and wallet',
       (tester) async {
     await tester.pumpWidget(_screen());
@@ -341,6 +404,12 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       await tester.ensureVisible(find.text('Review transactions'));
+      expect(tester.takeException(), isNull);
+      await tester.enterText(find.byType(TextField), 'cafe 30k và bánh 50k');
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find
+          .text('Several amounts found. Separate transactions with commas.'));
+      await tester.ensureVisible(find.text('Apply'));
       expect(tester.takeException(), isNull);
     });
   }
