@@ -74,10 +74,10 @@ Key decisions:
 - [x] Tests with `_txn(...)` factory helpers: learns `cà phê` → Ăn uống, respects type filter, returns null on cold start, handles deleted categories (id not in current list → ignore).
 
 ### Phase 4 — Multiple transactions in one sentence
-- [ ] Splitter on `và`, `,`, `;`, `+`, `rồi`, `xong`, newline — only when each segment has its own amount; shared date/wallet propagate to segments missing them (`hôm qua cafe 30k và ăn trưa 50k`).
-- [ ] `VoiceTransactionParser.parseMany(...) → List<VoiceParseResult>`; `parse` = first item for backward compatibility.
-- [ ] Note cleaner: remove matched amount/date/wallet phrases, capitalize, fallback to raw segment.
-- [ ] Tests for splitting and propagation.
+- [x] Splitter on `và`, `,`, `;`, `+`, `rồi`, `xong`, newline — only when each segment has its own amount; shared date/wallet propagate to segments missing them (`hôm qua cafe 30k và ăn trưa 50k`).
+- [x] `VoiceTransactionParser.parseMany(...) → List<VoiceParseResult>`; `parse` = first item for backward compatibility.
+- [x] Note cleaner: remove matched amount/date/wallet phrases, capitalize, fallback to raw segment.
+- [x] Tests for splitting and propagation.
 
 ### Phase 5 — UI
 - [ ] Add a text input mode to the input sheet (rename to a generic "quick input" sheet or add a text field + mic toggle); live preview chips: amount · date · category · wallet, with confidence hint for learned category.
@@ -114,3 +114,5 @@ Phase 1: 0.5d · Phase 2: 0.5d · Phase 3: 0.5–1d · Phase 4: 0.5d · Phase 5:
 - Phase 2: 85 focused tests pass and focused analysis is clean. All 60 fixtures now assert category/wallet too. Vietnamese normalization preserves Japanese text; wallet aliases resolve only unique/default eligible wallets, excluding archived/deleted wallets.
 
 - Phase 3: 92 focused tests pass; focused analysis clean. In-memory classifier uses unigram/bigram counts, Laplace-smoothed log probabilities, six-month recency weights, three-sample cold-start minimum and 0.65 confidence cutoff. Provider invalidation, rule precedence, Japanese history, ambiguity, deleted categories/transfers and eligible-wallet fallback are covered. UI workspace guard remains Phase 5.
+
+- Phase 4: 105 focused tests pass; focused analysis clean. Splitting preserves decimal/grouped commas and amountless conjunctions. A unique explicit date/wallet propagates; conflicting local contexts stay local. Notes retain accents and Japanese script, stripping matched fields and falling back to the raw segment when empty.

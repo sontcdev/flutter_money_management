@@ -516,6 +516,84 @@ Wallet _wallet(String name, WalletType type,
 }
 
 void main() {
+  group('Multiple transactions and notes', () {
+    for (final separator in [
+      'và',
+      'va',
+      'rồi',
+      'roi',
+      'xong',
+      ',',
+      ';',
+      '+',
+      '\n'
+    ]) {
+      test('splits transactions at $separator', () {
+        final results =
+            VoiceTransactionParser.parseMany('cafe 30k $separator grab 45k');
+        expect(results.map((r) => r.amountVnd), [30000, 45000]);
+        expect(results.map((r) => r.note), ['Cafe', 'Grab']);
+        expect(
+            VoiceTransactionParser.parse('cafe 30k $separator grab 45k')
+                .amountVnd,
+            30000);
+      });
+    }
+    test('keeps amountless conjunction and numeric commas intact', () {
+      expect(VoiceTransactionParser.parseMany('mua bánh và sữa 50k'),
+          hasLength(1));
+      expect(
+          VoiceTransactionParser.parseMany('cafe 30,5k, grab 45k')
+              .map((r) => r.amountVnd),
+          [30500, 45000]);
+      expect(
+          VoiceTransactionParser.parseMany('sách 150,000 và cafe 30k')
+              .map((r) => r.amountVnd),
+          [150000, 30000]);
+      expect(VoiceTransactionParser.parseMany(''), hasLength(1));
+    });
+    test('propagates shared explicit context from either end', () {
+      for (final text in [
+        'hôm qua ví momo cafe 30k và ăn trưa 50k',
+        'cafe 30k và ăn trưa 50k hôm qua ví momo'
+      ]) {
+        final results = VoiceTransactionParser.parseMany(text,
+            clock: () => DateTime(2026, 10, 9),
+            wallets: [_wallet('MoMo', WalletType.ewallet)]);
+        expect(results.map((r) => r.date),
+            [DateTime(2026, 10, 8), DateTime(2026, 10, 8)]);
+        expect(results.map((r) => r.walletId), ['MoMo', 'MoMo']);
+      }
+    });
+    test('keeps local contexts and does not guess conflicting shared contexts',
+        () {
+      final results = VoiceTransactionParser.parseMany(
+          'hôm qua cafe 30k ví momo và grab 45k hôm nay cash và sách 100k',
+          clock: () => DateTime(2026, 10, 9),
+          wallets: [
+            _wallet('MoMo', WalletType.ewallet),
+            _wallet('Tiền mặt', WalletType.cash)
+          ]);
+      expect(results.map((r) => r.date),
+          [DateTime(2026, 10, 8), DateTime(2026, 10, 9), null]);
+      expect(results.map((r) => r.walletId), ['MoMo', 'Tiền mặt', null]);
+    });
+    test('cleans matched phrases while preserving accents and scripts', () {
+      expect(
+          VoiceTransactionParser.parse('ăn trưa 50k hôm qua ví momo',
+              wallets: [_wallet('MoMo', WalletType.ewallet)]).note,
+          'Ăn trưa');
+      expect(
+          VoiceTransactionParser.parse('cà phê 50.5k thứ 2 tuần trước cash',
+              wallets: [_wallet('Tiền mặt', WalletType.cash)]).note,
+          'Cà phê');
+      expect(VoiceTransactionParser.parse('コーヒー 30000').note, 'コーヒー');
+      expect(VoiceTransactionParser.parse('50k hôm qua').note, '50k hôm qua');
+      expect(VoiceTransactionParser.parse('cà   phê 50k hôm   qua').note,
+          'Cà phê');
+    });
+  });
+
   group('Natural-language rule corpus', () {
     for (final fixture in _sentenceCorpus) {
       test(fixture.text, () {

@@ -92,10 +92,68 @@ class VoiceTransactionParser {
     List<Wallet> wallets = const [],
     CategoryClassifier? classifier,
   }) {
+    return parseMany(text,
+            categories: categories,
+            clock: clock,
+            wallets: wallets,
+            classifier: classifier)
+        .first;
+  }
+
+  static List<VoiceParseResult> parseMany(
+    String text, {
+    List<Category> categories = const [],
+    DateTime Function()? clock,
+    List<Wallet> wallets = const [],
+    CategoryClassifier? classifier,
+  }) {
+    final now = (clock ?? DateTime.now)();
+    final parts = text
+        .split(RegExp(
+          r'(?<!\p{L})(?:và|va|rồi|roi|xong)(?!\p{L})|,(?!\d)|[;+\n]',
+          unicode: true,
+          caseSensitive: false,
+        ))
+        .map((part) => part.trim())
+        .where((part) => part.isNotEmpty)
+        .toList();
+    final segments = parts.length > 1 &&
+            parts.every((part) => _extractAmount(_normalize(part)) != null)
+        ? parts
+        : [text.trim()];
+    final dates = segments
+        .map((part) => _extractDate(_normalize(part), now))
+        .whereType<DateTime>()
+        .toSet();
+    final explicitWallets = segments
+        .map((part) => _matchWallet(_normalize(part), wallets))
+        .whereType<Wallet>()
+        .toList();
+    final walletIds = explicitWallets.map((wallet) => wallet.id).toSet();
+    return segments
+        .map((part) => _parseSingle(part,
+            categories: categories,
+            now: now,
+            wallets: wallets,
+            classifier: classifier,
+            sharedDate: dates.length == 1 ? dates.single : null,
+            sharedWallet: walletIds.length == 1 ? explicitWallets.first : null))
+        .toList();
+  }
+
+  static VoiceParseResult _parseSingle(
+    String text, {
+    required List<Category> categories,
+    required DateTime now,
+    required List<Wallet> wallets,
+    CategoryClassifier? classifier,
+    DateTime? sharedDate,
+    Wallet? sharedWallet,
+  }) {
     final trimmed = text.trim();
     final normalized = _normalize(trimmed);
 
-    final date = _extractDate(normalized, (clock ?? DateTime.now)());
+    final date = _extractDate(normalized, now) ?? sharedDate;
     final type = _extractType(normalized);
     final amount = _extractAmount(normalized);
 
@@ -121,6 +179,7 @@ class VoiceTransactionParser {
         : classifier?.suggestWallet(normalized, category.id,
             walletIds: availableWallets.map((w) => w.id).toSet());
     final wallet = _matchWallet(normalized, availableWallets) ??
+        sharedWallet ??
         availableWallets.where((w) => w.id == learnedWalletId).firstOrNull;
 
     return VoiceParseResult(
@@ -130,11 +189,86 @@ class VoiceTransactionParser {
       type: type,
       categoryId: category?.id,
       categoryName: category?.name,
-      note: trimmed.isEmpty ? null : trimmed,
+      note: trimmed.isEmpty ? null : _cleanNote(trimmed, wallet, now),
       walletId: wallet?.id,
       walletName: wallet?.name,
       categoryConfidence: learned?.confidence,
     );
+  }
+
+  static String _cleanNote(String raw, Wallet? wallet, DateTime now) {
+    final normalized = StringBuffer();
+    final starts = <int>[];
+    final ends = <int>[];
+    var offset = 0;
+    for (final rune in raw.runes) {
+      final char = String.fromCharCode(rune);
+      final token = normalizeVi(char);
+      final mapped =
+          token.isEmpty && !(rune >= 0x0300 && rune <= 0x036f) ? ' ' : token;
+      normalized.write(mapped);
+      for (var i = 0; i < mapped.length; i++) {
+        starts.add(offset);
+        ends.add(offset + char.length);
+      }
+      offset += char.length;
+      if (mapped.isEmpty && ends.isNotEmpty) ends[ends.length - 1] = offset;
+    }
+    final text = normalized.toString();
+    final removed = List.filled(raw.length, false);
+    var remaining = text;
+    void remove(RegExp pattern, {bool firstOnly = false}) {
+      final matches = pattern.allMatches(remaining).toList();
+      for (final match in firstOnly ? matches.take(1) : matches) {
+        if (match.start == match.end) continue;
+        for (var i = starts[match.start]; i < ends[match.end - 1]; i++) {
+          removed[i] = true;
+        }
+        remaining = remaining.replaceRange(
+            match.start, match.end, ' ' * (match.end - match.start));
+      }
+    }
+
+    if (_extractDate(_normalize(raw), now) != null) {
+      remove(_calendarDate);
+      remove(_dayOfMonth);
+      remove(_weekday);
+      remove(RegExp(
+          r'\b(?:hom\s+(?:kia|qua|truoc|nay)|ngay\s+mai|(?:sang|trua|toi)\s+nay|tuan\s+truoc|(?:dau|cuoi)\s+thang)\b'));
+    }
+    if (_amountWithUnit.hasMatch(remaining)) {
+      remove(_amountWithUnit, firstOnly: true);
+    } else {
+      remove(_currencyAmount, firstOnly: true);
+    }
+    if (wallet != null) {
+      final named = bestTextMatch(text, [wallet], (w) => w.name);
+      if (named != null) {
+        final phrase = RegExp.escape(named.phrase).replaceAll(' ', r'\s+');
+        remove(RegExp('(?<![a-z0-9])(?:vi\\s+)?$phrase(?![a-z0-9])'));
+      } else {
+        final aliases = wallet.walletType == WalletType.bank
+            ? r'ck|chuyen\s+khoan'
+            : wallet.walletType == WalletType.cash
+                ? r'tien\s+mat|cash'
+                : null;
+        if (aliases != null) {
+          remove(RegExp('\\b(?:vi\\s+)?(?:$aliases)\\b'));
+        }
+      }
+    }
+    final buffer = StringBuffer();
+    for (var i = 0; i < raw.length; i++) {
+      buffer.write(removed[i] ? ' ' : raw[i]);
+    }
+    final cleaned = buffer
+        .toString()
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .replaceAll(RegExp(r'^[\s,;+\-]+|[\s,;+\-]+$'), '')
+        .trim();
+    if (cleaned.isEmpty) return raw;
+    final first = String.fromCharCode(cleaned.runes.first);
+    return first.toUpperCase() + cleaned.substring(first.length);
   }
 
   static CategoryType _categoryTypeFor(TransactionType type) {
