@@ -888,6 +888,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get recurringNoUpcoming => 'Không có nhắc việc định kỳ sắp tới';
 
   @override
+  String get recurringOccurrenceSkipped => 'Đã bỏ qua lần này';
+
+  @override
+  String get recurringNextOccurrences => 'Các lần tiếp theo';
+
+  @override
   String get recurringNoTemplates => 'Chưa có giao dịch định kỳ';
 
   @override

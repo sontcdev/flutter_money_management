@@ -46,6 +46,7 @@ ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showAppSnackBar(
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       ),
       action: resolvedAction,
+      persist: false,
       duration: duration ??
           (resolvedAction != null
               ? const Duration(seconds: 6)

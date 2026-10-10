@@ -93,5 +93,47 @@ void main() {
     expect(find.text('Frequency'), findsOneWidget);
     expect(find.text('Behavior'), findsOneWidget);
     expect(find.text('Housing'), findsOneWidget);
+    expect(find.text('Next occurrences'), findsOneWidget);
+  });
+
+  group('previewRecurringOccurrences', () {
+    test('returns the next three monthly dates', () {
+      final dates = previewRecurringOccurrences(
+        startDate: DateTime(2026, 1, 15),
+        frequency: RecurringFrequency.monthly,
+        intervalCount: 1,
+        dayOfMonth: 31,
+      );
+      expect(dates, [
+        DateTime(2026, 1, 31),
+        DateTime(2026, 2, 28),
+        DateTime(2026, 3, 31),
+      ]);
+    });
+
+    test('respects the weekday and interval for weekly schedules', () {
+      final dates = previewRecurringOccurrences(
+        startDate: DateTime(2026, 6, 3),
+        frequency: RecurringFrequency.weekly,
+        intervalCount: 2,
+        dayOfWeek: DateTime.monday,
+      );
+      expect(dates, [
+        DateTime(2026, 6, 8),
+        DateTime(2026, 6, 22),
+        DateTime(2026, 7, 6),
+      ]);
+    });
+
+    test('stops at the end date', () {
+      final dates = previewRecurringOccurrences(
+        startDate: DateTime(2026, 1, 1),
+        endDate: DateTime(2026, 2, 15),
+        frequency: RecurringFrequency.monthly,
+        intervalCount: 1,
+        dayOfMonth: 1,
+      );
+      expect(dates, [DateTime(2026, 1, 1), DateTime(2026, 2, 1)]);
+    });
   });
 }

@@ -888,6 +888,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recurringNoUpcoming => 'No upcoming recurring reminders';
 
   @override
+  String get recurringOccurrenceSkipped => 'Occurrence skipped';
+
+  @override
+  String get recurringNextOccurrences => 'Next occurrences';
+
+  @override
   String get recurringNoTemplates => 'No recurring transactions yet';
 
   @override

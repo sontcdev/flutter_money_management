@@ -287,6 +287,8 @@
   "recurringUpcoming": "Nhắc việc sắp tới",
   "recurringTemplates": "Mẫu định kỳ",
   "recurringNoUpcoming": "Không có nhắc việc định kỳ sắp tới",
+  "recurringOccurrenceSkipped": "Đã bỏ qua lần này",
+  "recurringNextOccurrences": "Các lần tiếp theo",
   "recurringNoTemplates": "Chưa có giao dịch định kỳ",
   "recurringNotificationsTitle": "Bật nhắc việc định kỳ",
   "recurringNotificationsDesc": "Bật thông báo để ứng dụng có thể nhắc bạn trước khi các khoản thu chi định kỳ đến hạn.",

@@ -6,6 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/recurring/models/recurring_transaction.dart';
+import 'package:flutter_money_management/src/features/recurring/services/recurring_schedule_calculator.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
@@ -15,6 +16,7 @@ import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
+import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 import 'package:flutter_money_management/src/utils/vnd_input_formatter.dart';
 
 class RecurringTransactionEditScreen extends HookConsumerWidget {
@@ -121,6 +123,16 @@ class _RecurringTransactionEditForm extends HookConsumerWidget {
         useState<int?>(existing?.monthOfYear ?? DateTime.now().month);
     final isActive = useState(existing?.isActive ?? true);
     final isSaving = useState(false);
+    final intervalText = useValueListenable(intervalCountController).text;
+    final previewDates = previewRecurringOccurrences(
+      startDate: selectedStartDate.value,
+      endDate: selectedEndDate.value,
+      frequency: selectedFrequency.value,
+      intervalCount: int.tryParse(intervalText) ?? 1,
+      dayOfMonth: dayOfMonth.value,
+      dayOfWeek: dayOfWeek.value,
+      monthOfYear: monthOfYear.value,
+    );
 
     Future<void> submit() async {
       if (titleController.text.trim().isEmpty) {
@@ -438,6 +450,30 @@ class _RecurringTransactionEditForm extends HookConsumerWidget {
                     }
                   },
                 ),
+                if (previewDates.isNotEmpty) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    l10n.recurringNextOccurrences,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  for (final date in previewDates)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.event_outlined,
+                            size: AppSpacing.iconSizeXs,
+                            color:
+                                Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Text(formatLocalizedDateWithWeekday(context, date)),
+                        ],
+                      ),
+                    ),
+                ],
                 const SizedBox(height: AppSpacing.lg),
                 DropdownButtonFormField<RecurringMode>(
                   initialValue: selectedMode.value,
@@ -522,4 +558,47 @@ class _RecurringTransactionEditForm extends HookConsumerWidget {
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
   }
+}
+
+List<DateTime> previewRecurringOccurrences({
+  required DateTime startDate,
+  required RecurringFrequency frequency,
+  required int intervalCount,
+  DateTime? endDate,
+  int? dayOfMonth,
+  int? dayOfWeek,
+  int? monthOfYear,
+  int count = 3,
+}) {
+  final interval = intervalCount < 1 ? 1 : intervalCount;
+  final usesDayOfMonth = frequency != RecurringFrequency.weekly;
+  final resolvedDayOfMonth = usesDayOfMonth ? dayOfMonth : null;
+  final resolvedDayOfWeek =
+      frequency == RecurringFrequency.weekly ? dayOfWeek : null;
+  final resolvedMonthOfYear =
+      frequency == RecurringFrequency.yearly ? monthOfYear : null;
+  final lastDate = endDate == null
+      ? null
+      : RecurringScheduleCalculator.normalizeDate(endDate);
+  final dates = <DateTime>[];
+  var current = RecurringScheduleCalculator.calculateFirstOccurrence(
+    startDate: startDate,
+    frequency: frequency,
+    intervalCount: interval,
+    dayOfMonth: resolvedDayOfMonth,
+    dayOfWeek: resolvedDayOfWeek,
+    monthOfYear: resolvedMonthOfYear,
+  );
+  while (dates.length < count &&
+      (lastDate == null || !current.isAfter(lastDate))) {
+    dates.add(current);
+    current = RecurringScheduleCalculator.addInterval(
+      current: current,
+      frequency: frequency,
+      intervalCount: interval,
+      dayOfMonth: resolvedDayOfMonth,
+      monthOfYear: resolvedMonthOfYear,
+    );
+  }
+  return dates;
 }

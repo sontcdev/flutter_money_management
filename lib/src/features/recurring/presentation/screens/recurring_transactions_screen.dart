@@ -36,6 +36,58 @@ class RecurringTransactionsScreen extends ConsumerStatefulWidget {
 class _RecurringTransactionsScreenState
     extends ConsumerState<RecurringTransactionsScreen> {
   bool _didOpenHighlightedOccurrence = false;
+  final Set<String> _pendingSkipIds = {};
+
+  Future<void> _openOccurrence(
+    RecurringOccurrence occurrence,
+    RecurringTransaction recurringTransaction,
+  ) async {
+    final skipped = await _showOccurrenceDetailSheet(
+      context: context,
+      occurrence: occurrence,
+      recurringTransaction: recurringTransaction,
+    );
+    if (skipped == true && mounted) {
+      await _skipWithUndo(occurrence);
+    }
+  }
+
+  Future<void> _skipWithUndo(RecurringOccurrence occurrence) async {
+    final l10n = AppLocalizations.of(context)!;
+    final notifier = ref.read(recurringActionsProvider.notifier);
+    setState(() => _pendingSkipIds.add(occurrence.id));
+    final reason = await showAppSnackBar(
+      context,
+      l10n.recurringOccurrenceSkipped,
+      onUndo: () {},
+    ).closed;
+    if (reason == SnackBarClosedReason.action) {
+      if (mounted) {
+        setState(() => _pendingSkipIds.remove(occurrence.id));
+      }
+      return;
+    }
+    try {
+      await notifier.skipOccurrence(occurrence.id);
+    } catch (e, stackTrace) {
+      if (mounted) {
+        await ErrorReportHelper.handleApiError(
+          context: context,
+          ref: ref,
+          error: e,
+          stackTrace: stackTrace,
+          feature: 'recurring',
+          action: 'skip_occurrence',
+          screen: 'recurring_transactions_screen',
+          extraContext: {'occurrence_id': occurrence.id},
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _pendingSkipIds.remove(occurrence.id));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,8 +156,11 @@ class _RecurringTransactionsScreenState
             ),
             const SizedBox(height: AppSpacing.md),
             occurrencesAsync.when(
-              data: (occurrences) => recurringAsync.when(
+              data: (allOccurrences) => recurringAsync.when(
                 data: (templates) {
+                  final occurrences = allOccurrences
+                      .where((item) => !_pendingSkipIds.contains(item.id))
+                      .toList();
                   if (occurrences.isEmpty) {
                     return _SectionPlaceholder(text: l10n.recurringNoUpcoming);
                   }
@@ -126,17 +181,18 @@ class _RecurringTransactionsScreenState
                           recurringTransaction: template,
                           highlighted:
                               widget.highlightedOccurrenceId == occurrence.id,
+                          onTap: () => _openOccurrence(occurrence, template),
                         ),
                       );
                     }).toList(),
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const SectionSkeleton(height: 160, lineCount: 3),
                 error: (error, _) => InlineLoadErrorState(
                   onRetry: () => ref.invalidate(recurringTransactionsProvider),
                 ),
               ),
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const SectionSkeleton(height: 160, lineCount: 3),
               error: (error, _) => InlineLoadErrorState(
                 onRetry: () =>
                     ref.invalidate(upcomingRecurringOccurrencesProvider),
@@ -167,7 +223,7 @@ class _RecurringTransactionsScreenState
                       .toList(),
                 );
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const SectionSkeleton(height: 160, lineCount: 3),
               error: (error, _) => InlineLoadErrorState(
                 onRetry: () => ref.invalidate(recurringTransactionsProvider),
               ),
@@ -223,12 +279,7 @@ class _RecurringTransactionsScreenState
       if (!mounted) {
         return;
       }
-      _showOccurrenceDetailSheet(
-        context: context,
-        ref: ref,
-        occurrence: selectedOccurrence,
-        recurringTransaction: selectedRecurringTransaction,
-      );
+      _openOccurrence(selectedOccurrence, selectedRecurringTransaction);
     });
   }
 }
@@ -237,11 +288,13 @@ class _OccurrenceCard extends ConsumerWidget {
   const _OccurrenceCard({
     required this.occurrence,
     required this.recurringTransaction,
+    required this.onTap,
     this.highlighted = false,
   });
 
   final RecurringOccurrence occurrence;
   final RecurringTransaction recurringTransaction;
+  final VoidCallback onTap;
   final bool highlighted;
 
   @override
@@ -258,12 +311,7 @@ class _OccurrenceCard extends ConsumerWidget {
       color: highlighted
           ? Theme.of(context).colorScheme.primaryContainer
           : null,
-      onTap: () => _showOccurrenceDetailSheet(
-        context: context,
-        ref: ref,
-        occurrence: occurrence,
-        recurringTransaction: recurringTransaction,
-      ),
+      onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.cardPadding),
         child: Column(
@@ -341,13 +389,12 @@ class _OccurrenceCard extends ConsumerWidget {
   }
 }
 
-Future<void> _showOccurrenceDetailSheet({
+Future<bool?> _showOccurrenceDetailSheet({
   required BuildContext context,
-  required WidgetRef ref,
   required RecurringOccurrence occurrence,
   required RecurringTransaction recurringTransaction,
 }) {
-  return showModalBottomSheet<void>(
+  return showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
@@ -425,31 +472,7 @@ class _OccurrenceDetailSheet extends ConsumerWidget {
       }
     }
 
-    Future<void> skip() async {
-      try {
-        await ref
-            .read(recurringActionsProvider.notifier)
-            .skipOccurrence(occurrence.id);
-        if (!context.mounted) {
-          return;
-        }
-        Navigator.of(context).pop();
-        showAppSnackBar(context, l10n.success, type: AppSnackBarType.success);
-      } catch (e, stackTrace) {
-        if (context.mounted) {
-          await ErrorReportHelper.handleApiError(
-            context: context,
-            ref: ref,
-            error: e,
-            stackTrace: stackTrace,
-            feature: 'recurring',
-            action: 'skip_occurrence',
-            screen: 'recurring_transactions_screen',
-            extraContext: {'occurrence_id': occurrence.id},
-          );
-        }
-      }
-    }
+    void skip() => Navigator.of(context).pop(true);
 
     final amountColor = recurringTransaction.isExpense
         ? context.semanticColors.expense

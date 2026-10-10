@@ -888,6 +888,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get recurringNoUpcoming => '今後の定期リマインダーはありません';
 
   @override
+  String get recurringOccurrenceSkipped => 'この回をスキップしました';
+
+  @override
+  String get recurringNextOccurrences => '今後の予定';
+
+  @override
   String get recurringNoTemplates => '定期取引はまだありません';
 
   @override

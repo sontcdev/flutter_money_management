@@ -1819,6 +1819,18 @@ abstract class AppLocalizations {
   /// **'No upcoming recurring reminders'**
   String get recurringNoUpcoming;
 
+  /// No description provided for @recurringOccurrenceSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Occurrence skipped'**
+  String get recurringOccurrenceSkipped;
+
+  /// No description provided for @recurringNextOccurrences.
+  ///
+  /// In en, this message translates to:
+  /// **'Next occurrences'**
+  String get recurringNextOccurrences;
+
   /// No description provided for @recurringNoTemplates.
   ///
   /// In en, this message translates to:

@@ -287,6 +287,8 @@
   "recurringUpcoming": "Upcoming reminders",
   "recurringTemplates": "Recurring templates",
   "recurringNoUpcoming": "No upcoming recurring reminders",
+  "recurringOccurrenceSkipped": "Occurrence skipped",
+  "recurringNextOccurrences": "Next occurrences",
   "recurringNoTemplates": "No recurring transactions yet",
   "recurringNotificationsTitle": "Enable recurring reminders",
   "recurringNotificationsDesc": "Turn on notifications so the app can remind you before recurring income and expenses are due.",

@@ -287,6 +287,8 @@
   "recurringUpcoming": "今後のリマインダー",
   "recurringTemplates": "定期テンプレート",
   "recurringNoUpcoming": "今後の定期リマインダーはありません",
+  "recurringOccurrenceSkipped": "この回をスキップしました",
+  "recurringNextOccurrences": "今後の予定",
   "recurringNoTemplates": "定期取引はまだありません",
   "recurringNotificationsTitle": "定期リマインダーを有効化",
   "recurringNotificationsDesc": "通知を有効にすると、定期的な収入や支出の期限前にアプリが通知できます。",
