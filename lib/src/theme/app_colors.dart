@@ -86,6 +86,11 @@ class AppColors {
   static const Color tintTeal = Color(0xFF14B8A6);
   static const Color tintViolet = Color(0xFF8B5CF6);
 
+  static const Color splashBackground = Color(0xFFFFFFFF);
+  static const Color splashBackgroundDark = Color(0xFF121212);
+  static const Color splashAccent = Color(0xFFE91E63);
+  static const Color splashAccentDark = Color(0xFFFFFFFF);
+
   // Category palette — vibrant, distinct hues for user-assigned categories.
   static const List<Color> categoryColors = [
     Color(0xFF00884B), // brand green

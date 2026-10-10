@@ -696,7 +696,7 @@ class _SwipeableBudgetCard extends ConsumerWidget {
               }
             },
             backgroundColor: AppColors.error,
-            foregroundColor: Colors.white,
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
             icon: Icons.delete,
             label: l10n.delete,
             borderRadius: const BorderRadius.only(
@@ -1029,7 +1029,10 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                     child: LinearProgressIndicator(
                       value: (percentage / 100).clamp(0.0, 1.0),
                       minHeight: 12,
-                      backgroundColor: Colors.white.withValues(alpha: 0.5),
+                      backgroundColor: Theme.of(context)
+                          .colorScheme
+                          .onPrimary
+                          .withValues(alpha: 0.5),
                       valueColor: AlwaysStoppedAnimation(statusColor),
                     ),
                   ),

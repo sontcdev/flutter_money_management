@@ -708,7 +708,9 @@ class _PeriodOptionButton extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? Colors.white : unselectedForeground,
+              color: isSelected
+                  ? theme.colorScheme.onPrimary
+                  : unselectedForeground,
               size: AppSpacing.iconSizeXs,
             ),
             const SizedBox(width: AppSpacing.xs),
@@ -716,7 +718,9 @@ class _PeriodOptionButton extends StatelessWidget {
               label,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? Colors.white : unselectedForeground,
+                color: isSelected
+                    ? theme.colorScheme.onPrimary
+                    : unselectedForeground,
               ),
             ),
           ],

@@ -26,6 +26,8 @@ class ShimmerLoading extends StatefulWidget {
 
 class _ShimmerLoadingState extends State<ShimmerLoading>
     with SingleTickerProviderStateMixin {
+  static const Duration _shimmerPeriod = Duration(milliseconds: 1500);
+
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -33,7 +35,7 @@ class _ShimmerLoadingState extends State<ShimmerLoading>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: _shimmerPeriod,
       vsync: this,
     )..repeat();
 
@@ -181,7 +183,7 @@ class SectionSkeleton extends StatefulWidget {
     super.key,
     this.height = 120,
     this.lineCount = 3,
-    this.revealDelay = const Duration(milliseconds: 300),
+    this.revealDelay = AppMotion.normal,
   });
 
   @override

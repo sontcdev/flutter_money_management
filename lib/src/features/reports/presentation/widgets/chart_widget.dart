@@ -175,7 +175,6 @@ class ChartData {
     required this.label,
     required this.value,
     double? percentage,
-    Color? color,
-  })  : percentage = percentage ?? value,
-        color = color ?? Colors.blue;
+    required this.color,
+  }) : percentage = percentage ?? value;
 }

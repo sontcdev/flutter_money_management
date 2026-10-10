@@ -96,7 +96,7 @@ class EmptyState extends StatelessWidget {
             if (shouldAnimate)
               TweenAnimationBuilder<double>(
                 tween: Tween(begin: 0.0, end: 1.0),
-                duration: const Duration(milliseconds: 600),
+                duration: AppMotion.of(context, AppMotion.slow),
                 curve: Curves.elasticOut,
                 builder: (context, value, child) {
                   return Transform.scale(
@@ -115,7 +115,7 @@ class EmptyState extends StatelessWidget {
             if (shouldAnimate)
               TweenAnimationBuilder<double>(
                 tween: Tween(begin: 0.0, end: 1.0),
-                duration: const Duration(milliseconds: 500),
+                duration: AppMotion.of(context, AppMotion.slow),
                 curve: Curves.easeOut,
                 builder: (context, value, child) {
                   return Opacity(
@@ -137,7 +137,7 @@ class EmptyState extends StatelessWidget {
               if (shouldAnimate)
                 TweenAnimationBuilder<double>(
                   tween: Tween(begin: 0.0, end: 1.0),
-                  duration: const Duration(milliseconds: 600),
+                  duration: AppMotion.of(context, AppMotion.slow),
                   curve: Curves.easeOut,
                   builder: (context, value, child) {
                     return Opacity(
@@ -160,7 +160,10 @@ class EmptyState extends StatelessWidget {
               if (shouldAnimate)
                 TweenAnimationBuilder<double>(
                   tween: Tween(begin: 0.0, end: 1.0),
-                  duration: const Duration(milliseconds: 700),
+                  duration: AppMotion.of(
+                    context,
+                    AppMotion.slow + AppMotion.fast,
+                  ),
                   curve: Curves.easeOut,
                   builder: (context, value, child) {
                     return Opacity(

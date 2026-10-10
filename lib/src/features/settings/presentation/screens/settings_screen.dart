@@ -17,6 +17,7 @@ import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
 class SettingsScreen extends HookConsumerWidget {
@@ -359,10 +360,10 @@ class SettingsScreen extends HookConsumerWidget {
       opened = false;
     }
     if (!opened && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.privacyPolicyOpenFailed),
-        ),
+      showAppSnackBar(
+        context,
+        AppLocalizations.of(context)!.privacyPolicyOpenFailed,
+        type: AppSnackBarType.error,
       );
     }
   }
@@ -466,8 +467,10 @@ class SettingsScreen extends HookConsumerWidget {
       mode: LaunchMode.externalApplication,
     );
     if (!opened && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.deleteAccountOpenFailed)),
+      showAppSnackBar(
+        context,
+        l10n.deleteAccountOpenFailed,
+        type: AppSnackBarType.error,
       );
     }
   }
@@ -927,7 +930,11 @@ class _SettingsRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               ),
               alignment: Alignment.center,
-              child: Icon(icon, size: 18, color: Colors.white),
+              child: Icon(
+                icon,
+                size: 18,
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
             ),
           if (leading != null || icon != null) const SizedBox(width: 12),
           Expanded(

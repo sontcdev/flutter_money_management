@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_money_management/src/theme/app_colors.dart';
 
 /// The single splash visual used by the whole startup sequence.
 ///
@@ -10,13 +11,12 @@ class SplashView extends StatelessWidget {
 
   const SplashView({super.key, required this.isDark});
 
-  static const Color _darkBackground = Color(0xFF121212);
-  static const Color _lightAccent = Color(0xFFE91E63);
-
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = isDark ? _darkBackground : Colors.white;
-    final accentColor = isDark ? Colors.white : _lightAccent;
+    final backgroundColor =
+        isDark ? AppColors.splashBackgroundDark : AppColors.splashBackground;
+    final accentColor =
+        isDark ? AppColors.splashAccentDark : AppColors.splashAccent;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -36,11 +36,10 @@ class SplashView extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               'MyMoney',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: accentColor,
-              ),
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: accentColor,
+                  ),
             ),
           ],
         ),

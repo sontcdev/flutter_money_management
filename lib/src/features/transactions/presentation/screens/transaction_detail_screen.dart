@@ -4,6 +4,7 @@ import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/data/repositories/supabase_error_mapper.dart';
 import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
+import 'package:flutter_money_management/src/features/categories/models/uncategorized_category.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
 import 'package:flutter_money_management/src/features/wallets/models/wallet.dart';
 import 'package:flutter_money_management/src/features/wallets/providers/wallet_providers.dart';
@@ -58,14 +59,13 @@ class TransactionDetailScreen extends ConsumerWidget {
         final transaction = snapshot.data![0] as Transaction;
         final categories = snapshot.data![1] as List<Category>;
 
-        Category? category;
-        try {
-          category = categories.firstWhere(
-            (c) => c.id == transaction.categoryId,
-          );
-        } catch (_) {
-          // Category not found
-        }
+        final category = categories
+                .where((c) => c.id == transaction.categoryId)
+                .firstOrNull ??
+            uncategorizedCategory(
+              transaction.categoryId ?? '',
+              l10n.uncategorized,
+            );
 
         final isTransfer = transaction.type == TransactionType.transfer;
 
@@ -186,7 +186,7 @@ class TransactionDetailScreen extends ConsumerWidget {
                             color: Theme.of(context).colorScheme.primary,
                           ),
                         )
-                      else if (category != null)
+                      else
                         Container(
                           width: 64,
                           height: 64,
@@ -222,7 +222,7 @@ class TransactionDetailScreen extends ConsumerWidget {
                         isTransfer
                             ? '${fromWallet?.name ?? l10n.unknown} → '
                                 '${toWallet?.name ?? l10n.unknown}'
-                            : category?.name ?? l10n.unknown,
+                            : category.name,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: Theme.of(context)
                                   .colorScheme

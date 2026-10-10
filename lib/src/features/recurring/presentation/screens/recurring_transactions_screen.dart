@@ -15,6 +15,7 @@ import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_status_chip.dart';
 import 'package:flutter_money_management/src/ui/widgets/confirm_delete_dialog.dart';
 import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
+import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
@@ -86,10 +87,13 @@ class _RecurringTransactionsScreenState
               data: (enabled) => enabled
                   ? const SizedBox.shrink()
                   : _NotificationsPermissionCard(),
-              loading: () => const SizedBox.shrink(),
-              error: (_, __) => const SizedBox.shrink(),
+              loading: () => const SectionSkeleton(height: 96, lineCount: 2),
+              error: (_, __) => InlineLoadErrorState(
+                onRetry: () =>
+                    ref.invalidate(recurringNotificationsPermissionProvider),
+              ),
             ),
-            if ((notificationsPermissionAsync.valueOrNull ?? true) == false)
+            if (notificationsPermissionAsync.valueOrNull != true)
               const SizedBox(height: AppSpacing.sectionGap),
             Text(
               l10n.recurringUpcoming,
