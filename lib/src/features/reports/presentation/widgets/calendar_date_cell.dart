@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/reports/models/report_calendar_models.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
@@ -29,6 +30,29 @@ class CalendarDateCell extends StatelessWidget {
         date.year == displayedMonth.year && date.month == displayedMonth.month;
     final semanticColors = context.semanticColors;
 
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      label: _semanticLabel(context),
+      excludeSemantics: true,
+      child: MediaQuery.withClampedTextScaling(
+        maxScaleFactor: 1.3,
+        child: Builder(
+          builder: (context) => _buildCell(
+            context,
+            isCurrentMonth: isCurrentMonth,
+            semanticColors: semanticColors,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCell(
+    BuildContext context, {
+    required bool isCurrentMonth,
+    required AppSemanticColors semanticColors,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -89,7 +113,8 @@ class CalendarDateCell extends StatelessWidget {
         ? '${locale.languageCode}_${locale.countryCode}'
         : locale.languageCode;
     final formatter = NumberFormat.compact(locale: localeName);
-    final amountText = formatter.format(badge.amountCents.abs() / 100);
+    final amountText =
+        '${badge.isIncome ? '+' : '-'}${formatter.format(badge.amountCents.abs() / 100)}';
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
@@ -102,16 +127,31 @@ class CalendarDateCell extends StatelessWidget {
       ),
       child: Text(
         amountText,
-        style: TextStyle(
-          fontSize: 7,
-          color: badge.isIncome
-              ? context.semanticColors.income
-              : context.semanticColors.expense,
-          fontWeight: FontWeight.w600,
-        ),
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: badge.isIncome
+                  ? context.semanticColors.income
+                  : context.semanticColors.expense,
+              fontWeight: FontWeight.w600,
+              height: 1.0,
+            ),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
     );
+  }
+
+  String _semanticLabel(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final localeName = Localizations.localeOf(context).toString();
+    final parts = <String>[DateFormat.yMMMMd(localeName).format(date)];
+    final formatter = NumberFormat.decimalPattern(localeName);
+    for (final badge in badges) {
+      final amount = formatter.format(badge.amountCents.abs() / 100);
+      final label = badge.isIncome ? l10n?.income : l10n?.expense;
+      parts.add(
+        '${label ?? ''} ${badge.isIncome ? '+' : '-'}$amount'.trim(),
+      );
+    }
+    return parts.join(', ');
   }
 }

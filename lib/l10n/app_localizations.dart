@@ -3241,6 +3241,24 @@ abstract class AppLocalizations {
   /// **'Wallets'**
   String get wallets;
 
+  /// No description provided for @wallet.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet'**
+  String get wallet;
+
+  /// No description provided for @viewAsList.
+  ///
+  /// In en, this message translates to:
+  /// **'View as list'**
+  String get viewAsList;
+
+  /// No description provided for @viewAsChart.
+  ///
+  /// In en, this message translates to:
+  /// **'View as chart'**
+  String get viewAsChart;
+
   /// No description provided for @manageWallets.
   ///
   /// In en, this message translates to:

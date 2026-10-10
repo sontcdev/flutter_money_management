@@ -218,7 +218,7 @@ void main() {
             of: find.byType(VoiceInputSheet), matching: find.byType(TextField)),
         'cafe 30k hom qua vi momo');
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(Chip, 'Momo'), findsOneWidget);
+    expect(find.widgetWithText(Chip, 'Wallet: Momo'), findsOneWidget);
     await tester.tap(find.widgetWithText(FilledButton, 'Apply'));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.byType(ExpansionTile));

@@ -582,6 +582,9 @@
     }
   },
   "wallets": "ウォレット",
+  "wallet": "ウォレット",
+  "viewAsList": "リストで表示",
+  "viewAsChart": "グラフで表示",
   "manageWallets": "ウォレット管理",
   "manageWalletsSubtitle": "ウォレットの追加・編集・アーカイブ",
   "addWallet": "ウォレットを追加",

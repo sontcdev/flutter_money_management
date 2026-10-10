@@ -1673,6 +1673,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get wallets => 'Wallets';
 
   @override
+  String get wallet => 'Wallet';
+
+  @override
+  String get viewAsList => 'View as list';
+
+  @override
+  String get viewAsChart => 'View as chart';
+
+  @override
   String get manageWallets => 'Manage wallets';
 
   @override

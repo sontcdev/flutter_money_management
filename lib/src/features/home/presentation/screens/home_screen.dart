@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/budgets/presentation/screens/budgets_screen.dart';
@@ -121,8 +122,8 @@ class _AppNavBar extends StatelessWidget {
       ),
       child: SafeArea(
         top: false,
-        child: SizedBox(
-          height: 64,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 64),
           child: Stack(
             clipBehavior: Clip.none,
             alignment: Alignment.center,
@@ -140,7 +141,10 @@ class _AppNavBar extends StatelessWidget {
                 top: -20,
                 child: FloatingActionButton(
                   tooltip: AppLocalizations.of(context)!.addTransaction,
-                  onPressed: onFabPressed,
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    onFabPressed();
+                  },
                   backgroundColor: primary,
                   foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   shape: const CircleBorder(),
@@ -162,23 +166,28 @@ class _AppNavBar extends StatelessWidget {
 
     return InkWell(
       onTap: () => onTabSelected(item.tab),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            isSelected ? item.activeIcon : item.icon,
-            color: color,
-            size: AppSpacing.iconSize,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            item.label,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isSelected ? item.activeIcon : item.icon,
               color: color,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              size: AppSpacing.iconSize,
             ),
-          ),
-        ],
+            const SizedBox(height: 2),
+            Text(
+              item.label,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: color,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

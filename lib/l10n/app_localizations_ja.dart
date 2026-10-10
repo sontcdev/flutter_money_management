@@ -1673,6 +1673,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get wallets => 'ウォレット';
 
   @override
+  String get wallet => 'ウォレット';
+
+  @override
+  String get viewAsList => 'リストで表示';
+
+  @override
+  String get viewAsChart => 'グラフで表示';
+
+  @override
   String get manageWallets => 'ウォレット管理';
 
   @override

@@ -158,15 +158,17 @@ class VoiceInputSheet extends HookWidget {
                   if (result.amountVnd != null)
                     Chip(
                         label: Text(
-                            CurrencyFormatter.formatVND(result.amountVnd!))),
+                            '${l10n.amount}: ${CurrencyFormatter.formatVND(result.amountVnd!)}')),
                   if (result.date != null)
                     Chip(
-                        label:
-                            Text(formatLocalizedDate(context, result.date!))),
+                        label: Text(
+                            '${l10n.date}: ${formatLocalizedDate(context, result.date!)}')),
                   if (result.categoryName != null)
-                    Chip(label: Text(result.categoryName!)),
+                    Chip(
+                        label:
+                            Text('${l10n.category}: ${result.categoryName!}')),
                   if (result.walletName != null)
-                    Chip(label: Text(result.walletName!)),
+                    Chip(label: Text('${l10n.wallet}: ${result.walletName!}')),
                 ],
               ),
               if (result.hasExtraAmounts)

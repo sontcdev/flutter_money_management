@@ -27,7 +27,7 @@ class ReportTheme {
   );
 
   static const TextStyle amountLabelStyle = TextStyle(
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: FontWeight.w600,
   );
 

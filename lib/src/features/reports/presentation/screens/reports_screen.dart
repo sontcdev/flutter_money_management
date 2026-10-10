@@ -534,23 +534,38 @@ class ReportsScreen extends HookConsumerWidget {
                                         ],
                                       ),
                                       const SizedBox(height: 12),
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(
-                                            AppSpacing.radiusFull),
-                                        child: LinearProgressIndicator(
-                                          value: (percentage / 100)
-                                              .clamp(0.0, 1.0),
-                                          minHeight: 8,
-                                          backgroundColor: Theme.of(context)
-                                              .colorScheme
-                                              .surfaceContainerHighest,
-                                          valueColor: AlwaysStoppedAnimation(
-                                            isExceeded
-                                                ? context.semanticColors.expense
-                                                : getCategoryColor(
-                                                    category.colorValue),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: ClipRRect(
+                                              borderRadius: BorderRadius.circular(
+                                                  AppSpacing.radiusFull),
+                                              child: LinearProgressIndicator(
+                                                value: (percentage / 100)
+                                                    .clamp(0.0, 1.0),
+                                                minHeight: 8,
+                                                backgroundColor: Theme.of(context)
+                                                    .colorScheme
+                                                    .surfaceContainerHighest,
+                                                valueColor: AlwaysStoppedAnimation(
+                                                  isExceeded
+                                                      ? context.semanticColors.expense
+                                                      : getCategoryColor(
+                                                          category.colorValue),
+                                                ),
+                                              ),
+                                            ),
                                           ),
-                                        ),
+                                          if (isExceeded) ...[
+                                            const SizedBox(width: AppSpacing.sm),
+                                            Icon(
+                                              Icons.warning_amber_rounded,
+                                              size: AppSpacing.iconSizeSm,
+                                              color: context.semanticColors.expense,
+                                              semanticLabel: l10n.exceeded,
+                                            ),
+                                          ],
+                                        ],
                                       ),
                                       const SizedBox(height: 8),
                                       Row(

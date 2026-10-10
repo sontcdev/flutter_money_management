@@ -1673,6 +1673,15 @@ class AppLocalizationsVi extends AppLocalizations {
   String get wallets => 'Ví';
 
   @override
+  String get wallet => 'Ví';
+
+  @override
+  String get viewAsList => 'Xem dạng danh sách';
+
+  @override
+  String get viewAsChart => 'Xem dạng biểu đồ';
+
+  @override
   String get manageWallets => 'Quản lý ví';
 
   @override

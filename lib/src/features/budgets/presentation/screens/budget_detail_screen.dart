@@ -142,14 +142,29 @@ class BudgetDetailScreen extends ConsumerWidget {
               const SizedBox(height: AppSpacing.xl),
 
               // Progress bar
-              ClipRRect(
-                borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                child: LinearProgressIndicator(
-                  value: progress.clamp(0.0, 1.0),
-                  minHeight: 12,
-                  backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                  valueColor: AlwaysStoppedAnimation(statusColor),
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                      child: LinearProgressIndicator(
+                        value: progress.clamp(0.0, 1.0),
+                        minHeight: 12,
+                        backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                        valueColor: AlwaysStoppedAnimation(statusColor),
+                      ),
+                    ),
+                  ),
+                  if (isExceeded) ...[
+                    const SizedBox(width: AppSpacing.sm),
+                    Icon(
+                      Icons.warning_amber_rounded,
+                      size: AppSpacing.iconSizeSm,
+                      color: statusColor,
+                      semanticLabel: l10n.exceeded,
+                    ),
+                  ],
+                ],
               ),
               const SizedBox(height: AppSpacing.xl),
 

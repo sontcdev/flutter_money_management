@@ -840,16 +840,31 @@ class _BudgetCard extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-            child: LinearProgressIndicator(
-              value: progress.clamp(0.0, 1.0),
-              minHeight: 8,
-              backgroundColor: theme.colorScheme.surfaceContainerHighest,
-              valueColor: AlwaysStoppedAnimation(
-                isExceeded ? AppColors.error : theme.colorScheme.primary,
+          Row(
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                  child: LinearProgressIndicator(
+                    value: progress.clamp(0.0, 1.0),
+                    minHeight: 8,
+                    backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                    valueColor: AlwaysStoppedAnimation(
+                      isExceeded ? AppColors.error : theme.colorScheme.primary,
+                    ),
+                  ),
+                ),
               ),
-            ),
+              if (isExceeded) ...[
+                const SizedBox(width: AppSpacing.sm),
+                Icon(
+                  Icons.warning_amber_rounded,
+                  size: AppSpacing.iconSizeSm,
+                  color: AppColors.error,
+                  semanticLabel: l10n.exceeded,
+                ),
+              ],
+            ],
           ),
         ],
       ),

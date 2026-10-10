@@ -41,36 +41,40 @@ class PieChartWidget extends StatelessWidget {
         final sectionRadius = diameter / 2 - centerSpaceRadius;
         final labelFontSize = math.max(10.0, sectionRadius * 0.2);
 
-        return SizedBox(
-          height: diameter,
-          child: PieChart(
-            PieChartData(
-              sections: data.map((item) {
-                final showLabel = item.percentage >= _minLabelPercentage;
-                return PieChartSectionData(
-                  value: item.value,
-                  title: showLabel
-                      ? '${item.percentage.toStringAsFixed(1)}%'
-                      : '',
-                  color: item.color,
-                  radius: sectionRadius,
-                  titlePositionPercentageOffset: 0.6,
-                  titleStyle: TextStyle(
-                    fontSize: labelFontSize,
-                    fontWeight: FontWeight.bold,
-                    color: ThemeData.estimateBrightnessForColor(item.color) ==
-                            Brightness.dark
-                        ? AppColors.textLight
-                        : AppColors.textDark,
-                  ),
-                );
-              }).toList(),
-              sectionsSpace: 2,
-              centerSpaceRadius: centerSpaceRadius,
-            ),
-            swapAnimationDuration: AppMotion.of(
-              context,
-              PieChart.defaultDuration,
+        return AccessibleChart(
+          data: data,
+          valueLabel: (item) => '${item.percentage.toStringAsFixed(1)}%',
+          chart: SizedBox(
+            height: diameter,
+            child: PieChart(
+              PieChartData(
+                sections: data.map((item) {
+                  final showLabel = item.percentage >= _minLabelPercentage;
+                  return PieChartSectionData(
+                    value: item.value,
+                    title: showLabel
+                        ? '${item.percentage.toStringAsFixed(1)}%'
+                        : '',
+                    color: item.color,
+                    radius: sectionRadius,
+                    titlePositionPercentageOffset: 0.6,
+                    titleStyle: TextStyle(
+                      fontSize: labelFontSize,
+                      fontWeight: FontWeight.bold,
+                      color: ThemeData.estimateBrightnessForColor(item.color) ==
+                              Brightness.dark
+                          ? AppColors.textLight
+                          : AppColors.textDark,
+                    ),
+                  );
+                }).toList(),
+                sectionsSpace: 2,
+                centerSpaceRadius: centerSpaceRadius,
+              ),
+              swapAnimationDuration: AppMotion.of(
+                context,
+                PieChart.defaultDuration,
+              ),
             ),
           ),
         );
@@ -97,70 +101,156 @@ class BarChartWidget extends StatelessWidget {
       );
     }
 
-    return AspectRatio(
-      aspectRatio: 1.5,
-      child: BarChart(
-        BarChartData(
-          alignment: BarChartAlignment.spaceAround,
-          maxY: data.map((e) => e.value).reduce((a, b) => a > b ? a : b) * 1.2,
-          barGroups: data.asMap().entries.map((entry) {
-            return BarChartGroupData(
-              x: entry.key,
-              barRods: [
-                BarChartRodData(
-                  toY: entry.value.value,
-                  color: entry.value.color,
-                  width: 20,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(AppSpacing.radiusXs),
+    return AccessibleChart(
+      data: data,
+      valueLabel: (item) => labelFormatter(item.value),
+      chart: AspectRatio(
+        aspectRatio: 1.5,
+        child: BarChart(
+          BarChartData(
+            alignment: BarChartAlignment.spaceAround,
+            maxY:
+                data.map((e) => e.value).reduce((a, b) => a > b ? a : b) * 1.2,
+            barGroups: data.asMap().entries.map((entry) {
+              return BarChartGroupData(
+                x: entry.key,
+                barRods: [
+                  BarChartRodData(
+                    toY: entry.value.value,
+                    color: entry.value.color,
+                    width: 20,
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(AppSpacing.radiusXs),
+                    ),
                   ),
+                ],
+              );
+            }).toList(),
+            titlesData: FlTitlesData(
+              show: true,
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  getTitlesWidget: (value, meta) {
+                    if (value.toInt() >= 0 && value.toInt() < data.length) {
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          data[value.toInt()].label,
+                          style: Theme.of(context).textTheme.labelSmall,
+                        ),
+                      );
+                    }
+                    return const Text('');
+                  },
                 ),
-              ],
-            );
-          }).toList(),
-          titlesData: FlTitlesData(
-            show: true,
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                getTitlesWidget: (value, meta) {
-                  if (value.toInt() >= 0 && value.toInt() < data.length) {
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        data[value.toInt()].label,
-                        style: const TextStyle(fontSize: 10),
-                      ),
+              ),
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  reservedSize: 40,
+                  getTitlesWidget: (value, meta) {
+                    return Text(
+                      labelFormatter(value),
+                      style: Theme.of(context).textTheme.labelSmall,
                     );
-                  }
-                  return const Text('');
-                },
+                  },
+                ),
+              ),
+              topTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
+              ),
+              rightTitles: const AxisTitles(
+                sideTitles: SideTitles(showTitles: false),
               ),
             ),
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 40,
-                getTitlesWidget: (value, meta) {
-                  return Text(
-                    labelFormatter(value),
-                    style: const TextStyle(fontSize: 10),
-                  );
-                },
-              ),
-            ),
-            topTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
-            rightTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
+            gridData: const FlGridData(show: false),
+            borderData: FlBorderData(show: false),
           ),
-          gridData: const FlGridData(show: false),
-          borderData: FlBorderData(show: false),
+          swapAnimationDuration: AppMotion.of(context, AppMotion.fast),
         ),
-        swapAnimationDuration: AppMotion.of(context, AppMotion.fast),
       ),
+    );
+  }
+}
+
+class AccessibleChart extends StatefulWidget {
+  final Widget chart;
+  final List<ChartData> data;
+  final String Function(ChartData) valueLabel;
+
+  const AccessibleChart({
+    super.key,
+    required this.chart,
+    required this.data,
+    required this.valueLabel,
+  });
+
+  @override
+  State<AccessibleChart> createState() => _AccessibleChartState();
+}
+
+class _AccessibleChartState extends State<AccessibleChart> {
+  bool _showList = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final summary = widget.data
+        .map((item) => '${item.label}: ${widget.valueLabel(item)}')
+        .join(', ');
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Align(
+          alignment: AlignmentDirectional.centerEnd,
+          child: TextButton.icon(
+            onPressed: () => setState(() => _showList = !_showList),
+            icon: Icon(
+              _showList ? Icons.pie_chart_outline : Icons.list,
+              size: AppSpacing.iconSizeSm,
+            ),
+            label: Text(_showList ? l10n.viewAsChart : l10n.viewAsList),
+          ),
+        ),
+        if (_showList)
+          ...widget.data.map(
+            (item) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+              child: Row(
+                children: [
+                  Container(
+                    width: AppSpacing.md,
+                    height: AppSpacing.md,
+                    decoration: BoxDecoration(
+                      color: item.color,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      item.label,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                  Text(
+                    widget.valueLabel(item),
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          Semantics(
+            label: summary,
+            excludeSemantics: true,
+            child: widget.chart,
+          ),
+      ],
     );
   }
 }

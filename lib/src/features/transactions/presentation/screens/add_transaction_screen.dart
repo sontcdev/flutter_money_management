@@ -661,45 +661,57 @@ class AddTransactionScreen extends HookConsumerWidget {
                               selectedCategoryId.value == category.id;
                           final categoryColor =
                               getCategoryColor(category.colorValue);
-                          return GestureDetector(
-                            onTap: () {
-                              selectedCategoryId.value = category.id;
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.md,
-                                vertical: AppSpacing.sm,
-                              ),
-                              decoration: BoxDecoration(
-                                color: categoryColor.withValues(alpha: 0.2),
-                                border: Border.all(
-                                  color: categoryColor,
-                                  width: isSelected ? 3 : 1.5,
+                          return Semantics(
+                            button: true,
+                            selected: isSelected,
+                            child: GestureDetector(
+                              onTap: () {
+                                selectedCategoryId.value = category.id;
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.md,
+                                  vertical: AppSpacing.sm,
                                 ),
-                                borderRadius:
-                                    BorderRadius.circular(AppSpacing.radiusXl),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  CategoryIconWidget(
-                                    iconName: category.iconName,
-                                    size: 18,
+                                decoration: BoxDecoration(
+                                  color: categoryColor.withValues(alpha: 0.2),
+                                  border: Border.all(
                                     color: categoryColor,
+                                    width: isSelected ? 3 : 1.5,
                                   ),
-                                  const SizedBox(width: AppSpacing.xs),
-                                  Text(
-                                    category.name,
-                                    style: Theme.of(
-                                      context,
-                                    ).textTheme.bodyMedium?.copyWith(
-                                      fontWeight: isSelected
-                                          ? FontWeight.w600
-                                          : FontWeight.w500,
+                                  borderRadius:
+                                      BorderRadius.circular(AppSpacing.radiusXl),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (isSelected) ...[
+                                      Icon(
+                                        Icons.check,
+                                        size: AppSpacing.iconSizeXs,
+                                        color: categoryColor,
+                                      ),
+                                      const SizedBox(width: AppSpacing.xs),
+                                    ],
+                                    CategoryIconWidget(
+                                      iconName: category.iconName,
+                                      size: 18,
                                       color: categoryColor,
                                     ),
-                                  ),
-                                ],
+                                    const SizedBox(width: AppSpacing.xs),
+                                    Text(
+                                      category.name,
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium?.copyWith(
+                                        fontWeight: isSelected
+                                            ? FontWeight.w600
+                                            : FontWeight.w500,
+                                        color: categoryColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           );

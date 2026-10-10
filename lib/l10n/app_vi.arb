@@ -582,6 +582,9 @@
     }
   },
   "wallets": "Ví",
+  "wallet": "Ví",
+  "viewAsList": "Xem dạng danh sách",
+  "viewAsChart": "Xem dạng biểu đồ",
   "manageWallets": "Quản lý ví",
   "manageWalletsSubtitle": "Thêm, sửa, lưu trữ ví",
   "addWallet": "Thêm ví",

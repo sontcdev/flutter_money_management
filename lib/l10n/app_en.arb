@@ -582,6 +582,9 @@
     }
   },
   "wallets": "Wallets",
+  "wallet": "Wallet",
+  "viewAsList": "View as list",
+  "viewAsChart": "View as chart",
   "manageWallets": "Manage wallets",
   "manageWalletsSubtitle": "Add, edit, archive wallets",
   "addWallet": "Add wallet",
