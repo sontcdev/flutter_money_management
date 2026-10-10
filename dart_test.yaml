@@ -1,0 +1,3 @@
+tags:
+  golden:
+    skip: "Platform-dependent baselines; run with: flutter test --run-skipped --tags golden"
