@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_money_management/src/features/reports/models/report_calendar_models.dart';
+import 'package:flutter_money_management/src/theme/report_theme.dart';
 import 'package:flutter_money_management/src/utils/cycle_utils.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 import 'calendar_date_cell.dart';
@@ -63,7 +64,9 @@ class CalendarGrid extends StatelessWidget {
     return Row(
       children: week.map((date) {
         if (date == null) {
-          return const Expanded(child: SizedBox(height: 48));
+          return const Expanded(
+            child: SizedBox(height: ReportTheme.cellHeight),
+          );
         }
 
         final badges = cellData[_normalizeDate(date)] ?? [];
@@ -74,6 +77,7 @@ class CalendarGrid extends StatelessWidget {
         return Expanded(
           child: CalendarDateCell(
             date: date,
+            displayedMonth: month,
             badges: badges,
             isSelected: isSelected,
             isToday: isToday,

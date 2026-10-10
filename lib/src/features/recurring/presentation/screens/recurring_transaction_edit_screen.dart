@@ -11,6 +11,8 @@ import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
+import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 import 'package:flutter_money_management/src/utils/vnd_input_formatter.dart';
@@ -51,7 +53,14 @@ class RecurringTransactionEditScreen extends HookConsumerWidget {
         appBar: AppBar(
           title: Text(isEditing ? l10n.edit : l10n.add),
         ),
-        body: Center(child: Text(l10n.errorWithMessage('$error'))),
+        body: LoadErrorState(
+          title: l10n.dataLoadFailed,
+          message: l10n.dataLoadFailedHint,
+          retryLabel: l10n.retry,
+          onRetry: () => ref.invalidate(
+            recurringTransactionProvider(recurringTransactionId!),
+          ),
+        ),
       ),
     );
   }
@@ -115,22 +124,28 @@ class _RecurringTransactionEditForm extends HookConsumerWidget {
 
     Future<void> submit() async {
       if (titleController.text.trim().isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.emptyContent)),
+        showAppSnackBar(
+          context,
+          l10n.emptyContent,
+          type: AppSnackBarType.error,
         );
         return;
       }
       if (selectedCategoryId.value == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.selectCategory)),
+        showAppSnackBar(
+          context,
+          l10n.selectCategory,
+          type: AppSnackBarType.error,
         );
         return;
       }
 
       final amount = CurrencyFormatter.parseVND(amountController.text);
       if (amount == null || amount <= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.amountRequiredError)),
+        showAppSnackBar(
+          context,
+          l10n.amountRequiredError,
+          type: AppSnackBarType.error,
         );
         return;
       }
@@ -171,9 +186,7 @@ class _RecurringTransactionEditForm extends HookConsumerWidget {
         ref.invalidate(recurringTransactionsProvider);
         ref.invalidate(upcomingRecurringOccurrencesProvider);
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.success)),
-          );
+          showAppSnackBar(context, l10n.success, type: AppSnackBarType.success);
           Navigator.of(context).pop(true);
         }
       } catch (e, stackTrace) {
@@ -405,6 +418,7 @@ class _RecurringTransactionEditForm extends HookConsumerWidget {
                     children: [
                       if (selectedEndDate.value != null)
                         IconButton(
+                          tooltip: l10n.clear,
                           onPressed: () => selectedEndDate.value = null,
                           icon: const Icon(Icons.clear),
                         ),
@@ -476,8 +490,12 @@ class _RecurringTransactionEditForm extends HookConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) =>
-            Center(child: Text(l10n.errorWithMessage('$error'))),
+        error: (error, _) => LoadErrorState(
+          title: l10n.dataLoadFailed,
+          message: l10n.dataLoadFailedHint,
+          retryLabel: l10n.retry,
+          onRetry: () => ref.invalidate(categoriesProvider),
+        ),
       ),
     );
   }

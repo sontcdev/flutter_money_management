@@ -5,6 +5,7 @@ import 'package:flutter_money_management/src/features/budgets/models/budget.dart
 import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
@@ -43,7 +44,7 @@ class BudgetDetailScreen extends ConsumerWidget {
         final statusColor = isExceeded
             ? AppColors.error
             : nearLimit
-                ? AppColors.warning
+                ? context.semanticColors.warning
                 : AppColors.primary;
 
         final periodLabel = switch (budget.periodType) {

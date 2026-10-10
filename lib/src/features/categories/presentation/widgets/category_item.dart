@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
@@ -24,6 +25,7 @@ class CategoryItem extends StatelessWidget {
     final color = getCategoryColor(category.colorValue);
     final iconData = CategoryIcons.getIcon(category.iconName);
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return InkWell(
       onTap: onTap ?? onEdit,
@@ -45,7 +47,7 @@ class CategoryItem extends StatelessWidget {
               child: Icon(
                 iconData,
                 color: color,
-                size: 20,
+                size: AppSpacing.iconSizeSm,
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -59,6 +61,7 @@ class CategoryItem extends StatelessWidget {
             ),
             if (onEdit != null)
               IconButton(
+                tooltip: l10n.editCategory,
                 icon: const Icon(Icons.edit_outlined),
                 iconSize: 20,
                 visualDensity: VisualDensity.compact,
@@ -67,6 +70,7 @@ class CategoryItem extends StatelessWidget {
               ),
             if (onDelete != null)
               IconButton(
+                tooltip: l10n.delete,
                 icon: const Icon(Icons.delete_outline),
                 iconSize: 20,
                 visualDensity: VisualDensity.compact,

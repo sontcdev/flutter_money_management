@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
+import 'app_spacing.dart';
 
 class ReportTheme {
   // Colors aligned with the AppColors design tokens (brand green / negative
@@ -71,7 +72,7 @@ class ReportTheme {
   static const double categoryIconSize = 40.0;
 
   // Calendar grid spacing
-  static const double cellHeight = 70.0;
+  static const double cellHeight = 48.0;
   static const double cellMargin = 2.0;
   static const double weekdayHeaderHeight = 30.0;
 
@@ -124,7 +125,7 @@ class ReportTheme {
   static BoxDecoration categoryIconDecoration(Color color) {
     return BoxDecoration(
       color: color.withValues(alpha: 0.15),
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
     );
   }
 
@@ -134,7 +135,7 @@ class ReportTheme {
       color: isIncome
           ? incomeColor.withValues(alpha: 0.15)
           : expenseColor.withValues(alpha: 0.15),
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
     );
   }
 }

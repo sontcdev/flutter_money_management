@@ -1,0 +1,4 @@
+"NSCameraUsageDescription" = "Chụp ảnh hóa đơn để đính kèm vào giao dịch của bạn.";
+"NSPhotoLibraryUsageDescription" = "Chọn ảnh hóa đơn để đính kèm vào giao dịch của bạn.";
+"NSMicrophoneUsageDescription" = "Sử dụng micrô để thêm giao dịch bằng giọng nói.";
+"NSSpeechRecognitionUsageDescription" = "Chuyển lời nói của bạn thành thông tin giao dịch.";

@@ -8,6 +8,8 @@ import 'package:flutter_money_management/src/features/workspace/providers/worksp
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_section_header.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
+import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
 class WorkspaceInviteNotificationSection extends ConsumerWidget {
@@ -24,7 +26,6 @@ class WorkspaceInviteNotificationSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
     final notificationsAsync = ref.watch(myNotificationsProvider);
     final legacyInvitesAsync =
         ref.watch(myWorkspaceInviteNotificationsProvider);
@@ -59,13 +60,16 @@ class WorkspaceInviteNotificationSection extends ConsumerWidget {
               showWhenEmpty: showWhenEmpty,
             ),
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, _) =>
-                AppCard(child: Text(l10n.errorWithMessage('$error'))),
+            error: (error, _) => InlineLoadErrorState(
+              onRetry: () =>
+                  ref.invalidate(myWorkspaceInviteNotificationsProvider),
+            ),
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) =>
-            AppCard(child: Text(l10n.errorWithMessage('$error'))),
+        error: (error, _) => InlineLoadErrorState(
+          onRetry: () => ref.invalidate(myNotificationsProvider),
+        ),
       ),
     );
   }
@@ -261,11 +265,7 @@ class _InviteNotificationCardState
         return;
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.inviteDeclined),
-        ),
-      );
+      showAppSnackBar(context, AppLocalizations.of(context)!.inviteDeclined);
     } catch (e, stackTrace) {
       if (!context.mounted) {
         return;

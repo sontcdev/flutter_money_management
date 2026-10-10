@@ -5,6 +5,7 @@ import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/categories/models/category_icon_registry.dart';
 import 'package:flutter_money_management/src/features/categories/providers/custom_icons_provider.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 
 class IconManagementScreen extends HookConsumerWidget {
   const IconManagementScreen({super.key});
@@ -39,6 +40,7 @@ class IconManagementScreen extends HookConsumerWidget {
                 filled: true,
                 suffixIcon: searchQuery.value.isNotEmpty
                     ? IconButton(
+                        tooltip: l10n.clear,
                         icon: const Icon(Icons.clear),
                         onPressed: () {
                           searchController.clear();
@@ -59,7 +61,8 @@ class IconManagementScreen extends HookConsumerWidget {
               child: Row(
                 children: [
                   Icon(Icons.star,
-                      color: Theme.of(context).colorScheme.primary, size: 20),
+                      color: Theme.of(context).colorScheme.primary,
+                      size: AppSpacing.iconSizeSm),
                   const SizedBox(width: AppSpacing.sm),
                   Text(
                     l10n.myIcons,
@@ -93,8 +96,10 @@ class IconManagementScreen extends HookConsumerWidget {
                             .read(customIconsProvider.notifier)
                             .removeIcon(iconKey);
                         if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(l10n.iconRemoved)),
+                          showAppSnackBar(
+                            context,
+                            l10n.iconRemoved,
+                            type: AppSnackBarType.success,
                           );
                         }
                       },
@@ -112,7 +117,7 @@ class IconManagementScreen extends HookConsumerWidget {
                 const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
             child: Row(
               children: [
-                const Icon(Icons.apps, size: 20),
+                const Icon(Icons.apps, size: AppSpacing.iconSizeSm),
                 const SizedBox(width: AppSpacing.sm),
                 Text(
                   l10n.availableIcons,
@@ -170,8 +175,10 @@ class IconManagementScreen extends HookConsumerWidget {
                                 .read(customIconsProvider.notifier)
                                 .removeIcon(entry.key);
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(l10n.iconRemoved)),
+                              showAppSnackBar(
+                                context,
+                                l10n.iconRemoved,
+                                type: AppSnackBarType.success,
                               );
                             }
                           } else {
@@ -179,12 +186,12 @@ class IconManagementScreen extends HookConsumerWidget {
                                 .read(customIconsProvider.notifier)
                                 .addIcon(entry.key);
                             if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(added
-                                      ? l10n.iconAdded
-                                      : l10n.iconAlreadyAdded),
-                                ),
+                              showAppSnackBar(
+                                context,
+                                added ? l10n.iconAdded : l10n.iconAlreadyAdded,
+                                type: added
+                                    ? AppSnackBarType.success
+                                    : AppSnackBarType.info,
                               );
                             }
                           }
@@ -255,10 +262,10 @@ class _IconTile extends StatelessWidget {
                       color: Theme.of(context).colorScheme.primary,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.check,
                       size: 10,
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onPrimary,
                     ),
                   ),
                 ),

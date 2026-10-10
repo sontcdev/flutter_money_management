@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/settings/providers/settings_preferences_providers.dart';
 import 'package:flutter_money_management/src/features/reports/presentation/screens/report_calendar_screen.dart';
+import 'package:flutter_money_management/src/features/reports/presentation/widgets/calendar_date_cell.dart';
 import 'package:flutter_money_management/src/features/reports/presentation/widgets/calendar_grid.dart';
 import 'package:flutter_money_management/src/i18n/locale_provider.dart';
 import 'package:flutter_money_management/src/i18n/theme_provider.dart';
@@ -54,5 +55,33 @@ void main() {
 
     expect(find.byType(ReportCalendarScreen), findsOneWidget);
     expect(find.byType(CalendarGrid), findsOneWidget);
+  });
+
+  testWidgets('CalendarDateCell dims days outside the displayed month', (
+    WidgetTester tester,
+  ) async {
+    final displayedMonth = DateTime(2020, 1, 1);
+
+    Future<Color?> dayColor(DateTime date) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CalendarDateCell(
+              date: date,
+              displayedMonth: displayedMonth,
+              badges: const [],
+              onTap: () {},
+            ),
+          ),
+        ),
+      );
+      return tester.widget<Text>(find.text(date.day.toString())).style?.color;
+    }
+
+    final inMonthColor = await dayColor(DateTime(2020, 1, 15));
+    final outOfMonthColor = await dayColor(DateTime(2020, 2, 2));
+
+    expect(inMonthColor?.a, 1.0);
+    expect(outOfMonthColor?.a, closeTo(0.4, 0.01));
   });
 }

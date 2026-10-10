@@ -12,6 +12,7 @@ import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 import 'package:flutter_money_management/src/utils/category_icons.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/cycle_utils.dart';
@@ -94,8 +95,10 @@ class CategoryEditScreen extends HookConsumerWidget {
 
     Future<void> save() async {
       if (nameController.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.categoryNameRequiredError)),
+        showAppSnackBar(
+          context,
+          l10n.categoryNameRequiredError,
+          type: AppSnackBarType.error,
         );
         return;
       }
@@ -178,9 +181,7 @@ class CategoryEditScreen extends HookConsumerWidget {
 
         if (context.mounted) {
           Navigator.of(context).pop(true);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.success)),
-          );
+          showAppSnackBar(context, l10n.success, type: AppSnackBarType.success);
         }
       } catch (e, stackTrace) {
         if (context.mounted) {
@@ -293,7 +294,7 @@ class CategoryEditScreen extends HookConsumerWidget {
                     child: Center(
                       child: Icon(
                         iconData,
-                        size: 24,
+                        size: AppSpacing.iconSize,
                         color: isSelected
                             ? iconColor
                             : theme.colorScheme.onSurfaceVariant,

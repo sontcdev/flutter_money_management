@@ -2,7 +2,8 @@
 
 import 'package:flutter/material.dart';
 import '../../features/transactions/models/transaction.dart';
-import '../../theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_motion.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import '../../theme/app_spacing.dart';
 
 /// Pill-shaped expense/income switch on a surface2 track, matching the
@@ -31,7 +32,7 @@ class TransactionTypeToggle extends StatelessWidget {
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       ),
       child: Row(
         children: [
@@ -39,7 +40,7 @@ class TransactionTypeToggle extends StatelessWidget {
             child: _Segment(
               label: expenseLabel,
               icon: Icons.arrow_upward,
-              color: AppColors.expense,
+              color: context.semanticColors.expense,
               selected: value == TransactionType.expense,
               onTap: () => onChanged(TransactionType.expense),
             ),
@@ -48,7 +49,7 @@ class TransactionTypeToggle extends StatelessWidget {
             child: _Segment(
               label: incomeLabel,
               icon: Icons.arrow_downward,
-              color: AppColors.income,
+              color: context.semanticColors.income,
               selected: value == TransactionType.income,
               onTap: () => onChanged(TransactionType.income),
             ),
@@ -89,11 +90,11 @@ class _Segment extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
+        duration: AppMotion.of(context, AppMotion.fast),
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         decoration: BoxDecoration(
           color: selected ? Theme.of(context).colorScheme.surface : null,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
           boxShadow: selected
               ? [
                   BoxShadow(

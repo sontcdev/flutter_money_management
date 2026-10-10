@@ -1,0 +1,4 @@
+"NSCameraUsageDescription" = "Take receipt photos to attach to your transactions.";
+"NSPhotoLibraryUsageDescription" = "Select receipt photos to attach to your transactions.";
+"NSMicrophoneUsageDescription" = "Use the microphone to add transactions by voice.";
+"NSSpeechRecognitionUsageDescription" = "Convert your speech into transaction details.";

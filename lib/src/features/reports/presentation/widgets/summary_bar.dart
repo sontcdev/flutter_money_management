@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
-import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 
 class SummaryBar extends StatelessWidget {
@@ -41,7 +41,7 @@ class SummaryBar extends StatelessWidget {
               context,
               l10n.income,
               incomeAmount,
-              AppColors.income, // Green for income
+              context.semanticColors.income, // Green for income
             ),
           ),
           Container(
@@ -51,7 +51,7 @@ class SummaryBar extends StatelessWidget {
               context,
               l10n.expense,
               expenseAmount,
-              AppColors.expense, // Red for expense
+              context.semanticColors.expense, // Red for expense
             ),
           ),
           Container(
@@ -61,7 +61,9 @@ class SummaryBar extends StatelessWidget {
               context,
               l10n.net,
               '${net >= 0 ? '+' : '-'}$netAmount',
-              net >= 0 ? AppColors.income : AppColors.expense,
+              net >= 0
+                  ? context.semanticColors.income
+                  : context.semanticColors.expense,
             ),
           ),
         ],
@@ -78,7 +80,6 @@ class SummaryBar extends StatelessWidget {
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color:
                     Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                fontSize: 12,
               ),
         ),
         const SizedBox(height: 4),
@@ -87,7 +88,6 @@ class SummaryBar extends StatelessWidget {
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: color,
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
               ),
           textAlign: TextAlign.center,
         ),

@@ -1358,6 +1358,11 @@ class AppLocalizationsVi extends AppLocalizations {
   String get overBudget => 'Vượt ngân sách';
 
   @override
+  String overBy(Object amount) {
+    return 'Vượt $amount';
+  }
+
+  @override
   String get dangerZone => 'Khu vực nguy hiểm';
 
   @override
@@ -1554,6 +1559,9 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get unknown => 'Không xác định';
+
+  @override
+  String get uncategorized => 'Chưa phân loại';
 
   @override
   String get noTransactionsThisMonth => 'Không có giao dịch trong tháng này';
@@ -1761,6 +1769,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get walletRequired => 'Vui lòng chọn ví';
 
   @override
+  String get toWalletRequired => 'Vui lòng chọn ví nhận';
+
+  @override
   String get negativeOpeningBalance => 'Số dư ban đầu âm (đang nợ)';
 
   @override
@@ -1786,6 +1797,18 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get voiceInputTryAgain => 'Thử lại';
+
+  @override
+  String get deleteAccount => 'Xóa tài khoản';
+
+  @override
+  String get deleteAccountDesc => 'Yêu cầu xóa vĩnh viễn tài khoản và dữ liệu của bạn';
+
+  @override
+  String get deleteAccountConfirm => 'Thao tác này xóa vĩnh viễn tài khoản, không gian cá nhân và dữ liệu của bạn. Thông tin tác giả và tệp đính kèm cá nhân được xóa khỏi không gian chung bạn đã rời; lịch sử tài chính chung vẫn được giữ cho thành viên khác. Không thể hoàn tác.';
+
+  @override
+  String get deleteAccountOpenFailed => 'Không mở được trang. Vui lòng gửi email tới tcson.dev@gmail.com để yêu cầu xóa tài khoản.';
 
   @override
   String get quickInputTitle => 'Nhập nhanh';
@@ -1827,4 +1850,87 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get quickInputTooltip => 'Nhập hoặc nói giao dịch';
+
+  @override
+  String get undo => 'Hoàn tác';
+
+  @override
+  String deleteItemTitle(String name) {
+    return 'Xóa \"$name\"?';
+  }
+
+  @override
+  String get deleteCannotBeUndone => 'Thao tác này không thể hoàn tác.';
+
+  @override
+  String get sectionLoadFailed => 'Không thể tải phần này.';
+
+  @override
+  String get clear => 'Xóa';
+
+  @override
+  String get showPassword => 'Hiện mật khẩu';
+
+  @override
+  String get hidePassword => 'Ẩn mật khẩu';
+
+  @override
+  String get expand => 'Mở rộng';
+
+  @override
+  String get previousDay => 'Ngày trước';
+
+  @override
+  String get nextDay => 'Ngày sau';
+
+  @override
+  String get removeReceipt => 'Xóa hóa đơn';
+
+  @override
+  String get resetCodeTitle => 'Nhập mã đặt lại mật khẩu';
+
+  @override
+  String get resetCodeInstructions => 'Nhập mã trong email đặt lại mật khẩu. Sau đó bạn có thể chọn mật khẩu mới.';
+
+  @override
+  String get resetCodeLabel => 'Mã trong email';
+
+  @override
+  String get resetCodeVerify => 'Tiếp tục';
+
+  @override
+  String get resetCodeResend => 'Gửi mã mới';
+
+  @override
+  String get resetCodeInvalid => 'Nhập mã số trong email của bạn.';
+
+  @override
+  String get resetCodeFailed => 'Không thể xác minh mã. Kiểm tra mã hoặc yêu cầu mã mới.';
+
+  @override
+  String get resetEmailInstructions => 'Nhập email để nhận mã đặt lại mật khẩu.';
+
+  @override
+  String get sendResetCode => 'Gửi mã';
+
+  @override
+  String get privacyPolicy => 'Chính sách quyền riêng tư';
+
+  @override
+  String get privacyPolicySubtitle => 'Cách dữ liệu của bạn được thu thập và sử dụng';
+
+  @override
+  String get privacyPolicyOpenFailed => 'Không thể mở chính sách quyền riêng tư. Vui lòng thử lại.';
+
+  @override
+  String get deleteAccountTypeConfirmation => 'Nhập DELETE để xác nhận';
+
+  @override
+  String get deleteAccountFailed => 'Chưa thể hoàn tất xóa tài khoản. Hãy thử lại để hoàn tất.';
+
+  @override
+  String get deleteAccountWebRequest => 'Yêu cầu xóa trên web';
+
+  @override
+  String get deleteAccountSharedWorkspaces => 'Hãy rời các không gian chung này trước khi xóa tài khoản.';
 }

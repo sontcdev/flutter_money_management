@@ -4,6 +4,8 @@ import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/notifications/providers/notification_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/services/workspace_sync_helper.dart';
+import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 
 /// Widget to display current workspace and allow switching
 class WorkspaceSwitcher extends ConsumerWidget {
@@ -34,7 +36,7 @@ class WorkspaceSwitcher extends ConsumerWidget {
               children: [
                 Icon(
                   Icons.workspace_premium,
-                  size: 20,
+                  size: AppSpacing.iconSizeSm,
                   color: Theme.of(context).colorScheme.primary,
                 ),
                 if (unreadCount > 0)
@@ -53,7 +55,7 @@ class WorkspaceSwitcher extends ConsumerWidget {
                       ),
                 ),
                 const SizedBox(width: 4),
-                const Icon(Icons.arrow_drop_down, size: 20),
+                const Icon(Icons.arrow_drop_down, size: AppSpacing.iconSizeSm),
               ],
             ),
           ),
@@ -67,7 +69,7 @@ class WorkspaceSwitcher extends ConsumerWidget {
                   children: [
                     Icon(
                       isActive ? Icons.check_circle : Icons.circle_outlined,
-                      size: 20,
+                      size: AppSpacing.iconSizeSm,
                       color: isActive
                           ? Theme.of(context).colorScheme.primary
                           : Theme.of(context)
@@ -115,7 +117,7 @@ class WorkspaceSwitcher extends ConsumerWidget {
               value: 'manage',
               child: Row(
                 children: [
-                  const Icon(Icons.settings, size: 20),
+                  const Icon(Icons.settings, size: AppSpacing.iconSizeSm),
                   const SizedBox(width: 12),
                   Text(l10n.manageWorkspaces),
                 ],
@@ -125,7 +127,10 @@ class WorkspaceSwitcher extends ConsumerWidget {
               value: 'detail',
               child: Row(
                 children: [
-                  Icon(Icons.dashboard_customize_outlined, size: 20),
+                  Icon(
+                    Icons.dashboard_customize_outlined,
+                    size: AppSpacing.iconSizeSm,
+                  ),
                   SizedBox(width: 12),
                   Text('Workspace detail'),
                 ],
@@ -135,7 +140,7 @@ class WorkspaceSwitcher extends ConsumerWidget {
               value: 'create',
               child: Row(
                 children: [
-                  Icon(Icons.add_circle_outline, size: 20),
+                  Icon(Icons.add_circle_outline, size: AppSpacing.iconSizeSm),
                   SizedBox(width: 12),
                   Text('Create workspace'),
                 ],
@@ -159,14 +164,12 @@ class WorkspaceSwitcher extends ConsumerWidget {
               ref.invalidate(workspaceListProvider);
               invalidateCoreDataProviders(ref);
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.switchedWorkspace(
-                    workspaces.firstWhere((w) => w.id == value).name,
-                  )),
-                  duration: const Duration(seconds: 2),
-                  behavior: SnackBarBehavior.floating,
+              showAppSnackBar(
+                context,
+                l10n.switchedWorkspace(
+                  workspaces.firstWhere((w) => w.id == value).name,
                 ),
+                duration: const Duration(seconds: 2),
               );
             }
           },
@@ -180,7 +183,14 @@ class WorkspaceSwitcher extends ConsumerWidget {
           child: CircularProgressIndicator(strokeWidth: 2),
         ),
       ),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, __) => IconButton(
+        tooltip: l10n.retry,
+        icon: Icon(
+          Icons.cloud_off_outlined,
+          color: Theme.of(context).colorScheme.error,
+        ),
+        onPressed: () => ref.invalidate(workspaceListProvider),
+      ),
     );
   }
 }

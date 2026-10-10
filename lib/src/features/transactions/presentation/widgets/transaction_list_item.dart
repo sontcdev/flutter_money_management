@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
 import 'package:flutter_money_management/src/features/reports/providers/report_providers.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
-import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 
@@ -31,11 +31,11 @@ class TransactionListItem extends StatelessWidget {
     final String amountPrefix;
     switch (transaction.type) {
       case TransactionType.expense:
-        amountColor = AppColors.expense;
+        amountColor = context.semanticColors.expense;
         amountPrefix = '-';
         break;
       case TransactionType.income:
-        amountColor = AppColors.income;
+        amountColor = context.semanticColors.income;
         amountPrefix = '+';
         break;
       case TransactionType.transfer:
@@ -125,7 +125,7 @@ class TransactionListItem extends StatelessWidget {
       alignment: Alignment.center,
       child: CategoryIconWidget(
         iconName: transactionWithCategory.categoryIconName,
-        size: 20,
+        size: AppSpacing.iconSizeSm,
         color: categoryColor,
       ),
     );

@@ -110,9 +110,8 @@ class _AppInputState extends State<AppInput> {
                     },
                     child: Text(
                       AppLocalizations.of(context)!.skip,
-                      style: TextStyle(
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: colorScheme.onSurface.withValues(alpha: 0.6),
-                        fontSize: 16,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -127,9 +126,8 @@ class _AppInputState extends State<AppInput> {
                     },
                     child: Text(
                       AppLocalizations.of(context)!.done,
-                      style: TextStyle(
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: colorScheme.primary,
-                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

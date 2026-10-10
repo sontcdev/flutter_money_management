@@ -1358,6 +1358,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get overBudget => 'Over budget';
 
   @override
+  String overBy(Object amount) {
+    return 'Over by $amount';
+  }
+
+  @override
   String get dangerZone => 'Danger zone';
 
   @override
@@ -1554,6 +1559,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unknown => 'Unknown';
+
+  @override
+  String get uncategorized => 'Uncategorized';
 
   @override
   String get noTransactionsThisMonth => 'No transactions this month';
@@ -1761,6 +1769,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get walletRequired => 'Please select a wallet';
 
   @override
+  String get toWalletRequired => 'Please select a destination wallet';
+
+  @override
   String get negativeOpeningBalance => 'Negative opening balance (money owed)';
 
   @override
@@ -1786,6 +1797,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get voiceInputTryAgain => 'Try again';
+
+  @override
+  String get deleteAccount => 'Delete account';
+
+  @override
+  String get deleteAccountDesc => 'Request permanent deletion of your account and data';
+
+  @override
+  String get deleteAccountConfirm => 'This permanently deletes your account, personal workspaces and their data. Your author references and personal attachments are removed from shared workspaces you have left; shared financial history remains for other members. This cannot be undone.';
+
+  @override
+  String get deleteAccountOpenFailed => 'Could not open the page. Please email tcson.dev@gmail.com to request account deletion.';
 
   @override
   String get quickInputTitle => 'Quick input';
@@ -1827,4 +1850,87 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quickInputTooltip => 'Type or speak a transaction';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String deleteItemTitle(String name) {
+    return 'Delete \"$name\"?';
+  }
+
+  @override
+  String get deleteCannotBeUndone => 'This can\'t be undone.';
+
+  @override
+  String get sectionLoadFailed => 'Couldn\'t load this section.';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get showPassword => 'Show password';
+
+  @override
+  String get hidePassword => 'Hide password';
+
+  @override
+  String get expand => 'Expand';
+
+  @override
+  String get previousDay => 'Previous day';
+
+  @override
+  String get nextDay => 'Next day';
+
+  @override
+  String get removeReceipt => 'Remove receipt';
+
+  @override
+  String get resetCodeTitle => 'Enter reset code';
+
+  @override
+  String get resetCodeInstructions => 'Enter the code from your reset email. You can then choose a new password.';
+
+  @override
+  String get resetCodeLabel => 'Email code';
+
+  @override
+  String get resetCodeVerify => 'Continue';
+
+  @override
+  String get resetCodeResend => 'Send a new code';
+
+  @override
+  String get resetCodeInvalid => 'Enter the numeric code from your email.';
+
+  @override
+  String get resetCodeFailed => 'Could not verify the code. Check it or request a new one.';
+
+  @override
+  String get resetEmailInstructions => 'Enter your email to receive a password reset code.';
+
+  @override
+  String get sendResetCode => 'Send code';
+
+  @override
+  String get privacyPolicy => 'Privacy policy';
+
+  @override
+  String get privacyPolicySubtitle => 'How your data is collected and used';
+
+  @override
+  String get privacyPolicyOpenFailed => 'Could not open the privacy policy. Please try again.';
+
+  @override
+  String get deleteAccountTypeConfirmation => 'Type DELETE to confirm';
+
+  @override
+  String get deleteAccountFailed => 'Deletion could not be completed. Retry to finish deleting your account.';
+
+  @override
+  String get deleteAccountWebRequest => 'Request deletion on the web';
+
+  @override
+  String get deleteAccountSharedWorkspaces => 'Leave these shared workspaces before deleting your account.';
 }

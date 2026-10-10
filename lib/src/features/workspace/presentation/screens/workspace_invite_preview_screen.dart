@@ -6,6 +6,7 @@ import 'package:flutter_money_management/src/features/notifications/providers/no
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_management_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
+import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
 class WorkspaceInvitePreviewScreen extends ConsumerStatefulWidget {
@@ -79,8 +80,13 @@ class _WorkspaceInvitePreviewScreenState
           ],
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) =>
-            Center(child: Text(l10n.errorWithMessage('$error'))),
+        error: (error, _) => LoadErrorState(
+          title: l10n.dataLoadFailed,
+          message: l10n.dataLoadFailedHint,
+          retryLabel: l10n.retry,
+          onRetry: () =>
+              ref.invalidate(workspaceInvitePreviewProvider(widget.token)),
+        ),
       ),
     );
   }

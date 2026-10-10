@@ -1358,6 +1358,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get overBudget => '予算超過';
 
   @override
+  String overBy(Object amount) {
+    return '$amount 超過';
+  }
+
+  @override
   String get dangerZone => '危険な操作';
 
   @override
@@ -1554,6 +1559,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get unknown => '不明';
+
+  @override
+  String get uncategorized => '未分類';
 
   @override
   String get noTransactionsThisMonth => '今月の取引はありません';
@@ -1761,6 +1769,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get walletRequired => 'ウォレットを選択してください';
 
   @override
+  String get toWalletRequired => '送金先のウォレットを選択してください';
+
+  @override
   String get negativeOpeningBalance => '初期残高をマイナスにする（借入）';
 
   @override
@@ -1786,6 +1797,18 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get voiceInputTryAgain => 'もう一度';
+
+  @override
+  String get deleteAccount => 'アカウントを削除';
+
+  @override
+  String get deleteAccountDesc => 'アカウントとデータの完全削除をリクエスト';
+
+  @override
+  String get deleteAccountConfirm => 'アカウント、個人ワークスペースとそのデータを完全に削除します。退出した共有ワークスペースからあなたの作成者情報と個人の添付ファイルを削除しますが、共有の財務履歴は他のメンバーのために残ります。この操作は取り消せません。';
+
+  @override
+  String get deleteAccountOpenFailed => 'ページを開けませんでした。アカウント削除は tcson.dev@gmail.com までメールでご依頼ください。';
 
   @override
   String get quickInputTitle => 'クイック入力';
@@ -1827,4 +1850,87 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get quickInputTooltip => '取引を文字または音声で入力';
+
+  @override
+  String get undo => '元に戻す';
+
+  @override
+  String deleteItemTitle(String name) {
+    return '「$name」を削除しますか？';
+  }
+
+  @override
+  String get deleteCannotBeUndone => 'この操作は元に戻せません。';
+
+  @override
+  String get sectionLoadFailed => 'このセクションを読み込めませんでした。';
+
+  @override
+  String get clear => 'クリア';
+
+  @override
+  String get showPassword => 'パスワードを表示';
+
+  @override
+  String get hidePassword => 'パスワードを隠す';
+
+  @override
+  String get expand => '展開';
+
+  @override
+  String get previousDay => '前日';
+
+  @override
+  String get nextDay => '翌日';
+
+  @override
+  String get removeReceipt => 'レシートを削除';
+
+  @override
+  String get resetCodeTitle => '再設定コードを入力';
+
+  @override
+  String get resetCodeInstructions => '再設定メールのコードを入力すると、新しいパスワードを設定できます。';
+
+  @override
+  String get resetCodeLabel => 'メールのコード';
+
+  @override
+  String get resetCodeVerify => '続ける';
+
+  @override
+  String get resetCodeResend => '新しいコードを送信';
+
+  @override
+  String get resetCodeInvalid => 'メールに記載された数字のコードを入力してください。';
+
+  @override
+  String get resetCodeFailed => 'コードを確認できませんでした。コードを確認するか、新しいコードをリクエストしてください。';
+
+  @override
+  String get resetEmailInstructions => 'メールアドレスを入力して、パスワード再設定コードを受け取ってください。';
+
+  @override
+  String get sendResetCode => 'コードを送信';
+
+  @override
+  String get privacyPolicy => 'プライバシーポリシー';
+
+  @override
+  String get privacyPolicySubtitle => 'データの収集と利用について';
+
+  @override
+  String get privacyPolicyOpenFailed => 'プライバシーポリシーを開けませんでした。もう一度お試しください。';
+
+  @override
+  String get deleteAccountTypeConfirmation => '確認のため DELETE と入力';
+
+  @override
+  String get deleteAccountFailed => '削除を完了できませんでした。再試行してアカウントの削除を完了してください。';
+
+  @override
+  String get deleteAccountWebRequest => 'ウェブで削除を依頼';
+
+  @override
+  String get deleteAccountSharedWorkspaces => 'アカウントを削除する前に、これらの共有ワークスペースから退出してください。';
 }

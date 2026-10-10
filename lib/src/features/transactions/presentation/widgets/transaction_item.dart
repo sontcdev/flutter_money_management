@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
-import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
@@ -56,16 +56,17 @@ class TransactionItem extends StatelessWidget {
     final formattedAmount = CurrencyFormatter.formatFromCents(
       transaction.amountCents,
       transaction.currency,
+      locale: Localizations.localeOf(context).toString(),
     );
 
     // Transfers move money between wallets, so they are neither red nor green.
     final Color color;
     switch (transaction.type) {
       case TransactionType.expense:
-        color = AppColors.expense;
+        color = context.semanticColors.expense;
         break;
       case TransactionType.income:
-        color = AppColors.income;
+        color = context.semanticColors.income;
         break;
       case TransactionType.transfer:
         color = Theme.of(context).colorScheme.onSurface;
@@ -137,10 +138,10 @@ class TransactionItem extends StatelessWidget {
       child: categoryIconName != null
           ? CategoryIconWidget(
               iconName: categoryIconName!,
-              size: 20,
+              size: AppSpacing.iconSizeSm,
               color: tint,
             )
-          : Icon(categoryIcon, size: 20, color: tint),
+          : Icon(categoryIcon, size: AppSpacing.iconSizeSm, color: tint),
     );
   }
 

@@ -10,6 +10,7 @@ import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/utils/app_logger.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
+import 'package:flutter_money_management/src/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'sign_up_screen.dart';
 
 class SignInScreen extends HookConsumerWidget {
@@ -169,55 +170,14 @@ class SignInScreen extends HookConsumerWidget {
       }
     }
 
-    Future<void> handleForgotPassword() async {
-      if (emailController.text.trim().isEmpty) {
-        errorMessage.value = l10n.enterEmailResetPassword;
-        return;
-      }
-
-      isLoading.value = true;
-      errorMessage.value = null;
-
-      try {
-        AppLogger.info('Forgot password submitted', name: 'MM.UI');
-        await authService.resetPassword(emailController.text.trim());
-        AppLogger.info('Forgot password request succeeded', name: 'MM.Auth');
-
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(l10n.passwordResetEmailSent),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      } catch (e, stackTrace) {
-        AppLogger.error(
-          'Forgot password request failed',
-          name: 'MM.Auth',
-          error: e,
-          stackTrace: stackTrace,
-        );
-        errorMessage.value = l10n.failedToSendResetEmail;
-
-        if (context.mounted) {
-          await ErrorReportHelper.handleApiError(
-            context: context,
-            ref: ref,
-            error: e,
-            stackTrace: stackTrace,
-            feature: 'auth',
-            action: 'forgot_password',
-            screen: 'sign_in_screen',
-            extraContext: {
-              'email_masked':
-                  ErrorReportHelper.maskEmail(emailController.text.trim()),
-            },
-          );
-        }
-      } finally {
-        isLoading.value = false;
-      }
+    void handleForgotPassword() {
+      Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          builder: (_) => ForgotPasswordScreen(
+            initialEmail: emailController.text.trim(),
+          ),
+        ),
+      );
     }
 
     final colorScheme = Theme.of(context).colorScheme;
@@ -246,9 +206,9 @@ class SignInScreen extends HookConsumerWidget {
                   color: colorScheme.primary,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.account_balance_wallet_outlined,
-                  color: Colors.white,
+                  color: colorScheme.onPrimary,
                   size: 26,
                 ),
               ),
@@ -286,6 +246,7 @@ class SignInScreen extends HookConsumerWidget {
                       prefixIcon: const Icon(Icons.email_outlined),
                       suffixIcon: value.text.isNotEmpty
                           ? IconButton(
+                              tooltip: l10n.clear,
                               icon: const Icon(Icons.clear),
                               onPressed: () {
                                 emailController.clear();
@@ -312,6 +273,9 @@ class SignInScreen extends HookConsumerWidget {
                   hintText: l10n.enterYourPassword,
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
+                    tooltip: obscurePassword.value
+                        ? l10n.showPassword
+                        : l10n.hidePassword,
                     icon: Icon(
                       obscurePassword.value
                           ? Icons.visibility_outlined
@@ -395,7 +359,10 @@ class SignInScreen extends HookConsumerWidget {
                             ),
                           );
                         },
-                  icon: const Icon(Icons.person_add_outlined, size: 16),
+                  icon: const Icon(
+                    Icons.person_add_outlined,
+                    size: AppSpacing.iconSizeXs,
+                  ),
                   label: Text(l10n.createNewAccount),
                 ),
               ),

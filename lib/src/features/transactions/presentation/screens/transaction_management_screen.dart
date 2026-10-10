@@ -11,6 +11,7 @@ import 'package:flutter_money_management/src/features/workspace/services/workspa
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
@@ -156,12 +157,23 @@ class TransactionManagementScreen extends HookConsumerWidget {
                             icon: Icons.search_off,
                             title: l10n.noTransactionsMatch,
                             message: l10n.adjustSearchTerms,
+                            actionLabel: l10n.clearFilter,
+                            actionIcon: Icons.filter_alt_off,
+                            onAction: () {
+                              searchController.clear();
+                              selectedCategoryId.value = null;
+                              selectedBudgetId.value = null;
+                            },
                             compact: true,
                           )
                         : EmptyState(
                             icon: Icons.receipt_long,
                             title: l10n.noTransactions,
                             message: l10n.onboardingSubtitle,
+                            actionLabel: l10n.addTransaction,
+                            onAction: () {
+                              Navigator.pushNamed(context, '/add-transaction');
+                            },
                             compact: true,
                           );
                     return ListView(
@@ -265,7 +277,7 @@ class TransactionManagementScreen extends HookConsumerWidget {
     final item = TransactionItem(
       transaction: transaction,
       categoryName: category?.name ?? l10n.unknown,
-      categoryIconName: category?.iconName ?? '📦',
+      categoryIconName: category?.iconName ?? 'inventory_2',
       categoryColor: categoryColor,
       showDate: true,
       showChevron: !isSelectionMode.value,
@@ -334,6 +346,7 @@ class TransactionManagementScreen extends HookConsumerWidget {
                   const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               suffixIcon: searchController.text.isNotEmpty
                   ? IconButton(
+                      tooltip: l10n.clear,
                       icon: const Icon(Icons.clear),
                       onPressed: () => searchController.clear(),
                     )
@@ -542,7 +555,7 @@ class TransactionManagementScreen extends HookConsumerWidget {
                           .withValues(alpha: 0.1),
                       child: CategoryIconWidget(
                         iconName: category.iconName,
-                        size: 20,
+                        size: AppSpacing.iconSizeSm,
                         color: getCategoryColor(category.colorValue),
                       ),
                     ),
@@ -595,8 +608,10 @@ class TransactionManagementScreen extends HookConsumerWidget {
       onSuccess();
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.updateSuccess)),
+        showAppSnackBar(
+          context,
+          l10n.updateSuccess,
+          type: AppSnackBarType.success,
         );
       }
     } catch (e, stackTrace) {
@@ -666,8 +681,10 @@ class TransactionManagementScreen extends HookConsumerWidget {
       onSuccess();
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.updateSuccess)),
+        showAppSnackBar(
+          context,
+          l10n.updateSuccess,
+          type: AppSnackBarType.success,
         );
       }
     } catch (e, stackTrace) {

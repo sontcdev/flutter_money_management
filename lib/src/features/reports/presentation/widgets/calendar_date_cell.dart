@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_money_management/src/features/reports/models/report_calendar_models.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
+import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/theme/report_theme.dart';
 
 class CalendarDateCell extends StatelessWidget {
   final DateTime date;
+  final DateTime displayedMonth;
   final List<AmountBadge> badges;
   final bool isSelected;
   final bool isToday;
@@ -13,6 +16,7 @@ class CalendarDateCell extends StatelessWidget {
   const CalendarDateCell({
     super.key,
     required this.date,
+    required this.displayedMonth,
     required this.badges,
     this.isSelected = false,
     this.isToday = false,
@@ -21,21 +25,25 @@ class CalendarDateCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCurrentMonth = date.month == DateTime.now().month;
+    final isCurrentMonth =
+        date.year == displayedMonth.year && date.month == displayedMonth.month;
+    final semanticColors = context.semanticColors;
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 48,
+        height: MediaQuery.textScalerOf(context)
+            .scale(ReportTheme.cellHeight)
+            .clamp(ReportTheme.cellHeight, double.infinity),
         margin: const EdgeInsets.all(1),
         decoration: BoxDecoration(
           color: isSelected
-              ? ReportTheme.selectedDateBackground
-              : (isToday ? ReportTheme.todayBackground : Colors.transparent),
-          borderRadius: BorderRadius.circular(8),
+              ? semanticColors.calendarSelected
+              : (isToday ? semanticColors.calendarToday : Colors.transparent),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
           border: isToday && !isSelected
               ? Border.all(
-                  color: ReportTheme.incomeColor.withValues(alpha: 0.3),
+                  color: semanticColors.income.withValues(alpha: 0.3),
                   width: 1)
               : null,
         ),
@@ -48,8 +56,7 @@ class CalendarDateCell extends StatelessWidget {
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
                     color: (isSelected || isToday)
-                        ? Colors
-                            .black // Black text on light background (selected/today)
+                        ? Theme.of(context).colorScheme.onSurface
                         : (isCurrentMonth
                             ? Theme.of(context).textTheme.bodyLarge?.color
                             : Theme.of(context)
@@ -89,17 +96,17 @@ class CalendarDateCell extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
       decoration: BoxDecoration(
         color: badge.isIncome
-            ? ReportTheme.incomeColor.withValues(alpha: 0.15)
-            : ReportTheme.expenseColor.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(2),
+            ? context.semanticColors.income.withValues(alpha: 0.15)
+            : context.semanticColors.expense.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusXxs),
       ),
       child: Text(
         amountText,
         style: TextStyle(
           fontSize: 7,
           color: badge.isIncome
-              ? ReportTheme.incomeColor
-              : ReportTheme.expenseColor,
+              ? context.semanticColors.income
+              : context.semanticColors.expense,
           fontWeight: FontWeight.w600,
         ),
         maxLines: 1,

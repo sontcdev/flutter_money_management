@@ -11,8 +11,11 @@ import 'package:flutter_money_management/src/features/workspace/services/workspa
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
+import 'package:flutter_money_management/src/ui/widgets/confirm_delete_dialog.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
 import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
@@ -65,6 +68,7 @@ class BudgetsScreen extends ConsumerWidget {
         actions: [
           if (canManageContent)
             IconButton(
+              tooltip: l10n.addBudget,
               icon: const Icon(Icons.add),
               onPressed: () async {
                 final result =
@@ -96,8 +100,10 @@ class BudgetsScreen extends ConsumerWidget {
                   return ListView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     children: [
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.6,
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: MediaQuery.of(context).size.height * 0.6,
+                        ),
                         child: EmptyState(
                           icon: Icons.account_balance_wallet_outlined,
                           title: l10n.noBudgets,
@@ -271,7 +277,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
                         label: l10n.exceeded,
                         count: exceededCount,
                         color: AppColors.error,
-                        icon: Icons.warning_amber_rounded,
+                        icon: Icons.warning_amber_outlined,
                       ),
                     ),
                   ],
@@ -302,7 +308,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
                           onTap: () =>
                               setState(() => _filter = BudgetFilter.all),
                         ),
-                        const SizedBox(width: AppSpacing.xs),
+                        const SizedBox(width: AppSpacing.sm),
                         _FilterChip(
                           label: l10n.onTrack,
                           count: onTrackCount,
@@ -310,7 +316,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
                           onTap: () =>
                               setState(() => _filter = BudgetFilter.onTrack),
                         ),
-                        const SizedBox(width: AppSpacing.xs),
+                        const SizedBox(width: AppSpacing.sm),
                         _FilterChip(
                           label: l10n.nearLimit,
                           count: widget.budgets.where((b) {
@@ -323,7 +329,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
                           onTap: () =>
                               setState(() => _filter = BudgetFilter.nearLimit),
                         ),
-                        const SizedBox(width: AppSpacing.xs),
+                        const SizedBox(width: AppSpacing.sm),
                         _FilterChip(
                           label: l10n.exceeded,
                           count: exceededCount,
@@ -346,7 +352,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
                         children: [
                           Icon(
                             Icons.percent,
-                            size: 20,
+                            size: AppSpacing.iconSizeSm,
                             color: _sort == BudgetSort.percentage
                                 ? Theme.of(context).colorScheme.primary
                                 : null,
@@ -362,7 +368,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
                         children: [
                           Icon(
                             Icons.attach_money,
-                            size: 20,
+                            size: AppSpacing.iconSizeSm,
                             color: _sort == BudgetSort.amount
                                 ? Theme.of(context).colorScheme.primary
                                 : null,
@@ -378,7 +384,7 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
                         children: [
                           Icon(
                             Icons.sort_by_alpha,
-                            size: 20,
+                            size: AppSpacing.iconSizeSm,
                             color: _sort == BudgetSort.name
                                 ? Theme.of(context).colorScheme.primary
                                 : null,
@@ -470,7 +476,7 @@ class _StatusCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(icon, color: color, size: 20),
+          Icon(icon, color: color, size: AppSpacing.iconSizeSm),
           const SizedBox(width: AppSpacing.xs),
           Expanded(
             child: Column(
@@ -520,7 +526,11 @@ class _BudgetHeroCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final primary = theme.colorScheme.primary;
+    final foreground = theme.colorScheme.onPrimary;
+    final away = foreground == AppColors.textLight
+        ? AppColors.textDark
+        : AppColors.textLight;
     final progress = totalLimit > 0 ? totalSpent / totalLimit : 0.0;
 
     return Container(
@@ -529,9 +539,10 @@ class _BudgetHeroCard extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: isDark
-              ? [AppColors.primaryDark, AppColors.primaryStrong]
-              : [AppColors.primary, AppColors.primaryStrong],
+          colors: [
+            Color.lerp(primary, away, 0.1)!,
+            Color.lerp(primary, away, 0.3)!,
+          ],
         ),
         borderRadius: BorderRadius.circular(AppSpacing.radiusHero),
       ),
@@ -541,7 +552,7 @@ class _BudgetHeroCard extends StatelessWidget {
           Text(
             l10n.budgetOverview,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: Colors.white.withValues(alpha: 0.85),
+              color: foreground.withValues(alpha: 0.85),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -549,7 +560,7 @@ class _BudgetHeroCard extends StatelessWidget {
           Text(
             CurrencyFormatter.formatVNDFromCents(totalLimit, locale: locale),
             style: theme.textTheme.displaySmall?.copyWith(
-              color: Colors.white,
+              color: foreground,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -559,8 +570,8 @@ class _BudgetHeroCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress.clamp(0.0, 1.0),
               minHeight: 8,
-              backgroundColor: Colors.white.withValues(alpha: 0.25),
-              valueColor: const AlwaysStoppedAnimation(Colors.white),
+              backgroundColor: foreground.withValues(alpha: 0.25),
+              valueColor: AlwaysStoppedAnimation(foreground),
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -570,13 +581,13 @@ class _BudgetHeroCard extends StatelessWidget {
               Text(
                 '${l10n.spent}: ${CurrencyFormatter.formatVNDFromCents(totalSpent, locale: locale)}',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.85),
+                  color: foreground.withValues(alpha: 0.85),
                 ),
               ),
               Text(
-                '${(progress.clamp(0.0, 1.0) * 100).round()}%',
+                '${(progress * 100).round()}%',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: Colors.white,
+                  color: foreground,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -584,14 +595,41 @@ class _BudgetHeroCard extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(totalRemaining, locale: locale)}',
+            '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(totalRemaining < 0 ? 0 : totalRemaining, locale: locale)}',
             style: theme.textTheme.bodySmall?.copyWith(
-              color: Colors.white.withValues(alpha: 0.85),
+              color: foreground.withValues(alpha: 0.85),
               fontWeight: FontWeight.w600,
             ),
           ),
+          if (totalRemaining < 0) ...[
+            const SizedBox(height: AppSpacing.xs),
+            _buildOverLimit(theme, l10n),
+          ],
         ],
       ),
+    );
+  }
+
+  Widget _buildOverLimit(ThemeData theme, AppLocalizations l10n) {
+    return Row(
+      children: [
+        Icon(
+          Icons.warning_amber_outlined,
+          size: AppSpacing.iconSizeXs,
+          color: theme.colorScheme.onPrimary,
+        ),
+        const SizedBox(width: AppSpacing.xs),
+        Text(
+          l10n.overBy(
+            CurrencyFormatter.formatVNDFromCents(-totalRemaining,
+                locale: locale),
+          ),
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onPrimary,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -612,30 +650,17 @@ class _FilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.xs,
-        ),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? theme.colorScheme.primary
-              : theme.colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-        ),
-        child: Text(
-          '$label ($count)',
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            color: isSelected
-                ? theme.colorScheme.onPrimary
-                : theme.colorScheme.onSurface.withValues(alpha: 0.65),
-          ),
-        ),
+    return ChoiceChip(
+      label: Text('$label ($count)'),
+      selected: isSelected,
+      onSelected: (_) => onTap(),
+      showCheckmark: false,
+      selectedColor: theme.colorScheme.primary,
+      labelStyle: theme.textTheme.labelMedium?.copyWith(
+        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+        color: isSelected
+            ? theme.colorScheme.onPrimary
+            : theme.colorScheme.onSurface.withValues(alpha: 0.65),
       ),
     );
   }
@@ -698,29 +723,12 @@ class _SwipeableBudgetCard extends ConsumerWidget {
       orElse: () => l10n.unknown,
     );
 
-    return await showDialog<bool>(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text(l10n.notification),
-              content: Text(
-                l10n.confirmDeleteBudget(categoryName),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: Text(l10n.cancel),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  style: TextButton.styleFrom(foregroundColor: AppColors.error),
-                  child: Text(l10n.delete),
-                ),
-              ],
-            );
-          },
-        ) ??
-        false;
+    return ConfirmDeleteDialog.show(
+      context,
+      itemName: categoryName,
+      message: l10n.confirmDeleteBudget(categoryName),
+      consequence: l10n.deleteCannotBeUndone,
+    );
   }
 
   Future<void> _deleteBudget(
@@ -730,8 +738,10 @@ class _SwipeableBudgetCard extends ConsumerWidget {
       await repository.deleteBudget(budget.id);
       onDeleted();
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.budgetDeleted)),
+        showAppSnackBar(
+          context,
+          l10n.budgetDeleted,
+          type: AppSnackBarType.success,
         );
       }
     } catch (e, stackTrace) {
@@ -908,7 +918,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
               PopupMenuItem(
                 child: Row(
                   children: [
-                    const Icon(Icons.edit, size: 20),
+                    const Icon(Icons.edit, size: AppSpacing.iconSizeSm),
                     const SizedBox(width: AppSpacing.sm),
                     Text(l10n.editBudgetAction),
                   ],
@@ -940,13 +950,13 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
             final statusColor = percentage > 100
                 ? AppColors.error
                 : percentage >= 80
-                    ? AppColors.warning
+                    ? context.semanticColors.warning
                     : AppColors.primary;
             final statusContainerColor = percentage > 100
-                ? AppColors.expenseContainer
+                ? context.semanticColors.expenseContainer
                 : percentage >= 80
-                    ? AppColors.warningContainer
-                    : AppColors.incomeContainer;
+                    ? context.semanticColors.warningContainer
+                    : context.semanticColors.incomeContainer;
             return Container(
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
@@ -1001,10 +1011,13 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                         ),
                         child: Text(
                           '${percentage.toStringAsFixed(1)}%',
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: ThemeData.estimateBrightnessForColor(
+                                        statusColor) ==
+                                    Brightness.dark
+                                ? AppColors.textLight
+                                : AppColors.textDark,
                             fontWeight: FontWeight.bold,
-                            fontSize: 16,
                           ),
                         ),
                       ),
@@ -1163,25 +1176,26 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                                   width: 40,
                                   height: 40,
                                   decoration: BoxDecoration(
-                                    color: AppColors.expense
+                                    color: context.semanticColors.expense
                                         .withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(
                                         AppSpacing.radiusCard),
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.shopping_cart,
-                                    color: AppColors.expense,
-                                    size: 20,
+                                    color: context.semanticColors.expense,
+                                    size: AppSpacing.iconSizeSm,
                                   ),
                                 ),
                                 title: Text(
                                   t.note ?? l10n.noNote,
-                                  style: const TextStyle(fontSize: 14),
+                                  style: Theme.of(context).textTheme.bodyMedium,
                                 ),
                                 subtitle: Text(
                                   formatLocalizedTime(context, t.dateTime),
-                                  style: TextStyle(
-                                    fontSize: 12,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.bodySmall?.copyWith(
                                     color: Theme.of(context)
                                         .colorScheme
                                         .onSurface

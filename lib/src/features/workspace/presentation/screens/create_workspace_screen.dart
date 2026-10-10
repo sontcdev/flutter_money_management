@@ -5,10 +5,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_management_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
-import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
 class CreateWorkspaceScreen extends HookConsumerWidget {
@@ -26,8 +27,10 @@ class CreateWorkspaceScreen extends HookConsumerWidget {
         return;
       }
       if (nameController.text.trim().isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Workspace name is required')),
+        showAppSnackBar(
+          context,
+          'Workspace name is required',
+          type: AppSnackBarType.error,
         );
         return;
       }
@@ -77,7 +80,7 @@ class CreateWorkspaceScreen extends HookConsumerWidget {
           Text(
             'Create a shared workspace for your household or group.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textFaint,
+                  color: context.semanticColors.textFaint,
                 ),
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -101,7 +104,7 @@ class CreateWorkspaceScreen extends HookConsumerWidget {
           Text(
             l10n.invitedUserJoinHint,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textFaint,
+                  color: context.semanticColors.textFaint,
                 ),
           ),
         ],

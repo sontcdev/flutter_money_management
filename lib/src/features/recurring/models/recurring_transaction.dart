@@ -40,8 +40,8 @@ class RecurringTransaction {
   final DateTime nextOccurrenceAt;
   final int reminderDaysBefore;
   final bool isActive;
-  final String createdByUserId;
-  final String updatedByUserId;
+  final String? createdByUserId;
+  final String? updatedByUserId;
   final DateTime createdAt;
   final DateTime updatedAt;
   final String? note;
@@ -129,8 +129,8 @@ class RecurringTransaction {
       nextOccurrenceAt: DateTime.parse(json['next_occurrence_at'] as String),
       reminderDaysBefore: json['reminder_days_before'] as int? ?? 0,
       isActive: json['is_active'] as bool? ?? true,
-      createdByUserId: json['created_by_user_id'] as String,
-      updatedByUserId: json['updated_by_user_id'] as String,
+      createdByUserId: json['created_by_user_id'] as String?,
+      updatedByUserId: json['updated_by_user_id'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
       note: json['note'] as String?,

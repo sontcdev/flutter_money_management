@@ -130,7 +130,7 @@
     <section class="card">
       <span class="eyebrow">Privacy Policy</span>
       <h1>MyMoney Privacy Policy</h1>
-      <p class="muted"><strong>Effective date:</strong> May 10, 2026</p>
+      <p class="muted"><strong>Effective date:</strong> October 10, 2026</p>
 
       <p>
         MyMoney ("the App", "we", "our", or "us") respects your privacy.
@@ -143,7 +143,7 @@
       <h3>a. Account Information</h3>
       <p>When you create an account or sign in, we may collect:</p>
       <ul>
-        <li>Email address</li>
+        <li>Email address and display name</li>
         <li>Authentication-related identifiers</li>
       </ul>
 
@@ -160,14 +160,34 @@
 
       <h3>c. Device and Local Storage Data</h3>
       <p>
-        The App may store data locally on your device to support offline use,
-        faster access, and synchronization.
+        Financial records are read from and saved to Supabase. The App does
+        not provide an offline financial database. Sign-in session information,
+        preferences, and scheduled reminder information may be stored on your device.
       </p>
 
-      <h3>d. Imported and Exported Data</h3>
+      <h3>d. Voice Input</h3>
+      <p>
+        Voice input uses your device's operating-system speech recognition
+        service with your microphone permission. That service may send speech
+        to Apple, Google, or your device's recognition provider, depending on
+        the platform and settings. MyMoney does not store audio recordings.
+        Recognized text is used to prepare a transaction; transaction details
+        are saved to Supabase when you confirm them.
+      </p>
+
+      <h3>e. Imported and Exported Data</h3>
       <p>
         If you choose to import or export data, the App may process files
         selected by you, such as CSV or JSON files.
+      </p>
+
+      <h3>f. Error Reports</h3>
+      <p>
+        Error reports sent to Supabase can include the error message, stack
+        trace, operating system and version, locale, app version, platform,
+        and context for the failed action. Reports are associated with your
+        user ID when you are signed in. We use them to diagnose problems
+        and improve app reliability, not for advertising or tracking.
       </p>
 
       <h2>2. How We Use Your Information</h2>
@@ -205,8 +225,8 @@
         <li>In cloud storage or database services used by the App</li>
       </ul>
       <p>
-        Some data may remain on your device after sign-out so it can be
-        available again when you sign in and sync.
+        Exported files and images you save outside the App remain under your
+        control. You can remove these using your device's file or photo tools.
       </p>
 
       <h2>5. Receipt Images and Attachments</h2>
@@ -221,15 +241,23 @@
       <p>We do not sell, rent, or trade your personal information.</p>
       <p>We may share data only in these limited situations:</p>
       <ul>
-        <li>With service providers required to operate the App, such as Supabase</li>
+        <li>With members of a shared workspace, for records you save in that workspace</li>
+        <li>With service providers required to operate the App, such as Supabase and operating-system speech recognition providers</li>
         <li>If required by law, regulation, legal process, or governmental request</li>
         <li>To protect the rights, safety, and security of users or the App</li>
       </ul>
 
       <h2>7. Data Retention</h2>
       <p>
-        We retain your data for as long as necessary to provide the App's
-        services and fulfill legitimate business or legal purposes.
+        We retain account and financial records while your account is active.
+        You can request account and cloud-data deletion through our
+        <a href="delete-account.html">account deletion page</a>. Shared workspace
+        membership must be resolved before deletion. Records you contributed
+        may remain available to other members after you leave; account author
+        identifiers are removed, but shared notes and other entered content
+        may remain. Resolve shared content with the workspace owner before
+        leaving. Backup retention follows the hosting provider's configured
+        schedule; a fixed backup deletion period is not promised here.
       </p>
       <p>
         Locally stored data may remain on your device until you remove the App
@@ -254,7 +282,8 @@
       <ul>
         <li>Stop using the App at any time</li>
         <li>Delete local app data through your device settings</li>
-        <li>Contact us to request account or cloud data deletion</li>
+        <li><a href="delete-account.html">Request account or cloud data deletion</a></li>
+        <li>Disable microphone, photo, or notification permissions in device settings</li>
       </ul>
 
       <h2>10. Children's Privacy</h2>

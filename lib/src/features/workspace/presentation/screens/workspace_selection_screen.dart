@@ -6,6 +6,7 @@ import 'package:flutter_money_management/src/features/workspace/presentation/wid
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_management_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
@@ -41,6 +42,7 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
             onPressed: () => _showJoinInviteDialog(context, ref),
           ),
           IconButton(
+            tooltip: l10n.logout,
             icon: const Icon(Icons.logout),
             onPressed: () async {
               final supabaseAuth = ref.read(supabaseAuthServiceProvider);
@@ -69,7 +71,7 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
                 ? AppColors.textLightSecondary
                 : AppColors.textSecondary;
             final faintText =
-                isDark ? AppColors.textLightFaint : AppColors.textFaint;
+                context.semanticColors.textFaint;
 
             if (workspaces.isEmpty) {
               return SingleChildScrollView(
@@ -86,13 +88,14 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
                           width: 72,
                           height: 72,
                           decoration: BoxDecoration(
-                            color: AppColors.warning.withValues(alpha: 0.12),
+                            color: context.semanticColors.warning
+                                .withValues(alpha: 0.12),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.error_outline,
                             size: 36,
-                            color: AppColors.warning,
+                            color: context.semanticColors.warning,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.lg),
@@ -214,7 +217,7 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
                               child: Text(
                                 initials,
                                 style: textTheme.headlineSmall?.copyWith(
-                                  color: Colors.white,
+                                  color: colorScheme.onPrimary,
                                   fontWeight: FontWeight.w800,
                                 ),
                               ),

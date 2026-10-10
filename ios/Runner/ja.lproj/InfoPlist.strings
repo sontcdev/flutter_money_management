@@ -1,0 +1,4 @@
+"NSCameraUsageDescription" = "レシートを撮影して取引に添付します。";
+"NSPhotoLibraryUsageDescription" = "レシートの写真を選択して取引に添付します。";
+"NSMicrophoneUsageDescription" = "マイクを使用して音声で取引を追加します。";
+"NSSpeechRecognitionUsageDescription" = "音声を取引の詳細に変換します。";

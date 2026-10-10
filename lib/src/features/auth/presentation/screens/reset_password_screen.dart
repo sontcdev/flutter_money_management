@@ -141,6 +141,9 @@ class ResetPasswordScreen extends HookConsumerWidget {
                   hintText: l10n.atLeastSixCharacters,
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
+                    tooltip: obscurePassword.value
+                        ? l10n.showPassword
+                        : l10n.hidePassword,
                     icon: Icon(
                       obscurePassword.value
                           ? Icons.visibility_outlined
@@ -164,6 +167,9 @@ class ResetPasswordScreen extends HookConsumerWidget {
                   hintText: l10n.reenterYourPassword,
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
+                    tooltip: obscureConfirmPassword.value
+                        ? l10n.showPassword
+                        : l10n.hidePassword,
                     icon: Icon(
                       obscureConfirmPassword.value
                           ? Icons.visibility_outlined

@@ -3,6 +3,9 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
+import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_motion.dart';
+import 'package:flutter_money_management/src/theme/app_spacing.dart';
 
 class PieChartWidget extends StatelessWidget {
   final List<ChartData> data;
@@ -55,12 +58,19 @@ class PieChartWidget extends StatelessWidget {
                   titleStyle: TextStyle(
                     fontSize: labelFontSize,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: ThemeData.estimateBrightnessForColor(item.color) ==
+                            Brightness.dark
+                        ? AppColors.textLight
+                        : AppColors.textDark,
                   ),
                 );
               }).toList(),
               sectionsSpace: 2,
               centerSpaceRadius: centerSpaceRadius,
+            ),
+            swapAnimationDuration: AppMotion.of(
+              context,
+              PieChart.defaultDuration,
             ),
           ),
         );
@@ -102,7 +112,7 @@ class BarChartWidget extends StatelessWidget {
                   color: entry.value.color,
                   width: 20,
                   borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(4),
+                    top: Radius.circular(AppSpacing.radiusXs),
                   ),
                 ),
               ],
@@ -149,6 +159,7 @@ class BarChartWidget extends StatelessWidget {
           gridData: const FlGridData(show: false),
           borderData: FlBorderData(show: false),
         ),
+        swapAnimationDuration: AppMotion.of(context, AppMotion.fast),
       ),
     );
   }

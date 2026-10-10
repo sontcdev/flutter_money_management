@@ -16,13 +16,16 @@ import 'package:flutter_money_management/src/features/workspace/services/workspa
 import 'package:flutter_money_management/src/utils/voice_transaction_parser.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/features/budgets/services/budget_service.dart';
-import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
+import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/ui/widgets/transaction_type_toggle.dart';
 import 'package:flutter_money_management/src/utils/app_logger.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
+import 'package:flutter_money_management/src/utils/date_time_utils.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 import 'package:flutter_money_management/src/utils/vnd_input_formatter.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
@@ -115,9 +118,12 @@ class AddTransactionScreen extends HookConsumerWidget {
     }
 
     Future<void> handleSubmit() async {
+      if (isLoading.value) return;
       if (amountController.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.amountRequiredError)),
+        showAppSnackBar(
+          context,
+          l10n.amountRequiredError,
+          type: AppSnackBarType.error,
         );
         return;
       }
@@ -125,35 +131,45 @@ class AddTransactionScreen extends HookConsumerWidget {
       final isTransfer = selectedType.value == model.TransactionType.transfer;
 
       if (!isTransfer && selectedCategoryId.value == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.selectCategoryError)),
+        showAppSnackBar(
+          context,
+          l10n.selectCategoryError,
+          type: AppSnackBarType.error,
         );
         return;
       }
 
       if (selectedWallet.value == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.walletRequired)),
+        showAppSnackBar(
+          context,
+          l10n.walletRequired,
+          type: AppSnackBarType.error,
         );
         return;
       }
 
       if (isTransfer) {
         if (selectedToWallet.value == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.walletRequired)),
+          showAppSnackBar(
+            context,
+            l10n.toWalletRequired,
+            type: AppSnackBarType.error,
           );
           return;
         }
         if (selectedToWallet.value!.id == selectedWallet.value!.id) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.sameWalletError)),
+          showAppSnackBar(
+            context,
+            l10n.sameWalletError,
+            type: AppSnackBarType.error,
           );
           return;
         }
       }
 
       isLoading.value = true;
+      final overdraftAllowed = allowOverdraft.value;
+      allowOverdraft.value = false;
 
       try {
         final repository = ref.read(transactionRepositoryProvider);
@@ -181,7 +197,7 @@ class AddTransactionScreen extends HookConsumerWidget {
 
         final createdTransaction = await repository.createTransaction(
           transaction,
-          allowOverdraft: allowOverdraft.value,
+          allowOverdraft: overdraftAllowed,
           workspaceIdOverride: selectedWorkspaceId.value,
         );
 
@@ -214,8 +230,12 @@ class AddTransactionScreen extends HookConsumerWidget {
             transactionReceiptImageUrlProvider(createdTransaction.id));
 
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(receiptWarning ?? l10n.success)),
+          showAppSnackBar(
+            context,
+            receiptWarning ?? l10n.success,
+            type: receiptWarning == null
+                ? AppSnackBarType.success
+                : AppSnackBarType.info,
           );
           Navigator.of(context).pop(true);
         }
@@ -225,7 +245,8 @@ class AddTransactionScreen extends HookConsumerWidget {
 
           if (shouldProceed == true) {
             allowOverdraft.value = true;
-            handleSubmit();
+            isLoading.value = false;
+            await handleSubmit();
           }
         }
       } catch (e, stackTrace) {
@@ -373,9 +394,7 @@ class AddTransactionScreen extends HookConsumerWidget {
           onSave: (result) => saveQuickInput(result, workspaceId),
         );
         if (saved == true && context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.success)),
-          );
+          showAppSnackBar(context, l10n.success, type: AppSnackBarType.success);
           Navigator.of(context).pop(true);
         }
         return;
@@ -500,7 +519,12 @@ class AddTransactionScreen extends HookConsumerWidget {
                 padding: EdgeInsets.only(bottom: AppSpacing.sectionGap),
                 child: LinearProgressIndicator(),
               ),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (_, __) => Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sectionGap),
+                child: InlineLoadErrorState(
+                  onRetry: () => ref.invalidate(workspaceListProvider),
+                ),
+              ),
             ),
 
             // Amount Input - Priority 1. Prefix/suffix tint follows the
@@ -666,8 +690,9 @@ class AddTransactionScreen extends HookConsumerWidget {
                                   const SizedBox(width: AppSpacing.xs),
                                   Text(
                                     category.name,
-                                    style: TextStyle(
-                                      fontSize: 14,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.copyWith(
                                       fontWeight: isSelected
                                           ? FontWeight.w600
                                           : FontWeight.w500,
@@ -684,7 +709,11 @@ class AddTransactionScreen extends HookConsumerWidget {
                 );
               },
                 loading: () => const CircularProgressIndicator(),
-                error: (err, stack) => Text(l10n.errorWithMessage('$err')),
+                error: (err, stack) => InlineLoadErrorState(
+                  onRetry: () => ref.invalidate(
+                    categoriesForWorkspaceProvider(selectedWorkspaceId.value!),
+                  ),
+                ),
               ),
             if (selectedType.value != model.TransactionType.transfer)
               const SizedBox(height: AppSpacing.lg),
@@ -743,14 +772,18 @@ class AddTransactionScreen extends HookConsumerWidget {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () async {
+                          final now = DateTime.now();
                           final picked = await showDatePicker(
                             context: context,
-                            initialDate: selectedDate.value,
+                            initialDate: selectedDate.value.isAfter(now)
+                                ? now
+                                : selectedDate.value,
                             firstDate: DateTime(2000),
-                            lastDate: DateTime(2100),
+                            lastDate: now,
                           );
                           if (picked != null) {
-                            selectedDate.value = picked;
+                            selectedDate.value =
+                                keepTimeOfDay(picked, selectedDate.value);
                           }
                         },
                         child: const Icon(Icons.calendar_today, size: 18),
@@ -774,7 +807,7 @@ class AddTransactionScreen extends HookConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.event,
-                          size: 20,
+                          size: AppSpacing.iconSizeSm,
                           color: Theme.of(context).colorScheme.primary),
                       const SizedBox(width: AppSpacing.sm),
                       Text(
@@ -845,11 +878,13 @@ class AddTransactionScreen extends HookConsumerWidget {
                             ),
                           ),
                           IconButton(
+                            tooltip: l10n.attachReceipt,
                             icon: const Icon(Icons.camera_alt),
                             onPressed: pickReceipt,
                           ),
                           if (localReceiptPath.value != null)
                             IconButton(
+                              tooltip: l10n.removeReceipt,
                               icon: const Icon(Icons.clear),
                               onPressed: () {
                                 localReceiptPath.value = null;
@@ -886,9 +921,9 @@ class AddTransactionScreen extends HookConsumerWidget {
   Color _amountAccent(BuildContext context, model.TransactionType type) {
     switch (type) {
       case model.TransactionType.expense:
-        return AppColors.expense;
+        return context.semanticColors.expense;
       case model.TransactionType.income:
-        return AppColors.income;
+        return context.semanticColors.income;
       case model.TransactionType.transfer:
         return Theme.of(context).colorScheme.primary;
     }

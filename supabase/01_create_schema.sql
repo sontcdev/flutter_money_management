@@ -1013,22 +1013,22 @@ create or replace function public.next_recurring_occurrence_at(p_current_occurre
 returns timestamptz as $$
 declare
   safe_interval integer := greatest(p_interval_count, 1);
-  current_date date := p_current_occurrence_at::date;
-  current_time time := p_current_occurrence_at::time;
+  occurrence_date date := p_current_occurrence_at::date;
+  occurrence_time time := p_current_occurrence_at::time;
   base_date date;
   next_date date;
 begin
   case p_frequency
-    when 'weekly' then next_date := current_date + (safe_interval * 7);
+    when 'weekly' then next_date := occurrence_date + (safe_interval * 7);
     when 'monthly' then
-      base_date := (current_date + make_interval(months => safe_interval))::date;
-      next_date := public.recurring_safe_date(extract(year from base_date)::integer, extract(month from base_date)::integer, coalesce(p_day_of_month, extract(day from current_date)::integer));
+      base_date := (occurrence_date + make_interval(months => safe_interval))::date;
+      next_date := public.recurring_safe_date(extract(year from base_date)::integer, extract(month from base_date)::integer, coalesce(p_day_of_month, extract(day from occurrence_date)::integer));
     when 'yearly' then
-      base_date := (current_date + make_interval(years => safe_interval))::date;
-      next_date := public.recurring_safe_date(extract(year from base_date)::integer, coalesce(p_month_of_year, extract(month from current_date)::integer), coalesce(p_day_of_month, extract(day from current_date)::integer));
+      base_date := (occurrence_date + make_interval(years => safe_interval))::date;
+      next_date := public.recurring_safe_date(extract(year from base_date)::integer, coalesce(p_month_of_year, extract(month from occurrence_date)::integer), coalesce(p_day_of_month, extract(day from occurrence_date)::integer));
     else raise exception 'Unsupported recurring frequency: %', p_frequency;
   end case;
-  return next_date::timestamp + current_time;
+  return next_date::timestamp + occurrence_time;
 end;
 $$ language plpgsql immutable;
 

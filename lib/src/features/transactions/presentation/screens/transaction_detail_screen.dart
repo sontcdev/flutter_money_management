@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
+import 'package:flutter_money_management/src/data/repositories/supabase_error_mapper.dart';
 import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
 import 'package:flutter_money_management/src/features/wallets/models/wallet.dart';
 import 'package:flutter_money_management/src/features/wallets/providers/wallet_providers.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
-import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
+import 'package:flutter_money_management/src/ui/widgets/confirm_delete_dialog.dart';
+import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
+import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 
@@ -70,12 +75,12 @@ class TransactionDetailScreen extends ConsumerWidget {
         final String typeLabel;
         switch (transaction.type) {
           case TransactionType.expense:
-            amountColor = AppColors.expense;
+            amountColor = context.semanticColors.expense;
             amountPrefix = '-';
             typeLabel = l10n.expense;
             break;
           case TransactionType.income:
-            amountColor = AppColors.income;
+            amountColor = context.semanticColors.income;
             amountPrefix = '+';
             typeLabel = l10n.income;
             break;
@@ -99,6 +104,7 @@ class TransactionDetailScreen extends ConsumerWidget {
           );
           if (result == true && context.mounted) {
             ref.invalidate(transactionsProvider);
+            ref.invalidate(walletBalancesProvider);
             ref.invalidate(transactionReceiptAttachmentProvider(transactionId));
             ref.invalidate(transactionReceiptImageUrlProvider(transactionId));
             Navigator.pop(context, true);
@@ -106,26 +112,12 @@ class TransactionDetailScreen extends ConsumerWidget {
         }
 
         Future<void> handleDelete() async {
-          final confirm = await showDialog<bool>(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text(l10n.confirmDelete),
-              content: Text(l10n.confirmDeleteTransaction),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: Text(l10n.cancel),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  style: TextButton.styleFrom(foregroundColor: Colors.red),
-                  child: Text(l10n.delete),
-                ),
-              ],
-            ),
+          final confirm = await ConfirmDeleteDialog.show(
+            context,
+            consequence: l10n.deleteCannotBeUndone,
           );
 
-          if (confirm == true) {
+          if (confirm) {
             final receiptService = ref.read(transactionReceiptServiceProvider);
             try {
               await receiptService.removeReceipt(transactionId);
@@ -133,7 +125,18 @@ class TransactionDetailScreen extends ConsumerWidget {
               // Allow owner/admin to continue deleting the transaction
               // even if receipt cleanup fails due to legacy storage rules.
             }
-            await transactionRepo.deleteTransaction(transactionId);
+            try {
+              await transactionRepo.deleteTransaction(transactionId);
+            } catch (e) {
+              if (context.mounted) {
+                showAppSnackBar(
+                  context,
+                  mapSupabaseException(e).toString(),
+                  type: AppSnackBarType.error,
+                );
+              }
+              return;
+            }
             ref.invalidate(budgetsProvider);
             ref.invalidate(budgetsWithConsumedProvider);
             ref.invalidate(transactionsProvider);
@@ -385,15 +388,21 @@ class TransactionDetailScreen extends ConsumerWidget {
                                     child: CircularProgressIndicator(),
                                   ),
                                 ),
-                                error: (error, _) =>
-                                    Text(l10n.errorWithMessage('$error')),
+                                error: (error, _) => InlineLoadErrorState(
+                                  onRetry: () => ref.invalidate(
+                                    transactionReceiptImageUrlProvider(transactionId),
+                                  ),
+                                ),
                               ),
                             ],
                           );
                         },
-                        loading: () => const SizedBox.shrink(),
-                        error: (error, _) =>
-                            Text(l10n.errorWithMessage('$error')),
+                        loading: () => const SectionSkeleton(height: 120),
+                        error: (error, _) => InlineLoadErrorState(
+                          onRetry: () => ref.invalidate(
+                            transactionReceiptAttachmentProvider(transactionId),
+                          ),
+                        ),
                       ),
                     ],
                   ),

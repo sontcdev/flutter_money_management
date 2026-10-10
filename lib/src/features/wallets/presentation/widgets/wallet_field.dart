@@ -51,7 +51,7 @@ class WalletField extends StatelessWidget {
                   current == null
                       ? Icons.account_balance_wallet_outlined
                       : CategoryIcons.getIcon(current.iconName),
-                  size: 20,
+                  size: AppSpacing.iconSizeSm,
                   color: color,
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -69,7 +69,8 @@ class WalletField extends StatelessWidget {
                   ),
                 ),
                 Icon(Icons.expand_more,
-                    size: 20, color: theme.colorScheme.onSurfaceVariant),
+                    size: AppSpacing.iconSizeSm,
+                    color: theme.colorScheme.onSurfaceVariant),
               ],
             ),
           ),

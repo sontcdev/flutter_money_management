@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_money_management/src/data/repositories/supabase_error_mapper.dart';
 import 'package:flutter_money_management/src/services/error_report_service.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 
 class ErrorReportDialog extends StatefulWidget {
   const ErrorReportDialog({
@@ -64,11 +65,10 @@ class _ErrorReportDialogState extends State<ErrorReportDialog> {
 
       if (mounted) {
         Navigator.of(context).pop(true);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Đã gửi báo cáo lỗi thành công. Cảm ơn bạn!'),
-            backgroundColor: Colors.green,
-          ),
+        showAppSnackBar(
+          context,
+          'Đã gửi báo cáo lỗi thành công. Cảm ơn bạn!',
+          type: AppSnackBarType.success,
         );
       }
     } catch (e) {
@@ -76,11 +76,10 @@ class _ErrorReportDialogState extends State<ErrorReportDialog> {
         setState(() {
           _isSubmitting = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_buildSubmitErrorMessage(e)),
-            backgroundColor: Colors.red,
-          ),
+        showAppSnackBar(
+          context,
+          _buildSubmitErrorMessage(e),
+          type: AppSnackBarType.error,
         );
       }
     }
@@ -110,12 +109,14 @@ class _ErrorReportDialogState extends State<ErrorReportDialog> {
         FilledButton(
           onPressed: _isSubmitting ? null : _submitReport,
           child: _isSubmitting
-              ? const SizedBox(
+              ? SizedBox(
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).colorScheme.onPrimary,
+                    ),
                   ),
                 )
               : const Text('Phản ánh'),

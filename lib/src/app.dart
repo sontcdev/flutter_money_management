@@ -63,10 +63,16 @@ class MoneyManagementApp extends ConsumerWidget {
         // Apply text scaling for tablets combined with the user's font size preference
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(
-            textScaler:
-                TextScaler.linear(textScaleFactor * fontScale.multiplier),
+            textScaler: TextScaler.linear(
+              MediaQuery.textScalerOf(context).scale(1.0) *
+                  textScaleFactor *
+                  fontScale.multiplier,
+            ).clamp(maxScaleFactor: 2.0),
           ),
-          child: AuthCallbackFeedbackListener(child: child!),
+          child: AuthCallbackFeedbackListener(
+            navigatorKey: appNavigatorKey,
+            child: child!,
+          ),
         );
       },
     );

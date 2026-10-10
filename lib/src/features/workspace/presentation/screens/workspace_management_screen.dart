@@ -8,9 +8,12 @@ import 'package:flutter_money_management/src/features/workspace/providers/worksp
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/models/workspace_management_models.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_status_chip.dart';
+import 'package:flutter_money_management/src/ui/widgets/confirm_delete_dialog.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
@@ -340,29 +343,14 @@ class WorkspaceManagementScreen extends HookConsumerWidget {
                     const SizedBox(height: AppSpacing.lg),
                     _DangerZoneCard(
                       onLeaveWorkspace: () async {
-                        final confirmed = await showDialog<bool>(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: Text(l10n.leaveWorkspace),
-                            content: Text(l10n.leaveWorkspaceConfirm),
-                            actions: [
-                              TextButton(
-                                onPressed: () =>
-                                    Navigator.of(context).pop(false),
-                                child: Text(l10n.cancel),
-                              ),
-                              FilledButton(
-                                style: FilledButton.styleFrom(
-                                  backgroundColor: AppColors.error,
-                                ),
-                                onPressed: () =>
-                                    Navigator.of(context).pop(true),
-                                child: Text(l10n.leave),
-                              ),
-                            ],
-                          ),
+                        final confirmed = await ConfirmDeleteDialog.show(
+                          context,
+                          title: l10n.leaveWorkspace,
+                          message: l10n.leaveWorkspaceConfirm,
+                          consequence: l10n.leaveWorkspaceDesc,
+                          confirmLabel: l10n.leave,
                         );
-                        if (confirmed != true || !context.mounted) {
+                        if (!confirmed || !context.mounted) {
                           return;
                         }
                         try {
@@ -410,7 +398,7 @@ class _DangerZoneCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return AppCard(
-      color: AppColors.expenseContainer.withValues(alpha: 0.45),
+      color: context.semanticColors.expenseContainer.withValues(alpha: 0.45),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -548,30 +536,15 @@ class _MemberSection extends ConsumerWidget {
     WidgetRef ref,
     WorkspaceMemberSummary member,
   ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.removeMember),
-        content: Text(
-          AppLocalizations.of(context)!.removeMemberConfirm(
-            _memberLabel(context, member),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(AppLocalizations.of(context)!.removeMember),
-          ),
-        ],
-      ),
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await ConfirmDeleteDialog.show(
+      context,
+      title: l10n.removeMember,
+      message: l10n.removeMemberConfirm(_memberLabel(context, member)),
+      confirmLabel: l10n.removeMember,
     );
 
-    if (confirmed != true || !context.mounted) {
+    if (!confirmed || !context.mounted) {
       return;
     }
 
@@ -582,14 +555,12 @@ class _MemberSection extends ConsumerWidget {
           );
       ref.invalidate(workspaceMembersProvider);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              AppLocalizations.of(context)!.memberRemoved(
-                _memberLabel(context, member),
-              ),
-            ),
+        showAppSnackBar(
+          context,
+          AppLocalizations.of(context)!.memberRemoved(
+            _memberLabel(context, member),
           ),
+          type: AppSnackBarType.success,
         );
       }
     } catch (e, stackTrace) {
@@ -858,8 +829,10 @@ class _InviteListTile extends ConsumerWidget {
                 if (value == 'copy') {
                   await Clipboard.setData(ClipboardData(text: invite.token));
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(l10n.inviteCodeCopied)),
+                    showAppSnackBar(
+                      context,
+                      l10n.inviteCodeCopied,
+                      type: AppSnackBarType.success,
                     );
                   }
                   return;
@@ -906,8 +879,10 @@ class _InviteListTile extends ConsumerWidget {
                       .revokeInvite(invite.id);
                   ref.invalidate(workspacePendingInvitesProvider);
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(l10n.inviteRevoked)),
+                    showAppSnackBar(
+                      context,
+                      l10n.inviteRevoked,
+                      type: AppSnackBarType.success,
                     );
                   }
                 } catch (e, stackTrace) {
@@ -955,8 +930,9 @@ class _InviteSubtitle extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final mutedColor =
-        isDark ? AppColors.textLightSecondary : AppColors.textFaint;
+    final mutedColor = isDark
+        ? AppColors.textLightSecondary
+        : context.semanticColors.textFaint;
     if (invite.status == 'declined') {
       final declinedAt = invite.updatedAt ?? invite.createdAt;
       return _InviteStatusSubtitle(
@@ -1102,8 +1078,10 @@ Future<void> _showInviteCodeDialog({
           onPressed: () async {
             await Clipboard.setData(ClipboardData(text: invite.token));
             if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.inviteCodeCopied)),
+              showAppSnackBar(
+                context,
+                l10n.inviteCodeCopied,
+                type: AppSnackBarType.success,
               );
             }
           },
@@ -1187,7 +1165,7 @@ _InviteExpiryStatus _inviteExpiryStatus(
     return _InviteExpiryStatus(
       label: _inviteExpiryLabel(l10n, expiresAt),
       statusLabel: l10n.urgentStatus,
-      color: isDark ? AppColors.warningDark : AppColors.warning,
+      color: context.semanticColors.warning,
     );
   }
 
@@ -1195,7 +1173,7 @@ _InviteExpiryStatus _inviteExpiryStatus(
     return _InviteExpiryStatus(
       label: _inviteExpiryLabel(l10n, expiresAt),
       statusLabel: l10n.expiringSoonStatus,
-      color: isDark ? AppColors.warningDark : AppColors.warning,
+      color: context.semanticColors.warning,
     );
   }
 

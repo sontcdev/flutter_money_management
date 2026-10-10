@@ -126,14 +126,17 @@ void main() {
       await service.confirmOccurrence(
         occurrence: occurrence,
         recurringTransaction: recurring,
+        walletId: 'wallet-1',
       );
 
-      verify(
+      final createdTransaction = verify(
         () => transactionGateway.createTransaction(
-          any(),
+          captureAny(),
           allowOverdraft: false,
         ),
-      ).called(1);
+      ).captured.single as Transaction;
+      expect(createdTransaction.walletId, 'wallet-1');
+      expect(createdTransaction.amountCents, recurring.amountCents);
       verify(
         () => recurringGateway.completeOccurrence(
           occurrenceId: 'occ-1',

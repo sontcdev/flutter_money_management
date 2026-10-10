@@ -17,13 +17,18 @@ import 'package:flutter_money_management/src/features/wallets/presentation/widge
 import 'package:flutter_money_management/src/features/wallets/providers/wallet_providers.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/features/budgets/services/budget_service.dart';
-import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
+import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
+import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
 import 'package:flutter_money_management/src/ui/widgets/transaction_type_toggle.dart';
 import 'package:flutter_money_management/src/utils/app_logger.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
+import 'package:flutter_money_management/src/utils/date_time_utils.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 import 'package:flutter_money_management/src/utils/vnd_input_formatter.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
@@ -90,9 +95,12 @@ class EditTransactionScreen extends HookConsumerWidget {
     }, [transactionId, attachmentRepository, repository]);
 
     Future<void> handleSubmit() async {
+      if (isLoading.value) return;
       if (amountController.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.amountRequiredError)),
+        showAppSnackBar(
+          context,
+          l10n.amountRequiredError,
+          type: AppSnackBarType.error,
         );
         return;
       }
@@ -100,35 +108,45 @@ class EditTransactionScreen extends HookConsumerWidget {
       final isTransfer = selectedType.value == model.TransactionType.transfer;
 
       if (!isTransfer && selectedCategoryId.value == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.selectCategoryError)),
+        showAppSnackBar(
+          context,
+          l10n.selectCategoryError,
+          type: AppSnackBarType.error,
         );
         return;
       }
 
       if (selectedWallet.value == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.walletRequired)),
+        showAppSnackBar(
+          context,
+          l10n.walletRequired,
+          type: AppSnackBarType.error,
         );
         return;
       }
 
       if (isTransfer) {
         if (selectedToWallet.value == null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.walletRequired)),
+          showAppSnackBar(
+            context,
+            l10n.toWalletRequired,
+            type: AppSnackBarType.error,
           );
           return;
         }
         if (selectedToWallet.value!.id == selectedWallet.value!.id) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.sameWalletError)),
+          showAppSnackBar(
+            context,
+            l10n.sameWalletError,
+            type: AppSnackBarType.error,
           );
           return;
         }
       }
 
       isLoading.value = true;
+      final overdraftAllowed = allowOverdraft.value;
+      allowOverdraft.value = false;
 
       try {
         final receiptService = ref.read(transactionReceiptServiceProvider);
@@ -155,7 +173,7 @@ class EditTransactionScreen extends HookConsumerWidget {
 
         await repository.updateTransaction(
           transaction,
-          allowOverdraft: allowOverdraft.value,
+          allowOverdraft: overdraftAllowed,
         );
 
         String? receiptWarning;
@@ -191,8 +209,12 @@ class EditTransactionScreen extends HookConsumerWidget {
         ref.invalidate(transactionReceiptImageUrlProvider(transactionId));
 
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(receiptWarning ?? l10n.success)),
+          showAppSnackBar(
+            context,
+            receiptWarning ?? l10n.success,
+            type: receiptWarning == null
+                ? AppSnackBarType.success
+                : AppSnackBarType.info,
           );
           Navigator.of(context).pop(true);
         }
@@ -218,7 +240,8 @@ class EditTransactionScreen extends HookConsumerWidget {
 
           if (shouldProceed == true) {
             allowOverdraft.value = true;
-            handleSubmit();
+            isLoading.value = false;
+            await handleSubmit();
           }
         }
       } catch (e, stackTrace) {
@@ -262,10 +285,10 @@ class EditTransactionScreen extends HookConsumerWidget {
     final Color amountColor;
     switch (selectedType.value) {
       case model.TransactionType.expense:
-        amountColor = AppColors.expense;
+        amountColor = context.semanticColors.expense;
         break;
       case model.TransactionType.income:
-        amountColor = AppColors.income;
+        amountColor = context.semanticColors.income;
         break;
       case model.TransactionType.transfer:
         amountColor = Theme.of(context).colorScheme.primary;
@@ -421,7 +444,9 @@ class EditTransactionScreen extends HookConsumerWidget {
                                 'initialType': selectedType.value ==
                                         model.TransactionType.expense
                                     ? CategoryType.expense
-                                    : CategoryType.income
+                                    : CategoryType.income,
+                                'workspaceId':
+                                    ref.read(activeWorkspaceIdProvider),
                               },
                             );
                             if (result == true) {
@@ -492,7 +517,9 @@ class EditTransactionScreen extends HookConsumerWidget {
                 );
               },
                 loading: () => const CircularProgressIndicator(),
-                error: (err, stack) => Text(l10n.errorWithMessage('$err')),
+                error: (err, stack) => InlineLoadErrorState(
+                  onRetry: () => ref.invalidate(categoriesProvider),
+                ),
               ),
             if (selectedType.value != model.TransactionType.transfer)
               const SizedBox(height: AppSpacing.lg),
@@ -509,6 +536,7 @@ class EditTransactionScreen extends HookConsumerWidget {
                 Row(
                   children: [
                     IconButton(
+                      tooltip: l10n.previousDay,
                       icon: const Icon(Icons.chevron_left),
                       onPressed: () {
                         selectedDate.value = selectedDate.value
@@ -518,14 +546,18 @@ class EditTransactionScreen extends HookConsumerWidget {
                     Expanded(
                       child: InkWell(
                         onTap: () async {
+                          final now = DateTime.now();
                           final picked = await showDatePicker(
                             context: context,
-                            initialDate: selectedDate.value,
+                            initialDate: selectedDate.value.isAfter(now)
+                                ? now
+                                : selectedDate.value,
                             firstDate: DateTime(2000),
-                            lastDate: DateTime(2100),
+                            lastDate: now,
                           );
                           if (picked != null) {
-                            selectedDate.value = picked;
+                            selectedDate.value =
+                                keepTimeOfDay(picked, selectedDate.value);
                           }
                         },
                         child: Container(
@@ -566,6 +598,7 @@ class EditTransactionScreen extends HookConsumerWidget {
                       ),
                     ),
                     IconButton(
+                      tooltip: l10n.nextDay,
                       icon: const Icon(Icons.chevron_right),
                       onPressed: () {
                         selectedDate.value =
@@ -626,7 +659,11 @@ class EditTransactionScreen extends HookConsumerWidget {
                     },
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
-                    error: (error, _) => Text(l10n.errorWithMessage('$error')),
+                    error: (error, _) => InlineLoadErrorState(
+                      onRetry: () => ref.invalidate(
+                        transactionReceiptImageUrlProvider(transactionId),
+                      ),
+                    ),
                   )
                 else
                   Text(
@@ -648,12 +685,14 @@ class EditTransactionScreen extends HookConsumerWidget {
                     return Row(
                       children: [
                         IconButton(
+                          tooltip: l10n.attachReceipt,
                           icon: const Icon(Icons.camera_alt),
                           onPressed: pickReceipt,
                         ),
                         if (localReceiptPath.value != null ||
                             existingReceiptAttachment.value != null)
                           IconButton(
+                            tooltip: l10n.removeReceipt,
                             icon: const Icon(Icons.clear),
                             onPressed: () {
                               localReceiptPath.value = null;
@@ -668,8 +707,13 @@ class EditTransactionScreen extends HookConsumerWidget {
                       ],
                     );
                   },
-                  loading: () => const SizedBox.shrink(),
-                  error: (_, __) => const SizedBox.shrink(),
+                  loading: () =>
+                      const SectionSkeleton(height: 48, lineCount: 1),
+                  error: (_, __) => InlineLoadErrorState(
+                    onRetry: () => ref.invalidate(
+                      transactionCanManageProvider(transactionId),
+                    ),
+                  ),
                 ),
               ],
             ),

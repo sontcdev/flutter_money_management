@@ -11,8 +11,10 @@ import 'package:flutter_money_management/src/features/workspace/services/workspa
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_metric_card.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 import 'package:flutter_money_management/src/ui/widgets/confirm_delete_dialog.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
+import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
 import 'package:flutter_money_management/src/utils/category_icons.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
@@ -46,6 +48,7 @@ class WalletsScreen extends ConsumerWidget {
         actions: [
           if (canManageContent)
             IconButton(
+              tooltip: l10n.addWallet,
               icon: const Icon(Icons.add),
               onPressed: openEditor,
             ),
@@ -56,8 +59,12 @@ class WalletsScreen extends ConsumerWidget {
           itemCount: 4,
           itemBuilder: (context, index) => const ShimmerListItem(),
         ),
-        error: (error, stack) =>
-            Center(child: Text(l10n.errorWithMessage('$error'))),
+        error: (error, stack) => LoadErrorState(
+          title: l10n.dataLoadFailed,
+          message: l10n.dataLoadFailedHint,
+          retryLabel: l10n.retry,
+          onRetry: () => ref.invalidate(walletsProvider),
+        ),
         data: (wallets) {
           if (wallets.isEmpty) {
             return RefreshIndicator(
@@ -95,7 +102,10 @@ class WalletsScreen extends ConsumerWidget {
               children: [
                 AppMetricCard.hero(
                   label: l10n.totalBalance,
-                  value: CurrencyFormatter.formatVNDFromCents(total),
+                  value: CurrencyFormatter.formatVNDFromCents(
+                    total,
+                    locale: l10n.localeName,
+                  ),
                   tone: total < 0
                       ? MetricCardTone.danger
                       : MetricCardTone.neutral,
@@ -170,15 +180,11 @@ class WalletsScreen extends ConsumerWidget {
       ref.invalidate(walletsProvider);
       ref.invalidate(walletBalancesProvider);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.success)),
-        );
+        showAppSnackBar(context, l10n.success, type: AppSnackBarType.success);
       }
     } on WalletInUseException {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.walletInUse)),
-        );
+        showAppSnackBar(context, l10n.walletInUse, type: AppSnackBarType.error);
       }
     } catch (e, stackTrace) {
       if (context.mounted) {
@@ -226,7 +232,7 @@ class _WalletRow extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
         ),
         child: Icon(CategoryIcons.getIcon(wallet.iconName),
-            size: 20, color: color),
+            size: AppSpacing.iconSizeSm, color: color),
       ),
       title: Row(
         children: [
@@ -242,7 +248,10 @@ class _WalletRow extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            CurrencyFormatter.formatVNDFromCents(balance),
+            CurrencyFormatter.formatVNDFromCents(
+                balance,
+              locale: l10n.localeName,
+            ),
             style: theme.textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w700,
               color: balance < 0 ? theme.colorScheme.error : null,
@@ -250,7 +259,11 @@ class _WalletRow extends StatelessWidget {
           ),
           if (onDelete != null)
             IconButton(
-              icon: const Icon(Icons.delete_outline, size: 20),
+              tooltip: l10n.deleteWallet,
+              icon: const Icon(
+                Icons.delete_outline,
+                size: AppSpacing.iconSizeSm,
+              ),
               onPressed: onDelete,
             ),
         ],

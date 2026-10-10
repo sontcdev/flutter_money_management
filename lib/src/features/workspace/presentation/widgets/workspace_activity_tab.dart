@@ -7,6 +7,7 @@ import 'package:flutter_money_management/src/features/workspace/services/workspa
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
+import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 
 class WorkspaceActivityTab extends ConsumerWidget {
@@ -71,8 +72,12 @@ class WorkspaceActivityTab extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) =>
-            Center(child: Text(l10n.errorWithMessage('$error'))),
+        error: (error, _) => LoadErrorState(
+          title: l10n.dataLoadFailed,
+          message: l10n.dataLoadFailedHint,
+          retryLabel: l10n.retry,
+          onRetry: () => ref.invalidate(workspaceActivityProvider),
+        ),
       ),
     );
   }

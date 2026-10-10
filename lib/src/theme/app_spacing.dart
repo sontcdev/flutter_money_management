@@ -24,21 +24,25 @@ class AppSpacing {
   static const double buttonHeight = 48.0;
   static const double inputHeight = 56.0;
   static const double listItemHeight = 72.0;
+  static const double iconSizeXs = 16.0;
   static const double iconSize = 24.0;
   static const double iconSizeSm = 20.0;
   static const double iconSizeLg = 32.0;
 
   // Border radius
-  static const double radiusSm = 10.0;
-  static const double radiusMd = 16.0;
+  static const double radiusXxs = 2.0;
+  static const double radiusXs = 4.0;
+  static const double radiusSm = 8.0;
+  static const double radiusMd = 12.0;
   static const double radiusLg = 24.0;
   static const double radiusXl = 28.0;
   static const double radiusFull = 999.0;
 
   // iOS design tokens
-  static const double radiusCard = 12.0;
+  static const double radiusCard = radiusMd;
   static const double radiusCta = 14.0;
   static const double radiusHero = 20.0;
+  static const double radiusSheet = radiusHero;
   static const double cellMinHeight = 56.0;
   static const double cellInset = 66.0;
 

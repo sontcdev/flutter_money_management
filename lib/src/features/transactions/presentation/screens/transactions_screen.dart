@@ -10,11 +10,12 @@ import 'package:flutter_money_management/src/features/workspace/services/workspa
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
-import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_segmented_filter.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
+import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 
@@ -69,6 +70,7 @@ class TransactionsScreen extends HookConsumerWidget {
               shape: const CircleBorder(),
               clipBehavior: Clip.antiAlias,
               child: IconButton(
+                tooltip: showSearch.value ? l10n.close : l10n.search,
                 icon: Icon(showSearch.value ? Icons.close : Icons.search),
                 onPressed: () {
                   showSearch.value = !showSearch.value;
@@ -100,13 +102,13 @@ class TransactionsScreen extends HookConsumerWidget {
                   label: l10n.expense,
                   value: TransactionFilter.expense,
                   icon: Icons.arrow_upward,
-                  color: AppColors.expense,
+                  color: context.semanticColors.expense,
                 ),
                 FilterOption(
                   label: l10n.income,
                   value: TransactionFilter.income,
                   icon: Icons.arrow_downward,
-                  color: AppColors.income,
+                  color: context.semanticColors.income,
                 ),
               ],
               selectedValue: selectedFilter.value,
@@ -153,6 +155,12 @@ class TransactionsScreen extends HookConsumerWidget {
                       icon: Icons.search_off,
                       title: l10n.noTransactionsMatch,
                       message: l10n.adjustSearchTerms,
+                      actionLabel: l10n.clearFilter,
+                      actionIcon: Icons.filter_alt_off,
+                      onAction: () {
+                        showSearch.value = false;
+                        searchQuery.value = '';
+                      },
                       compact: true,
                     );
                   } else if (selectedFilter.value != TransactionFilter.all) {
@@ -169,6 +177,10 @@ class TransactionsScreen extends HookConsumerWidget {
                       actionLabel: l10n.addTransaction,
                       onAction: () {
                         Navigator.pushNamed(context, '/add-transaction');
+                      },
+                      secondaryActionLabel: l10n.clearFilter,
+                      onSecondaryAction: () {
+                        selectedFilter.value = TransactionFilter.all;
                       },
                       compact: true,
                       type: EmptyStateType.noFilterResult,
@@ -190,8 +202,10 @@ class TransactionsScreen extends HookConsumerWidget {
                     child: ListView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       children: [
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.6,
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: MediaQuery.of(context).size.height * 0.6,
+                          ),
                           child: emptyState,
                         ),
                       ],
@@ -228,13 +242,21 @@ class TransactionsScreen extends HookConsumerWidget {
                   },
                   loading: () =>
                       const Center(child: CircularProgressIndicator()),
-                  error: (error, _) =>
-                      Center(child: Text(l10n.errorWithMessage('$error'))),
+                  error: (error, _) => LoadErrorState(
+                    title: l10n.dataLoadFailed,
+                    message: l10n.dataLoadFailedHint,
+                    retryLabel: l10n.retry,
+                    onRetry: () => ref.invalidate(categoriesProvider),
+                  ),
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) =>
-                  Center(child: Text(l10n.errorWithMessage('$error'))),
+              error: (error, _) => LoadErrorState(
+                title: l10n.dataLoadFailed,
+                message: l10n.dataLoadFailedHint,
+                retryLabel: l10n.retry,
+                onRetry: () => ref.invalidate(transactionsProvider),
+              ),
             ),
           ),
         ],
@@ -320,9 +342,9 @@ class _TransactionGroup extends StatelessWidget {
 
     final net = totalIncome - totalExpense;
     final netColor = net < 0
-        ? AppColors.expense
+        ? context.semanticColors.expense
         : net > 0
-            ? AppColors.income
+            ? context.semanticColors.income
             : null;
     final netLabel = net == 0
         ? ''

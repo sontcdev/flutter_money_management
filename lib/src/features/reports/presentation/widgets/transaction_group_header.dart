@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
-import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
-import 'package:flutter_money_management/src/theme/report_theme.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 
@@ -36,7 +35,7 @@ class TransactionGroupHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: isHighlighted
-            ? ReportTheme.selectedDateBackground.withValues(alpha: 0.5)
+            ? context.semanticColors.calendarSelected.withValues(alpha: 0.5)
             : Theme.of(context)
                 .colorScheme
                 .surfaceContainerHighest
@@ -58,7 +57,7 @@ class TransactionGroupHeader extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.income.withValues(alpha: 0.1),
+                    color: context.semanticColors.income.withValues(alpha: 0.1),
                     borderRadius:
                         BorderRadius.circular(AppSpacing.radiusCard),
                   ),
@@ -66,7 +65,7 @@ class TransactionGroupHeader extends StatelessWidget {
                     '+$incomeAmount',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: AppColors.income,
+                          color: context.semanticColors.income,
                         ),
                   ),
                 ),
@@ -77,7 +76,8 @@ class TransactionGroupHeader extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppColors.expense.withValues(alpha: 0.1),
+                    color: context.semanticColors.expense
+                        .withValues(alpha: 0.1),
                     borderRadius:
                         BorderRadius.circular(AppSpacing.radiusCard),
                   ),
@@ -85,7 +85,7 @@ class TransactionGroupHeader extends StatelessWidget {
                     '-$expenseAmount',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: AppColors.expense,
+                          color: context.semanticColors.expense,
                         ),
                   ),
                 ),

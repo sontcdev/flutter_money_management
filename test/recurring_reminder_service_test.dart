@@ -11,6 +11,7 @@ import 'package:flutter_money_management/src/features/recurring/services/recurri
 class _FakeNotificationsGateway implements LocalNotificationsGateway {
   final List<int> cancelledIds = [];
   final List<int> scheduledIds = [];
+  final List<AndroidScheduleMode> scheduledModes = [];
   final List<String?> scheduledPayloads = [];
   List<PendingNotificationRequest> pending = const [];
 
@@ -58,6 +59,7 @@ class _FakeNotificationsGateway implements LocalNotificationsGateway {
     DateTimeComponents? matchDateTimeComponents,
   }) async {
     scheduledIds.add(id);
+    scheduledModes.add(androidScheduleMode);
     scheduledPayloads.add(payload);
   }
 }
@@ -110,6 +112,7 @@ void main() {
     );
 
     expect(gateway.scheduledIds, hasLength(1));
+    expect(gateway.scheduledModes, [AndroidScheduleMode.inexactAllowWhileIdle]);
     expect(gateway.cancelledIds, contains(42));
     expect(
       jsonDecode(gateway.scheduledPayloads.single!)['occurrence_id'],

@@ -9,6 +9,7 @@ import 'package:flutter_money_management/src/features/recurring/services/recurri
 import 'package:flutter_money_management/src/features/budgets/providers/budget_providers.dart';
 import 'package:flutter_money_management/src/features/reports/providers/report_providers.dart';
 import 'package:flutter_money_management/src/features/transactions/providers/transaction_providers.dart';
+import 'package:flutter_money_management/src/features/wallets/providers/wallet_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/shared/providers/app_service_providers.dart';
 
@@ -115,6 +116,7 @@ class RecurringActionsNotifier extends StateNotifier<AsyncValue<void>> {
   Future<void> confirmOccurrence({
     required RecurringOccurrence occurrence,
     required RecurringTransaction recurringTransaction,
+    required String walletId,
     bool allowOverdraft = false,
   }) async {
     state = const AsyncValue.loading();
@@ -122,6 +124,7 @@ class RecurringActionsNotifier extends StateNotifier<AsyncValue<void>> {
       await _ref.read(recurringTransactionServiceProvider).confirmOccurrence(
             occurrence: occurrence,
             recurringTransaction: recurringTransaction,
+            walletId: walletId,
             allowOverdraft: allowOverdraft,
           );
       await refreshRecurringData();
@@ -135,6 +138,7 @@ class RecurringActionsNotifier extends StateNotifier<AsyncValue<void>> {
 
   void _invalidateDependents() {
     _ref.invalidate(transactionsProvider);
+    _ref.invalidate(walletBalancesProvider);
     _ref.invalidate(budgetsProvider);
     _ref.invalidate(budgetsWithConsumedProvider);
     final selectedMonth = _ref.read(selectedMonthProvider);

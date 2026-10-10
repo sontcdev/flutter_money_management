@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
@@ -7,14 +8,18 @@ import 'package:flutter_money_management/src/features/settings/providers/setting
 import 'package:flutter_money_management/src/features/workspace/services/workspace_sync_helper.dart';
 import 'package:flutter_money_management/src/features/budgets/models/budget.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
+import 'package:flutter_money_management/src/features/categories/models/uncategorized_category.dart';
 import 'package:flutter_money_management/src/features/reports/presentation/widgets/chart_widget.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_segmented_filter.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
 import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
+import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/cycle_utils.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
@@ -191,7 +196,7 @@ class ReportsScreen extends HookConsumerWidget {
                             child: _SummaryStatCard(
                               label: l10n.totalExpense,
                               amount: totalExpense,
-                              color: AppColors.expense,
+                              color: context.semanticColors.expense,
                               icon: Icons.arrow_upward,
                             ),
                           ),
@@ -200,7 +205,7 @@ class ReportsScreen extends HookConsumerWidget {
                             child: _SummaryStatCard(
                               label: l10n.totalIncome,
                               amount: totalIncome,
-                              color: AppColors.income,
+                              color: context.semanticColors.income,
                               icon: Icons.arrow_downward,
                             ),
                           ),
@@ -218,8 +223,8 @@ class ReportsScreen extends HookConsumerWidget {
                                       ? Icons.trending_up
                                       : Icons.trending_down,
                                   color: balance >= 0
-                                      ? AppColors.income
-                                      : AppColors.expense,
+                                      ? context.semanticColors.income
+                                      : context.semanticColors.expense,
                                   size: 20,
                                 ),
                                 const SizedBox(width: 8),
@@ -243,8 +248,8 @@ class ReportsScreen extends HookConsumerWidget {
                                   ?.copyWith(
                                     fontWeight: FontWeight.w700,
                                     color: balance >= 0
-                                        ? AppColors.income
-                                        : AppColors.expense,
+                                        ? context.semanticColors.income
+                                        : context.semanticColors.expense,
                                   ),
                             ),
                           ],
@@ -278,7 +283,10 @@ class ReportsScreen extends HookConsumerWidget {
               // 6-month expense trend
               transactionsAsync.when(
                 data: (transactions) {
-                  final monthlyData = _buildLastSixMonthsExpense(transactions);
+                  final monthlyData = _buildLastSixMonthsExpense(
+                    transactions,
+                    l10n.localeName,
+                  );
                   return AppCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -293,50 +301,40 @@ class ReportsScreen extends HookConsumerWidget {
                         const SizedBox(height: AppSpacing.md),
                         BarChartWidget(
                           data: monthlyData,
-                          labelFormatter: _formatCompactAmount,
+                          labelFormatter: (value) => NumberFormat.compact(
+                            locale: l10n.localeName,
+                          ).format(value),
                         ),
                       ],
                     ),
                   );
                 },
-                loading: () => const SizedBox.shrink(),
-                error: (err, _) => const SizedBox.shrink(),
+                loading: () => const SectionSkeleton(height: 220),
+                error: (err, _) => InlineLoadErrorState(
+                  onRetry: () => ref.invalidate(transactionsProvider),
+                ),
               ),
 
               const SizedBox(height: 16),
 
               // Type Filter for Reports
-              AppCard(
-                padding: const EdgeInsets.all(8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _ReportTypeButton(
-                        label: l10n.all,
-                        isSelected: reportTypeFilter.value == 0,
-                        onTap: () => reportTypeFilter.value = 0,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _ReportTypeButton(
-                        label: l10n.expense,
-                        isSelected: reportTypeFilter.value == 1,
-                        onTap: () => reportTypeFilter.value = 1,
-                        color: AppColors.expense,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _ReportTypeButton(
-                        label: l10n.income,
-                        isSelected: reportTypeFilter.value == 2,
-                        onTap: () => reportTypeFilter.value = 2,
-                        color: AppColors.income,
-                      ),
-                    ),
-                  ],
-                ),
+              AppSegmentedFilter<int>(
+                padding: EdgeInsets.zero,
+                selectedValue: reportTypeFilter.value,
+                onChanged: (value) => reportTypeFilter.value = value,
+                options: [
+                  FilterOption(label: l10n.all, value: 0),
+                  FilterOption(
+                    label: l10n.expense,
+                    value: 1,
+                    color: context.semanticColors.expense,
+                  ),
+                  FilterOption(
+                    label: l10n.income,
+                    value: 2,
+                    color: context.semanticColors.income,
+                  ),
+                ],
               ),
 
               const SizedBox(height: 16),
@@ -345,9 +343,11 @@ class ReportsScreen extends HookConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    l10n.budgetReports,
-                    style: Theme.of(context).textTheme.headlineSmall,
+                  Expanded(
+                    child: Text(
+                      l10n.budgetReports,
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
                   ),
                   TextButton(
                     onPressed: () => Navigator.pushNamed(context, '/budgets'),
@@ -420,7 +420,10 @@ class ReportsScreen extends HookConsumerWidget {
                             children: filteredBudgets.map((budget) {
                               final category = categories.firstWhere(
                                 (c) => c.id == budget.categoryId,
-                                orElse: () => categories.first,
+                                orElse: () => uncategorizedCategory(
+                                  budget.categoryId,
+                                  l10n.uncategorized,
+                                ),
                               );
 
                               // Calculate consumed based on selected period
@@ -510,9 +513,9 @@ class ReportsScreen extends HookConsumerWidget {
                                                 horizontal: 8, vertical: 4),
                                             decoration: BoxDecoration(
                                               color: isExceeded
-                                                  ? AppColors.expense
+                                                  ? context.semanticColors.expense
                                                       .withValues(alpha: 0.1)
-                                                  : AppColors.income
+                                                  : context.semanticColors.income
                                                       .withValues(alpha: 0.1),
                                               borderRadius:
                                                   BorderRadius.circular(
@@ -522,8 +525,8 @@ class ReportsScreen extends HookConsumerWidget {
                                               '${percentage.toStringAsFixed(1)}%',
                                               style: TextStyle(
                                                 color: isExceeded
-                                                    ? AppColors.expense
-                                                    : AppColors.income,
+                                                    ? context.semanticColors.expense
+                                                    : context.semanticColors.income,
                                                 fontWeight: FontWeight.bold,
                                               ),
                                             ),
@@ -543,7 +546,7 @@ class ReportsScreen extends HookConsumerWidget {
                                               .surfaceContainerHighest,
                                           valueColor: AlwaysStoppedAnimation(
                                             isExceeded
-                                                ? AppColors.expense
+                                                ? context.semanticColors.expense
                                                 : getCategoryColor(
                                                     category.colorValue),
                                           ),
@@ -572,8 +575,8 @@ class ReportsScreen extends HookConsumerWidget {
                                                   .bodyMedium
                                                   ?.copyWith(
                                                     color: isExceeded
-                                                        ? AppColors.expense
-                                                        : AppColors.income,
+                                                        ? context.semanticColors.expense
+                                                        : context.semanticColors.income,
                                                     fontWeight: FontWeight.w600,
                                                   ),
                                               textAlign: TextAlign.right,
@@ -707,7 +710,10 @@ class ReportsScreen extends HookConsumerWidget {
                       final pieData = sortedCategories.map((entry) {
                         final category = categories.firstWhere(
                           (c) => c.id == entry.key,
-                          orElse: () => categories.first,
+                          orElse: () => uncategorizedCategory(
+                            entry.key,
+                            l10n.uncategorized,
+                          ),
                         );
                         final percentage = totalExpense > 0
                             ? (entry.value / totalExpense * 100)
@@ -731,12 +737,22 @@ class ReportsScreen extends HookConsumerWidget {
                               children: sortedCategories.map((entry) {
                                 final category = categories.firstWhere(
                                   (c) => c.id == entry.key,
-                                  orElse: () => categories.first,
+                                  orElse: () => uncategorizedCategory(
+                                    entry.key,
+                                    l10n.uncategorized,
+                                  ),
                                 );
                                 final percentage = totalExpense > 0
                                     ? (entry.value / totalExpense * 100)
                                         .toStringAsFixed(1)
                                     : '0';
+                                final iconColor =
+                                    ThemeData.estimateBrightnessForColor(
+                                                getCategoryColor(
+                                                    category.colorValue)) ==
+                                            Brightness.dark
+                                        ? AppColors.textLight
+                                        : AppColors.textDark;
 
                                 return InkWell(
                                   onTap: () => _showCategoryTransactions(
@@ -771,8 +787,8 @@ class ReportsScreen extends HookConsumerWidget {
                                           child: Center(
                                             child: CategoryIconWidget(
                                               iconName: category.iconName,
-                                              size: 16,
-                                              color: Colors.white,
+                                              size: AppSpacing.iconSizeXs,
+                                              color: iconColor,
                                             ),
                                           ),
                                         ),
@@ -896,7 +912,9 @@ class ReportsScreen extends HookConsumerWidget {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.radiusSheet),
+        ),
       ),
       builder: (context) => _CustomPeriodPickerSheet(
         initialMonth: currentMonth ?? DateTime.now(),
@@ -1037,7 +1055,10 @@ class ReportsScreen extends HookConsumerWidget {
         .toList();
   }
 
-  List<ChartData> _buildLastSixMonthsExpense(List<Transaction> transactions) {
+  List<ChartData> _buildLastSixMonthsExpense(
+    List<Transaction> transactions,
+    String locale,
+  ) {
     final now = DateTime.now();
     final months = List.generate(
       6,
@@ -1050,26 +1071,16 @@ class ReportsScreen extends HookConsumerWidget {
               t.type == TransactionType.expense &&
               t.dateTime.year == month.year &&
               t.dateTime.month == month.month)
-          .fold<double>(0, (sum, t) => sum + t.amountCents);
+          .fold<double>(0, (sum, t) => sum + t.amountCents / 100);
       final isCurrentMonth = month.year == now.year && month.month == now.month;
       return ChartData(
-        label: 'T${month.month}',
+        label: DateFormat.MMM(locale).format(month),
         value: total,
         color: isCurrentMonth
             ? AppColors.primary
             : AppColors.primary.withValues(alpha: 0.35),
       );
     }).toList();
-  }
-
-  String _formatCompactAmount(double value) {
-    if (value >= 1000000) {
-      return '${(value / 1000000).toStringAsFixed(value % 1000000 == 0 ? 0 : 1)}tr';
-    }
-    if (value >= 1000) {
-      return '${(value / 1000).toStringAsFixed(0)}k';
-    }
-    return value.toStringAsFixed(0);
   }
 }
 
@@ -1155,7 +1166,10 @@ class CategoryTransactionsScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
               ),
               child: Center(
-                child: Text(categoryIcon, style: const TextStyle(fontSize: 16)),
+                child: Text(
+                  categoryIcon,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
               ),
             ),
             const SizedBox(width: 8),
@@ -1320,7 +1334,7 @@ class CategoryTransactionsScreen extends ConsumerWidget {
                                   style: TextStyle(
                                     fontWeight: FontWeight.w500,
                                     color: isIncomeReport
-                                        ? AppColors.income
+                                        ? context.semanticColors.income
                                         : Theme.of(context)
                                             .colorScheme
                                             .onSurface,
@@ -1374,6 +1388,7 @@ class BudgetTransactionsScreen extends ConsumerWidget {
         title: Text(categoryName),
         actions: [
           IconButton(
+            tooltip: l10n.editCategory,
             icon: const Icon(Icons.edit),
             onPressed: () async {
               final result = await Navigator.pushNamed(
@@ -1444,19 +1459,22 @@ class BudgetTransactionsScreen extends ConsumerWidget {
                               horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: isExceeded
-                                ? AppColors.expense.withValues(alpha: 0.1)
-                                : AppColors.income.withValues(alpha: 0.1),
+                                ? context.semanticColors.expense
+                                    .withValues(alpha: 0.1)
+                                : context.semanticColors.income
+                                    .withValues(alpha: 0.1),
                             borderRadius:
                                 BorderRadius.circular(AppSpacing.radiusFull),
                           ),
                           child: Text(
                             '${percentage.toStringAsFixed(1)}%',
-                            style: TextStyle(
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleMedium?.copyWith(
                               color: isExceeded
-                                  ? AppColors.expense
-                                  : AppColors.income,
+                                  ? context.semanticColors.expense
+                                  : context.semanticColors.income,
                               fontWeight: FontWeight.bold,
-                              fontSize: 16,
                             ),
                           ),
                         ),
@@ -1474,7 +1492,7 @@ class BudgetTransactionsScreen extends ConsumerWidget {
                             .surfaceContainerHighest,
                         valueColor: AlwaysStoppedAnimation(
                           isExceeded
-                              ? AppColors.expense
+                              ? context.semanticColors.expense
                               : Theme.of(context).colorScheme.primary,
                         ),
                       ),
@@ -1492,8 +1510,8 @@ class BudgetTransactionsScreen extends ConsumerWidget {
                           style:
                               Theme.of(context).textTheme.bodyMedium?.copyWith(
                                     color: isExceeded
-                                        ? AppColors.expense
-                                        : AppColors.income,
+                                        ? context.semanticColors.expense
+                                        : context.semanticColors.income,
                                     fontWeight: FontWeight.w600,
                                   ),
                         ),
@@ -1613,14 +1631,15 @@ class BudgetTransactionsScreen extends ConsumerWidget {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: AppColors.expense.withValues(alpha: 0.1),
+                        color: context.semanticColors.expense
+                            .withValues(alpha: 0.1),
                         borderRadius:
                             BorderRadius.circular(AppSpacing.radiusCard),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.shopping_cart,
-                        color: AppColors.expense,
-                        size: 20,
+                        color: context.semanticColors.expense,
+                        size: AppSpacing.iconSizeSm,
                       ),
                     ),
                     title: Text(
@@ -1671,25 +1690,36 @@ class _PeriodButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? Theme.of(context).colorScheme.primary
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-        ),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: isSelected
-                    ? Theme.of(context).colorScheme.onPrimary
-                    : Theme.of(context).colorScheme.onSurfaceVariant,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              ),
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      inMutuallyExclusiveGroup: true,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          constraints: const BoxConstraints(
+            minHeight: AppSpacing.buttonHeight,
+          ),
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.onPrimary
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontWeight:
+                      isSelected ? FontWeight.w600 : FontWeight.normal,
+                ),
+          ),
         ),
       ),
     );
@@ -1794,6 +1824,7 @@ class _CustomPeriodPickerSheet extends HookWidget {
                     ),
               ),
               IconButton(
+                tooltip: l10n.close,
                 icon: const Icon(Icons.close),
                 onPressed: () => Navigator.pop(context),
               ),
@@ -2002,7 +2033,9 @@ class _CustomPeriodPickerSheet extends HookWidget {
                       child: Center(
                         child: Text(
                           year.toString(),
-                          style: TextStyle(
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleMedium?.copyWith(
                             color: isCurrentSelection
                                 ? Theme.of(context).colorScheme.onPrimary
                                 : (isCurrentYear
@@ -2014,7 +2047,6 @@ class _CustomPeriodPickerSheet extends HookWidget {
                             fontWeight: isCurrentSelection || isCurrentYear
                                 ? FontWeight.bold
                                 : null,
-                            fontSize: 16,
                           ),
                         ),
                       ),
@@ -2025,48 +2057,6 @@ class _CustomPeriodPickerSheet extends HookWidget {
             ),
           ],
         ],
-      ),
-    );
-  }
-}
-
-class _ReportTypeButton extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final Color? color;
-
-  const _ReportTypeButton({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-    this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final selectedColor = color ?? Theme.of(context).colorScheme.primary;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? selectedColor
-              : Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: isSelected
-                  ? Theme.of(context).colorScheme.onPrimary
-                  : Theme.of(context).colorScheme.onSurfaceVariant,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-            ),
-          ),
-        ),
       ),
     );
   }

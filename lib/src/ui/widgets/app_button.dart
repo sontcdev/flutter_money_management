@@ -91,8 +91,7 @@ class AppButton extends StatelessWidget {
               horizontal: AppSpacing.xl,
               vertical: AppSpacing.lg,
             ),
-            textStyle: const TextStyle(
-              fontSize: 17,
+            textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
               fontWeight: FontWeight.w700,
               letterSpacing: 0.3,
             ),

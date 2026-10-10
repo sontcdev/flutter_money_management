@@ -1,6 +1,8 @@
 // path: lib/src/ui/widgets/app_segmented_filter.dart
 
 import 'package:flutter/material.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_motion.dart';
 import '../../theme/app_spacing.dart';
 
 /// Standardized segmented filter for consistent filtering UI
@@ -30,10 +32,11 @@ class AppSegmentedFilter<T> extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : Colors.black.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(10),
+          color: Theme.of(context)
+              .colorScheme
+              .onSurface
+              .withValues(alpha: isDark ? 0.08 : 0.05),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         ),
         child: Row(
           children: List.generate(
@@ -93,57 +96,67 @@ class _FilterButton extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final effectiveColor = color ?? theme.colorScheme.primary;
-    final thumbColor = isDark ? const Color(0xFF48453C) : Colors.white;
+    final thumbColor =
+        isDark ? AppColors.segmentThumbDark : theme.colorScheme.surface;
     final selectedForeground = color != null ? effectiveColor : theme.colorScheme.onSurface;
     final unselectedForeground = theme.colorScheme.onSurface.withValues(
       alpha: 0.55,
     );
 
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(vertical: 7, horizontal: AppSpacing.sm),
-        decoration: BoxDecoration(
-          color: isSelected ? thumbColor : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.12),
-                    blurRadius: 3,
-                    offset: const Offset(0, 1),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(
-                icon,
-                size: AppSpacing.iconSizeSm,
-                color: isSelected ? selectedForeground : unselectedForeground,
-              ),
-              const SizedBox(width: AppSpacing.xs),
-            ],
-            Flexible(
-              child: Text(
-                label,
-                style: TextStyle(
-                  color:
-                      isSelected ? selectedForeground : unselectedForeground,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  fontSize: 13,
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      inMutuallyExclusiveGroup: true,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: AnimatedContainer(
+          duration: AppMotion.of(context, AppMotion.fast),
+          constraints: const BoxConstraints(
+            minHeight: AppSpacing.buttonHeight - 4,
+          ),
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(vertical: 7, horizontal: AppSpacing.sm),
+          decoration: BoxDecoration(
+            color: isSelected ? thumbColor : Colors.transparent,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: theme.colorScheme.shadow
+                          .withValues(alpha: isDark ? 0.3 : 0.12),
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(
+                  icon,
+                  size: AppSpacing.iconSizeSm,
+                  color: isSelected ? selectedForeground : unselectedForeground,
                 ),
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
+                const SizedBox(width: AppSpacing.xs),
+              ],
+              Flexible(
+                child: Text(
+                  label,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color:
+                        isSelected ? selectedForeground : unselectedForeground,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

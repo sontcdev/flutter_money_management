@@ -8,10 +8,13 @@ import 'package:flutter_money_management/src/features/reports/presentation/widge
 import 'package:flutter_money_management/src/features/reports/providers/report_providers.dart';
 import 'package:flutter_money_management/src/features/settings/providers/settings_preferences_providers.dart';
 import 'package:flutter_money_management/src/features/transactions/presentation/widgets/transaction_list_item.dart';
-import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_motion.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 import 'package:flutter_money_management/src/ui/widgets/confirm_delete_dialog.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
+import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/utils/cycle_utils.dart';
 
 /// Check if two dates are the same day
@@ -86,8 +89,8 @@ class ReportCalendarScreen extends HookConsumerWidget {
           if (key.currentContext != null) {
             Scrollable.ensureVisible(
               key.currentContext!,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
+              duration: AppMotion.of(key.currentContext!, AppMotion.normal),
+              curve: AppMotion.standard,
               alignment: 0.0, // Scroll item lên đầu
             );
           }
@@ -113,6 +116,7 @@ class ReportCalendarScreen extends HookConsumerWidget {
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
+            tooltip: l10n.search,
             icon: const Icon(Icons.search),
             onPressed: () {
               // TODO: Implement search
@@ -124,43 +128,49 @@ class ReportCalendarScreen extends HookConsumerWidget {
       body: Column(
         children: [
           // ========== CALENDAR SECTION (CỐ ĐỊNH) ==========
-          Container(
-            color: Theme.of(context).colorScheme.surface,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 8),
-                _buildMonthSelector(context, ref, selectedMonth),
-                const SizedBox(height: 4),
-                calendarData.when(
-                  data: (data) => CalendarGrid(
-                    month: selectedMonth,
-                    cellData: data,
-                    selectedDate: selectedDate,
-                    monthStartDay: monthStartDay,
-                    onDateSelected: onDateSelected,
+          _buildCalendarSection(
+            context,
+            Container(
+              color: Theme.of(context).colorScheme.surface,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 8),
+                  _buildMonthSelector(context, ref, selectedMonth),
+                  const SizedBox(height: 4),
+                  calendarData.when(
+                    data: (data) => CalendarGrid(
+                      month: selectedMonth,
+                      cellData: data,
+                      selectedDate: selectedDate,
+                      monthStartDay: monthStartDay,
+                      onDateSelected: onDateSelected,
+                    ),
+                    loading: () => const SizedBox(
+                      height: 280,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                    error: (e, s) => SizedBox(
+                      height: 280,
+                      child: InlineLoadErrorState(
+                        onRetry: () =>
+                            ref.invalidate(calendarDataProvider(selectedMonth)),
+                      ),
+                    ),
                   ),
-                  loading: () => const SizedBox(
-                    height: 280,
-                    child: Center(child: CircularProgressIndicator()),
+                  const SizedBox(height: 4),
+                  monthlySummary.when(
+                    data: (summary) => SummaryBar(
+                      totalIncome: summary['income'] ?? 0,
+                      totalExpense: summary['expense'] ?? 0,
+                      net: summary['net'] ?? 0,
+                    ),
+                    loading: () => const SizedBox(height: 70),
+                    error: (e, s) => const SizedBox(height: 70),
                   ),
-                  error: (e, s) => SizedBox(
-                    height: 280,
-                    child: Center(child: Text(l10n.errorWithMessage('$e'))),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                monthlySummary.when(
-                  data: (summary) => SummaryBar(
-                    totalIncome: summary['income'] ?? 0,
-                    totalExpense: summary['expense'] ?? 0,
-                    net: summary['net'] ?? 0,
-                  ),
-                  loading: () => const SizedBox(height: 70),
-                  error: (e, s) => const SizedBox(height: 70),
-                ),
-                const Divider(height: 1),
-              ],
+                  const Divider(height: 1),
+                ],
+              ),
             ),
           ),
 
@@ -181,6 +191,10 @@ class ReportCalendarScreen extends HookConsumerWidget {
                           icon: Icons.event_busy_outlined,
                           title: l10n.noTransactionsThisMonth,
                           message: '',
+                          actionLabel: l10n.addTransaction,
+                          onAction: () {
+                            Navigator.pushNamed(context, '/add-transaction');
+                          },
                         ),
                       ],
                     )
@@ -230,6 +244,13 @@ class ReportCalendarScreen extends HookConsumerWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildCalendarSection(BuildContext context, Widget child) {
+    if (MediaQuery.orientationOf(context) == Orientation.landscape) {
+      return Flexible(child: SingleChildScrollView(child: child));
+    }
+    return child;
   }
 
   Widget _buildMonthSelector(
@@ -328,7 +349,9 @@ class ReportCalendarScreen extends HookConsumerWidget {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.radiusSheet),
+        ),
       ),
       builder: (context) => _MonthYearPickerSheet(
         initialMonth: currentMonth,
@@ -371,10 +394,11 @@ class ReportCalendarScreen extends HookConsumerWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.delete, color: AppColors.expense),
+              leading:
+                  Icon(Icons.delete, color: context.semanticColors.expense),
               title: Text(
                 AppLocalizations.of(context)!.delete,
-                style: const TextStyle(color: AppColors.expense),
+                style: TextStyle(color: context.semanticColors.expense),
               ),
               onTap: () async {
                 Navigator.pop(context);
@@ -407,12 +431,10 @@ class ReportCalendarScreen extends HookConsumerWidget {
 void _showNoTransactionsMessage(BuildContext context) {
   final l10n = AppLocalizations.of(context)!;
   ScaffoldMessenger.of(context).clearSnackBars();
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(l10n.noTransactions),
-      duration: const Duration(seconds: 2),
-      behavior: SnackBarBehavior.floating,
-    ),
+  showAppSnackBar(
+    context,
+    l10n.noTransactions,
+    duration: const Duration(seconds: 2),
   );
 }
 
@@ -421,12 +443,10 @@ void _showScrollingToNearestMessage(
   final l10n = AppLocalizations.of(context)!;
   final dateStr = '${nearestDate.day}/${nearestDate.month}';
   ScaffoldMessenger.of(context).clearSnackBars();
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text(l10n.noTransactionsNearestDate(dateStr)),
-      duration: const Duration(seconds: 2),
-      behavior: SnackBarBehavior.floating,
-    ),
+  showAppSnackBar(
+    context,
+    l10n.noTransactionsNearestDate(dateStr),
+    duration: const Duration(seconds: 2),
   );
 }
 
@@ -452,7 +472,7 @@ class _MonthNavButton extends StatelessWidget {
               color: Theme.of(context).colorScheme.outlineVariant,
             ),
           ),
-          child: Icon(icon, size: 20),
+          child: Icon(icon, size: AppSpacing.iconSizeSm),
         ),
       ),
     );
@@ -489,8 +509,8 @@ class _MonthYearPickerSheet extends HookWidget {
               (itemWidth / 2);
           scrollController.animateTo(
             offset.clamp(0.0, scrollController.position.maxScrollExtent),
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
+            duration: AppMotion.normal,
+            curve: AppMotion.standard,
           );
         }
       });
@@ -513,6 +533,7 @@ class _MonthYearPickerSheet extends HookWidget {
                     ),
               ),
               IconButton(
+                tooltip: l10n.close,
                 icon: const Icon(Icons.close),
                 onPressed: () => Navigator.pop(context),
               ),

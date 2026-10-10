@@ -15,11 +15,13 @@ import 'package:flutter_money_management/src/features/workspace/providers/worksp
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/services/workspace_sync_helper.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_metric_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_status_chip.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
+import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 
@@ -101,7 +103,6 @@ class WorkspaceDetailScreen extends HookConsumerWidget {
 class _OverviewTab extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
     final detailAsync = ref.watch(workspaceDetailProvider);
     final budgetsAsync = ref.watch(budgetsWithConsumedProvider);
     final transactionsAsync = ref.watch(transactionsProvider);
@@ -121,7 +122,9 @@ class _OverviewTab extends ConsumerWidget {
               return _WorkspaceHeroCard(detail: detail);
             },
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, _) => Text(l10n.errorWithMessage('$error')),
+            error: (error, _) => InlineLoadErrorState(
+              onRetry: () => ref.invalidate(workspaceDetailProvider),
+            ),
           ),
           const SizedBox(height: AppSpacing.lg),
           _WorkspaceMetricGrid(
@@ -134,7 +137,9 @@ class _OverviewTab extends ConsumerWidget {
           budgetsAsync.when(
             data: (budgets) => _BudgetProgressCard(budgets: budgets.take(5)),
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, _) => Text(l10n.errorWithMessage('$error')),
+            error: (error, _) => InlineLoadErrorState(
+              onRetry: () => ref.invalidate(budgetsWithConsumedProvider),
+            ),
           ),
           const SizedBox(height: AppSpacing.lg),
           transactionsAsync.when(
@@ -142,7 +147,9 @@ class _OverviewTab extends ConsumerWidget {
               transactions: transactions.take(5),
             ),
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, _) => Text(l10n.errorWithMessage('$error')),
+            error: (error, _) => InlineLoadErrorState(
+              onRetry: () => ref.invalidate(transactionsProvider),
+            ),
           ),
         ],
       ),
@@ -199,7 +206,12 @@ class _CategoriesTab extends ConsumerWidget {
         ),
       ),
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(child: Text(l10n.errorWithMessage('$error'))),
+      error: (error, _) => LoadErrorState(
+        title: l10n.dataLoadFailed,
+        message: l10n.dataLoadFailedHint,
+        retryLabel: l10n.retry,
+        onRetry: () => ref.invalidate(categoriesProvider),
+      ),
     );
   }
 }
@@ -259,7 +271,12 @@ class _BudgetsTab extends ConsumerWidget {
         ),
       ),
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(child: Text(l10n.errorWithMessage('$error'))),
+      error: (error, _) => LoadErrorState(
+        title: l10n.dataLoadFailed,
+        message: l10n.dataLoadFailedHint,
+        retryLabel: l10n.retry,
+        onRetry: () => ref.invalidate(budgetsWithConsumedProvider),
+      ),
     );
   }
 }
@@ -325,7 +342,12 @@ class _TransactionsTab extends ConsumerWidget {
         ),
       ),
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(child: Text(l10n.errorWithMessage('$error'))),
+      error: (error, _) => LoadErrorState(
+        title: l10n.dataLoadFailed,
+        message: l10n.dataLoadFailedHint,
+        retryLabel: l10n.retry,
+        onRetry: () => ref.invalidate(transactionsProvider),
+      ),
     );
   }
 }
@@ -366,7 +388,12 @@ class _MembersTab extends ConsumerWidget {
         ),
       ),
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, _) => Center(child: Text(l10n.errorWithMessage('$error'))),
+      error: (error, _) => LoadErrorState(
+        title: l10n.dataLoadFailed,
+        message: l10n.dataLoadFailedHint,
+        retryLabel: l10n.retry,
+        onRetry: () => ref.invalidate(workspaceMembersProvider),
+      ),
     );
   }
 }
@@ -553,7 +580,7 @@ class _BudgetProgressRow extends StatelessWidget {
     final color = exceeded
         ? AppColors.error
         : progress >= 0.8
-            ? AppColors.warning
+            ? context.semanticColors.warning
             : AppColors.success;
 
     return Padding(
@@ -639,7 +666,9 @@ class _RecentTransactionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isExpense = transaction.type == model.TransactionType.expense;
-    final color = isExpense ? AppColors.expense : AppColors.income;
+    final color = isExpense
+        ? context.semanticColors.expense
+        : context.semanticColors.income;
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: CircleAvatar(

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
+import 'app_semantic_colors.dart';
 import 'app_spacing.dart';
 
 class AppTheme {
@@ -175,7 +176,8 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      splashFactory: NoSplash.splashFactory,
+      extensions: const [AppSemanticColors.light],
+      splashFactory: InkRipple.splashFactory,
       highlightColor: Colors.transparent,
       colorScheme: ColorScheme.light(
         primary: primary,
@@ -183,7 +185,7 @@ class AppTheme {
         error: AppColors.error,
         surface: AppColors.surface,
         surfaceContainerHighest: AppColors.surface2,
-        onPrimary: AppColors.textLight,
+        onPrimary: _onAccent(primary),
         onSecondary: AppColors.textDark,
         onSurface: AppColors.textPrimary,
         outline: AppColors.border,
@@ -217,7 +219,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
-          foregroundColor: AppColors.textLight,
+          foregroundColor: _onAccent(primary),
           elevation: 0,
           shadowColor: Colors.transparent,
           minimumSize: const Size(0, 50),
@@ -314,7 +316,7 @@ class AppTheme {
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primary,
-        foregroundColor: AppColors.textLight,
+        foregroundColor: _onAccent(primary),
         elevation: 2,
         shape: const CircleBorder(),
       ),
@@ -375,12 +377,13 @@ class AppTheme {
   }
 
   static ThemeData darkTheme({Color? primaryColor}) {
-    final primary = primaryColor ?? AppColors.primaryDark;
+    final primary = _darkAccent(primaryColor ?? AppColors.primaryDark);
 
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      splashFactory: NoSplash.splashFactory,
+      extensions: const [AppSemanticColors.dark],
+      splashFactory: InkRipple.splashFactory,
       highlightColor: Colors.transparent,
       colorScheme: ColorScheme.dark(
         primary: primary,
@@ -388,7 +391,7 @@ class AppTheme {
         error: AppColors.errorDark,
         surface: AppColors.surfaceDark,
         surfaceContainerHighest: AppColors.surface2Dark,
-        onPrimary: AppColors.textDark,
+        onPrimary: _onAccent(primary),
         onSecondary: AppColors.textLight,
         onSurface: AppColors.textLight,
         outline: AppColors.borderDark,
@@ -422,7 +425,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
-          foregroundColor: AppColors.textDark,
+          foregroundColor: _onAccent(primary),
           elevation: 0,
           shadowColor: Colors.transparent,
           minimumSize: const Size(0, 50),
@@ -519,7 +522,7 @@ class AppTheme {
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primary,
-        foregroundColor: AppColors.textDark,
+        foregroundColor: _onAccent(primary),
         elevation: 2,
         shape: const CircleBorder(),
       ),
@@ -590,5 +593,28 @@ class AppTheme {
       ),
       trackOutlineColor: const WidgetStatePropertyAll(Colors.transparent),
     );
+  }
+
+  static double _contrast(Color a, Color b) {
+    final la = a.computeLuminance();
+    final lb = b.computeLuminance();
+    return la > lb ? (la + 0.05) / (lb + 0.05) : (lb + 0.05) / (la + 0.05);
+  }
+
+  static Color _onAccent(Color accent) {
+    return _contrast(AppColors.textDark, accent) >
+            _contrast(AppColors.textLight, accent) + 0.1
+        ? AppColors.textDark
+        : AppColors.textLight;
+  }
+
+  static Color _darkAccent(Color accent) {
+    var color = accent;
+    for (var step = 1;
+        step <= 10 && _contrast(color, AppColors.surfaceDark) < 4.5;
+        step++) {
+      color = Color.lerp(accent, AppColors.textLight, step / 10)!;
+    }
+    return color;
   }
 }

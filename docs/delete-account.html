@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="index,follow">
+  <title>MyMoney Account Deletion</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --accent: #2563eb;
+      --shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.65;
+      color: var(--text);
+      background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 220px);
+    }
+
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 20px 64px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 32px;
+    }
+
+    h1,
+    h2,
+    h3 {
+      color: #111827;
+      line-height: 1.25;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+    }
+
+    h2 {
+      margin-top: 32px;
+      font-size: 1.35rem;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    h3 {
+      margin-top: 20px;
+      font-size: 1.05rem;
+    }
+
+    p,
+    li {
+      font-size: 1rem;
+    }
+
+    ul {
+      margin: 10px 0 16px;
+      padding-left: 22px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    hr {
+      border: 0;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    @media (max-width: 640px) {
+      main {
+        padding: 16px 12px 32px;
+      }
+
+      .card {
+        padding: 20px;
+        border-radius: 14px;
+      }
+
+      h1 {
+        font-size: 1.7rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="card">
+      <span class="eyebrow">Account Deletion</span>
+      <h1>Delete your MyMoney account</h1>
+      <p class="muted">App: MyMoney &middot; Developer: tcson.dev</p>
+
+      <h2>Delete your account in the app</h2>
+      <ol>
+        <li>Sign in and open <strong>Settings &rarr; Delete account</strong>.</li>
+        <li>If shared workspaces are listed, open each workspace and leave it first. Transfer ownership before leaving a workspace you own. Pending memberships and archived shared workspaces can also prevent deletion.</li>
+        <li>Read the confirmation, type <strong>DELETE</strong>, and confirm deletion.</li>
+        <li>Keep the app open while deletion completes. On success, you are signed out and returned to sign-in. Your deleted account can no longer sign in.</li>
+      </ol>
+      <p>If deletion fails, the app shows an error and lets you retry. Do not assume deletion is complete until the app confirms success.</p>
+
+      <h2>Request deletion without the app</h2>
+      <ol>
+        <li>
+          Send an email to
+          <a href="mailto:tcson.dev@gmail.com?subject=MyMoney%20account%20deletion%20request">tcson.dev@gmail.com</a>
+          with the subject <strong>"MyMoney account deletion request"</strong>.
+        </li>
+        <li>Send it from the email address you use to sign in to MyMoney, or include that address in the message.</li>
+        <li>We will verify account ownership before processing the request. Shared workspace membership or ownership must be resolved first. Do not send your password or sign-in codes.</li>
+      </ol>
+      <p>
+        Contact us if you cannot access your account or leave a shared workspace.
+      </p>
+
+      <h2>Data that will be deleted</h2>
+      <ul>
+        <li>Your account (email, display name, sign-in credentials)</li>
+        <li>Your sole-member workspaces and their wallets, categories, transactions, budgets, recurring transactions, attachments and activity logs</li>
+        <li>Your membership and preferences in workspaces owned by other users</li>
+        <li>Your notifications</li>
+        <li>Your uploaded receipt files and account-linked error reports</li>
+      </ul>
+
+      <h2>Data that may be retained</h2>
+      <p>
+        Records you contributed to shared workspaces may remain available to
+        other members after you leave and delete your account. Your account's
+        author identifiers are removed from retained records, but information
+        you entered in transaction notes or other shared content may remain.
+        Resolve shared content with the workspace owner before leaving.
+        Backup retention depends on the hosting provider's configured retention
+        schedule; a fixed backup deletion period is not promised here.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        <a href="mailto:tcson.dev@gmail.com">tcson.dev@gmail.com</a>
+      </p>
+    </section>
+  </main>
+</body>
+</html>

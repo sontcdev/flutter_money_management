@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/auth/providers/auth_providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/utils/app_logger.dart';
@@ -146,7 +147,7 @@ class SignUpScreen extends HookConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final secondaryText =
         isDark ? AppColors.textLightSecondary : AppColors.textSecondary;
-    final faintText = isDark ? AppColors.textLightFaint : AppColors.textFaint;
+    final faintText = context.semanticColors.textFaint;
 
     return Scaffold(
       body: SafeArea(
@@ -164,6 +165,7 @@ class SignUpScreen extends HookConsumerWidget {
 
               // Back button
               IconButton(
+                tooltip: l10n.back,
                 onPressed: () => Navigator.of(context).pop(),
                 icon: const Icon(Icons.arrow_back),
                 style: IconButton.styleFrom(
@@ -238,6 +240,9 @@ class SignUpScreen extends HookConsumerWidget {
                   hintText: l10n.atLeastSixCharacters,
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
+                    tooltip: obscurePassword.value
+                        ? l10n.showPassword
+                        : l10n.hidePassword,
                     icon: Icon(
                       obscurePassword.value
                           ? Icons.visibility_outlined
@@ -264,6 +269,9 @@ class SignUpScreen extends HookConsumerWidget {
                   hintText: l10n.reenterYourPassword,
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
+                    tooltip: obscureConfirmPassword.value
+                        ? l10n.showPassword
+                        : l10n.hidePassword,
                     icon: Icon(
                       obscureConfirmPassword.value
                           ? Icons.visibility_outlined

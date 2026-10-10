@@ -8,10 +8,12 @@ import 'package:flutter_money_management/src/utils/app_logger.dart';
 
 class AuthCallbackFeedbackListener extends ConsumerStatefulWidget {
   final Widget child;
+  final GlobalKey<NavigatorState> navigatorKey;
 
   const AuthCallbackFeedbackListener({
     super.key,
     required this.child,
+    required this.navigatorKey,
   });
 
   @override
@@ -43,7 +45,7 @@ class _AuthCallbackFeedbackListenerState
 
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
-              Navigator.of(context).pushNamedAndRemoveUntil(
+              widget.navigatorKey.currentState?.pushNamedAndRemoveUntil(
                 '/reset-password',
                 (_) => false,
               );

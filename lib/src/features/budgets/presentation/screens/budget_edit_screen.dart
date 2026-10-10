@@ -9,10 +9,14 @@ import 'package:flutter_money_management/src/features/categories/models/category
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
+import 'package:flutter_money_management/src/ui/widgets/confirm_delete_dialog.dart';
+import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 import 'package:flutter_money_management/src/utils/vnd_input_formatter.dart';
@@ -104,31 +108,18 @@ class BudgetEditScreen extends HookConsumerWidget {
     }
 
     Future<void> handleDelete() async {
-      final confirmed = await showDialog<bool>(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text(l10n.notification),
-              content: Text(l10n.confirmDeleteBudget(
-                categoriesAsync.valueOrNull
-                        ?.where((c) => c.id == budget!.categoryId)
-                        .firstOrNull
-                        ?.name ??
-                    l10n.unknown,
-              )),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: Text(l10n.cancel),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(true),
-                  style: TextButton.styleFrom(foregroundColor: AppColors.error),
-                  child: Text(l10n.delete),
-                ),
-              ],
-            ),
-          ) ??
-          false;
+      final categoryName =
+          categoriesAsync.valueOrNull
+              ?.where((c) => c.id == budget!.categoryId)
+              .firstOrNull
+              ?.name ??
+          l10n.unknown;
+      final confirmed = await ConfirmDeleteDialog.show(
+        context,
+        itemName: categoryName,
+        message: l10n.confirmDeleteBudget(categoryName),
+        consequence: l10n.deleteCannotBeUndone,
+      );
 
       if (!confirmed) return;
 
@@ -140,8 +131,10 @@ class BudgetEditScreen extends HookConsumerWidget {
         ref.invalidate(budgetsWithConsumedProvider);
         if (context.mounted) {
           Navigator.of(context).pop(true);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.budgetDeleted)),
+          showAppSnackBar(
+            context,
+            l10n.budgetDeleted,
+            type: AppSnackBarType.success,
           );
         }
       } catch (e, stackTrace) {
@@ -164,15 +157,19 @@ class BudgetEditScreen extends HookConsumerWidget {
 
     Future<void> handleSave() async {
       if (limitController.text.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.limitRequiredError)),
+        showAppSnackBar(
+          context,
+          l10n.limitRequiredError,
+          type: AppSnackBarType.error,
         );
         return;
       }
 
       if (selectedCategoryId.value == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.selectCategoryError)),
+        showAppSnackBar(
+          context,
+          l10n.selectCategoryError,
+          type: AppSnackBarType.error,
         );
         return;
       }
@@ -240,9 +237,7 @@ class BudgetEditScreen extends HookConsumerWidget {
 
         if (context.mounted) {
           Navigator.of(context).pop(true);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.success)),
-          );
+          showAppSnackBar(context, l10n.success, type: AppSnackBarType.success);
         }
       } catch (e, stackTrace) {
         if (context.mounted) {
@@ -271,6 +266,7 @@ class BudgetEditScreen extends HookConsumerWidget {
       appBar: AppBar(
         title: Text(budget == null ? l10n.addBudget : l10n.editBudget),
         leading: IconButton(
+          tooltip: l10n.back,
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             // Unfocus to hide keyboard before popping
@@ -358,7 +354,8 @@ class BudgetEditScreen extends HookConsumerWidget {
                       child: Row(
                         children: [
                           CategoryIconWidget(
-                              iconName: category.iconName, size: 20),
+                              iconName: category.iconName,
+                              size: AppSpacing.iconSizeSm),
                           const SizedBox(width: 8),
                           Text(category.name),
                         ],
@@ -374,7 +371,9 @@ class BudgetEditScreen extends HookConsumerWidget {
                 );
               },
               loading: () => const CircularProgressIndicator(),
-              error: (err, stack) => Text(l10n.errorWithMessage('$err')),
+              error: (err, stack) => InlineLoadErrorState(
+                onRetry: () => ref.invalidate(categoriesProvider),
+              ),
             ),
             const SizedBox(height: AppSpacing.lg),
             AppInput(
@@ -391,8 +390,7 @@ class BudgetEditScreen extends HookConsumerWidget {
                     horizontal: AppSpacing.md, vertical: AppSpacing.lg),
                 child: Text(
                   CurrencyFormatter.getCurrencySymbol('VND'),
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -549,6 +547,9 @@ class BudgetEditScreen extends HookConsumerWidget {
                                 )
                               : Text(l10n.selectTransactionsForBudget),
                           trailing: IconButton(
+                            tooltip: showTransactionSelector.value
+                                ? l10n.collapse
+                                : l10n.expand,
                             icon: Icon(
                               showTransactionSelector.value
                                   ? Icons.expand_less
@@ -619,9 +620,9 @@ class BudgetEditScreen extends HookConsumerWidget {
                                   t.amountCents,
                                   locale: l10n.localeName,
                                 ),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.expense,
+                                  color: context.semanticColors.expense,
                                 ),
                               ),
                               dense: true,
@@ -708,13 +709,12 @@ class _PeriodOptionButton extends StatelessWidget {
             Icon(
               icon,
               color: isSelected ? Colors.white : unselectedForeground,
-              size: 16,
+              size: AppSpacing.iconSizeXs,
             ),
             const SizedBox(width: AppSpacing.xs),
             Text(
               label,
-              style: TextStyle(
-                fontSize: 13,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: isSelected ? Colors.white : unselectedForeground,
               ),
@@ -754,8 +754,7 @@ class _DatePickerField extends StatelessWidget {
           children: [
             Text(
               label,
-              style: TextStyle(
-                fontSize: 12,
+              style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
@@ -763,7 +762,8 @@ class _DatePickerField extends StatelessWidget {
             Row(
               children: [
                 Icon(Icons.calendar_today,
-                    size: 16, color: theme.colorScheme.primary),
+                    size: AppSpacing.iconSizeXs,
+                    color: theme.colorScheme.primary),
                 const SizedBox(width: AppSpacing.sm),
                 Text(
                   formatLocalizedDate(context, date),

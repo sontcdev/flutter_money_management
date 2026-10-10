@@ -2647,6 +2647,12 @@ abstract class AppLocalizations {
   /// **'Over budget'**
   String get overBudget;
 
+  /// No description provided for @overBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Over by {amount}'**
+  String overBy(Object amount);
+
   /// No description provided for @dangerZone.
   ///
   /// In en, this message translates to:
@@ -3030,6 +3036,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unknown'**
   String get unknown;
+
+  /// No description provided for @uncategorized.
+  ///
+  /// In en, this message translates to:
+  /// **'Uncategorized'**
+  String get uncategorized;
 
   /// No description provided for @noTransactionsThisMonth.
   ///
@@ -3421,6 +3433,12 @@ abstract class AppLocalizations {
   /// **'Please select a wallet'**
   String get walletRequired;
 
+  /// No description provided for @toWalletRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please select a destination wallet'**
+  String get toWalletRequired;
+
   /// No description provided for @negativeOpeningBalance.
   ///
   /// In en, this message translates to:
@@ -3474,6 +3492,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Try again'**
   String get voiceInputTryAgain;
+
+  /// No description provided for @deleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get deleteAccount;
+
+  /// No description provided for @deleteAccountDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Request permanent deletion of your account and data'**
+  String get deleteAccountDesc;
+
+  /// No description provided for @deleteAccountConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This permanently deletes your account, personal workspaces and their data. Your author references and personal attachments are removed from shared workspaces you have left; shared financial history remains for other members. This cannot be undone.'**
+  String get deleteAccountConfirm;
+
+  /// No description provided for @deleteAccountOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the page. Please email tcson.dev@gmail.com to request account deletion.'**
+  String get deleteAccountOpenFailed;
 
   /// No description provided for @quickInputTitle.
   ///
@@ -3552,6 +3594,168 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Type or speak a transaction'**
   String get quickInputTooltip;
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
+  /// No description provided for @deleteItemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\"?'**
+  String deleteItemTitle(String name);
+
+  /// No description provided for @deleteCannotBeUndone.
+  ///
+  /// In en, this message translates to:
+  /// **'This can\'t be undone.'**
+  String get deleteCannotBeUndone;
+
+  /// No description provided for @sectionLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load this section.'**
+  String get sectionLoadFailed;
+
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
+  /// No description provided for @showPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get showPassword;
+
+  /// No description provided for @hidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get hidePassword;
+
+  /// No description provided for @expand.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand'**
+  String get expand;
+
+  /// No description provided for @previousDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous day'**
+  String get previousDay;
+
+  /// No description provided for @nextDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Next day'**
+  String get nextDay;
+
+  /// No description provided for @removeReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove receipt'**
+  String get removeReceipt;
+
+  /// No description provided for @resetCodeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter reset code'**
+  String get resetCodeTitle;
+
+  /// No description provided for @resetCodeInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the code from your reset email. You can then choose a new password.'**
+  String get resetCodeInstructions;
+
+  /// No description provided for @resetCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email code'**
+  String get resetCodeLabel;
+
+  /// No description provided for @resetCodeVerify.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get resetCodeVerify;
+
+  /// No description provided for @resetCodeResend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a new code'**
+  String get resetCodeResend;
+
+  /// No description provided for @resetCodeInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the numeric code from your email.'**
+  String get resetCodeInvalid;
+
+  /// No description provided for @resetCodeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not verify the code. Check it or request a new one.'**
+  String get resetCodeFailed;
+
+  /// No description provided for @resetEmailInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email to receive a password reset code.'**
+  String get resetEmailInstructions;
+
+  /// No description provided for @sendResetCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Send code'**
+  String get sendResetCode;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get privacyPolicy;
+
+  /// No description provided for @privacyPolicySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How your data is collected and used'**
+  String get privacyPolicySubtitle;
+
+  /// No description provided for @privacyPolicyOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the privacy policy. Please try again.'**
+  String get privacyPolicyOpenFailed;
+
+  /// No description provided for @deleteAccountTypeConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Type DELETE to confirm'**
+  String get deleteAccountTypeConfirmation;
+
+  /// No description provided for @deleteAccountFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Deletion could not be completed. Retry to finish deleting your account.'**
+  String get deleteAccountFailed;
+
+  /// No description provided for @deleteAccountWebRequest.
+  ///
+  /// In en, this message translates to:
+  /// **'Request deletion on the web'**
+  String get deleteAccountWebRequest;
+
+  /// No description provided for @deleteAccountSharedWorkspaces.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave these shared workspaces before deleting your account.'**
+  String get deleteAccountSharedWorkspaces;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -46,7 +46,7 @@ class SupabaseErrorMapper {
       );
     }
 
-    if (_looksLikeSupabaseError(error)) {
+    if (error is FunctionException || _looksLikeSupabaseError(error)) {
       return SupabaseOperationException(
         'Không thể hoàn tất yêu cầu. Vui lòng thử lại sau.',
         source: error,
@@ -58,6 +58,7 @@ class SupabaseErrorMapper {
 
   static bool isSupabaseException(Object error) {
     return error is PostgrestException ||
+        error is FunctionException ||
         error is AuthException ||
         error is StorageException ||
         _isNetworkError(error) ||

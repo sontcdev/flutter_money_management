@@ -7,11 +7,14 @@ import 'package:flutter_money_management/src/features/workspace/services/workspa
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
-import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_segmented_filter.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
+import 'package:flutter_money_management/src/ui/widgets/confirm_delete_dialog.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
+import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 import 'package:flutter_money_management/src/features/budgets/services/budget_service.dart';
@@ -32,6 +35,7 @@ class CategoriesScreen extends HookConsumerWidget {
         actions: [
           if (canManageContent)
             IconButton(
+              tooltip: l10n.addCategory,
               icon: const Icon(Icons.add),
               onPressed: () async {
                 final result =
@@ -52,12 +56,12 @@ class CategoriesScreen extends HookConsumerWidget {
               FilterOption(
                 value: 1,
                 label: l10n.expense,
-                color: AppColors.expense,
+                color: context.semanticColors.expense,
               ),
               FilterOption(
                 value: 2,
                 label: l10n.income,
-                color: AppColors.income,
+                color: context.semanticColors.income,
               ),
             ],
             selectedValue: selectedTab.value,
@@ -182,8 +186,12 @@ class CategoriesScreen extends HookConsumerWidget {
                 itemCount: 5,
                 itemBuilder: (context, index) => const ShimmerListItem(),
               ),
-              error: (error, stack) =>
-                  Center(child: Text(l10n.errorWithMessage('$error'))),
+              error: (error, stack) => LoadErrorState(
+                title: l10n.dataLoadFailed,
+                message: l10n.dataLoadFailedHint,
+                retryLabel: l10n.retry,
+                onRetry: () => ref.invalidate(categoriesProvider),
+              ),
             ),
           ),
         ],
@@ -197,38 +205,26 @@ class CategoriesScreen extends HookConsumerWidget {
     required AppLocalizations l10n,
     required Category category,
   }) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.confirmDelete),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(l10n.no),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(l10n.yes),
-          ),
-        ],
-      ),
+    final confirm = await ConfirmDeleteDialog.show(
+      context,
+      itemName: category.name,
     );
 
-    if (confirm == true) {
+    if (confirm) {
       try {
         await ref.read(categoryRepositoryProvider).deleteCategory(
               category.id,
             );
         ref.invalidate(categoriesProvider);
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.success)),
-          );
+          showAppSnackBar(context, l10n.success, type: AppSnackBarType.success);
         }
       } on CategoryInUseException {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.categoryInUse)),
+          showAppSnackBar(
+            context,
+            l10n.categoryInUse,
+            type: AppSnackBarType.error,
           );
         }
       } catch (e, stackTrace) {

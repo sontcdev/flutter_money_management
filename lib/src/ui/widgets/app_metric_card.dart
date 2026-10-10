@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'app_card.dart';
 
 enum MetricCardSize {
@@ -105,7 +106,7 @@ class AppMetricCard extends StatelessWidget {
       case MetricCardTone.positive:
         return AppColors.success;
       case MetricCardTone.warning:
-        return AppColors.warning;
+        return context.semanticColors.warning;
       case MetricCardTone.danger:
         return AppColors.error;
       case MetricCardTone.neutral:
@@ -126,11 +127,11 @@ class AppMetricCard extends StatelessWidget {
       case MetricCardTone.warning:
         return isDark
             ? AppColors.warningContainerDark
-            : AppColors.warningContainer;
+            : context.semanticColors.warningContainer;
       case MetricCardTone.danger:
         return isDark
             ? AppColors.expenseContainerDark
-            : AppColors.expenseContainer;
+            : context.semanticColors.expenseContainer;
       case MetricCardTone.neutral:
         return null; // Use default card color
     }

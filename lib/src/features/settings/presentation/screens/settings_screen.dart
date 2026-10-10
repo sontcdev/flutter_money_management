@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_money_management/src/features/auth/models/account_deletion_blocker.dart';
+import 'package:flutter_money_management/src/features/auth/models/account_deletion_exception.dart';
+import 'package:flutter_money_management/src/features/auth/presentation/widgets/account_deletion_dialog.dart';
 import 'package:flutter_money_management/src/features/auth/providers/auth_providers.dart';
 import 'package:flutter_money_management/src/features/settings/providers/settings_preferences_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_management_providers.dart';
@@ -10,6 +14,7 @@ import 'package:flutter_money_management/src/i18n/locale_provider.dart';
 import 'package:flutter_money_management/src/i18n/theme_provider.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
@@ -32,7 +37,7 @@ class SettingsScreen extends HookConsumerWidget {
     final canLeaveWorkspace = ref.watch(canLeaveWorkspaceProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final errorColor = isDark ? AppColors.errorDark : AppColors.error;
-    final warningColor = isDark ? AppColors.warningDark : AppColors.warning;
+    final warningColor = context.semanticColors.warning;
 
     return Scaffold(
       appBar: AppBar(
@@ -67,7 +72,9 @@ class SettingsScreen extends HookConsumerWidget {
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall
-                              ?.copyWith(color: AppColors.textFaint),
+                              ?.copyWith(
+                                color: context.semanticColors.textFaint,
+                              ),
                         ),
                       ],
                     ),
@@ -121,7 +128,7 @@ class SettingsScreen extends HookConsumerWidget {
             children: [
               _SettingsRow(
                 icon: Icons.language,
-                tint: const Color(0xFF4678CC),
+                tint: AppColors.info,
                 title: l10n.language,
                 trailing: DropdownButton<String>(
                   value: locale.languageCode,
@@ -145,7 +152,7 @@ class SettingsScreen extends HookConsumerWidget {
               ),
               _SettingsRow(
                 icon: Icons.brightness_6_outlined,
-                tint: const Color(0xFF5B6470),
+                tint: AppColors.tintSlate,
                 title: l10n.theme,
                 trailing: DropdownButton<ThemeMode>(
                   value: themeMode,
@@ -167,7 +174,7 @@ class SettingsScreen extends HookConsumerWidget {
               ),
               _SettingsRow(
                 icon: Icons.palette_outlined,
-                tint: const Color(0xFFEC4899),
+                tint: AppColors.tintPink,
                 title: l10n.themeColor,
                 subtitle: l10n.selectThemeColor,
                 trailing: Container(
@@ -185,7 +192,7 @@ class SettingsScreen extends HookConsumerWidget {
               ),
               _SettingsRow(
                 icon: Icons.text_fields_outlined,
-                tint: const Color(0xFFF97316),
+                tint: AppColors.tintOrange,
                 title: l10n.fontSize,
                 subtitle: _fontScaleLabel(fontScale, l10n),
                 onTap: () => _showFontScalePicker(context, ref, fontScale, l10n),
@@ -200,7 +207,7 @@ class SettingsScreen extends HookConsumerWidget {
             children: [
               _SettingsRow(
                 icon: Icons.calendar_month_outlined,
-                tint: const Color(0xFFCF4040),
+                tint: AppColors.error,
                 title: l10n.monthStartDay,
                 subtitle: l10n.monthStartDayDesc(monthStartDay),
                 onTap: () => _showMonthStartDayPicker(
@@ -208,7 +215,7 @@ class SettingsScreen extends HookConsumerWidget {
               ),
               _SettingsRow(
                 icon: Icons.pie_chart_outline,
-                tint: const Color(0xFF14B8A6),
+                tint: AppColors.tintTeal,
                 title: l10n.manageBudgets,
                 subtitle: l10n.manageBudgetsDesc,
                 onTap: () => Navigator.pushNamed(context, '/budgets'),
@@ -223,21 +230,21 @@ class SettingsScreen extends HookConsumerWidget {
             children: [
               _SettingsRow(
                 icon: Icons.account_balance_wallet_outlined,
-                tint: const Color(0xFF00884B),
+                tint: AppColors.primary,
                 title: l10n.manageWallets,
                 subtitle: l10n.manageWalletsSubtitle,
                 onTap: () => Navigator.pushNamed(context, '/wallets'),
               ),
               _SettingsRow(
                 icon: Icons.category_outlined,
-                tint: const Color(0xFF8B5CF6),
+                tint: AppColors.tintViolet,
                 title: l10n.manageCategories,
                 subtitle: l10n.manageCategoriesDesc,
                 onTap: () => Navigator.pushNamed(context, '/categories'),
               ),
               _SettingsRow(
                 icon: Icons.receipt_long_outlined,
-                tint: const Color(0xFF4678CC),
+                tint: AppColors.info,
                 title: l10n.manageTransactions,
                 subtitle: l10n.manageTransactionsDesc,
                 onTap: () =>
@@ -245,7 +252,7 @@ class SettingsScreen extends HookConsumerWidget {
               ),
               _SettingsRow(
                 icon: Icons.schedule_outlined,
-                tint: const Color(0xFFD3A329),
+                tint: AppColors.warning,
                 title: l10n.recurringTransactions,
                 subtitle: l10n.recurringTransactionsDesc,
                 onTap: () =>
@@ -262,7 +269,7 @@ class SettingsScreen extends HookConsumerWidget {
               children: [
                 _SettingsRow(
                   icon: Icons.login,
-                  tint: const Color(0xFF00884B),
+                  tint: AppColors.primary,
                   title: l10n.signIn,
                   subtitle: l10n.signInDesc,
                   onTap: () => Navigator.pushNamed(context, '/sign-in'),
@@ -272,19 +279,48 @@ class SettingsScreen extends HookConsumerWidget {
             const SizedBox(height: 20),
           ],
 
+          _SettingsListCard(
+            children: [
+              _SettingsRow(
+                icon: Icons.privacy_tip_outlined,
+                tint: AppColors.primary,
+                title: l10n.privacyPolicy,
+                subtitle: l10n.privacyPolicySubtitle,
+                onTap: () => _handlePrivacyPolicy(context),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
           if (packageInfo.data != null) ...[
             _SectionCaption(title: l10n.aboutSection),
             _SettingsListCard(
               children: [
                 _SettingsRow(
                   icon: Icons.info_outline,
-                  tint: const Color(0xFF8F8C83),
+                  tint: AppColors.textFaint,
                   title: packageInfo.data!.appName,
                   subtitle: l10n.versionLabel(
                     packageInfo.data!.version,
                     packageInfo.data!.buildNumber,
                   ),
                   trailing: const SizedBox.shrink(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+          ],
+
+          if (currentUser != null) ...[
+            _SettingsListCard(
+              children: [
+                _SettingsRow(
+                  icon: Icons.delete_forever_outlined,
+                  tint: errorColor,
+                  title: l10n.deleteAccount,
+                  subtitle: l10n.deleteAccountDesc,
+                  titleColor: errorColor,
+                  onTap: () => _handleDeleteAccount(context, ref),
                 ),
               ],
             ),
@@ -306,6 +342,134 @@ class SettingsScreen extends HookConsumerWidget {
         ],
       ),
     );
+  }
+
+  static final Uri _privacyPolicyUrl = Uri.parse(
+    'https://sontcdev.github.io/flutter_money_management/',
+  );
+
+  Future<void> _handlePrivacyPolicy(BuildContext context) async {
+    var opened = false;
+    try {
+      opened = await launchUrl(
+        _privacyPolicyUrl,
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (_) {
+      opened = false;
+    }
+    if (!opened && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.privacyPolicyOpenFailed),
+        ),
+      );
+    }
+  }
+
+  static final Uri _deleteAccountUrl = Uri.parse(
+    'https://sontcdev.github.io/flutter_money_management/delete-account.html',
+  );
+
+  Future<void> _handleDeleteAccount(BuildContext context, WidgetRef ref) async {
+    final authService = ref.read(supabaseAuthServiceProvider);
+    try {
+      final blockers = await authService.getAccountDeletionBlockers();
+      if (!context.mounted) return;
+      if (blockers.isNotEmpty) {
+        await _showAccountDeletionBlockers(context, blockers);
+        return;
+      }
+      final result = await showDialog<Object>(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AccountDeletionDialog(
+          onDelete: authService.deleteAccount,
+          onWebRequest: () => _openDeletionWebRequest(context),
+        ),
+      );
+      if (!context.mounted) return;
+      if (result is SharedWorkspaceMembershipException) {
+        await _showAccountDeletionBlockers(context, result.workspaces);
+        return;
+      }
+      if (result != true) return;
+      await authService.clearDeletedAccountSession();
+      clearActiveWorkspace(ref);
+      ref.invalidate(authStateProvider);
+      ref.invalidate(workspaceListProvider);
+      if (context.mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/sign-in',
+          (route) => false,
+        );
+      }
+    } catch (e, stackTrace) {
+      if (context.mounted) {
+        await ErrorReportHelper.handleApiError(
+          context: context,
+          ref: ref,
+          error: e,
+          stackTrace: stackTrace,
+          feature: 'settings',
+          action: 'delete_account',
+          screen: 'settings_screen',
+        );
+      }
+    }
+  }
+
+  Future<void> _showAccountDeletionBlockers(
+    BuildContext context,
+    List<AccountDeletionBlocker> blockers,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final workspaceId = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.deleteAccount),
+        scrollable: true,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.deleteAccountSharedWorkspaces),
+            const SizedBox(height: AppSpacing.lg),
+            for (final workspace in blockers)
+              TextButton(
+                onPressed: () =>
+                    Navigator.of(context).pop(workspace.workspaceId),
+                child: Text(workspace.workspaceName),
+              ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.cancel),
+          ),
+        ],
+      ),
+    );
+    if (workspaceId != null && context.mounted) {
+      await Navigator.of(context).pushNamed(
+        '/workspace-detail',
+        arguments: workspaceId,
+      );
+    }
+  }
+
+  Future<void> _openDeletionWebRequest(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+    final opened = await launchUrl(
+      _deleteAccountUrl,
+      mode: LaunchMode.externalApplication,
+    );
+    if (!opened && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.deleteAccountOpenFailed)),
+      );
+    }
   }
 
   Future<void> _handleLogout(BuildContext context, WidgetRef ref) async {
@@ -449,33 +613,38 @@ class SettingsScreen extends HookConsumerWidget {
                 itemBuilder: (context, index) {
                   final day = index + 1;
                   final isSelected = day == currentDay;
-                  return GestureDetector(
-                    onTap: () {
-                      ref.read(monthStartDayProvider.notifier).setStartDay(day);
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? Theme.of(context).colorScheme.primary
-                            : Theme.of(context).colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
-                        border: isSelected
-                            ? null
-                            : Border.all(
-                                color: Theme.of(context).colorScheme.outline,
-                              ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '$day',
-                          style: TextStyle(
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                            color: isSelected
-                                ? Theme.of(context).colorScheme.onPrimary
-                                : Theme.of(context).colorScheme.onSurface,
+                  return Semantics(
+                    button: true,
+                    selected: isSelected,
+                    inMutuallyExclusiveGroup: true,
+                    child: GestureDetector(
+                      onTap: () {
+                        ref.read(monthStartDayProvider.notifier).setStartDay(day);
+                        Navigator.pop(context);
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+                          border: isSelected
+                              ? null
+                              : Border.all(
+                                  color: Theme.of(context).colorScheme.outline,
+                                ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            '$day',
+                            style: TextStyle(
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              color: isSelected
+                                  ? Theme.of(context).colorScheme.onPrimary
+                                  : Theme.of(context).colorScheme.onSurface,
+                            ),
                           ),
                         ),
                       ),
@@ -570,52 +739,61 @@ class SettingsScreen extends HookConsumerWidget {
                   final isSelected =
                       color.toARGB32() == currentColor.toARGB32();
 
-                  return GestureDetector(
-                    onTap: () {
-                      ref
-                          .read(themeColorProvider.notifier)
-                          .setThemeColor(color);
-                      Navigator.pop(context);
-                    },
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 56,
-                          height: 56,
-                          decoration: BoxDecoration(
-                            color: color,
-                            shape: BoxShape.circle,
-                            border: isSelected
-                                ? Border.all(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface,
-                                    width: 3,
+                  return Semantics(
+                    button: true,
+                    selected: isSelected,
+                    inMutuallyExclusiveGroup: true,
+                    child: GestureDetector(
+                      onTap: () {
+                        ref
+                            .read(themeColorProvider.notifier)
+                            .setThemeColor(color);
+                        Navigator.pop(context);
+                      },
+                      child: Column(
+                        children: [
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                              border: isSelected
+                                  ? Border.all(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
+                                      width: 3,
+                                    )
+                                  : null,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: color.withValues(alpha: 0.4),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: isSelected
+                                ? Icon(
+                                    Icons.check,
+                                    color: _onColor(color),
                                   )
                                 : null,
-                            boxShadow: [
-                              BoxShadow(
-                                color: color.withValues(alpha: 0.4),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
                           ),
-                          child: isSelected
-                              ? const Icon(Icons.check, color: Colors.white)
-                              : null,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          name,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.normal,
+                          const SizedBox(height: 4),
+                          Text(
+                            name,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.labelMedium?.copyWith(
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 }).toList(),
@@ -626,6 +804,12 @@ class SettingsScreen extends HookConsumerWidget {
         ),
       ),
     );
+  }
+
+  Color _onColor(Color color) {
+    return ThemeData.estimateBrightnessForColor(color) == Brightness.dark
+        ? AppColors.textLight
+        : AppColors.textDark;
   }
 
   String _getColorName(String key, AppLocalizations l10n) {
@@ -666,7 +850,7 @@ class _SectionCaption extends StatelessWidget {
       child: Text(
         title,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppColors.textFaint,
+              color: context.semanticColors.textFaint,
             ),
       ),
     );
@@ -740,7 +924,7 @@ class _SettingsRow extends StatelessWidget {
               height: 30,
               decoration: BoxDecoration(
                 color: tileColor,
-                borderRadius: BorderRadius.circular(7),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               ),
               alignment: Alignment.center,
               child: Icon(icon, size: 18, color: Colors.white),
@@ -762,7 +946,7 @@ class _SettingsRow extends StatelessWidget {
                   Text(
                     subtitle!,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textFaint,
+                          color: context.semanticColors.textFaint,
                         ),
                   ),
                 ],
@@ -772,10 +956,10 @@ class _SettingsRow extends StatelessWidget {
           const SizedBox(width: 8),
           trailing ??
               (onTap != null
-                  ? const Icon(
+                  ? Icon(
                       Icons.chevron_right,
-                      size: 20,
-                      color: AppColors.textFaint,
+                      size: AppSpacing.iconSizeSm,
+                      color: context.semanticColors.textFaint,
                     )
                   : const SizedBox.shrink()),
         ],
@@ -845,7 +1029,7 @@ class _SquareBadge extends StatelessWidget {
       height: 38,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primary,
-        borderRadius: BorderRadius.circular(11),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       ),
       alignment: Alignment.center,
       child: Text(

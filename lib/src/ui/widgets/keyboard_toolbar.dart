@@ -36,9 +36,8 @@ class KeyboardToolbar extends StatelessWidget {
             onPressed: onSkip ?? () => FocusScope.of(context).unfocus(),
             child: Text(
               l10n.skip,
-              style: TextStyle(
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Colors.pink.shade300,
-                fontSize: 16,
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -48,9 +47,8 @@ class KeyboardToolbar extends StatelessWidget {
             onPressed: onOk ?? () => FocusScope.of(context).unfocus(),
             child: Text(
               l10n.done,
-              style: TextStyle(
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Colors.pink.shade300,
-                fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
             ),

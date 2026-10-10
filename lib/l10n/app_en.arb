@@ -466,6 +466,12 @@
     }
   },
   "overBudget": "Over budget",
+  "overBy": "Over by {amount}",
+  "@overBy": {
+    "placeholders": {
+      "amount": {}
+    }
+  },
   "dangerZone": "Danger zone",
   "leaveWorkspace": "Leave workspace",
   "leaveWorkspaceDesc": "You will lose access to shared categories, budgets, and transactions.",
@@ -536,6 +542,7 @@
   "onlyCreatorCanChangeReceipt": "Only the transaction creator can change the receipt.",
   "confirmDeleteTransaction": "Are you sure you want to delete this transaction?",
   "unknown": "Unknown",
+  "uncategorized": "Uncategorized",
   "noTransactionsThisMonth": "No transactions this month",
   "noTransactionsNearestDate": "No transactions. Showing nearest date: {date}",
   "errorLoadingCategories": "Error loading categories: {error}",
@@ -607,6 +614,7 @@
   "walletTypeSavings": "Savings",
   "walletTypeOther": "Other",
   "walletRequired": "Please select a wallet",
+  "toWalletRequired": "Please select a destination wallet",
   "negativeOpeningBalance": "Negative opening balance (money owed)",
   "voiceInputTooltip": "Add by voice",
   "voiceInputTitle": "Voice input",
@@ -616,6 +624,10 @@
   "voiceInputPermissionDenied": "Microphone permission is required for voice input",
   "voiceInputApply": "Apply",
   "voiceInputTryAgain": "Try again",
+  "deleteAccount": "Delete account",
+  "deleteAccountDesc": "Request permanent deletion of your account and data",
+  "deleteAccountConfirm": "This permanently deletes your account, personal workspaces and their data. Your author references and personal attachments are removed from shared workspaces you have left; shared financial history remains for other members. This cannot be undone.",
+  "deleteAccountOpenFailed": "Could not open the page. Please email tcson.dev@gmail.com to request account deletion.",
   "quickInputTitle": "Quick input",
   "quickInputTextLabel": "Type a transaction",
   "quickInputExample": "cafe 30k, grab 45k hôm qua ví momo",
@@ -629,11 +641,45 @@
   "quickInputSaveAll": "Save remaining transactions",
   "quickInputSaveStopped": "Saving stopped. Saved items were removed; the remaining items are ready to review or retry.",
   "quickInputTooltip": "Type or speak a transaction",
+  "undo": "Undo",
+  "deleteItemTitle": "Delete \"{name}\"?",
+  "deleteCannotBeUndone": "This can't be undone.",
+  "sectionLoadFailed": "Couldn't load this section.",
+  "clear": "Clear",
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "expand": "Expand",
+  "previousDay": "Previous day",
+  "nextDay": "Next day",
+  "removeReceipt": "Remove receipt",
+  "@deleteItemTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "@quickInputLearned": {
     "placeholders": {
       "confidence": {
         "type": "int"
       }
     }
-  }
+  },
+  "resetCodeTitle": "Enter reset code",
+  "resetCodeInstructions": "Enter the code from your reset email. You can then choose a new password.",
+  "resetCodeLabel": "Email code",
+  "resetCodeVerify": "Continue",
+  "resetCodeResend": "Send a new code",
+  "resetCodeInvalid": "Enter the numeric code from your email.",
+  "resetCodeFailed": "Could not verify the code. Check it or request a new one.",
+  "resetEmailInstructions": "Enter your email to receive a password reset code.",
+  "sendResetCode": "Send code",
+  "privacyPolicy": "Privacy policy",
+  "privacyPolicySubtitle": "How your data is collected and used",
+  "privacyPolicyOpenFailed": "Could not open the privacy policy. Please try again.",
+  "deleteAccountTypeConfirmation": "Type DELETE to confirm",
+  "deleteAccountFailed": "Deletion could not be completed. Retry to finish deleting your account.",
+  "deleteAccountWebRequest": "Request deletion on the web",
+  "deleteAccountSharedWorkspaces": "Leave these shared workspaces before deleting your account."
 }

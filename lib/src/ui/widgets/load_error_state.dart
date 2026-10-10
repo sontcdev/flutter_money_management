@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/app_localizations.dart';
 import '../../theme/app_spacing.dart';
 import 'app_button.dart';
 
@@ -45,7 +46,7 @@ class LoadErrorState extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.cloud_off_rounded,
+                Icons.cloud_off_outlined,
                 size: iconInnerSize,
                 color: Theme.of(context).colorScheme.error,
               ),
@@ -77,7 +78,57 @@ class LoadErrorState extends StatelessWidget {
             AppButton.outlined(
               text: retryLabel,
               onPressed: onRetry,
-              icon: Icons.refresh_rounded,
+              icon: Icons.refresh_outlined,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class InlineLoadErrorState extends StatelessWidget {
+  final VoidCallback onRetry;
+  final String? message;
+
+  const InlineLoadErrorState({
+    super.key,
+    required this.onRetry,
+    this.message,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Semantics(
+      liveRegion: true,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.sm,
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.cloud_off_outlined,
+              size: 20,
+              color: colorScheme.error,
+            ),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                message ?? l10n.sectionLoadFailed,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+              ),
+            ),
+            TextButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_outlined, size: 18),
+              label: Text(l10n.retry),
             ),
           ],
         ),

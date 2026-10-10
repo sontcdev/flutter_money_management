@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../theme/app_motion.dart';
 import '../../theme/app_spacing.dart';
 
 enum EmptyStateType {
@@ -15,6 +16,7 @@ class EmptyState extends StatelessWidget {
   final String message;
   final String? actionLabel;
   final VoidCallback? onAction;
+  final IconData actionIcon;
   final String? secondaryActionLabel;
   final VoidCallback? onSecondaryAction;
   final EmptyStateType type;
@@ -27,6 +29,7 @@ class EmptyState extends StatelessWidget {
     required this.message,
     this.actionLabel,
     this.onAction,
+    this.actionIcon = Icons.add,
     this.secondaryActionLabel,
     this.onSecondaryAction,
     this.type = EmptyStateType.noData,
@@ -41,6 +44,7 @@ class EmptyState extends StatelessWidget {
     required this.message,
     this.actionLabel,
     this.onAction,
+    this.actionIcon = Icons.add,
     this.secondaryActionLabel,
     this.onSecondaryAction,
     this.compact = false,
@@ -53,6 +57,7 @@ class EmptyState extends StatelessWidget {
     required this.message,
     this.actionLabel,
     this.onAction,
+    this.actionIcon = Icons.add,
     this.secondaryActionLabel,
     this.onSecondaryAction,
     this.compact = false,
@@ -65,6 +70,7 @@ class EmptyState extends StatelessWidget {
     required this.message,
     this.actionLabel,
     this.onAction,
+    this.actionIcon = Icons.add,
     this.secondaryActionLabel,
     this.onSecondaryAction,
     this.type = EmptyStateType.noData,
@@ -77,7 +83,8 @@ class EmptyState extends StatelessWidget {
     final padding = compact ? 24.0 : 32.0;
 
     // Reduce animation intensity for non-first-run states
-    final shouldAnimate = type == EmptyStateType.firstRun;
+    final shouldAnimate =
+        type == EmptyStateType.firstRun && !AppMotion.reduced(context);
 
     return Center(
       child: Padding(
@@ -220,7 +227,7 @@ class EmptyState extends StatelessWidget {
       children: [
         ElevatedButton.icon(
           onPressed: onAction,
-          icon: const Icon(Icons.add),
+          icon: Icon(actionIcon),
           label: Text(actionLabel!),
           style: ElevatedButton.styleFrom(
             padding: EdgeInsets.symmetric(

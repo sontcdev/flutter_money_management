@@ -5,8 +5,10 @@ import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/wallets/models/wallet.dart';
 import 'package:flutter_money_management/src/features/wallets/presentation/screens/wallet_edit_screen.dart';
 import 'package:flutter_money_management/src/features/wallets/providers/wallet_providers.dart';
+import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
+import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/utils/category_icons.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 
@@ -55,6 +57,8 @@ class _WalletPickerSheet extends ConsumerWidget {
         : ref.watch(walletsForWorkspaceProvider(workspaceId!));
     final balances = ref.watch(walletBalancesProvider).valueOrNull ??
         const <String, int>{};
+    final canAddWallet =
+        workspaceId == null && ref.watch(canManageWorkspaceContentProvider);
 
     return SafeArea(
       child: ConstrainedBox(
@@ -72,6 +76,7 @@ class _WalletPickerSheet extends ConsumerWidget {
                     child: Text(title, style: theme.textTheme.titleMedium),
                   ),
                   IconButton(
+                    tooltip: l10n.close,
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
@@ -87,7 +92,17 @@ class _WalletPickerSheet extends ConsumerWidget {
                 ),
                 error: (error, stack) => Padding(
                   padding: const EdgeInsets.all(AppSpacing.xl),
-                  child: Text(l10n.errorWithMessage('$error')),
+                  child: InlineLoadErrorState(
+                    onRetry: () {
+                      if (workspaceId == null) {
+                        ref.invalidate(walletsProvider);
+                      } else {
+                        ref.invalidate(
+                          walletsForWorkspaceProvider(workspaceId!),
+                        );
+                      }
+                    },
+                  ),
                 ),
                 data: (wallets) {
                   final visible = wallets
@@ -100,6 +115,10 @@ class _WalletPickerSheet extends ConsumerWidget {
                         icon: Icons.account_balance_wallet_outlined,
                         title: l10n.noWallets,
                         message: l10n.noWalletsMessage,
+                        actionLabel: canAddWallet ? l10n.addWallet : null,
+                        onAction: canAddWallet
+                            ? () => _openWalletEditor(context, ref)
+                            : null,
                       ),
                     );
                   }
@@ -125,7 +144,7 @@ class _WalletPickerSheet extends ConsumerWidget {
                           ),
                           child: Icon(
                             CategoryIcons.getIcon(wallet.iconName),
-                            size: 20,
+                            size: AppSpacing.iconSizeSm,
                             color: color,
                           ),
                         ),
@@ -137,7 +156,10 @@ class _WalletPickerSheet extends ConsumerWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              CurrencyFormatter.formatVNDFromCents(balance),
+                              CurrencyFormatter.formatVNDFromCents(
+                                balance,
+                                locale: l10n.localeName,
+                              ),
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
                                 color: balance < 0
@@ -162,5 +184,13 @@ class _WalletPickerSheet extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _openWalletEditor(BuildContext context, WidgetRef ref) async {
+    final result = await Navigator.pushNamed(context, '/wallet-edit');
+    if (result == true) {
+      ref.invalidate(walletsProvider);
+      ref.invalidate(walletBalancesProvider);
+    }
   }
 }

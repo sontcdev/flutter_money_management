@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/budgets/models/budget.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
+import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 
@@ -43,7 +45,7 @@ class BudgetProgress extends StatelessWidget {
     if (budget.isExceeded) {
       progressColor = AppColors.error;
     } else if (progress > 0.8) {
-      progressColor = AppColors.warning;
+      progressColor = context.semanticColors.warning;
     }
 
     return Column(
@@ -69,7 +71,7 @@ class BudgetProgress extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         ClipRRect(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
           child: LinearProgressIndicator(
             value: progress.clamp(0.0, 1.0),
             backgroundColor: AppColors.border,

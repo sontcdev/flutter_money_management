@@ -18,6 +18,13 @@ if (keystorePropertiesFile.exists()) {
 val hasReleaseKeystore = listOf("keyAlias", "keyPassword", "storeFile", "storePassword")
     .all { !keystoreProperties.getProperty(it).isNullOrBlank() }
 
+val requestsReleaseBuild = gradle.startParameter.taskNames.any {
+    it.contains("release", ignoreCase = true) || it.contains("bundle", ignoreCase = true)
+}
+if (requestsReleaseBuild && !hasReleaseKeystore) {
+    throw GradleException("Missing android/key.properties release signing values: keyAlias, keyPassword, storeFile, storePassword")
+}
+
 android {
     namespace = "com.sontc.financeappv1"
     compileSdk = 36
@@ -34,7 +41,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.sontc.financeappv1"
+        applicationId = "com.sontc.mymoney"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -56,10 +63,16 @@ android {
 
     buildTypes {
         release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
             signingConfig = if (hasReleaseKeystore) {
                 signingConfigs.getByName("release")
             } else {
-                signingConfigs.getByName("debug")
+                null
             }
         }
     }

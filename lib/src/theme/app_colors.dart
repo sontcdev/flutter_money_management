@@ -33,7 +33,7 @@ class AppColors {
   static const Color textFaint = Color(0xFF8F8C83);
   static const Color textLight = Color(0xFFF3F2ED);
   static const Color textLightSecondary = Color(0xFFB1AEA6);
-  static const Color textLightFaint = Color(0xFF74716A);
+  static const Color textLightFaint = Color(0xFF8F8C83);
   static const Color textDark = Color(0xFF16140C);
 
   // Borders
@@ -45,6 +45,7 @@ class AppColors {
   static const Color separatorDark = Color(0xFF35332C);
   static const Color iosFill = Color(0x1F78766E);
   static const Color iosFillDark = Color(0x3D8F8C83);
+  static const Color segmentThumbDark = Color(0xFF48453C);
 
   // Status
   static const Color error = Color(0xFFCF4040);
@@ -77,6 +78,13 @@ class AppColors {
   // Elevation/shadow
   static const Color shadow = Color(0x1A16140C);
   static const Color shadowDark = Color(0x59000000);
+
+  // Settings row icon tints
+  static const Color tintSlate = Color(0xFF5B6470);
+  static const Color tintPink = Color(0xFFEC4899);
+  static const Color tintOrange = Color(0xFFF97316);
+  static const Color tintTeal = Color(0xFF14B8A6);
+  static const Color tintViolet = Color(0xFF8B5CF6);
 
   // Category palette — vibrant, distinct hues for user-assigned categories.
   static const List<Color> categoryColors = [

@@ -125,11 +125,13 @@ class RecurringTransactionService {
   Future<void> confirmOccurrence({
     required RecurringOccurrence occurrence,
     required RecurringTransaction recurringTransaction,
+    required String walletId,
     bool allowOverdraft = false,
   }) async {
     final now = DateTime.now();
     final transaction = Transaction(
       id: '',
+      walletId: walletId,
       amountCents: recurringTransaction.amountCents,
       currency: recurringTransaction.currency,
       dateTime: occurrence.scheduledFor,

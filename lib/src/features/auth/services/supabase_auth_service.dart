@@ -2,6 +2,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:flutter_money_management/src/config/supabase_config.dart';
 import 'package:flutter_money_management/src/data/repositories/supabase_error_mapper.dart';
+import 'package:flutter_money_management/src/features/auth/models/account_deletion_blocker.dart';
+import 'package:flutter_money_management/src/features/auth/models/account_deletion_exception.dart';
 import 'package:flutter_money_management/src/utils/app_logger.dart';
 
 /// Supabase cloud authentication service
@@ -12,6 +14,54 @@ class SupabaseAuthService {
   SupabaseAuthService(this._client);
 
   static const _logName = 'MM.Auth';
+
+  Future<void> deleteAccount() async {
+    try {
+      final response = await _client.functions.invoke('delete-account');
+      if (response.data is! Map || response.data['status'] != 'deleted') {
+        throw const FunctionException(status: 500);
+      }
+    } on FunctionException catch (e) {
+      final details = e.details;
+      if (e.status == 409 &&
+          details is Map &&
+          details['code'] == 'shared_workspace_membership') {
+        throw SharedWorkspaceMembershipException(
+          (details['workspaces'] as List<dynamic>)
+              .map((row) => AccountDeletionBlocker.fromMap(
+                    Map<String, dynamic>.from(row as Map),
+                  ))
+              .toList(),
+        );
+      }
+      throw mapSupabaseException(e);
+    } catch (e) {
+      throw mapSupabaseException(e);
+    }
+  }
+
+  Future<void> clearDeletedAccountSession() async {
+    try {
+      await _client.auth.signOut(scope: SignOutScope.local);
+    } catch (e) {
+      if (_client.auth.currentSession != null) {
+        throw mapSupabaseException(e);
+      }
+    }
+  }
+
+  Future<List<AccountDeletionBlocker>> getAccountDeletionBlockers() async {
+    try {
+      final rows = await _client.rpc('get_account_deletion_blockers');
+      return (rows as List<dynamic>)
+          .map((row) => AccountDeletionBlocker.fromMap(
+                Map<String, dynamic>.from(row as Map),
+              ))
+          .toList();
+    } catch (e) {
+      throw mapSupabaseException(e);
+    }
+  }
 
   /// Get current user
   User? get currentUser => _client.auth.currentUser;
@@ -144,6 +194,21 @@ class SupabaseAuthService {
         error: e,
         stackTrace: stackTrace,
       );
+      throw mapSupabaseException(e);
+    }
+  }
+
+  Future<void> verifyPasswordResetCode({
+    required String email,
+    required String code,
+  }) async {
+    try {
+      await _client.auth.verifyOTP(
+        email: email.trim(),
+        token: code.trim(),
+        type: OtpType.recovery,
+      );
+    } catch (e) {
       throw mapSupabaseException(e);
     }
   }

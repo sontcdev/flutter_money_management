@@ -7,7 +7,9 @@ import 'package:flutter_money_management/src/features/reports/presentation/scree
 import 'package:flutter_money_management/src/features/transactions/presentation/screens/transactions_screen.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'today_screen.dart';
+import 'package:flutter_money_management/src/theme/app_spacing.dart';
 
 /// Main app shell: 4 bottom-nav tabs with a brand-colored FAB embedded in
 /// the middle slot, matching the Claude Design `.navbar`/`.fab` component.
@@ -136,24 +138,13 @@ class _AppNavBar extends StatelessWidget {
               ),
               Positioned(
                 top: -20,
-                child: GestureDetector(
-                  onTap: onFabPressed,
-                  child: Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: primary,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: primary.withValues(alpha: 0.35),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(Icons.add, color: Colors.white, size: 28),
-                  ),
+                child: FloatingActionButton(
+                  tooltip: AppLocalizations.of(context)!.addTransaction,
+                  onPressed: onFabPressed,
+                  backgroundColor: primary,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                  shape: const CircleBorder(),
+                  child: const Icon(Icons.add, size: 28),
                 ),
               ),
             ],
@@ -167,20 +158,23 @@ class _AppNavBar extends StatelessWidget {
     final isSelected = item.tab == currentTab;
     final color = isSelected
         ? Theme.of(context).colorScheme.primary
-        : (isDark ? AppColors.textLightFaint : AppColors.textFaint);
+        : (context.semanticColors.textFaint);
 
     return InkWell(
       onTap: () => onTabSelected(item.tab),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(isSelected ? item.activeIcon : item.icon, color: color, size: 24),
+          Icon(
+            isSelected ? item.activeIcon : item.icon,
+            color: color,
+            size: AppSpacing.iconSize,
+          ),
           const SizedBox(height: 2),
           Text(
             item.label,
-            style: TextStyle(
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: color,
-              fontSize: 11,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_money_management/src/features/wallets/presentation/widgets/wallet_picker.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:flutter_money_management/l10n/app_localizations.dart';
@@ -6,11 +7,14 @@ import 'package:flutter_money_management/src/features/budgets/services/budget_se
 import 'package:flutter_money_management/src/features/recurring/models/recurring_occurrence.dart';
 import 'package:flutter_money_management/src/features/recurring/models/recurring_transaction.dart';
 import 'package:flutter_money_management/src/features/recurring/providers/recurring_providers.dart';
-import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_status_chip.dart';
+import 'package:flutter_money_management/src/ui/widgets/confirm_delete_dialog.dart';
+import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
@@ -51,6 +55,7 @@ class _RecurringTransactionsScreenState
         title: Text(l10n.recurringTransactions),
         actions: [
           IconButton(
+            tooltip: l10n.recurringAddTitle,
             icon: const Icon(Icons.add),
             onPressed: () async {
               final created = await Navigator.pushNamed(
@@ -123,10 +128,15 @@ class _RecurringTransactionsScreenState
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, _) => Text(l10n.errorWithMessage('$error')),
+                error: (error, _) => InlineLoadErrorState(
+                  onRetry: () => ref.invalidate(recurringTransactionsProvider),
+                ),
               ),
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => Text(l10n.errorWithMessage('$error')),
+              error: (error, _) => InlineLoadErrorState(
+                onRetry: () =>
+                    ref.invalidate(upcomingRecurringOccurrencesProvider),
+              ),
             ),
             const SizedBox(height: AppSpacing.sectionGap),
             Text(
@@ -154,7 +164,9 @@ class _RecurringTransactionsScreenState
                 );
               },
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => Text(l10n.errorWithMessage('$error')),
+              error: (error, _) => InlineLoadErrorState(
+                onRetry: () => ref.invalidate(recurringTransactionsProvider),
+              ),
             ),
           ],
         ),
@@ -233,7 +245,9 @@ class _OccurrenceCard extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
 
     final isExpense = recurringTransaction.isExpense;
-    final amountColor = isExpense ? AppColors.expense : AppColors.income;
+    final amountColor = isExpense
+        ? context.semanticColors.expense
+        : context.semanticColors.income;
 
     return AppCard(
       padding: EdgeInsets.zero,
@@ -354,20 +368,19 @@ class _OccurrenceDetailSheet extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final isBusy = ref.watch(recurringActionsProvider).isLoading;
 
-    Future<void> confirm([bool allowOverdraft = false]) async {
+    Future<void> confirm(String walletId, [bool allowOverdraft = false]) async {
       try {
         await ref.read(recurringActionsProvider.notifier).confirmOccurrence(
               occurrence: occurrence,
               recurringTransaction: recurringTransaction,
+              walletId: walletId,
               allowOverdraft: allowOverdraft,
             );
         if (!context.mounted) {
           return;
         }
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.success)),
-        );
+        showAppSnackBar(context, l10n.success, type: AppSnackBarType.success);
       } on BudgetExceededException catch (e) {
         if (!context.mounted) {
           return;
@@ -390,7 +403,7 @@ class _OccurrenceDetailSheet extends ConsumerWidget {
           ),
         );
         if (shouldProceed == true && context.mounted) {
-          await confirm(true);
+          await confirm(walletId, true);
         }
       } catch (e, stackTrace) {
         if (context.mounted) {
@@ -417,9 +430,7 @@ class _OccurrenceDetailSheet extends ConsumerWidget {
           return;
         }
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.success)),
-        );
+        showAppSnackBar(context, l10n.success, type: AppSnackBarType.success);
       } catch (e, stackTrace) {
         if (context.mounted) {
           await ErrorReportHelper.handleApiError(
@@ -437,8 +448,8 @@ class _OccurrenceDetailSheet extends ConsumerWidget {
     }
 
     final amountColor = recurringTransaction.isExpense
-        ? AppColors.expense
-        : AppColors.income;
+        ? context.semanticColors.expense
+        : context.semanticColors.income;
 
     return SafeArea(
       child: Padding(
@@ -495,8 +506,8 @@ class _OccurrenceDetailSheet extends ConsumerWidget {
                       ? Icons.arrow_upward
                       : Icons.arrow_downward,
                   color: recurringTransaction.isExpense
-                      ? AppColors.expense
-                      : AppColors.income,
+                      ? context.semanticColors.expense
+                      : context.semanticColors.income,
                   label:
                       recurringTransaction.isExpense ? l10n.expense : l10n.income,
                 ),
@@ -515,7 +526,17 @@ class _OccurrenceDetailSheet extends ConsumerWidget {
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: AppButton(
-                    onPressed: isBusy ? null : confirm,
+                    onPressed: isBusy
+                        ? null
+                        : () async {
+                            final wallet = await showWalletPicker(
+                              context,
+                              title: l10n.selectWallet,
+                            );
+                            if (wallet != null && context.mounted) {
+                              await confirm(wallet.id);
+                            }
+                          },
                     icon: Icons.check_circle_outline,
                     text: l10n.markDone,
                   ),
@@ -556,14 +577,12 @@ class _NotificationsPermissionCard extends ConsumerWidget {
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            granted
-                ? l10n.recurringNotificationsEnabled
-                : l10n.recurringNotificationsDenied,
-          ),
-        ),
+      showAppSnackBar(
+        context,
+        granted
+            ? l10n.recurringNotificationsEnabled
+            : l10n.recurringNotificationsDenied,
+        type: granted ? AppSnackBarType.success : AppSnackBarType.info,
       );
     }
 
@@ -601,24 +620,10 @@ class _RecurringTemplateCard extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
 
     Future<void> delete() async {
-      final confirmed = await showDialog<bool>(
-            context: context,
-            builder: (dialogContext) => AlertDialog(
-              title: Text(l10n.delete),
-              content: Text(l10n.confirmDelete),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogContext, false),
-                  child: Text(l10n.cancel),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(dialogContext, true),
-                  child: Text(l10n.delete),
-                ),
-              ],
-            ),
-          ) ??
-          false;
+      final confirmed = await ConfirmDeleteDialog.show(
+        context,
+        itemName: item.title,
+      );
 
       if (!confirmed || !context.mounted) {
         return;
@@ -629,9 +634,7 @@ class _RecurringTemplateCard extends ConsumerWidget {
             .read(recurringActionsProvider.notifier)
             .deleteRecurringTransaction(item.id);
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.success)),
-          );
+          showAppSnackBar(context, l10n.success, type: AppSnackBarType.success);
         }
       } catch (e, stackTrace) {
         if (context.mounted) {
@@ -649,8 +652,9 @@ class _RecurringTemplateCard extends ConsumerWidget {
       }
     }
 
-    final amountColor =
-        item.isExpense ? AppColors.expense : AppColors.income;
+    final amountColor = item.isExpense
+        ? context.semanticColors.expense
+        : context.semanticColors.income;
 
     return AppCard(
       padding: EdgeInsets.zero,

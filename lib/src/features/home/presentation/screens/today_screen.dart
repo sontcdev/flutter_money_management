@@ -5,6 +5,7 @@ import 'package:flutter_money_management/src/features/auth/providers/auth_provid
 import 'package:flutter_money_management/src/features/budgets/models/budget.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
+import 'package:flutter_money_management/src/features/categories/models/uncategorized_category.dart';
 import 'package:flutter_money_management/src/features/home/providers/home_tab_provider.dart';
 import 'package:flutter_money_management/src/features/settings/providers/settings_preferences_providers.dart';
 import 'package:flutter_money_management/src/features/transactions/presentation/widgets/transaction_item.dart';
@@ -17,12 +18,15 @@ import 'package:flutter_money_management/src/features/transactions/models/transa
     as model;
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
+import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_avatar.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_metric_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_section_header.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
+import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
+import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
 import 'package:flutter_money_management/src/utils/category_icons.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/cycle_utils.dart';
@@ -98,7 +102,8 @@ class TodayScreen extends ConsumerWidget {
 
                   const SizedBox(height: AppSpacing.sectionGap),
 
-                  _buildRecurringSection(context, l10n, upcomingRecurringAsync),
+                  _buildRecurringSection(
+                      context, ref, l10n, upcomingRecurringAsync),
 
                   const SizedBox(height: AppSpacing.sectionGap),
 
@@ -122,11 +127,11 @@ class TodayScreen extends ConsumerWidget {
             );
           },
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.screenPadding),
-              child: Text(l10n.errorWithMessage('$error')),
-            ),
+          error: (_, __) => LoadErrorState(
+            title: l10n.dataLoadFailed,
+            message: l10n.dataLoadFailedHint,
+            retryLabel: l10n.retry,
+            onRetry: () => syncCurrentWorkspaceData(ref),
           ),
         ),
       ),
@@ -162,7 +167,11 @@ class TodayScreen extends ConsumerWidget {
     AsyncValue budgetsAsync,
   ) {
     if (budgetsAsync is! AsyncData) {
-      return const SizedBox.shrink();
+      return budgetsAsync.hasError
+          ? InlineLoadErrorState(
+              onRetry: () => ref.invalidate(budgetsWithConsumedProvider),
+            )
+          : const SectionSkeleton();
     }
 
     final budgets = (budgetsAsync.value as List<Budget>)
@@ -194,16 +203,17 @@ class TodayScreen extends ConsumerWidget {
               const SizedBox(height: AppSpacing.md),
               ...budgets.take(3).map((budget) {
                 final category = categoryById[budget.categoryId];
-                final progress = budget.progressPercentage.clamp(0.0, 1.0);
+                final progress =
+                    (budget.progressPercentage / 100).clamp(0.0, 1.0);
                 final tone = budget.isExceeded
                     ? MetricCardTone.danger
                     : progress >= 0.8
                         ? MetricCardTone.warning
                         : MetricCardTone.neutral;
                 final barColor = tone == MetricCardTone.danger
-                    ? AppColors.expense
+                    ? context.semanticColors.expense
                     : tone == MetricCardTone.warning
-                        ? AppColors.warning
+                        ? context.semanticColors.warning
                         : Theme.of(context).colorScheme.primary;
                 final tint = category != null
                     ? getCategoryColor(category.colorValue)
@@ -247,7 +257,7 @@ class TodayScreen extends ConsumerWidget {
                               ),
                             ),
                             Text(
-                              '${(progress * 100).toStringAsFixed(0)}%',
+                              '${budget.progressPercentage.toStringAsFixed(0)}%',
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyMedium
@@ -290,13 +300,16 @@ class TodayScreen extends ConsumerWidget {
           ),
         );
       },
-      loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      loading: () => const SectionSkeleton(),
+      error: (_, __) => InlineLoadErrorState(
+        onRetry: () => ref.invalidate(categoriesProvider),
+      ),
     );
   }
 
   Widget _buildRecurringSection(
     BuildContext context,
+    WidgetRef ref,
     AppLocalizations l10n,
     AsyncValue upcomingRecurringAsync,
   ) {
@@ -332,8 +345,10 @@ class TodayScreen extends ConsumerWidget {
           ),
         );
       },
-      loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      loading: () => const SectionSkeleton(),
+      error: (_, __) => InlineLoadErrorState(
+        onRetry: () => ref.invalidate(upcomingRecurringOccurrencesProvider),
+      ),
     );
   }
 
@@ -399,11 +414,9 @@ class TodayScreen extends ConsumerWidget {
 
     // Gradient tone follows the same status logic as before, but now the
     // whole card is a single brand-gradient surface (matches mockup `.hero`).
-    final List<Color> gradientColors = switch (tone) {
-      MetricCardTone.danger => [AppColors.error, AppColors.expenseContainerDark],
-      MetricCardTone.warning => [AppColors.warning, AppColors.primaryStrong],
-      _ => [AppColors.primaryStrong, AppColors.primary],
-    };
+    final heroPalette = _heroPalette(context, tone);
+    final gradientColors = heroPalette.gradient;
+    final foreground = heroPalette.foreground;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
@@ -423,7 +436,7 @@ class TodayScreen extends ConsumerWidget {
             Text(
               CycleUtils.getCycleLabel(cycleRange.start, cycleRange.end),
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.75),
+                    color: foreground,
                   ),
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -431,7 +444,7 @@ class TodayScreen extends ConsumerWidget {
               CurrencyFormatter.formatVNDFromCents(balance,
                   locale: l10n.localeName),
               style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                    color: Colors.white,
+                    color: foreground,
                     fontWeight: FontWeight.w700,
                   ),
             ),
@@ -441,6 +454,7 @@ class TodayScreen extends ConsumerWidget {
                 Expanded(
                   child: _buildHeroMiniStat(
                     context,
+                    foreground: foreground,
                     icon: Icons.arrow_downward,
                     label: l10n.income,
                     value: CurrencyFormatter.formatVNDFromCents(totalIncome,
@@ -451,6 +465,7 @@ class TodayScreen extends ConsumerWidget {
                 Expanded(
                   child: _buildHeroMiniStat(
                     context,
+                    foreground: foreground,
                     icon: Icons.arrow_upward,
                     label: l10n.expense,
                     value: CurrencyFormatter.formatVNDFromCents(totalExpense,
@@ -470,11 +485,12 @@ class TodayScreen extends ConsumerWidget {
     required IconData icon,
     required String label,
     required String value,
+    required Color foreground,
   }) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.14),
+        color: foreground.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
       ),
       child: Column(
@@ -482,12 +498,12 @@ class TodayScreen extends ConsumerWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: AppSpacing.iconSizeSm, color: Colors.white),
+              Icon(icon, size: AppSpacing.iconSizeSm, color: foreground),
               const SizedBox(width: AppSpacing.xs),
               Text(
                 label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.white.withValues(alpha: 0.8),
+                      color: foreground,
                     ),
               ),
             ],
@@ -496,7 +512,7 @@ class TodayScreen extends ConsumerWidget {
           Text(
             value,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.white,
+                  color: foreground,
                   fontWeight: FontWeight.w700,
                 ),
             overflow: TextOverflow.ellipsis,
@@ -504,6 +520,52 @@ class TodayScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  ({List<Color> gradient, Color foreground}) _heroPalette(
+    BuildContext context,
+    MetricCardTone tone,
+  ) {
+    final theme = Theme.of(context);
+    final base = switch (tone) {
+      MetricCardTone.danger => theme.colorScheme.error,
+      MetricCardTone.warning => context.semanticColors.warning,
+      _ => theme.colorScheme.primary,
+    };
+    final isDark = theme.brightness == Brightness.dark;
+    var foreground = isDark ? AppColors.textDark : AppColors.textLight;
+    var away = isDark ? AppColors.textLight : AppColors.textDark;
+    var shift = _heroContrastShift(base, foreground, away);
+    if (shift > 0.35) {
+      (foreground, away) = (away, foreground);
+      shift = _heroContrastShift(base, foreground, away);
+    }
+    return (
+      gradient: [
+        Color.lerp(base, away, (shift + 0.2).clamp(0.0, 1.0))!,
+        Color.lerp(base, away, shift)!,
+      ],
+      foreground: foreground,
+    );
+  }
+
+  double _heroContrastShift(Color base, Color foreground, Color away) {
+    for (var step = 0; step <= 20; step++) {
+      final shift = step / 20;
+      final background = Color.lerp(base, away, shift)!;
+      final panel =
+          Color.alphaBlend(foreground.withValues(alpha: 0.14), background);
+      if (_contrastRatio(foreground, panel) >= 4.5) {
+        return shift;
+      }
+    }
+    return 1.0;
+  }
+
+  double _contrastRatio(Color a, Color b) {
+    final la = a.computeLuminance();
+    final lb = b.computeLuminance();
+    return la > lb ? (la + 0.05) / (lb + 0.05) : (lb + 0.05) / (la + 0.05);
   }
 
   Widget _buildAttentionSection(
@@ -552,7 +614,7 @@ class TodayScreen extends ConsumerWidget {
           AppMetricCard.status(
             label: l10n.budgets,
             value: '${exceededBudgets.length} ${l10n.exceeded.toLowerCase()}',
-            icon: Icons.warning_amber_rounded,
+            icon: Icons.warning_amber_outlined,
             tone: MetricCardTone.danger,
             onTap: () =>
                 ref.read(currentTabProvider.notifier).state = AppTab.plan,
@@ -655,7 +717,10 @@ class TodayScreen extends ConsumerWidget {
 
                     final category = categories.firstWhere(
                       (c) => c.id == transaction.categoryId,
-                      orElse: () => categories.first,
+                      orElse: () => uncategorizedCategory(
+                        transaction.categoryId ?? '',
+                        l10n.uncategorized,
+                      ),
                     );
 
                     return TransactionItem.compact(
@@ -673,8 +738,10 @@ class TodayScreen extends ConsumerWidget {
                       },
                     );
                   },
-                  loading: () => const SizedBox.shrink(),
-                  error: (_, __) => const SizedBox.shrink(),
+                  loading: () => const ShimmerListItem(),
+                  error: (_, __) => InlineLoadErrorState(
+                    onRetry: () => ref.invalidate(categoriesProvider),
+                  ),
                 );
               },
             );
@@ -780,7 +847,10 @@ class _WalletBalanceCard extends StatelessWidget {
               ],
             ),
             Text(
-              CurrencyFormatter.formatVNDFromCents(balance),
+              CurrencyFormatter.formatVNDFromCents(
+                balance,
+                locale: Localizations.localeOf(context).toString(),
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.titleMedium?.copyWith(

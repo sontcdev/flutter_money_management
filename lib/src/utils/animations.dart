@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_money_management/src/theme/app_motion.dart';
 
 /// Animation utilities for smooth transitions and effects
 class AppAnimations {
   // Animation durations
-  static const Duration fast = Duration(milliseconds: 200);
-  static const Duration normal = Duration(milliseconds: 300);
-  static const Duration slow = Duration(milliseconds: 500);
+  static const Duration fast = AppMotion.fast;
+  static const Duration normal = AppMotion.normal;
+  static const Duration slow = AppMotion.slow;
 
   // Custom curves
   static const Curve easeInOutCubic = Curves.easeInOutCubic;
@@ -81,6 +82,9 @@ class AppAnimations {
     return PageRouteBuilder<T>(
       pageBuilder: (context, animation, secondaryAnimation) => page,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        if (AppMotion.reduced(context)) {
+          return child;
+        }
         return FadeTransition(
           opacity: animation,
           child: child,
@@ -95,6 +99,9 @@ class AppAnimations {
     return PageRouteBuilder<T>(
       pageBuilder: (context, animation, secondaryAnimation) => page,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        if (AppMotion.reduced(context)) {
+          return child;
+        }
         final begin =
             fromRight ? const Offset(1.0, 0.0) : const Offset(-1.0, 0.0);
         final tween = Tween(begin: begin, end: Offset.zero);
@@ -117,6 +124,9 @@ class AppAnimations {
     return PageRouteBuilder<T>(
       pageBuilder: (context, animation, secondaryAnimation) => page,
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        if (AppMotion.reduced(context)) {
+          return child;
+        }
         return ScaleTransition(
           scale: Tween<double>(
             begin: 0.8,
