@@ -574,6 +574,10 @@
   "noIncomeTitle": "収入がありません",
   "noExpenseTransactionsFound": "支出取引が見つかりません",
   "noIncomeTransactionsFound": "収入取引が見つかりません",
+  "noTransferTitle": "振替なし",
+  "noTransferTransactionsFound": "振替取引が見つかりません",
+  "transactionDeleted": "取引を削除しました",
+  "transactionManageNotAllowed": "この取引は変更できません",
   "versionLabel": "バージョン {version} ({buildNumber})",
   "@versionLabel": {
     "placeholders": {

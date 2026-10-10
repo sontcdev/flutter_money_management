@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
+import 'package:flutter_money_management/src/data/repositories/supabase_error_mapper.dart';
 import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
 import 'package:flutter_money_management/src/features/transactions/presentation/widgets/transaction_item.dart';
 import 'package:flutter_money_management/src/features/wallets/models/wallet.dart';
@@ -14,12 +17,13 @@ import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_segmented_filter.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
 import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 
-enum TransactionFilter { all, expense, income }
+enum TransactionFilter { all, expense, income, transfer }
 
 class TransactionsScreen extends HookConsumerWidget {
   const TransactionsScreen({super.key});
@@ -39,6 +43,96 @@ class TransactionsScreen extends HookConsumerWidget {
     final selectedFilter = useState(TransactionFilter.all);
     final searchQuery = useState('');
     final showSearch = useState(false);
+    final pendingDeleteIds = useState<Set<String>>(const {});
+    final searchDebounce = useRef<Timer?>(null);
+    useEffect(() => () => searchDebounce.value?.cancel(), const []);
+
+    void cancelSearchDebounce() {
+      searchDebounce.value?.cancel();
+      searchDebounce.value = null;
+    }
+
+    Future<bool> canManage(Transaction transaction) async {
+      try {
+        return await ref.read(
+          transactionCanManageProvider(transaction.id).future,
+        );
+      } catch (_) {
+        return false;
+      }
+    }
+
+    Future<bool> confirmSwipe(
+      Transaction transaction,
+      DismissDirection direction,
+    ) async {
+      if (!await canManage(transaction)) {
+        if (context.mounted) {
+          showAppSnackBar(
+            context,
+            l10n.transactionManageNotAllowed,
+            type: AppSnackBarType.error,
+          );
+        }
+        return false;
+      }
+      if (direction == DismissDirection.endToStart) return true;
+      if (!context.mounted) return false;
+      final result = await Navigator.pushNamed(
+        context,
+        '/edit-transaction',
+        arguments: transaction.id,
+      );
+      if (result == true && context.mounted) {
+        ref.invalidate(transactionsProvider);
+        ref.invalidate(walletBalancesProvider);
+      }
+      return false;
+    }
+
+    Future<void> deleteWithUndo(Transaction transaction) async {
+      final container = ProviderScope.containerOf(context, listen: false);
+      final repository = ref.read(transactionRepositoryProvider);
+      final receiptService = ref.read(transactionReceiptServiceProvider);
+      pendingDeleteIds.value = {...pendingDeleteIds.value, transaction.id};
+
+      void restore() {
+        if (!context.mounted) return;
+        pendingDeleteIds.value = {...pendingDeleteIds.value}
+          ..remove(transaction.id);
+      }
+
+      final reason = await showAppSnackBar(
+        context,
+        l10n.transactionDeleted,
+        onUndo: () {},
+      ).closed;
+      if (reason == SnackBarClosedReason.action) {
+        restore();
+        return;
+      }
+      try {
+        await receiptService
+            .removeReceipt(transaction.id)
+            .catchError((Object _) {});
+        await repository.deleteTransaction(transaction.id);
+      } catch (e) {
+        restore();
+        if (context.mounted) {
+          showAppSnackBar(
+            context,
+            mapSupabaseException(e).toString(),
+            type: AppSnackBarType.error,
+          );
+        }
+        return;
+      }
+      container
+        ..invalidate(transactionsProvider)
+        ..invalidate(budgetsProvider)
+        ..invalidate(budgetsWithConsumedProvider)
+        ..invalidate(walletBalancesProvider);
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -58,7 +152,13 @@ class TransactionsScreen extends HookConsumerWidget {
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
-                onChanged: (value) => searchQuery.value = value,
+                onChanged: (value) {
+                  searchDebounce.value?.cancel();
+                  searchDebounce.value = Timer(
+                    const Duration(milliseconds: 300),
+                    () => searchQuery.value = value,
+                  );
+                },
               )
             : Text(l10n.transactions),
         automaticallyImplyLeading: false,
@@ -75,6 +175,7 @@ class TransactionsScreen extends HookConsumerWidget {
                 onPressed: () {
                   showSearch.value = !showSearch.value;
                   if (!showSearch.value) {
+                    cancelSearchDebounce();
                     searchQuery.value = '';
                   }
                 },
@@ -110,6 +211,11 @@ class TransactionsScreen extends HookConsumerWidget {
                   icon: Icons.arrow_downward,
                   color: context.semanticColors.income,
                 ),
+                FilterOption(
+                  label: l10n.transfer,
+                  value: TransactionFilter.transfer,
+                  icon: Icons.swap_horiz,
+                ),
               ],
               selectedValue: selectedFilter.value,
               onChanged: (value) => selectedFilter.value = value,
@@ -121,7 +227,9 @@ class TransactionsScreen extends HookConsumerWidget {
             child: transactionsAsync.when(
               data: (transactions) {
                 // Apply filters
-                var filteredTransactions = transactions;
+                var filteredTransactions = transactions
+                    .where((t) => !pendingDeleteIds.value.contains(t.id))
+                    .toList();
 
                 // Filter by type
                 if (selectedFilter.value == TransactionFilter.expense) {
@@ -131,6 +239,10 @@ class TransactionsScreen extends HookConsumerWidget {
                 } else if (selectedFilter.value == TransactionFilter.income) {
                   filteredTransactions = filteredTransactions
                       .where((t) => t.type == TransactionType.income)
+                      .toList();
+                } else if (selectedFilter.value == TransactionFilter.transfer) {
+                  filteredTransactions = filteredTransactions
+                      .where((t) => t.type == TransactionType.transfer)
                       .toList();
                 }
 
@@ -158,22 +270,35 @@ class TransactionsScreen extends HookConsumerWidget {
                       actionLabel: l10n.clearFilter,
                       actionIcon: Icons.filter_alt_off,
                       onAction: () {
+                        cancelSearchDebounce();
                         showSearch.value = false;
                         searchQuery.value = '';
                       },
                       compact: true,
                     );
                   } else if (selectedFilter.value != TransactionFilter.all) {
+                    final (icon, title, message) =
+                        switch (selectedFilter.value) {
+                      TransactionFilter.expense => (
+                          Icons.arrow_upward,
+                          l10n.noExpenseTitle,
+                          l10n.noExpenseTransactionsFound,
+                        ),
+                      TransactionFilter.transfer => (
+                          Icons.swap_horiz,
+                          l10n.noTransferTitle,
+                          l10n.noTransferTransactionsFound,
+                        ),
+                      _ => (
+                          Icons.arrow_downward,
+                          l10n.noIncomeTitle,
+                          l10n.noIncomeTransactionsFound,
+                        ),
+                    };
                     emptyState = EmptyState(
-                      icon: selectedFilter.value == TransactionFilter.expense
-                          ? Icons.arrow_upward
-                          : Icons.arrow_downward,
-                      title: selectedFilter.value == TransactionFilter.expense
-                          ? l10n.noExpenseTitle
-                          : l10n.noIncomeTitle,
-                      message: selectedFilter.value == TransactionFilter.expense
-                          ? l10n.noExpenseTransactionsFound
-                          : l10n.noIncomeTransactionsFound,
+                      icon: icon,
+                      title: title,
+                      message: message,
                       actionLabel: l10n.addTransaction,
                       onAction: () {
                         Navigator.pushNamed(context, '/add-transaction');
@@ -235,6 +360,8 @@ class TransactionsScreen extends HookConsumerWidget {
                             transactions: group.transactions,
                             categoryMap: categoryMap,
                             walletMap: walletMap,
+                            confirmSwipe: confirmSwipe,
+                            onDelete: deleteWithUndo,
                           );
                         },
                       ),
@@ -307,12 +434,16 @@ class _TransactionGroup extends StatelessWidget {
   final List<Transaction> transactions;
   final Map<String, Category> categoryMap;
   final Map<String, Wallet> walletMap;
+  final Future<bool> Function(Transaction, DismissDirection) confirmSwipe;
+  final ValueChanged<Transaction> onDelete;
 
   const _TransactionGroup({
     required this.date,
     required this.transactions,
     required this.categoryMap,
     required this.walletMap,
+    required this.confirmSwipe,
+    required this.onDelete,
   });
 
   @override
@@ -365,7 +496,7 @@ class _TransactionGroup extends StatelessWidget {
             ),
             child: Text.rich(
               TextSpan(
-                text: dateLabel.toUpperCase(),
+                text: dateLabel,
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                   fontWeight: FontWeight.w700,
@@ -402,7 +533,7 @@ class _TransactionGroup extends StatelessWidget {
                       final fromWallet = walletMap[transaction.walletId];
                       final toWallet = walletMap[transaction.toWalletId];
 
-                      return TransactionItem(
+                      final item = TransactionItem(
                         transaction: transaction,
                         categoryName: isTransfer
                             ? '${fromWallet?.name ?? l10n.unknown} → '
@@ -426,6 +557,27 @@ class _TransactionGroup extends StatelessWidget {
                           );
                         },
                       );
+                      return Dismissible(
+                        key: ValueKey(transaction.id),
+                        background: _SwipeBackground(
+                          icon: Icons.edit_outlined,
+                          label: l10n.edit,
+                          color: theme.colorScheme.primary,
+                          foreground: theme.colorScheme.onPrimary,
+                          alignment: Alignment.centerLeft,
+                        ),
+                        secondaryBackground: _SwipeBackground(
+                          icon: Icons.delete_outline,
+                          label: l10n.delete,
+                          color: theme.colorScheme.error,
+                          foreground: theme.colorScheme.onError,
+                          alignment: Alignment.centerRight,
+                        ),
+                        confirmDismiss: (direction) =>
+                            confirmSwipe(transaction, direction),
+                        onDismissed: (_) => onDelete(transaction),
+                        child: item,
+                      );
                     }),
                     if (i != transactions.length - 1)
                       Padding(
@@ -442,6 +594,49 @@ class _TransactionGroup extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SwipeBackground extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final Color foreground;
+  final Alignment alignment;
+
+  const _SwipeBackground({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.foreground,
+    required this.alignment,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: color,
+      child: Align(
+        alignment: alignment,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: foreground),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                label,
+                style: Theme.of(context)
+                    .textTheme
+                    .labelLarge
+                    ?.copyWith(color: foreground),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

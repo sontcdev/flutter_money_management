@@ -1665,6 +1665,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get noIncomeTransactionsFound => '収入取引が見つかりません';
 
   @override
+  String get noTransferTitle => '振替なし';
+
+  @override
+  String get noTransferTransactionsFound => '振替取引が見つかりません';
+
+  @override
+  String get transactionDeleted => '取引を削除しました';
+
+  @override
+  String get transactionManageNotAllowed => 'この取引は変更できません';
+
+  @override
   String versionLabel(Object version, Object buildNumber) {
     return 'バージョン $version ($buildNumber)';
   }

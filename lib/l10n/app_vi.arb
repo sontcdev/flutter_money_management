@@ -574,6 +574,10 @@
   "noIncomeTitle": "Không có thu nhập",
   "noExpenseTransactionsFound": "Không tìm thấy giao dịch chi tiêu nào",
   "noIncomeTransactionsFound": "Không tìm thấy giao dịch thu nhập nào",
+  "noTransferTitle": "Không có chuyển khoản",
+  "noTransferTransactionsFound": "Không tìm thấy giao dịch chuyển khoản nào",
+  "transactionDeleted": "Đã xóa giao dịch",
+  "transactionManageNotAllowed": "Bạn không thể thay đổi giao dịch này",
   "versionLabel": "Phiên bản {version} ({buildNumber})",
   "@versionLabel": {
     "placeholders": {

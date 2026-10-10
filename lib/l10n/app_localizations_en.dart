@@ -1665,6 +1665,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noIncomeTransactionsFound => 'No income transactions found';
 
   @override
+  String get noTransferTitle => 'No Transfers';
+
+  @override
+  String get noTransferTransactionsFound => 'No transfers found';
+
+  @override
+  String get transactionDeleted => 'Transaction deleted';
+
+  @override
+  String get transactionManageNotAllowed => 'You can\'t change this transaction';
+
+  @override
   String versionLabel(Object version, Object buildNumber) {
     return 'Version $version ($buildNumber)';
   }

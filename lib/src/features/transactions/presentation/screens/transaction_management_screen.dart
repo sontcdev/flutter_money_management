@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -37,12 +39,20 @@ class TransactionManagementScreen extends HookConsumerWidget {
 
     // Listen to search controller
     useEffect(() {
+      Timer? debounce;
       void listener() {
-        searchQuery.value = searchController.text;
+        debounce?.cancel();
+        debounce = Timer(
+          const Duration(milliseconds: 300),
+          () => searchQuery.value = searchController.text,
+        );
       }
 
       searchController.addListener(listener);
-      return () => searchController.removeListener(listener);
+      return () {
+        debounce?.cancel();
+        searchController.removeListener(listener);
+      };
     }, [searchController]);
 
     return Scaffold(

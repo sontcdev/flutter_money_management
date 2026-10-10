@@ -1665,6 +1665,18 @@ class AppLocalizationsVi extends AppLocalizations {
   String get noIncomeTransactionsFound => 'Không tìm thấy giao dịch thu nhập nào';
 
   @override
+  String get noTransferTitle => 'Không có chuyển khoản';
+
+  @override
+  String get noTransferTransactionsFound => 'Không tìm thấy giao dịch chuyển khoản nào';
+
+  @override
+  String get transactionDeleted => 'Đã xóa giao dịch';
+
+  @override
+  String get transactionManageNotAllowed => 'Bạn không thể thay đổi giao dịch này';
+
+  @override
   String versionLabel(Object version, Object buildNumber) {
     return 'Phiên bản $version ($buildNumber)';
   }

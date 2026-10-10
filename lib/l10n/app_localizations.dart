@@ -3229,6 +3229,30 @@ abstract class AppLocalizations {
   /// **'No income transactions found'**
   String get noIncomeTransactionsFound;
 
+  /// No description provided for @noTransferTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No Transfers'**
+  String get noTransferTitle;
+
+  /// No description provided for @noTransferTransactionsFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No transfers found'**
+  String get noTransferTransactionsFound;
+
+  /// No description provided for @transactionDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Transaction deleted'**
+  String get transactionDeleted;
+
+  /// No description provided for @transactionManageNotAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'You can\'t change this transaction'**
+  String get transactionManageNotAllowed;
+
   /// No description provided for @versionLabel.
   ///
   /// In en, this message translates to:

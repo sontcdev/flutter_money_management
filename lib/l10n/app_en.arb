@@ -574,6 +574,10 @@
   "noIncomeTitle": "No Income",
   "noExpenseTransactionsFound": "No expense transactions found",
   "noIncomeTransactionsFound": "No income transactions found",
+  "noTransferTitle": "No Transfers",
+  "noTransferTransactionsFound": "No transfers found",
+  "transactionDeleted": "Transaction deleted",
+  "transactionManageNotAllowed": "You can't change this transaction",
   "versionLabel": "Version {version} ({buildNumber})",
   "@versionLabel": {
     "placeholders": {
