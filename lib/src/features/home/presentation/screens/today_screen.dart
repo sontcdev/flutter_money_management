@@ -57,10 +57,10 @@ class TodayScreen extends ConsumerWidget {
           const WorkspaceSwitcher(),
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.screenPadding),
-            child: AppAvatar(
-              name: displayName,
-              size: 36,
-              onTap: () => Navigator.pushNamed(context, '/settings'),
+            child: IconButton(
+              tooltip: l10n.settings,
+              onPressed: () => Navigator.pushNamed(context, '/settings'),
+              icon: AppAvatar(name: displayName, size: 36),
             ),
           ),
         ],
@@ -126,7 +126,7 @@ class TodayScreen extends ConsumerWidget {
               ),
             );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => _buildLoadingSkeleton(),
           error: (_, __) => LoadErrorState(
             title: l10n.dataLoadFailed,
             message: l10n.dataLoadFailedHint,
@@ -135,6 +135,23 @@ class TodayScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildLoadingSkeleton() {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.screenPadding,
+        vertical: AppSpacing.md,
+      ),
+      children: const [
+        ShimmerCard(),
+        SectionSkeleton(),
+        ShimmerListItem(),
+        ShimmerListItem(),
+        ShimmerListItem(),
+      ],
     );
   }
 
@@ -205,11 +222,11 @@ class TodayScreen extends ConsumerWidget {
                 final category = categoryById[budget.categoryId];
                 final progress =
                     (budget.progressPercentage / 100).clamp(0.0, 1.0);
-                final tone = budget.isExceeded
-                    ? MetricCardTone.danger
-                    : progress >= 0.8
-                        ? MetricCardTone.warning
-                        : MetricCardTone.neutral;
+                final tone = switch (budget.status) {
+                  BudgetStatus.exceeded => MetricCardTone.danger,
+                  BudgetStatus.nearLimit => MetricCardTone.warning,
+                  BudgetStatus.onTrack => MetricCardTone.neutral,
+                };
                 final barColor = tone == MetricCardTone.danger
                     ? context.semanticColors.expense
                     : tone == MetricCardTone.warning
@@ -395,12 +412,9 @@ class TodayScreen extends ConsumerWidget {
     if (budgetsAsync is AsyncData) {
       final budgets = budgetsAsync.value as List<Budget>;
       final exceededCount =
-          budgets.where((b) => b.consumedCents > b.limitCents).length;
-      final nearLimitCount = budgets.where((b) {
-        final percentage =
-            b.limitCents > 0 ? (b.consumedCents / b.limitCents) : 0.0;
-        return percentage >= 0.8 && percentage < 1.0;
-      }).length;
+          budgets.where((b) => b.status == BudgetStatus.exceeded).length;
+      final nearLimitCount =
+          budgets.where((b) => b.status == BudgetStatus.nearLimit).length;
 
       if (exceededCount > 0) {
         tone = MetricCardTone.danger;
@@ -601,12 +615,9 @@ class TodayScreen extends ConsumerWidget {
     if (budgetsAsync is AsyncData) {
       final budgets = budgetsAsync.value as List<Budget>;
       final exceededBudgets =
-          budgets.where((b) => b.consumedCents > b.limitCents).toList();
-      final nearLimitBudgets = budgets.where((b) {
-        final percentage =
-            b.limitCents > 0 ? (b.consumedCents / b.limitCents) : 0.0;
-        return percentage >= 0.8 && percentage < 1.0;
-      }).toList();
+          budgets.where((b) => b.status == BudgetStatus.exceeded).toList();
+      final nearLimitBudgets =
+          budgets.where((b) => b.status == BudgetStatus.nearLimit).toList();
 
       if (exceededBudgets.isNotEmpty) {
         attentionCards.add(
@@ -663,6 +674,11 @@ class TodayScreen extends ConsumerWidget {
     List<model.Transaction> transactions,
   ) {
     final recentTransactions = transactions.take(5).toList();
+    final categoriesAsync = ref.watch(categoriesProvider);
+    final categoryById = {
+      for (final c in categoriesAsync.valueOrNull ?? const <Category>[])
+        c.id: c,
+    };
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
@@ -682,12 +698,11 @@ class TodayScreen extends ConsumerWidget {
           ...recentTransactions.map((transaction) {
             return Consumer(
               builder: (context, ref, _) {
-                final categoriesAsync = ref.watch(categoriesProvider);
                 final wallets =
                     ref.watch(walletsProvider).valueOrNull ?? const <Wallet>[];
 
                 return categoriesAsync.when(
-                  data: (categories) {
+                  data: (_) {
                     // Transfers carry no category: label them "from -> to".
                     if (transaction.type == model.TransactionType.transfer) {
                       final from = wallets
@@ -714,13 +729,11 @@ class TodayScreen extends ConsumerWidget {
                       );
                     }
 
-                    final category = categories.firstWhere(
-                      (c) => c.id == transaction.categoryId,
-                      orElse: () => uncategorizedCategory(
-                        transaction.categoryId ?? '',
-                        l10n.uncategorized,
-                      ),
-                    );
+                    final category = categoryById[transaction.categoryId] ??
+                        uncategorizedCategory(
+                          transaction.categoryId ?? '',
+                          l10n.uncategorized,
+                        );
 
                     return TransactionItem.compact(
                       transaction: transaction,
@@ -781,23 +794,25 @@ class _WalletBalanceStrip extends ConsumerWidget {
           ),
           onTrailingTap: () => Navigator.pushNamed(context, '/wallets'),
         ),
-        SizedBox(
-          height: 96,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.screenPadding,
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.screenPadding,
+          ),
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < wallets.length; i++) ...[
+                  if (i > 0) const SizedBox(width: AppSpacing.md),
+                  _WalletBalanceCard(
+                    wallet: wallets[i],
+                    balance: balances[wallets[i].id] ??
+                        wallets[i].openingBalanceMinor,
+                  ),
+                ],
+              ],
             ),
-            itemCount: wallets.length,
-            separatorBuilder: (context, index) =>
-                const SizedBox(width: AppSpacing.md),
-            itemBuilder: (context, index) {
-              final wallet = wallets[index];
-              return _WalletBalanceCard(
-                wallet: wallet,
-                balance: balances[wallet.id] ?? wallet.openingBalanceMinor,
-              );
-            },
           ),
         ),
       ],

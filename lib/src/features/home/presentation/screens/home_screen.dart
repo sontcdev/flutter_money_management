@@ -33,11 +33,6 @@ class HomeScreen extends HookConsumerWidget {
     };
 
     void selectTab(AppTab newTab) {
-      if (newTab != currentTab) {
-        ref.invalidate(budgetsProvider);
-        ref.invalidate(budgetsWithConsumedProvider);
-        ref.invalidate(transactionsProvider);
-      }
       ref.read(currentTabProvider.notifier).state = newTab;
     }
 
