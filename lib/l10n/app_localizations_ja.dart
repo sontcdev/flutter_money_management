@@ -2118,4 +2118,27 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get imageLoadFailed => '画像を読み込めませんでした';
+
+  @override
+  String get week => '週';
+
+  @override
+  String get lastSixMonths => '過去6か月';
+
+  @override
+  String get previousMonth => '前月';
+
+  @override
+  String get nextMonth => '翌月';
+
+  @override
+  String get previousPeriod => '前の期間';
+
+  @override
+  String get nextPeriod => '次の期間';
+
+  @override
+  String vsPreviousPeriod(String percent) {
+    return '前の期間比 $percent';
+  }
 }

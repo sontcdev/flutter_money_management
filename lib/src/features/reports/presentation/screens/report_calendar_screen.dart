@@ -16,6 +16,7 @@ import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 import 'package:flutter_money_management/src/ui/widgets/confirm_delete_dialog.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
 import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
+import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
 import 'package:flutter_money_management/src/utils/cycle_utils.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 
@@ -148,10 +149,8 @@ class ReportCalendarScreen extends HookConsumerWidget {
                       monthStartDay: monthStartDay,
                       onDateSelected: onDateSelected,
                     ),
-                    loading: () => const SizedBox(
-                      height: 280,
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
+                    loading: () =>
+                        const SectionSkeleton(height: 280, lineCount: 6),
                     error: (e, s) => SizedBox(
                       height: 280,
                       child: InlineLoadErrorState(
@@ -167,8 +166,16 @@ class ReportCalendarScreen extends HookConsumerWidget {
                       totalExpense: summary['expense'] ?? 0,
                       net: summary['net'] ?? 0,
                     ),
-                    loading: () => const SizedBox(height: 70),
-                    error: (e, s) => const SizedBox(height: 70),
+                    loading: () =>
+                        const SectionSkeleton(height: 70, lineCount: 2),
+                    error: (e, s) => SizedBox(
+                      height: 70,
+                      child: InlineLoadErrorState(
+                        onRetry: () => ref.invalidate(
+                          monthlySummaryProvider(selectedMonth),
+                        ),
+                      ),
+                    ),
                   ),
                   const Divider(height: 1),
                 ],
@@ -257,6 +264,7 @@ class ReportCalendarScreen extends HookConsumerWidget {
 
   Widget _buildMonthSelector(
       BuildContext context, WidgetRef ref, DateTime month) {
+    final l10n = AppLocalizations.of(context)!;
     final monthLabel = _formatMonthLabel(context, month);
     final monthStartDay = ref.watch(monthStartDayProvider);
     final cycleRange = CycleUtils.getCycleRangeForMonth(month, monthStartDay);
@@ -268,9 +276,10 @@ class ReportCalendarScreen extends HookConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _MonthNavButton(
-            icon: Icons.chevron_left,
-            onTap: () {
+          IconButton(
+            tooltip: l10n.previousMonth,
+            icon: const Icon(Icons.chevron_left),
+            onPressed: () {
               ref
                   .read(transactionListNotifierProvider.notifier)
                   .loadPreviousMonth();
@@ -332,9 +341,10 @@ class ReportCalendarScreen extends HookConsumerWidget {
               ),
             ),
           ),
-          _MonthNavButton(
-            icon: Icons.chevron_right,
-            onTap: () {
+          IconButton(
+            tooltip: l10n.nextMonth,
+            icon: const Icon(Icons.chevron_right),
+            onPressed: () {
               ref
                   .read(transactionListNotifierProvider.notifier)
                   .loadNextMonth();
@@ -450,35 +460,6 @@ void _showScrollingToNearestMessage(
     l10n.noTransactionsNearestDate(dateStr),
     duration: const Duration(seconds: 2),
   );
-}
-
-class _MonthNavButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _MonthNavButton({required this.icon, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outlineVariant,
-            ),
-          ),
-          child: Icon(icon, size: AppSpacing.iconSizeSm),
-        ),
-      ),
-    );
-  }
 }
 
 // ========== MONTH YEAR PICKER ==========

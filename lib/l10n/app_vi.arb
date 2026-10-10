@@ -717,5 +717,12 @@
   "keepEditing": "Tiếp tục sửa",
   "takePhoto": "Chụp ảnh",
   "chooseFromGallery": "Chọn từ thư viện",
-  "imageLoadFailed": "Không tải được ảnh"
+  "imageLoadFailed": "Không tải được ảnh",
+  "week": "Tuần",
+  "lastSixMonths": "6 tháng gần nhất",
+  "previousMonth": "Tháng trước",
+  "nextMonth": "Tháng sau",
+  "previousPeriod": "Kỳ trước",
+  "nextPeriod": "Kỳ sau",
+  "vsPreviousPeriod": "{percent} so với kỳ trước"
 }

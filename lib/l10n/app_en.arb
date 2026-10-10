@@ -738,5 +738,19 @@
   "keepEditing": "Keep editing",
   "takePhoto": "Take photo",
   "chooseFromGallery": "Choose from gallery",
-  "imageLoadFailed": "Couldn't load image"
+  "imageLoadFailed": "Couldn't load image",
+  "week": "Week",
+  "lastSixMonths": "Last 6 months",
+  "previousMonth": "Previous month",
+  "nextMonth": "Next month",
+  "previousPeriod": "Previous period",
+  "nextPeriod": "Next period",
+  "vsPreviousPeriod": "{percent} vs previous period",
+  "@vsPreviousPeriod": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -9,7 +9,9 @@ import 'package:flutter_money_management/src/features/workspace/services/workspa
 import 'package:flutter_money_management/src/features/budgets/models/budget.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/categories/models/uncategorized_category.dart';
+import 'package:flutter_money_management/src/features/reports/models/report_period.dart';
 import 'package:flutter_money_management/src/features/reports/presentation/widgets/chart_widget.dart';
+import 'package:flutter_money_management/src/features/reports/presentation/widgets/report_sections.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
@@ -21,7 +23,6 @@ import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
 import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
-import 'package:flutter_money_management/src/utils/cycle_utils.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 
 Widget _buildReportsLoadError(
@@ -47,10 +48,7 @@ class ReportsScreen extends HookConsumerWidget {
     final categoriesAsync = ref.watch(categoriesProvider);
     final budgetsAsync = ref.watch(budgetsProvider);
     final monthStartDay = ref.watch(monthStartDayProvider);
-    final selectedPeriod =
-        useState(0); // 0: Tháng này, 1: Tùy chỉnh (tháng), 2: Tùy chỉnh (năm)
-    final customMonth = useState<DateTime?>(null);
-    final customYear = useState<int?>(null);
+    final period = useState(ReportPeriod.current(ReportPeriodUnit.month));
     final reportTypeFilter = useState(0); // 0: All, 1: Expense, 2: Income
 
     return Scaffold(
@@ -67,101 +65,28 @@ class ReportsScreen extends HookConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Period Selector
-              AppCard(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _PeriodButton(
-                            label: l10n.thisMonth,
-                            isSelected: selectedPeriod.value == 0,
-                            onTap: () => selectedPeriod.value = 0,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _PeriodButton(
-                            label: l10n.custom,
-                            isSelected: selectedPeriod.value == 1 ||
-                                selectedPeriod.value == 2,
-                            onTap: () async {
-                              final result = await _showCustomPeriodPicker(
-                                context,
-                                customMonth.value,
-                                customYear.value,
-                              );
-                              if (result != null) {
-                                if (result['type'] == 'month') {
-                                  customMonth.value =
-                                      result['value'] as DateTime;
-                                  customYear.value = null;
-                                  selectedPeriod.value = 1;
-                                } else {
-                                  customYear.value = result['value'] as int;
-                                  customMonth.value = null;
-                                  selectedPeriod.value = 2;
-                                }
-                              }
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    if (selectedPeriod.value == 1 &&
-                        customMonth.value != null) ...[
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 6, horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .primary
-                              .withValues(alpha: 0.1),
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusFull),
-                        ),
-                        child: Text(
-                          DateFormat.yMMMM(l10n.localeName)
-                              .format(customMonth.value!),
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelMedium
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                        ),
-                      ),
-                    ],
-                    if (selectedPeriod.value == 2 &&
-                        customYear.value != null) ...[
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 6, horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .primary
-                              .withValues(alpha: 0.1),
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusFull),
-                        ),
-                        child: Text(
-                          '${l10n.year} ${customYear.value}',
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelMedium
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+              ReportPeriodSelector(
+                period: period.value,
+                monthStartDay: monthStartDay,
+                onChanged: (value) => period.value = value,
+                onPickPeriod: () async {
+                  final current = period.value;
+                  final result = await _showCustomPeriodPicker(
+                    context,
+                    current.range(monthStartDay).end,
+                    current.anchor.year,
+                  );
+                  if (result == null) return;
+                  period.value = result['type'] == 'month'
+                      ? ReportPeriod(
+                          ReportPeriodUnit.month,
+                          result['value'] as DateTime,
+                        )
+                      : ReportPeriod(
+                          ReportPeriodUnit.year,
+                          DateTime(result['value'] as int),
+                        );
+                },
               ),
 
               const SizedBox(height: 16),
@@ -169,108 +94,28 @@ class ReportsScreen extends HookConsumerWidget {
               // Summary Card
               transactionsAsync.when(
                 data: (transactions) {
-                  final filteredTransactions = _filterTransactions(
-                    transactions,
-                    selectedPeriod.value,
-                    monthStartDay,
-                    customMonth.value,
-                    customYear.value,
-                  );
-
-                  final totalIncome = filteredTransactions
-                      .where((t) => t.type == TransactionType.income)
-                      .fold<int>(0, (sum, t) => sum + t.amountCents);
-
-                  final totalExpense = filteredTransactions
-                      .where((t) => t.type == TransactionType.expense)
-                      .fold<int>(0, (sum, t) => sum + t.amountCents);
-
-                  final balance = totalIncome - totalExpense;
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 2-up summary cards: Tổng chi / Tổng thu
-                      Row(
-                        children: [
-                          Expanded(
-                            child: _SummaryStatCard(
-                              label: l10n.totalExpense,
-                              amount: totalExpense,
-                              color: context.semanticColors.expense,
-                              icon: Icons.arrow_upward,
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.md),
-                          Expanded(
-                            child: _SummaryStatCard(
-                              label: l10n.totalIncome,
-                              amount: totalIncome,
-                              color: context.semanticColors.income,
-                              icon: Icons.arrow_downward,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      AppCard(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  balance >= 0
-                                      ? Icons.trending_up
-                                      : Icons.trending_down,
-                                  color: balance >= 0
-                                      ? context.semanticColors.income
-                                      : context.semanticColors.expense,
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  l10n.balance,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
-                                      ?.copyWith(fontWeight: FontWeight.w600),
-                                ),
-                              ],
-                            ),
-                            Text(
-                              CurrencyFormatter.formatVNDFromCents(
-                                balance,
-                                locale: l10n.localeName,
-                              ),
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    color: balance >= 0
-                                        ? context.semanticColors.income
-                                        : context.semanticColors.expense,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 4),
-                        child: Text(
-                          '${l10n.transactionCount}: ${filteredTransactions.length}',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ),
-                    ],
+                  final current = transactions
+                      .where((t) =>
+                          period.value.contains(t.dateTime, monthStartDay))
+                      .toList();
+                  final previousPeriod = period.value.previous(monthStartDay);
+                  final previous = transactions
+                      .where((t) =>
+                          previousPeriod.contains(t.dateTime, monthStartDay))
+                      .toList();
+                  int total(List<Transaction> items, TransactionType type) =>
+                      items
+                          .where((t) => t.type == type)
+                          .fold<int>(0, (sum, t) => sum + t.amountCents);
+                  return ReportSummarySection(
+                    totalIncome: total(current, TransactionType.income),
+                    totalExpense: total(current, TransactionType.expense),
+                    previousIncome: total(previous, TransactionType.income),
+                    previousExpense: total(previous, TransactionType.expense),
+                    transactionCount: current.length,
                   );
                 },
-                loading: () => const AppCard(
-                  padding: EdgeInsets.all(32),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
+                loading: () => const SectionSkeleton(height: 180),
                 error: (err, _) => AppCard(
                   child: _buildReportsLoadError(
                     l10n,
@@ -283,43 +128,21 @@ class ReportsScreen extends HookConsumerWidget {
 
               // 6-month expense trend
               transactionsAsync.when(
-                data: (transactions) {
-                  final monthlyData = _buildLastSixMonthsExpense(
+                data: (transactions) => ReportTrendSection(
+                  data: _buildLastSixMonthsExpense(
                     transactions,
                     l10n.localeName,
-                  );
-                  return AppCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.totalExpense,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleSmall
-                              ?.copyWith(fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        BarChartWidget(
-                          data: monthlyData,
-                          labelFormatter: (value) => NumberFormat.compact(
-                            locale: l10n.localeName,
-                          ).format(value),
-                          valueFormatter: (value) =>
-                              CurrencyFormatter.formatVND(
-                            value,
-                            locale: l10n.localeName,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+                  ),
+                ),
                 loading: () => const SectionSkeleton(height: 220),
                 error: (err, _) => InlineLoadErrorState(
                   onRetry: () => ref.invalidate(transactionsProvider),
                 ),
               ),
+
+              const SizedBox(height: 16),
+
+              const ReportCalendarEntryCard(),
 
               const SizedBox(height: 16),
 
@@ -383,11 +206,8 @@ class ReportsScreen extends HookConsumerWidget {
                       return transactionsAsync.when(
                         data: (transactions) {
                           // Get date range based on selected period
-                          final dateRange = _getDateRange(
-                              selectedPeriod.value,
-                              customMonth.value,
-                              customYear.value,
-                              monthStartDay);
+                          final dateRange =
+                              period.value.range(monthStartDay);
 
                           // Filter budgets based on category type
                           final categoryMap = {
@@ -613,10 +433,7 @@ class ReportsScreen extends HookConsumerWidget {
                             }).toList(),
                           );
                         },
-                        loading: () => const AppCard(
-                          padding: EdgeInsets.all(32),
-                          child: Center(child: CircularProgressIndicator()),
-                        ),
+                        loading: () => const SectionSkeleton(height: 160),
                         error: (err, _) => AppCard(
                           child: _buildReportsLoadError(
                             l10n,
@@ -625,10 +442,7 @@ class ReportsScreen extends HookConsumerWidget {
                         ),
                       );
                     },
-                    loading: () => const AppCard(
-                      padding: EdgeInsets.all(32),
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
+                    loading: () => const SectionSkeleton(height: 160),
                     error: (err, _) => AppCard(
                       child: _buildReportsLoadError(
                         l10n,
@@ -637,10 +451,7 @@ class ReportsScreen extends HookConsumerWidget {
                     ),
                   );
                 },
-                loading: () => const AppCard(
-                  padding: EdgeInsets.all(32),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
+                loading: () => const SectionSkeleton(height: 160),
                 error: (err, _) => AppCard(
                   child: _buildReportsLoadError(
                     l10n,
@@ -668,13 +479,10 @@ class ReportsScreen extends HookConsumerWidget {
                           ? TransactionType.income
                           : TransactionType.expense;
 
-                      var filteredTransactions = _filterTransactions(
-                              transactions,
-                              selectedPeriod.value,
-                              monthStartDay,
-                              customMonth.value,
-                              customYear.value)
-                          .where((t) => t.type == transactionTypeFilter)
+                      var filteredTransactions = transactions
+                          .where((t) =>
+                              t.type == transactionTypeFilter &&
+                              period.value.contains(t.dateTime, monthStartDay))
                           .toList();
 
                       // Also filter by category type if needed
@@ -778,14 +586,12 @@ class ReportsScreen extends HookConsumerWidget {
                                 return InkWell(
                                   onTap: () => _showCategoryTransactions(
                                     context,
-                                    ref,
                                     category.id,
                                     category.name,
                                     category.iconName,
                                     category.colorValue,
-                                    selectedPeriod.value,
-                                    customMonth.value,
-                                    customYear.value,
+                                    period.value.range(monthStartDay),
+                                    period.value.label(l10n, monthStartDay),
                                     reportTypeFilter.value ==
                                         2, // isIncomeReport
                                   ),
@@ -894,10 +700,7 @@ class ReportsScreen extends HookConsumerWidget {
                         ],
                       );
                     },
-                    loading: () => const AppCard(
-                      padding: EdgeInsets.all(32),
-                      child: Center(child: CircularProgressIndicator()),
-                    ),
+                    loading: () => const SectionSkeleton(height: 160),
                     error: (err, _) => AppCard(
                       child: _buildReportsLoadError(
                         l10n,
@@ -906,10 +709,7 @@ class ReportsScreen extends HookConsumerWidget {
                     ),
                   );
                 },
-                loading: () => const AppCard(
-                  padding: EdgeInsets.all(32),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
+                loading: () => const SectionSkeleton(height: 160),
                 error: (err, _) => AppCard(
                   child: _buildReportsLoadError(
                     l10n,
@@ -946,14 +746,12 @@ class ReportsScreen extends HookConsumerWidget {
 
   void _showCategoryTransactions(
     BuildContext context,
-    WidgetRef ref,
     String categoryId,
     String categoryName,
     String categoryIcon,
     int categoryColor,
-    int selectedPeriod,
-    DateTime? customMonth,
-    int? customYear,
+    ReportDateRange range,
+    String periodLabel,
     bool isIncomeReport,
   ) {
     Navigator.push(
@@ -964,9 +762,9 @@ class ReportsScreen extends HookConsumerWidget {
           categoryName: categoryName,
           categoryIcon: categoryIcon,
           categoryColor: categoryColor,
-          selectedPeriod: selectedPeriod,
-          customMonth: customMonth,
-          customYear: customYear,
+          startDate: range.start,
+          endDate: range.end,
+          periodLabel: periodLabel,
           isIncomeReport: isIncomeReport,
         ),
       ),
@@ -991,89 +789,6 @@ class ReportsScreen extends HookConsumerWidget {
         ),
       ),
     );
-  }
-
-  // Helper to get date range based on selected period
-  ({DateTime start, DateTime end}) _getDateRange(
-      int period, DateTime? customMonth, int? customYear, int monthStartDay) {
-    final now = DateTime.now();
-    DateTime startDate;
-    DateTime endDate;
-
-    switch (period) {
-      case 0: // This month - use cycle dates based on monthStartDay
-        final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
-        startDate = cycleRange.start;
-        endDate = cycleRange.end;
-        break;
-      case 1: // Custom month - use cycle dates
-        if (customMonth != null) {
-          final cycleRange =
-              CycleUtils.getCycleRangeForDate(customMonth, monthStartDay);
-          startDate = cycleRange.start;
-          endDate = cycleRange.end;
-        } else {
-          final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
-          startDate = cycleRange.start;
-          endDate = cycleRange.end;
-        }
-        break;
-      case 2: // Custom year
-        final year = customYear ?? now.year;
-        startDate = DateTime(year, 1, 1);
-        endDate = DateTime(year, 12, 31, 23, 59, 59);
-        break;
-      default:
-        final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
-        startDate = cycleRange.start;
-        endDate = cycleRange.end;
-    }
-
-    return (start: startDate, end: endDate);
-  }
-
-  List<Transaction> _filterTransactions(
-      List<Transaction> transactions, int period, int monthStartDay,
-      [DateTime? customMonth, int? customYear]) {
-    final now = DateTime.now();
-    DateTime startDate;
-    DateTime endDate;
-
-    switch (period) {
-      case 0: // Tháng này - use cycle dates
-        final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
-        startDate = cycleRange.start;
-        endDate = cycleRange.end;
-        break;
-      case 1: // Tùy chỉnh - Tháng - use cycle dates
-        if (customMonth != null) {
-          final cycleRange =
-              CycleUtils.getCycleRangeForDate(customMonth, monthStartDay);
-          startDate = cycleRange.start;
-          endDate = cycleRange.end;
-        } else {
-          final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
-          startDate = cycleRange.start;
-          endDate = cycleRange.end;
-        }
-        break;
-      case 2: // Tùy chỉnh - Năm
-        final year = customYear ?? now.year;
-        startDate = DateTime(year, 1, 1);
-        endDate = DateTime(year, 12, 31, 23, 59, 59);
-        break;
-      default:
-        final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
-        startDate = cycleRange.start;
-        endDate = cycleRange.end;
-    }
-
-    return transactions
-        .where((t) =>
-            t.dateTime
-                .isAfter(startDate.subtract(const Duration(seconds: 1))) &&
-            t.dateTime.isBefore(endDate.add(const Duration(seconds: 1))))
-        .toList();
   }
 
   List<ChartData> _buildLastSixMonthsExpense(
@@ -1111,9 +826,9 @@ class CategoryTransactionsScreen extends ConsumerWidget {
   final String categoryName;
   final String categoryIcon;
   final int categoryColor;
-  final int selectedPeriod;
-  final DateTime? customMonth;
-  final int? customYear;
+  final DateTime startDate;
+  final DateTime endDate;
+  final String periodLabel;
   final bool isIncomeReport;
 
   const CategoryTransactionsScreen({
@@ -1122,9 +837,9 @@ class CategoryTransactionsScreen extends ConsumerWidget {
     required this.categoryName,
     required this.categoryIcon,
     required this.categoryColor,
-    required this.selectedPeriod,
-    this.customMonth,
-    this.customYear,
+    required this.startDate,
+    required this.endDate,
+    required this.periodLabel,
     this.isIncomeReport = false,
   });
 
@@ -1132,47 +847,6 @@ class CategoryTransactionsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final transactionsAsync = ref.watch(transactionsProvider);
-    final monthStartDay = ref.watch(monthStartDayProvider);
-
-    // Calculate date range based on selected period using cycle dates
-    final now = DateTime.now();
-    DateTime startDate;
-    DateTime endDate;
-    String periodLabel;
-
-    switch (selectedPeriod) {
-      case 0: // This month - use cycle dates based on monthStartDay
-        final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
-        startDate = cycleRange.start;
-        endDate = cycleRange.end;
-        periodLabel = DateFormat.yMMMM(l10n.localeName).format(now);
-        break;
-      case 1: // Custom month - use cycle dates
-        if (customMonth != null) {
-          final cycleRange =
-              CycleUtils.getCycleRangeForDate(customMonth!, monthStartDay);
-          startDate = cycleRange.start;
-          endDate = cycleRange.end;
-          periodLabel = DateFormat.yMMMM(l10n.localeName).format(customMonth!);
-        } else {
-          final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
-          startDate = cycleRange.start;
-          endDate = cycleRange.end;
-          periodLabel = DateFormat.yMMMM(l10n.localeName).format(now);
-        }
-        break;
-      case 2: // Custom year
-        final year = customYear ?? now.year;
-        startDate = DateTime(year, 1, 1);
-        endDate = DateTime(year, 12, 31, 23, 59, 59);
-        periodLabel = '${l10n.year} $year';
-        break;
-      default:
-        final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
-        startDate = cycleRange.start;
-        endDate = cycleRange.end;
-        periodLabel = DateFormat.yMMMM(l10n.localeName).format(now);
-    }
 
     return Scaffold(
       appBar: AppBar(
@@ -1697,106 +1371,6 @@ class BudgetTransactionsScreen extends ConsumerWidget {
   }
 }
 
-class _PeriodButton extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _PeriodButton({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      selected: isSelected,
-      inMutuallyExclusiveGroup: true,
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          constraints: const BoxConstraints(
-            minHeight: AppSpacing.buttonHeight,
-          ),
-          alignment: Alignment.center,
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? Theme.of(context).colorScheme.primary
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-          ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: isSelected
-                      ? Theme.of(context).colorScheme.onPrimary
-                      : Theme.of(context).colorScheme.onSurfaceVariant,
-                  fontWeight:
-                      isSelected ? FontWeight.w600 : FontWeight.normal,
-                ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SummaryStatCard extends StatelessWidget {
-  final String label;
-  final int amount;
-  final Color color;
-  final IconData icon;
-
-  const _SummaryStatCard({
-    required this.label,
-    required this.amount,
-    required this.color,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: color, size: 18),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  label,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            CurrencyFormatter.formatVNDFromCents(
-              amount,
-              locale: localeNameOf(context),
-            ),
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: color,
-                ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _CustomPeriodPickerSheet extends HookWidget {
   final DateTime initialMonth;
   final int initialYear;
@@ -1818,136 +1392,138 @@ class _CustomPeriodPickerSheet extends HookWidget {
       (i) => DateFormat.MMMM(l10n.localeName).format(DateTime(2000, i + 1)),
     );
 
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.55,
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                l10n.selectPeriod,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-              ),
-              IconButton(
-                tooltip: l10n.close,
-                icon: const Icon(Icons.close),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          // Tab: By month / By year
-          Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
-            ),
-            child: Row(
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => selectedTab.value = 0,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: selectedTab.value == 0
-                            ? Theme.of(context).colorScheme.primary
-                            : Colors.transparent,
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusCard),
+                Text(
+                  l10n.selectPeriod,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
-                      child: Center(
-                        child: Text(
-                          l10n.byMonth,
-                          style: TextStyle(
-                            color: selectedTab.value == 0
-                                ? Theme.of(context).colorScheme.onPrimary
-                                : Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
-                            fontWeight: selectedTab.value == 0
-                                ? FontWeight.w600
-                                : FontWeight.normal,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
                 ),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => selectedTab.value = 1,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: selectedTab.value == 1
-                            ? Theme.of(context).colorScheme.primary
-                            : Colors.transparent,
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusCard),
-                      ),
-                      child: Center(
-                        child: Text(
-                          l10n.byYear,
-                          style: TextStyle(
-                            color: selectedTab.value == 1
-                                ? Theme.of(context).colorScheme.onPrimary
-                                : Theme.of(context)
-                                    .colorScheme
-                                    .onSurfaceVariant,
-                            fontWeight: selectedTab.value == 1
-                                ? FontWeight.w600
-                                : FontWeight.normal,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                IconButton(
+                  tooltip: l10n.close,
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
                 ),
               ],
             ),
-          ),
-          const SizedBox(height: 16),
-
-          if (selectedTab.value == 0) ...[
-            // By month: Year selector
-            SizedBox(
-              height: 40,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: years.length,
-                itemBuilder: (context, index) {
-                  final year = years[index];
-                  final isSelected = year == selectedYear.value;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: ChoiceChip(
-                      label: Text(year.toString()),
-                      selected: isSelected,
-                      onSelected: (_) => selectedYear.value = year,
-                      selectedColor: Theme.of(context).colorScheme.primary,
-                      backgroundColor:
-                          Theme.of(context).colorScheme.surfaceContainerHighest,
-                      labelStyle: TextStyle(
-                        color: isSelected
-                            ? Theme.of(context).colorScheme.onPrimary
-                            : Theme.of(context).textTheme.bodyLarge?.color,
-                        fontWeight: isSelected ? FontWeight.bold : null,
+            const SizedBox(height: 16),
+            // Tab: By month / By year
+            Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => selectedTab.value = 0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: selectedTab.value == 0
+                              ? Theme.of(context).colorScheme.primary
+                              : Colors.transparent,
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusCard),
+                        ),
+                        child: Center(
+                          child: Text(
+                            l10n.byMonth,
+                            style: TextStyle(
+                              color: selectedTab.value == 0
+                                  ? Theme.of(context).colorScheme.onPrimary
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                              fontWeight: selectedTab.value == 0
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  );
-                },
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => selectedTab.value = 1,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: selectedTab.value == 1
+                              ? Theme.of(context).colorScheme.primary
+                              : Colors.transparent,
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusCard),
+                        ),
+                        child: Center(
+                          child: Text(
+                            l10n.byYear,
+                            style: TextStyle(
+                              color: selectedTab.value == 1
+                                  ? Theme.of(context).colorScheme.onPrimary
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                              fontWeight: selectedTab.value == 1
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 16),
-            // Month grid
-            Expanded(
-              child: GridView.builder(
+
+            if (selectedTab.value == 0) ...[
+              // By month: Year selector
+              SizedBox(
+                height: 40,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: years.length,
+                  itemBuilder: (context, index) {
+                    final year = years[index];
+                    final isSelected = year == selectedYear.value;
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: ChoiceChip(
+                        label: Text(year.toString()),
+                        selected: isSelected,
+                        onSelected: (_) => selectedYear.value = year,
+                        selectedColor: Theme.of(context).colorScheme.primary,
+                        backgroundColor:
+                            Theme.of(context).colorScheme.surfaceContainerHighest,
+                        labelStyle: TextStyle(
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.onPrimary
+                              : Theme.of(context).textTheme.bodyLarge?.color,
+                          fontWeight: isSelected ? FontWeight.bold : null,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Month grid
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   childAspectRatio: 2,
@@ -2004,11 +1580,11 @@ class _CustomPeriodPickerSheet extends HookWidget {
                   );
                 },
               ),
-            ),
-          ] else ...[
-            // Theo năm: Year grid
-            Expanded(
-              child: GridView.builder(
+            ] else ...[
+              // Theo năm: Year grid
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
                   childAspectRatio: 2,
@@ -2064,9 +1640,9 @@ class _CustomPeriodPickerSheet extends HookWidget {
                   );
                 },
               ),
-            ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

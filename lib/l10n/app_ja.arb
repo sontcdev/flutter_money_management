@@ -717,5 +717,12 @@
   "keepEditing": "編集を続ける",
   "takePhoto": "写真を撮る",
   "chooseFromGallery": "ギャラリーから選択",
-  "imageLoadFailed": "画像を読み込めませんでした"
+  "imageLoadFailed": "画像を読み込めませんでした",
+  "week": "週",
+  "lastSixMonths": "過去6か月",
+  "previousMonth": "前月",
+  "nextMonth": "翌月",
+  "previousPeriod": "前の期間",
+  "nextPeriod": "次の期間",
+  "vsPreviousPeriod": "前の期間比 {percent}"
 }

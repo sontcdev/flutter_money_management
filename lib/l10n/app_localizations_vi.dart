@@ -2118,4 +2118,27 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get imageLoadFailed => 'Không tải được ảnh';
+
+  @override
+  String get week => 'Tuần';
+
+  @override
+  String get lastSixMonths => '6 tháng gần nhất';
+
+  @override
+  String get previousMonth => 'Tháng trước';
+
+  @override
+  String get nextMonth => 'Tháng sau';
+
+  @override
+  String get previousPeriod => 'Kỳ trước';
+
+  @override
+  String get nextPeriod => 'Kỳ sau';
+
+  @override
+  String vsPreviousPeriod(String percent) {
+    return '$percent so với kỳ trước';
+  }
 }

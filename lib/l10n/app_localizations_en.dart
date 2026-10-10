@@ -2122,4 +2122,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get imageLoadFailed => 'Couldn\'t load image';
+
+  @override
+  String get week => 'Week';
+
+  @override
+  String get lastSixMonths => 'Last 6 months';
+
+  @override
+  String get previousMonth => 'Previous month';
+
+  @override
+  String get nextMonth => 'Next month';
+
+  @override
+  String get previousPeriod => 'Previous period';
+
+  @override
+  String get nextPeriod => 'Next period';
+
+  @override
+  String vsPreviousPeriod(String percent) {
+    return '$percent vs previous period';
+  }
 }
