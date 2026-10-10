@@ -444,6 +444,32 @@ class _MemberSection extends ConsumerWidget {
   final String? currentUserId;
   final String ownerId;
 
+  Future<void> _showRolesInfo(BuildContext context, AppLocalizations l10n) {
+    return showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.workspaceRolesTitle),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.workspaceRoleOwnerDesc),
+            const SizedBox(height: AppSpacing.sm),
+            Text(l10n.workspaceRoleAdminDesc),
+            const SizedBox(height: AppSpacing.sm),
+            Text(l10n.workspaceRoleMemberDesc),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.close),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
@@ -452,11 +478,22 @@ class _MemberSection extends ConsumerWidget {
         data: (members) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              l10n.membersSection,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    l10n.membersSection,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                   ),
+                ),
+                IconButton(
+                  tooltip: l10n.workspaceRolesTitle,
+                  icon: const Icon(Icons.info_outline),
+                  onPressed: () => _showRolesInfo(context, l10n),
+                ),
+              ],
             ),
             const SizedBox(height: AppSpacing.md),
             if (members.isEmpty)

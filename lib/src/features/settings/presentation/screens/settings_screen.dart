@@ -18,6 +18,7 @@ import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
+import 'package:flutter_money_management/src/ui/widgets/confirm_delete_dialog.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
 class SettingsScreen extends HookConsumerWidget {
@@ -538,25 +539,16 @@ class SettingsScreen extends HookConsumerWidget {
     WidgetRef ref,
     String workspaceId,
   ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.leaveWorkspace),
-        content: Text(AppLocalizations.of(context)!.leaveWorkspaceConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(AppLocalizations.of(context)!.leave),
-          ),
-        ],
-      ),
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await ConfirmDeleteDialog.show(
+      context,
+      title: l10n.leaveWorkspace,
+      message: l10n.leaveWorkspaceConfirm,
+      consequence: l10n.leaveWorkspaceDesc,
+      confirmLabel: l10n.leave,
     );
 
-    if (confirmed != true || !context.mounted) {
+    if (!confirmed || !context.mounted) {
       return;
     }
 

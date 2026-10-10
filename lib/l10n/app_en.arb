@@ -754,5 +754,11 @@
         "type": "String"
       }
     }
-  }
+  },
+  "workspaceRolesTitle": "Workspace roles",
+  "workspaceRoleOwnerDesc": "Owner: full control, including deleting the workspace.",
+  "workspaceRoleAdminDesc": "Admin: manages members, invites, categories, wallets and budgets.",
+  "workspaceRoleMemberDesc": "Member: views shared data and adds or edits transactions.",
+  "walletArchived": "Wallet archived",
+  "deleteWalletArchiveHint": "Deleting is permanent. Archive the wallet instead to hide it and keep its history."
 }

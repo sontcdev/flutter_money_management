@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/auth/providers/auth_providers.dart';
+import 'package:flutter_money_management/src/features/auth/services/auth_error_code.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/utils/app_logger.dart';
+import 'package:flutter_money_management/src/utils/email_validator.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 import 'package:flutter_money_management/src/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'sign_up_screen.dart';
@@ -106,7 +109,7 @@ class SignInScreen extends HookConsumerWidget {
         return;
       }
 
-      if (!_isValidEmail(email)) {
+      if (!isValidEmail(email)) {
         errorMessage.value = l10n.enterValidEmailAddress;
         return;
       }
@@ -135,6 +138,7 @@ class SignInScreen extends HookConsumerWidget {
         if (response.user != null && context.mounted) {
           AppLogger.info('Sign-in succeeded, preparing post-login flow',
               name: 'MM.Auth');
+          TextInput.finishAutofillContext();
           // Save email for next time
           await emailPersistence.saveEmail(email);
 
@@ -148,7 +152,7 @@ class SignInScreen extends HookConsumerWidget {
           error: e,
           stackTrace: stackTrace,
         );
-        errorMessage.value = _getErrorMessage(l10n, e.toString());
+        errorMessage.value = _getErrorMessage(l10n, e);
 
         if (context.mounted) {
           await ErrorReportHelper.handleApiError(
@@ -193,187 +197,201 @@ class SignInScreen extends HookConsumerWidget {
             AppSpacing.xl,
             AppSpacing.xl,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: AppSpacing.xl),
+          child: AutofillGroup(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: AppSpacing.xl),
 
-              // Brand icon
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: colorScheme.primary,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
-                ),
-                child: Icon(
-                  Icons.account_balance_wallet_outlined,
-                  color: colorScheme.onPrimary,
-                  size: 26,
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.xl),
-
-              Text(
-                l10n.welcomeBack,
-                style: textTheme.headlineLarge,
-              ),
-
-              const SizedBox(height: AppSpacing.xs),
-
-              Text(
-                l10n.signInToSyncAcrossDevices,
-                style: textTheme.bodyMedium?.copyWith(
-                  color: isDark
-                      ? AppColors.textLightSecondary
-                      : AppColors.textSecondary,
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.xl),
-
-              // Email Field
-              Text(l10n.email, style: textTheme.labelLarge),
-              const SizedBox(height: AppSpacing.sm),
-              ValueListenableBuilder(
-                valueListenable: emailController,
-                builder: (context, value, child) {
-                  return TextField(
-                    controller: emailController,
-                    decoration: InputDecoration(
-                      hintText: l10n.emailExample,
-                      prefixIcon: const Icon(Icons.email_outlined),
-                      suffixIcon: value.text.isNotEmpty
-                          ? IconButton(
-                              tooltip: l10n.clear,
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                emailController.clear();
-                                emailPersistence.clearEmail();
-                              },
-                            )
-                          : null,
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    textInputAction: TextInputAction.next,
-                    enabled: !isLoading.value,
-                  );
-                },
-              ),
-
-              const SizedBox(height: AppSpacing.lg),
-
-              // Password Field
-              Text(l10n.password, style: textTheme.labelLarge),
-              const SizedBox(height: AppSpacing.sm),
-              TextField(
-                controller: passwordController,
-                decoration: InputDecoration(
-                  hintText: l10n.enterYourPassword,
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  suffixIcon: IconButton(
-                    tooltip: obscurePassword.value
-                        ? l10n.showPassword
-                        : l10n.hidePassword,
-                    icon: Icon(
-                      obscurePassword.value
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
-                    ),
-                    onPressed: () {
-                      obscurePassword.value = !obscurePassword.value;
-                    },
-                  ),
-                ),
-                obscureText: obscurePassword.value,
-                textInputAction: TextInputAction.done,
-                enabled: !isLoading.value,
-                onSubmitted: (_) => handleSignIn(),
-              ),
-
-              const SizedBox(height: AppSpacing.sm),
-
-              // Forgot Password Link
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: isLoading.value ? null : handleForgotPassword,
-                  child: Text(l10n.forgotPassword),
-                ),
-              ),
-
-              // Error Message
-              if (errorMessage.value != null) ...[
-                const SizedBox(height: AppSpacing.sm),
+                // Brand icon
                 Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
+                  width: 52,
+                  height: 52,
                   decoration: BoxDecoration(
-                    color: (isDark ? AppColors.errorDark : AppColors.error)
-                        .withValues(alpha: isDark ? 0.18 : 0.08),
+                    color: colorScheme.primary,
                     borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        color: isDark ? AppColors.errorDark : AppColors.error,
+                  child: Icon(
+                    Icons.account_balance_wallet_outlined,
+                    color: colorScheme.onPrimary,
+                    size: 26,
+                  ),
+                ),
+
+                const SizedBox(height: AppSpacing.xl),
+
+                Text(
+                  l10n.welcomeBack,
+                  style: textTheme.headlineLarge,
+                ),
+
+                const SizedBox(height: AppSpacing.xs),
+
+                Text(
+                  l10n.signInToSyncAcrossDevices,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: isDark
+                        ? AppColors.textLightSecondary
+                        : AppColors.textSecondary,
+                  ),
+                ),
+
+                const SizedBox(height: AppSpacing.xl),
+
+                // Email Field
+                Text(l10n.email, style: textTheme.labelLarge),
+                const SizedBox(height: AppSpacing.sm),
+                ValueListenableBuilder(
+                  valueListenable: emailController,
+                  builder: (context, value, child) {
+                    return TextField(
+                      controller: emailController,
+                      decoration: InputDecoration(
+                        hintText: l10n.emailExample,
+                        prefixIcon: const Icon(Icons.email_outlined),
+                        suffixIcon: value.text.isNotEmpty
+                            ? IconButton(
+                                tooltip: l10n.clear,
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  emailController.clear();
+                                  emailPersistence.clearEmail();
+                                },
+                              )
+                            : null,
                       ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: Text(
-                          errorMessage.value!,
-                          style: textTheme.bodyMedium?.copyWith(
-                            color: isDark
-                                ? AppColors.errorDark
-                                : AppColors.error,
+                      keyboardType: TextInputType.emailAddress,
+                      autofillHints: const [AutofillHints.email],
+                      textInputAction: TextInputAction.next,
+                      enabled: !isLoading.value,
+                    );
+                  },
+                ),
+
+                const SizedBox(height: AppSpacing.lg),
+
+                // Password Field
+                Text(l10n.password, style: textTheme.labelLarge),
+                const SizedBox(height: AppSpacing.sm),
+                TextField(
+                  controller: passwordController,
+                  decoration: InputDecoration(
+                    hintText: l10n.enterYourPassword,
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      tooltip: obscurePassword.value
+                          ? l10n.showPassword
+                          : l10n.hidePassword,
+                      icon: Icon(
+                        obscurePassword.value
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                      ),
+                      onPressed: () {
+                        obscurePassword.value = !obscurePassword.value;
+                      },
+                    ),
+                  ),
+                  obscureText: obscurePassword.value,
+                  autofillHints: const [AutofillHints.password],
+                  textInputAction: TextInputAction.done,
+                  enabled: !isLoading.value,
+                  onSubmitted: (_) => handleSignIn(),
+                ),
+
+                const SizedBox(height: AppSpacing.sm),
+
+                // Forgot Password Link
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: isLoading.value ? null : handleForgotPassword,
+                    child: Text(l10n.forgotPassword),
+                  ),
+                ),
+
+                // Error Message
+                if (errorMessage.value != null) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: (isDark ? AppColors.errorDark : AppColors.error)
+                          .withValues(alpha: isDark ? 0.18 : 0.08),
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.radiusCard),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          color: isDark ? AppColors.errorDark : AppColors.error,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Text(
+                            errorMessage.value!,
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: isDark
+                                  ? AppColors.errorDark
+                                  : AppColors.error,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: AppSpacing.lg),
+
+                // Sign In Button
+                AppButton.prominent(
+                  text: l10n.signIn,
+                  isLoading: isLoading.value,
+                  fullWidth: true,
+                  onPressed: isLoading.value ? null : handleSignIn,
+                ),
+
+                const SizedBox(height: AppSpacing.xl),
+
+                // Sign Up Link
+                Center(
+                  child: TextButton.icon(
+                    onPressed: isLoading.value
+                        ? null
+                        : () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const SignUpScreen(),
+                              ),
+                            );
+                          },
+                    icon: const Icon(
+                      Icons.person_add_outlined,
+                      size: AppSpacing.iconSizeXs,
+                    ),
+                    label: Text(l10n.createNewAccount),
                   ),
                 ),
               ],
-
-              const SizedBox(height: AppSpacing.lg),
-
-              // Sign In Button
-              AppButton.prominent(
-                text: l10n.signIn,
-                isLoading: isLoading.value,
-                fullWidth: true,
-                onPressed: isLoading.value ? null : handleSignIn,
-              ),
-
-              const SizedBox(height: AppSpacing.xl),
-
-              // Sign Up Link
-              Center(
-                child: TextButton.icon(
-                  onPressed: isLoading.value
-                      ? null
-                      : () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const SignUpScreen(),
-                            ),
-                          );
-                        },
-                  icon: const Icon(
-                    Icons.person_add_outlined,
-                    size: AppSpacing.iconSizeXs,
-                  ),
-                  label: Text(l10n.createNewAccount),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  String _getErrorMessage(AppLocalizations l10n, String error) {
+  String _getErrorMessage(AppLocalizations l10n, Object exception) {
+    switch (authErrorCode(exception)) {
+      case 'invalid_credentials':
+        return l10n.invalidEmailOrPassword;
+      case 'email_not_confirmed':
+        return l10n.verifyEmailBeforeSignIn;
+      case 'over_request_rate_limit':
+        return l10n.tooManyAttempts;
+    }
+    final error = exception.toString();
     if (error.contains('Invalid login credentials')) {
       return l10n.invalidEmailOrPassword;
     } else if (error.contains('Email not confirmed')) {
@@ -384,9 +402,5 @@ class SignInScreen extends HookConsumerWidget {
       return l10n.tooManyAttempts;
     }
     return l10n.signInFailed;
-  }
-
-  bool _isValidEmail(String email) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
   }
 }

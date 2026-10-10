@@ -52,7 +52,7 @@ class AppRouter {
       case '/home':
         return AppAnimations.fadeRoute(const HomeScreen());
       case '/add-transaction':
-        final args = settings.arguments as Map<String, dynamic>?;
+        final args = _argument<Map<String, dynamic>>(settings);
         final initialType = args?['type'] as model.TransactionType?;
         return AppAnimations.slideRoute(
           AddTransactionScreen(initialType: initialType),
@@ -60,24 +60,27 @@ class AppRouter {
       case '/transactions':
         return AppAnimations.slideRoute(const TransactionsScreen());
       case '/edit-transaction':
-        final transactionId = settings.arguments as String;
+        final transactionId = _argument<String>(settings);
+        if (transactionId == null) return _notFound(settings);
         return AppAnimations.slideRoute(
           EditTransactionScreen(transactionId: transactionId),
         );
       case '/transaction-detail':
-        final transactionId = settings.arguments as String;
+        final transactionId = _argument<String>(settings);
+        if (transactionId == null) return _notFound(settings);
         return AppAnimations.slideRoute(
           TransactionDetailScreen(transactionId: transactionId),
         );
       case '/budgets':
         return AppAnimations.slideRoute(const BudgetsScreen());
       case '/budget-detail':
-        final budgetId = settings.arguments as String;
+        final budgetId = _argument<String>(settings);
+        if (budgetId == null) return _notFound(settings);
         return AppAnimations.slideRoute(
           BudgetDetailScreen(budgetId: budgetId),
         );
       case '/budget-edit':
-        final budget = settings.arguments as Budget?;
+        final budget = _argument<Budget>(settings);
         return AppAnimations.slideRoute(
           BudgetEditScreen(budget: budget),
         );
@@ -120,7 +123,7 @@ class AppRouter {
       case '/reports':
         return AppAnimations.slideRoute(const ReportsScreen());
       case '/recurring-transactions':
-        final args = settings.arguments as Map<String, dynamic>?;
+        final args = _argument<Map<String, dynamic>>(settings);
         final highlightedOccurrenceId = args?['occurrenceId'] as String?;
         return AppAnimations.slideRoute(
           RecurringTransactionsScreen(
@@ -128,7 +131,7 @@ class AppRouter {
           ),
         );
       case '/recurring-transaction-edit':
-        final recurringTransactionId = settings.arguments as String?;
+        final recurringTransactionId = _argument<String>(settings);
         return AppAnimations.slideRoute(
           RecurringTransactionEditScreen(
             recurringTransactionId: recurringTransactionId,
@@ -143,12 +146,13 @@ class AppRouter {
       case '/workspace-create':
         return AppAnimations.slideRoute(const CreateWorkspaceScreen());
       case '/workspace-detail':
-        final workspaceId = settings.arguments as String?;
+        final workspaceId = _argument<String>(settings);
         return AppAnimations.slideRoute(
           WorkspaceDetailScreen(workspaceId: workspaceId),
         );
       case '/workspace-invite-preview':
-        final token = settings.arguments as String;
+        final token = _argument<String>(settings);
+        if (token == null) return _notFound(settings);
         return AppAnimations.slideRoute(
           WorkspaceInvitePreviewScreen(token: token),
         );
@@ -157,20 +161,29 @@ class AppRouter {
       case '/transaction-management':
         return AppAnimations.slideRoute(const TransactionManagementScreen());
       default:
-        return AppAnimations.fadeRoute(
-          Scaffold(
-            body: Builder(
-              builder: (context) => Center(
-                child: Text(
-                  AppLocalizations.of(context)?.routeNotFound(
-                        settings.name ?? '',
-                      ) ??
-                      'No route defined for ${settings.name}',
-                ),
-              ),
+        return _notFound(settings);
+    }
+  }
+
+  static T? _argument<T>(RouteSettings settings) {
+    final arguments = settings.arguments;
+    return arguments is T ? arguments : null;
+  }
+
+  static Route<dynamic> _notFound(RouteSettings settings) {
+    return AppAnimations.fadeRoute(
+      Scaffold(
+        body: Builder(
+          builder: (context) => Center(
+            child: Text(
+              AppLocalizations.of(context)?.routeNotFound(
+                    settings.name ?? '',
+                  ) ??
+                  'No route defined for ${settings.name}',
             ),
           ),
-        );
-    }
+        ),
+      ),
+    );
   }
 }

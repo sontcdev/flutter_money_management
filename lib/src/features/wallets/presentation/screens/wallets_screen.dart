@@ -126,6 +126,14 @@ class WalletsScreen extends ConsumerWidget {
                           onTap: canManageContent
                               ? () => openEditor(wallets[i])
                               : null,
+                          onArchive: canManageContent
+                              ? () => _archiveWallet(
+                                    context: context,
+                                    ref: ref,
+                                    l10n: l10n,
+                                    wallet: wallets[i],
+                                  )
+                              : null,
                           onDelete: canManageContent
                               ? () => _deleteWallet(
                                     context: context,
@@ -169,6 +177,8 @@ class WalletsScreen extends ConsumerWidget {
       builder: (context) => ConfirmDeleteDialog(
         title: l10n.deleteWallet,
         message: l10n.deleteWalletConfirm,
+        itemName: wallet.name,
+        consequence: l10n.deleteWalletArchiveHint,
       ),
     );
     if (confirm != true) {
@@ -201,6 +211,49 @@ class WalletsScreen extends ConsumerWidget {
       }
     }
   }
+
+  Future<void> _archiveWallet({
+    required BuildContext context,
+    required WidgetRef ref,
+    required AppLocalizations l10n,
+    required Wallet wallet,
+  }) async {
+    final repository = ref.read(walletRepositoryProvider);
+    void refresh() {
+      ref.invalidate(walletsProvider);
+      ref.invalidate(allWalletsIncludingArchivedProvider);
+      ref.invalidate(walletBalancesProvider);
+    }
+
+    try {
+      await repository.archiveWallet(wallet);
+      refresh();
+      if (context.mounted) {
+        showAppSnackBar(
+          context,
+          l10n.walletArchived,
+          type: AppSnackBarType.success,
+          onUndo: () async {
+            await repository.archiveWallet(wallet, archived: false);
+            refresh();
+          },
+        );
+      }
+    } catch (e, stackTrace) {
+      if (context.mounted) {
+        await ErrorReportHelper.handleApiError(
+          context: context,
+          ref: ref,
+          error: e,
+          stackTrace: stackTrace,
+          feature: 'wallet',
+          action: 'archive_wallet',
+          screen: 'wallets_screen',
+          extraContext: {'wallet_id': wallet.id},
+        );
+      }
+    }
+  }
 }
 
 class _WalletRow extends StatelessWidget {
@@ -208,12 +261,14 @@ class _WalletRow extends StatelessWidget {
     required this.wallet,
     required this.balance,
     this.onTap,
+    this.onArchive,
     this.onDelete,
   });
 
   final Wallet wallet;
   final int balance;
   final VoidCallback? onTap;
+  final VoidCallback? onArchive;
   final VoidCallback? onDelete;
 
   @override
@@ -257,6 +312,15 @@ class _WalletRow extends StatelessWidget {
               color: balance < 0 ? theme.colorScheme.error : null,
             ),
           ),
+          if (onArchive != null)
+            IconButton(
+              tooltip: l10n.archiveWallet,
+              icon: const Icon(
+                Icons.archive_outlined,
+                size: AppSpacing.iconSizeSm,
+              ),
+              onPressed: onArchive,
+            ),
           if (onDelete != null)
             IconButton(
               tooltip: l10n.deleteWallet,

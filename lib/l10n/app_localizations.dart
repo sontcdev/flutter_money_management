@@ -4110,6 +4110,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{percent} vs previous period'**
   String vsPreviousPeriod(String percent);
+
+  /// No description provided for @workspaceRolesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Workspace roles'**
+  String get workspaceRolesTitle;
+
+  /// No description provided for @workspaceRoleOwnerDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner: full control, including deleting the workspace.'**
+  String get workspaceRoleOwnerDesc;
+
+  /// No description provided for @workspaceRoleAdminDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin: manages members, invites, categories, wallets and budgets.'**
+  String get workspaceRoleAdminDesc;
+
+  /// No description provided for @workspaceRoleMemberDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Member: views shared data and adds or edits transactions.'**
+  String get workspaceRoleMemberDesc;
+
+  /// No description provided for @walletArchived.
+  ///
+  /// In en, this message translates to:
+  /// **'Wallet archived'**
+  String get walletArchived;
+
+  /// No description provided for @deleteWalletArchiveHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting is permanent. Archive the wallet instead to hide it and keep its history.'**
+  String get deleteWalletArchiveHint;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

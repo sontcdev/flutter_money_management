@@ -726,5 +726,11 @@
   "nextMonth": "翌月",
   "previousPeriod": "前の期間",
   "nextPeriod": "次の期間",
-  "vsPreviousPeriod": "前の期間比 {percent}"
+  "vsPreviousPeriod": "前の期間比 {percent}",
+  "workspaceRolesTitle": "ワークスペースの役割",
+  "workspaceRoleOwnerDesc": "オーナー：ワークスペースの削除を含むすべての操作が可能です。",
+  "workspaceRoleAdminDesc": "管理者：メンバー、招待、カテゴリ、ウォレット、予算を管理します。",
+  "workspaceRoleMemberDesc": "メンバー：共有データを閲覧し、取引を追加・編集できます。",
+  "walletArchived": "ウォレットをアーカイブしました",
+  "deleteWalletArchiveHint": "削除は元に戻せません。履歴を残して非表示にするにはアーカイブしてください。"
 }

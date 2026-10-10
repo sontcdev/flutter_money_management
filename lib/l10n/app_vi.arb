@@ -726,5 +726,11 @@
   "nextMonth": "Tháng sau",
   "previousPeriod": "Kỳ trước",
   "nextPeriod": "Kỳ sau",
-  "vsPreviousPeriod": "{percent} so với kỳ trước"
+  "vsPreviousPeriod": "{percent} so với kỳ trước",
+  "workspaceRolesTitle": "Vai trò trong không gian làm việc",
+  "workspaceRoleOwnerDesc": "Chủ sở hữu: toàn quyền, bao gồm xóa không gian làm việc.",
+  "workspaceRoleAdminDesc": "Quản trị viên: quản lý thành viên, lời mời, danh mục, ví và ngân sách.",
+  "workspaceRoleMemberDesc": "Thành viên: xem dữ liệu chung, thêm và sửa giao dịch.",
+  "walletArchived": "Đã lưu trữ ví",
+  "deleteWalletArchiveHint": "Xóa là vĩnh viễn. Hãy lưu trữ ví để ẩn nó mà vẫn giữ lịch sử."
 }

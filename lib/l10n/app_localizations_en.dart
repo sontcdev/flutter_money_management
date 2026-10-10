@@ -2151,4 +2151,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String vsPreviousPeriod(String percent) {
     return '$percent vs previous period';
   }
+
+  @override
+  String get workspaceRolesTitle => 'Workspace roles';
+
+  @override
+  String get workspaceRoleOwnerDesc => 'Owner: full control, including deleting the workspace.';
+
+  @override
+  String get workspaceRoleAdminDesc => 'Admin: manages members, invites, categories, wallets and budgets.';
+
+  @override
+  String get workspaceRoleMemberDesc => 'Member: views shared data and adds or edits transactions.';
+
+  @override
+  String get walletArchived => 'Wallet archived';
+
+  @override
+  String get deleteWalletArchiveHint => 'Deleting is permanent. Archive the wallet instead to hide it and keep its history.';
 }

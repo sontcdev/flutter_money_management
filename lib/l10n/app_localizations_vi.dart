@@ -2147,4 +2147,22 @@ class AppLocalizationsVi extends AppLocalizations {
   String vsPreviousPeriod(String percent) {
     return '$percent so với kỳ trước';
   }
+
+  @override
+  String get workspaceRolesTitle => 'Vai trò trong không gian làm việc';
+
+  @override
+  String get workspaceRoleOwnerDesc => 'Chủ sở hữu: toàn quyền, bao gồm xóa không gian làm việc.';
+
+  @override
+  String get workspaceRoleAdminDesc => 'Quản trị viên: quản lý thành viên, lời mời, danh mục, ví và ngân sách.';
+
+  @override
+  String get workspaceRoleMemberDesc => 'Thành viên: xem dữ liệu chung, thêm và sửa giao dịch.';
+
+  @override
+  String get walletArchived => 'Đã lưu trữ ví';
+
+  @override
+  String get deleteWalletArchiveHint => 'Xóa là vĩnh viễn. Hãy lưu trữ ví để ẩn nó mà vẫn giữ lịch sử.';
 }

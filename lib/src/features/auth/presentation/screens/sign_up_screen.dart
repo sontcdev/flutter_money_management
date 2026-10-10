@@ -3,11 +3,13 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/auth/providers/auth_providers.dart';
+import 'package:flutter_money_management/src/features/auth/services/auth_error_code.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/utils/app_logger.dart';
+import 'package:flutter_money_management/src/utils/email_validator.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
 class SignUpScreen extends HookConsumerWidget {
@@ -40,7 +42,7 @@ class SignUpScreen extends HookConsumerWidget {
         return;
       }
 
-      if (!_isValidEmail(emailController.text.trim())) {
+      if (!isValidEmail(emailController.text.trim())) {
         errorMessage.value = l10n.enterValidEmail;
         return;
       }
@@ -119,7 +121,7 @@ class SignUpScreen extends HookConsumerWidget {
           error: e,
           stackTrace: stackTrace,
         );
-        errorMessage.value = _getErrorMessage(l10n, e.toString());
+        errorMessage.value = _getErrorMessage(l10n, e);
 
         if (context.mounted) {
           await ErrorReportHelper.handleApiError(
@@ -158,216 +160,228 @@ class SignUpScreen extends HookConsumerWidget {
             AppSpacing.xl,
             AppSpacing.xl,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: AppSpacing.sm),
+          child: AutofillGroup(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: AppSpacing.sm),
 
-              // Back button
-              IconButton(
-                tooltip: l10n.back,
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.arrow_back),
-                style: IconButton.styleFrom(
-                  side: BorderSide(color: colorScheme.outline, width: 1.5),
-                  shape: const CircleBorder(),
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.lg),
-
-              Text(
-                l10n.createAccount,
-                style: textTheme.headlineLarge,
-              ),
-
-              const SizedBox(height: AppSpacing.xs),
-
-              Text(
-                l10n.createAccountToSync,
-                style: textTheme.bodyMedium?.copyWith(color: secondaryText),
-              ),
-
-              const SizedBox(height: AppSpacing.xs),
-
-              Text(
-                l10n.verifyEmailBeforeSignInHint,
-                style: textTheme.bodySmall?.copyWith(
-                  color: faintText,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.xl),
-
-              // Username Field
-              Text(l10n.displayNameOptional, style: textTheme.labelLarge),
-              const SizedBox(height: AppSpacing.sm),
-              TextField(
-                controller: displayNameController,
-                decoration: InputDecoration(
-                  hintText: l10n.displayNameHint,
-                  prefixIcon: const Icon(Icons.person_outline),
-                ),
-                textInputAction: TextInputAction.next,
-                enabled: !isLoading.value,
-              ),
-
-              const SizedBox(height: AppSpacing.lg),
-
-              // Email Field
-              Text(l10n.email, style: textTheme.labelLarge),
-              const SizedBox(height: AppSpacing.sm),
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  hintText: l10n.emailExample,
-                  prefixIcon: const Icon(Icons.email_outlined),
-                ),
-                keyboardType: TextInputType.emailAddress,
-                textInputAction: TextInputAction.next,
-                enabled: !isLoading.value,
-              ),
-
-              const SizedBox(height: AppSpacing.lg),
-
-              // Password Field
-              Text(l10n.password, style: textTheme.labelLarge),
-              const SizedBox(height: AppSpacing.sm),
-              TextField(
-                controller: passwordController,
-                decoration: InputDecoration(
-                  hintText: l10n.atLeastSixCharacters,
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  suffixIcon: IconButton(
-                    tooltip: obscurePassword.value
-                        ? l10n.showPassword
-                        : l10n.hidePassword,
-                    icon: Icon(
-                      obscurePassword.value
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
-                    ),
-                    onPressed: () {
-                      obscurePassword.value = !obscurePassword.value;
-                    },
+                // Back button
+                IconButton(
+                  tooltip: l10n.back,
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.arrow_back),
+                  style: IconButton.styleFrom(
+                    side: BorderSide(color: colorScheme.outline, width: 1.5),
+                    shape: const CircleBorder(),
                   ),
                 ),
-                obscureText: obscurePassword.value,
-                textInputAction: TextInputAction.next,
-                enabled: !isLoading.value,
-              ),
 
-              const SizedBox(height: AppSpacing.lg),
-
-              // Confirm Password Field
-              Text(l10n.confirmPassword, style: textTheme.labelLarge),
-              const SizedBox(height: AppSpacing.sm),
-              TextField(
-                controller: confirmPasswordController,
-                decoration: InputDecoration(
-                  hintText: l10n.reenterYourPassword,
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  suffixIcon: IconButton(
-                    tooltip: obscureConfirmPassword.value
-                        ? l10n.showPassword
-                        : l10n.hidePassword,
-                    icon: Icon(
-                      obscureConfirmPassword.value
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
-                    ),
-                    onPressed: () {
-                      obscureConfirmPassword.value =
-                          !obscureConfirmPassword.value;
-                    },
-                  ),
-                ),
-                obscureText: obscureConfirmPassword.value,
-                textInputAction: TextInputAction.done,
-                enabled: !isLoading.value,
-                onSubmitted: (_) => handleSignUp(),
-              ),
-
-              // Error Message
-              if (errorMessage.value != null) ...[
                 const SizedBox(height: AppSpacing.lg),
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: (isDark ? AppColors.errorDark : AppColors.error)
-                        .withValues(alpha: isDark ? 0.18 : 0.08),
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+
+                Text(
+                  l10n.createAccount,
+                  style: textTheme.headlineLarge,
+                ),
+
+                const SizedBox(height: AppSpacing.xs),
+
+                Text(
+                  l10n.createAccountToSync,
+                  style: textTheme.bodyMedium?.copyWith(color: secondaryText),
+                ),
+
+                const SizedBox(height: AppSpacing.xs),
+
+                Text(
+                  l10n.verifyEmailBeforeSignInHint,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: faintText,
+                    fontStyle: FontStyle.italic,
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        color: isDark ? AppColors.errorDark : AppColors.error,
+                ),
+
+                const SizedBox(height: AppSpacing.xl),
+
+                // Username Field
+                Text(l10n.displayNameOptional, style: textTheme.labelLarge),
+                const SizedBox(height: AppSpacing.sm),
+                TextField(
+                  controller: displayNameController,
+                  decoration: InputDecoration(
+                    hintText: l10n.displayNameHint,
+                    prefixIcon: const Icon(Icons.person_outline),
+                  ),
+                  autofillHints: const [AutofillHints.newUsername],
+                  textInputAction: TextInputAction.next,
+                  enabled: !isLoading.value,
+                ),
+
+                const SizedBox(height: AppSpacing.lg),
+
+                // Email Field
+                Text(l10n.email, style: textTheme.labelLarge),
+                const SizedBox(height: AppSpacing.sm),
+                TextField(
+                  controller: emailController,
+                  decoration: InputDecoration(
+                    hintText: l10n.emailExample,
+                    prefixIcon: const Icon(Icons.email_outlined),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                  autofillHints: const [AutofillHints.email],
+                  textInputAction: TextInputAction.next,
+                  enabled: !isLoading.value,
+                ),
+
+                const SizedBox(height: AppSpacing.lg),
+
+                // Password Field
+                Text(l10n.password, style: textTheme.labelLarge),
+                const SizedBox(height: AppSpacing.sm),
+                TextField(
+                  controller: passwordController,
+                  decoration: InputDecoration(
+                    hintText: l10n.atLeastSixCharacters,
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      tooltip: obscurePassword.value
+                          ? l10n.showPassword
+                          : l10n.hidePassword,
+                      icon: Icon(
+                        obscurePassword.value
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
                       ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: Text(
-                          errorMessage.value!,
-                          style: textTheme.bodyMedium?.copyWith(
-                            color: isDark
-                                ? AppColors.errorDark
-                                : AppColors.error,
+                      onPressed: () {
+                        obscurePassword.value = !obscurePassword.value;
+                      },
+                    ),
+                  ),
+                  obscureText: obscurePassword.value,
+                  autofillHints: const [AutofillHints.newPassword],
+                  textInputAction: TextInputAction.next,
+                  enabled: !isLoading.value,
+                ),
+
+                const SizedBox(height: AppSpacing.lg),
+
+                // Confirm Password Field
+                Text(l10n.confirmPassword, style: textTheme.labelLarge),
+                const SizedBox(height: AppSpacing.sm),
+                TextField(
+                  controller: confirmPasswordController,
+                  decoration: InputDecoration(
+                    hintText: l10n.reenterYourPassword,
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      tooltip: obscureConfirmPassword.value
+                          ? l10n.showPassword
+                          : l10n.hidePassword,
+                      icon: Icon(
+                        obscureConfirmPassword.value
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                      ),
+                      onPressed: () {
+                        obscureConfirmPassword.value =
+                            !obscureConfirmPassword.value;
+                      },
+                    ),
+                  ),
+                  obscureText: obscureConfirmPassword.value,
+                  autofillHints: const [AutofillHints.newPassword],
+                  textInputAction: TextInputAction.done,
+                  enabled: !isLoading.value,
+                  onSubmitted: (_) => handleSignUp(),
+                ),
+
+                // Error Message
+                if (errorMessage.value != null) ...[
+                  const SizedBox(height: AppSpacing.lg),
+                  Container(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    decoration: BoxDecoration(
+                      color: (isDark ? AppColors.errorDark : AppColors.error)
+                          .withValues(alpha: isDark ? 0.18 : 0.08),
+                      borderRadius:
+                          BorderRadius.circular(AppSpacing.radiusCard),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          color: isDark ? AppColors.errorDark : AppColors.error,
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Text(
+                            errorMessage.value!,
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: isDark
+                                  ? AppColors.errorDark
+                                  : AppColors.error,
+                            ),
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: AppSpacing.xl),
+
+                // Sign Up Button
+                AppButton.prominent(
+                  text: l10n.createAccount,
+                  isLoading: isLoading.value,
+                  fullWidth: true,
+                  icon: isLoading.value ? null : Icons.person_add_outlined,
+                  onPressed: isLoading.value ? null : handleSignUp,
+                ),
+
+                const SizedBox(height: AppSpacing.xl),
+
+                // Sign In Link
+                Center(
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(
+                        l10n.alreadyHaveAccount,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: secondaryText,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: isLoading.value
+                            ? null
+                            : () => Navigator.of(context).pop(),
+                        child: Text(l10n.signIn),
                       ),
                     ],
                   ),
                 ),
               ],
-
-              const SizedBox(height: AppSpacing.xl),
-
-              // Sign Up Button
-              AppButton.prominent(
-                text: l10n.createAccount,
-                isLoading: isLoading.value,
-                fullWidth: true,
-                icon: isLoading.value ? null : Icons.person_add_outlined,
-                onPressed: isLoading.value ? null : handleSignUp,
-              ),
-
-              const SizedBox(height: AppSpacing.xl),
-
-              // Sign In Link
-              Center(
-                child: Wrap(
-                  alignment: WrapAlignment.center,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Text(
-                      l10n.alreadyHaveAccount,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: secondaryText,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: isLoading.value
-                          ? null
-                          : () => Navigator.of(context).pop(),
-                      child: Text(l10n.signIn),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  bool _isValidEmail(String email) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
-  }
-
-  String _getErrorMessage(AppLocalizations l10n, String error) {
-    final lower = error.toLowerCase();
+  String _getErrorMessage(AppLocalizations l10n, Object exception) {
+    switch (authErrorCode(exception)) {
+      case 'user_already_exists':
+      case 'email_exists':
+        return l10n.emailAlreadyRegistered;
+      case 'email_address_invalid':
+        return l10n.enterValidEmailAddress;
+      case 'weak_password':
+        return l10n.weakPassword;
+    }
+    final lower = exception.toString().toLowerCase();
     if (lower.contains('tên người dùng') ||
         lower.contains('username') ||
         lower.contains('display_name')) {
