@@ -29,7 +29,7 @@ class CreateWorkspaceScreen extends HookConsumerWidget {
       if (nameController.text.trim().isEmpty) {
         showAppSnackBar(
           context,
-          'Workspace name is required',
+          l10n.workspaceNameRequired,
           type: AppSnackBarType.error,
         );
         return;
@@ -73,30 +73,30 @@ class CreateWorkspaceScreen extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Workspace')),
+      appBar: AppBar(title: Text(l10n.createWorkspace)),
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
         children: [
           Text(
-            'Create a shared workspace for your household or group.',
+            l10n.createWorkspaceDesc,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: context.semanticColors.textFaint,
                 ),
           ),
           const SizedBox(height: AppSpacing.lg),
           AppInput(
-            label: 'Workspace name',
+            label: l10n.workspaceNameLabel,
             controller: nameController,
           ),
           const SizedBox(height: AppSpacing.lg),
           AppInput(
-            label: 'Description',
+            label: l10n.description,
             controller: descriptionController,
             maxLines: 3,
           ),
           const SizedBox(height: AppSpacing.xl),
           AppButton(
-            text: 'Create workspace',
+            text: l10n.createWorkspace,
             onPressed: submit,
             isLoading: isLoading.value,
           ),

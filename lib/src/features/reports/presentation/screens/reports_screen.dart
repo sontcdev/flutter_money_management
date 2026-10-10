@@ -124,7 +124,8 @@ class ReportsScreen extends HookConsumerWidget {
                               BorderRadius.circular(AppSpacing.radiusFull),
                         ),
                         child: Text(
-                          '${l10n.month} ${customMonth.value!.month}/${customMonth.value!.year}',
+                          DateFormat.yMMMM(l10n.localeName)
+                              .format(customMonth.value!),
                           style: Theme.of(context)
                               .textTheme
                               .labelMedium
@@ -304,6 +305,11 @@ class ReportsScreen extends HookConsumerWidget {
                           labelFormatter: (value) => NumberFormat.compact(
                             locale: l10n.localeName,
                           ).format(value),
+                          valueFormatter: (value) =>
+                              CurrencyFormatter.formatVND(
+                            value,
+                            locale: l10n.localeName,
+                          ),
                         ),
                       ],
                     ),
@@ -1139,7 +1145,7 @@ class CategoryTransactionsScreen extends ConsumerWidget {
         final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
         startDate = cycleRange.start;
         endDate = cycleRange.end;
-        periodLabel = '${l10n.month} ${now.month}/${now.year}';
+        periodLabel = DateFormat.yMMMM(l10n.localeName).format(now);
         break;
       case 1: // Custom month - use cycle dates
         if (customMonth != null) {
@@ -1147,13 +1153,12 @@ class CategoryTransactionsScreen extends ConsumerWidget {
               CycleUtils.getCycleRangeForDate(customMonth!, monthStartDay);
           startDate = cycleRange.start;
           endDate = cycleRange.end;
-          periodLabel =
-              '${l10n.month} ${customMonth!.month}/${customMonth!.year}';
+          periodLabel = DateFormat.yMMMM(l10n.localeName).format(customMonth!);
         } else {
           final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
           startDate = cycleRange.start;
           endDate = cycleRange.end;
-          periodLabel = '${l10n.month} ${now.month}/${now.year}';
+          periodLabel = DateFormat.yMMMM(l10n.localeName).format(now);
         }
         break;
       case 2: // Custom year
@@ -1166,7 +1171,7 @@ class CategoryTransactionsScreen extends ConsumerWidget {
         final cycleRange = CycleUtils.getCurrentCycleRange(monthStartDay);
         startDate = cycleRange.start;
         endDate = cycleRange.end;
-        periodLabel = '${l10n.month} ${now.month}/${now.year}';
+        periodLabel = DateFormat.yMMMM(l10n.localeName).format(now);
     }
 
     return Scaffold(
@@ -1808,20 +1813,10 @@ class _CustomPeriodPickerSheet extends HookWidget {
     final selectedYear = useState(initialMonth.year);
     final now = DateTime.now();
     final years = List.generate(10, (i) => now.year - 5 + i);
-    final months = [
-      '${l10n.month} 1',
-      '${l10n.month} 2',
-      '${l10n.month} 3',
-      '${l10n.month} 4',
-      '${l10n.month} 5',
-      '${l10n.month} 6',
-      '${l10n.month} 7',
-      '${l10n.month} 8',
-      '${l10n.month} 9',
-      '${l10n.month} 10',
-      '${l10n.month} 11',
-      '${l10n.month} 12',
-    ];
+    final months = List.generate(
+      12,
+      (i) => DateFormat.MMMM(l10n.localeName).format(DateTime(2000, i + 1)),
+    );
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.55,

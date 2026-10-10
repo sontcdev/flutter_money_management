@@ -109,7 +109,7 @@ class SettingsScreen extends HookConsumerWidget {
                     tint: warningColor,
                     title: l10n.leaveWorkspace,
                     titleColor: warningColor,
-                    subtitle: 'Leave the current shared workspace',
+                    subtitle: l10n.leaveWorkspaceSubtitle,
                     trailing: const SizedBox.shrink(),
                     onTap: () => _handleLeaveWorkspace(
                       context,
@@ -541,8 +541,8 @@ class SettingsScreen extends HookConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Leave workspace'),
-        content: const Text('Are you sure you want to leave this workspace?'),
+        title: Text(AppLocalizations.of(context)!.leaveWorkspace),
+        content: Text(AppLocalizations.of(context)!.leaveWorkspaceConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -550,7 +550,7 @@ class SettingsScreen extends HookConsumerWidget {
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Leave'),
+            child: Text(AppLocalizations.of(context)!.leave),
           ),
         ],
       ),

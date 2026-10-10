@@ -1942,4 +1942,112 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get deleteAccountSharedWorkspaces => 'Hãy rời các không gian chung này trước khi xóa tài khoản.';
+
+  @override
+  String get notice => 'Thông báo';
+
+  @override
+  String get errorOccurred => 'Đã có lỗi xảy ra';
+
+  @override
+  String get ok => 'Đồng ý';
+
+  @override
+  String get reportError => 'Phản ánh';
+
+  @override
+  String get errorReportSent => 'Đã gửi báo cáo lỗi thành công. Cảm ơn bạn!';
+
+  @override
+  String get errorReportOffline => 'Không thể gửi báo cáo vì thiết bị chưa kết nối mạng hoặc DNS không phân giải được máy chủ.';
+
+  @override
+  String get errorReportServerUnreachable => 'Không thể gửi báo cáo vì không kết nối được tới máy chủ. Hãy kiểm tra mạng hoặc cấu hình máy chủ.';
+
+  @override
+  String get errorReportFailed => 'Không thể gửi báo cáo lúc này. Vui lòng thử lại sau.';
+
+  @override
+  String get noNetworkConnection => 'Không có kết nối mạng';
+
+  @override
+  String get noNetworkConnectionDesc => 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng rồi thử lại.';
+
+  @override
+  String get signInAgain => 'Đăng nhập lại';
+
+  @override
+  String get leaveWorkspaceSubtitle => 'Rời khỏi không gian làm việc chung hiện tại';
+
+  @override
+  String get createWorkspace => 'Tạo không gian làm việc';
+
+  @override
+  String get createWorkspaceDesc => 'Tạo không gian làm việc chung cho gia đình hoặc nhóm của bạn.';
+
+  @override
+  String get workspaceNameLabel => 'Tên không gian làm việc';
+
+  @override
+  String get workspaceNameRequired => 'Vui lòng nhập tên không gian làm việc';
+
+  @override
+  String get description => 'Mô tả';
+
+  @override
+  String get workspaceDetail => 'Chi tiết không gian làm việc';
+
+  @override
+  String get workspace => 'Không gian làm việc';
+
+  @override
+  String get personal => 'Cá nhân';
+
+  @override
+  String get invalidAmount => 'Số tiền không hợp lệ';
+
+  @override
+  String get createBudgetForCategory => 'Tạo ngân sách cho danh mục này';
+
+  @override
+  String get budgetOnlyForExpense => 'Chỉ áp dụng cho danh mục chi tiêu';
+
+  @override
+  String get budgetPeriod => 'Chu kỳ ngân sách';
+
+  @override
+  String get noteAndReceipt => 'Ghi chú & hóa đơn';
+
+  @override
+  String get needsAttention => 'Cần chú ý';
+
+  @override
+  String upcomingCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sắp đến hạn',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exceededCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count vượt hạn mức',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String nearLimitCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count gần hạn mức',
+    );
+    return '$_temp0';
+  }
 }

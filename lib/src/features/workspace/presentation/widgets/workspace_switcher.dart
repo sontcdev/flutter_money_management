@@ -123,26 +123,29 @@ class WorkspaceSwitcher extends ConsumerWidget {
                 ],
               ),
             ),
-            const PopupMenuItem<String>(
+            PopupMenuItem<String>(
               value: 'detail',
               child: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.dashboard_customize_outlined,
                     size: AppSpacing.iconSizeSm,
                   ),
-                  SizedBox(width: 12),
-                  Text('Workspace detail'),
+                  const SizedBox(width: 12),
+                  Text(l10n.workspaceDetail),
                 ],
               ),
             ),
-            const PopupMenuItem<String>(
+            PopupMenuItem<String>(
               value: 'create',
               child: Row(
                 children: [
-                  Icon(Icons.add_circle_outline, size: AppSpacing.iconSizeSm),
-                  SizedBox(width: 12),
-                  Text('Create workspace'),
+                  const Icon(
+                    Icons.add_circle_outline,
+                    size: AppSpacing.iconSizeSm,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(l10n.createWorkspace),
                 ],
               ),
             ),

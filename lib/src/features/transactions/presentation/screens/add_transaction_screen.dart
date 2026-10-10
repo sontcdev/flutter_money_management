@@ -176,7 +176,12 @@ class AddTransactionScreen extends HookConsumerWidget {
         final receiptService = ref.read(transactionReceiptServiceProvider);
         final amount = CurrencyFormatter.parseVND(amountController.text);
         if (amount == null) {
-          throw const FormatException('Invalid amount format');
+          showAppSnackBar(
+            context,
+            l10n.invalidAmount,
+            type: AppSnackBarType.error,
+          );
+          return;
         }
         final amountCents = CurrencyFormatter.toCents(amount);
 
@@ -483,7 +488,7 @@ class AddTransactionScreen extends HookConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Workspace',
+                      l10n.workspace,
                       style: Theme.of(context).textTheme.labelLarge,
                     ),
                     const SizedBox(height: AppSpacing.sm),
@@ -498,7 +503,7 @@ class AddTransactionScreen extends HookConsumerWidget {
                               value: workspace.id,
                               child: Text(
                                 workspace.type == 'personal'
-                                    ? 'Personal'
+                                    ? l10n.personal
                                     : workspace.name,
                               ),
                             ),
@@ -838,7 +843,7 @@ class AddTransactionScreen extends HookConsumerWidget {
             // Note and Receipt - Optional Details Section
             ExpansionTile(
               title: Text(
-                '${l10n.note} & ${l10n.receipt}',
+                l10n.noteAndReceipt,
                 style: Theme.of(context).textTheme.labelLarge,
               ),
               subtitle: Text(

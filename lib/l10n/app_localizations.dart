@@ -3774,6 +3774,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Leave these shared workspaces before deleting your account.'**
   String get deleteAccountSharedWorkspaces;
+
+  /// No description provided for @notice.
+  ///
+  /// In en, this message translates to:
+  /// **'Notice'**
+  String get notice;
+
+  /// No description provided for @errorOccurred.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong'**
+  String get errorOccurred;
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// No description provided for @reportError.
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get reportError;
+
+  /// No description provided for @errorReportSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Error report sent. Thank you!'**
+  String get errorReportSent;
+
+  /// No description provided for @errorReportOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send the report because the device is offline or the server address could not be resolved.'**
+  String get errorReportOffline;
+
+  /// No description provided for @errorReportServerUnreachable.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send the report because the server is unreachable. Check your network or server configuration.'**
+  String get errorReportServerUnreachable;
+
+  /// No description provided for @errorReportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send the report right now. Please try again later.'**
+  String get errorReportFailed;
+
+  /// No description provided for @noNetworkConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'No network connection'**
+  String get noNetworkConnection;
+
+  /// No description provided for @noNetworkConnectionDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not connect to the server. Check your network connection and try again.'**
+  String get noNetworkConnectionDesc;
+
+  /// No description provided for @signInAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in again'**
+  String get signInAgain;
+
+  /// No description provided for @leaveWorkspaceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave the current shared workspace'**
+  String get leaveWorkspaceSubtitle;
+
+  /// No description provided for @createWorkspace.
+  ///
+  /// In en, this message translates to:
+  /// **'Create workspace'**
+  String get createWorkspace;
+
+  /// No description provided for @createWorkspaceDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a shared workspace for your household or group.'**
+  String get createWorkspaceDesc;
+
+  /// No description provided for @workspaceNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Workspace name'**
+  String get workspaceNameLabel;
+
+  /// No description provided for @workspaceNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Workspace name is required'**
+  String get workspaceNameRequired;
+
+  /// No description provided for @description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get description;
+
+  /// No description provided for @workspaceDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Workspace detail'**
+  String get workspaceDetail;
+
+  /// No description provided for @workspace.
+  ///
+  /// In en, this message translates to:
+  /// **'Workspace'**
+  String get workspace;
+
+  /// No description provided for @personal.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal'**
+  String get personal;
+
+  /// No description provided for @invalidAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid amount'**
+  String get invalidAmount;
+
+  /// No description provided for @createBudgetForCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Create budget for this category'**
+  String get createBudgetForCategory;
+
+  /// No description provided for @budgetOnlyForExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Only available for expense categories'**
+  String get budgetOnlyForExpense;
+
+  /// No description provided for @budgetPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget period'**
+  String get budgetPeriod;
+
+  /// No description provided for @noteAndReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'Note & receipt'**
+  String get noteAndReceipt;
+
+  /// No description provided for @needsAttention.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs attention'**
+  String get needsAttention;
+
+  /// No description provided for @upcomingCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 upcoming} other{{count} upcoming}}'**
+  String upcomingCount(int count);
+
+  /// No description provided for @exceededCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 exceeded} other{{count} exceeded}}'**
+  String exceededCount(int count);
+
+  /// No description provided for @nearLimitCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 near limit} other{{count} near limit}}'**
+  String nearLimitCount(int count);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -86,11 +86,13 @@ class PieChartWidget extends StatelessWidget {
 class BarChartWidget extends StatelessWidget {
   final List<ChartData> data;
   final String Function(double) labelFormatter;
+  final String Function(double)? valueFormatter;
 
   const BarChartWidget({
     super.key,
     required this.data,
     required this.labelFormatter,
+    this.valueFormatter,
   });
 
   @override
@@ -101,14 +103,29 @@ class BarChartWidget extends StatelessWidget {
       );
     }
 
+    final formatValue = valueFormatter ?? labelFormatter;
+
     return AccessibleChart(
       data: data,
-      valueLabel: (item) => labelFormatter(item.value),
+      valueLabel: (item) => formatValue(item.value),
       chart: AspectRatio(
         aspectRatio: 1.5,
         child: BarChart(
           BarChartData(
             alignment: BarChartAlignment.spaceAround,
+            barTouchData: BarTouchData(
+              touchTooltipData: BarTouchTooltipData(
+                tooltipBgColor: Theme.of(context).colorScheme.inverseSurface,
+                getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                  return BarTooltipItem(
+                    formatValue(rod.toY),
+                    Theme.of(context).textTheme.labelMedium!.copyWith(
+                          color: Theme.of(context).colorScheme.onInverseSurface,
+                        ),
+                  );
+                },
+              ),
+            ),
             maxY:
                 data.map((e) => e.value).reduce((a, b) => a > b ? a : b) * 1.2,
             barGroups: data.asMap().entries.map((entry) {

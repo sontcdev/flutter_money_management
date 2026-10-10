@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/reports/presentation/widgets/calendar_grid.dart';
 import 'package:flutter_money_management/src/features/reports/presentation/widgets/summary_bar.dart';
@@ -16,6 +17,7 @@ import 'package:flutter_money_management/src/ui/widgets/confirm_delete_dialog.da
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
 import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/utils/cycle_utils.dart';
+import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 
 /// Check if two dates are the same day
 bool _isSameDay(DateTime a, DateTime b) {
@@ -441,7 +443,7 @@ void _showNoTransactionsMessage(BuildContext context) {
 void _showScrollingToNearestMessage(
     BuildContext context, DateTime nearestDate) {
   final l10n = AppLocalizations.of(context)!;
-  final dateStr = '${nearestDate.day}/${nearestDate.month}';
+  final dateStr = formatLocalizedMonthDay(context, nearestDate);
   ScaffoldMessenger.of(context).clearSnackBars();
   showAppSnackBar(
     context,
@@ -495,7 +497,10 @@ class _MonthYearPickerSheet extends HookWidget {
     final selectedYear = useState(initialMonth.year);
     final now = DateTime.now();
     final years = List.generate(10, (i) => now.year - 5 + i);
-    final months = List.generate(12, (i) => '${l10n.month} ${i + 1}');
+    final months = List.generate(
+      12,
+      (i) => DateFormat.MMMM(l10n.localeName).format(DateTime(2000, i + 1)),
+    );
     final scrollController = useScrollController();
 
     useEffect(() {

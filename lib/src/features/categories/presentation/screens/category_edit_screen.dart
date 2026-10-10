@@ -355,8 +355,8 @@ class CategoryEditScreen extends HookConsumerWidget {
               ),
               child: SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Create budget for this category'),
-                subtitle: const Text('Only available for expense categories'),
+                title: Text(l10n.createBudgetForCategory),
+                subtitle: Text(l10n.budgetOnlyForExpense),
                 value: createBudget.value &&
                     selectedType.value == CategoryType.expense,
                 onChanged: selectedType.value == CategoryType.expense &&
@@ -370,17 +370,17 @@ class CategoryEditScreen extends HookConsumerWidget {
               const SizedBox(height: AppSpacing.lg),
               DropdownButtonFormField<budget_model.PeriodType>(
                 initialValue: budgetPeriod.value,
-                decoration: const InputDecoration(
-                  labelText: 'Budget period',
+                decoration: InputDecoration(
+                  labelText: l10n.budgetPeriod,
                 ),
-                items: const [
+                items: [
                   DropdownMenuItem(
                     value: budget_model.PeriodType.monthly,
-                    child: Text('Monthly'),
+                    child: Text(l10n.monthly),
                   ),
                   DropdownMenuItem(
                     value: budget_model.PeriodType.yearly,
-                    child: Text('Yearly'),
+                    child: Text(l10n.yearly),
                   ),
                 ],
                 onChanged: (value) {

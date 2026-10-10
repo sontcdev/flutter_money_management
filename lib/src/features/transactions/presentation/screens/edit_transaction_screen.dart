@@ -152,7 +152,12 @@ class EditTransactionScreen extends HookConsumerWidget {
         final receiptService = ref.read(transactionReceiptServiceProvider);
         final amount = CurrencyFormatter.parseVND(amountController.text);
         if (amount == null) {
-          throw const FormatException('Invalid amount format');
+          showAppSnackBar(
+            context,
+            l10n.invalidAmount,
+            type: AppSnackBarType.error,
+          );
+          return;
         }
         final amountCents = CurrencyFormatter.toCents(amount);
 

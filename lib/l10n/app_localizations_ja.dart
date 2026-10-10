@@ -1942,4 +1942,112 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get deleteAccountSharedWorkspaces => 'アカウントを削除する前に、これらの共有ワークスペースから退出してください。';
+
+  @override
+  String get notice => 'お知らせ';
+
+  @override
+  String get errorOccurred => 'エラーが発生しました';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get reportError => '報告する';
+
+  @override
+  String get errorReportSent => 'エラーレポートを送信しました。ありがとうございます。';
+
+  @override
+  String get errorReportOffline => '端末がオフラインか、サーバーのアドレスを解決できないため、レポートを送信できませんでした。';
+
+  @override
+  String get errorReportServerUnreachable => 'サーバーに接続できないため、レポートを送信できませんでした。ネットワークまたはサーバー設定を確認してください。';
+
+  @override
+  String get errorReportFailed => '現在レポートを送信できません。しばらくしてからもう一度お試しください。';
+
+  @override
+  String get noNetworkConnection => 'ネットワークに接続されていません';
+
+  @override
+  String get noNetworkConnectionDesc => 'サーバーに接続できませんでした。ネットワーク接続を確認して、もう一度お試しください。';
+
+  @override
+  String get signInAgain => '再度ログイン';
+
+  @override
+  String get leaveWorkspaceSubtitle => '現在の共有ワークスペースから退出します';
+
+  @override
+  String get createWorkspace => 'ワークスペースを作成';
+
+  @override
+  String get createWorkspaceDesc => '家族やグループのための共有ワークスペースを作成します。';
+
+  @override
+  String get workspaceNameLabel => 'ワークスペース名';
+
+  @override
+  String get workspaceNameRequired => 'ワークスペース名を入力してください';
+
+  @override
+  String get description => '説明';
+
+  @override
+  String get workspaceDetail => 'ワークスペースの詳細';
+
+  @override
+  String get workspace => 'ワークスペース';
+
+  @override
+  String get personal => '個人';
+
+  @override
+  String get invalidAmount => '金額が正しくありません';
+
+  @override
+  String get createBudgetForCategory => 'このカテゴリの予算を作成';
+
+  @override
+  String get budgetOnlyForExpense => '支出カテゴリでのみ利用できます';
+
+  @override
+  String get budgetPeriod => '予算期間';
+
+  @override
+  String get noteAndReceipt => 'メモとレシート';
+
+  @override
+  String get needsAttention => '要確認';
+
+  @override
+  String upcomingCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件の予定',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exceededCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件超過',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String nearLimitCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count件が上限間近',
+    );
+    return '$_temp0';
+  }
 }

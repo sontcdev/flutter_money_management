@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/data/repositories/supabase_error_mapper.dart';
 import 'package:flutter_money_management/src/services/error_report_service.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
@@ -51,6 +52,7 @@ class _ErrorReportDialogState extends State<ErrorReportDialog> {
   bool _isSubmitting = false;
 
   Future<void> _submitReport() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _isSubmitting = true;
     });
@@ -67,7 +69,7 @@ class _ErrorReportDialogState extends State<ErrorReportDialog> {
         Navigator.of(context).pop(true);
         showAppSnackBar(
           context,
-          'Đã gửi báo cáo lỗi thành công. Cảm ơn bạn!',
+          l10n.errorReportSent,
           type: AppSnackBarType.success,
         );
       }
@@ -78,7 +80,7 @@ class _ErrorReportDialogState extends State<ErrorReportDialog> {
         });
         showAppSnackBar(
           context,
-          _buildSubmitErrorMessage(e),
+          _buildSubmitErrorMessage(l10n, e),
           type: AppSnackBarType.error,
         );
       }
@@ -87,15 +89,16 @@ class _ErrorReportDialogState extends State<ErrorReportDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final displayError = SupabaseErrorMapper.map(widget.error);
 
     return AlertDialog(
-      title: const Text('Thông báo'),
+      title: Text(l10n.notice),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Đã có lỗi xảy ra'),
+          Text(l10n.errorOccurred),
           const SizedBox(height: 8),
           Text(displayError.toString()),
         ],
@@ -104,7 +107,7 @@ class _ErrorReportDialogState extends State<ErrorReportDialog> {
         TextButton(
           onPressed:
               _isSubmitting ? null : () => Navigator.of(context).pop(false),
-          child: const Text('Đồng ý'),
+          child: Text(l10n.ok),
         ),
         FilledButton(
           onPressed: _isSubmitting ? null : _submitReport,
@@ -119,15 +122,15 @@ class _ErrorReportDialogState extends State<ErrorReportDialog> {
                     ),
                   ),
                 )
-              : const Text('Phản ánh'),
+              : Text(l10n.reportError),
         ),
       ],
     );
   }
 
-  String _buildSubmitErrorMessage(Object error) {
+  String _buildSubmitErrorMessage(AppLocalizations l10n, Object error) {
     if (error is SocketException) {
-      return 'Không thể gửi báo cáo vì thiết bị chưa kết nối mạng hoặc DNS không phân giải được máy chủ.';
+      return l10n.errorReportOffline;
     }
 
     if (error is http.ClientException) {
@@ -135,10 +138,10 @@ class _ErrorReportDialogState extends State<ErrorReportDialog> {
       if (message.contains('failed host lookup') ||
           message.contains('socketexception') ||
           message.contains('no address associated with hostname')) {
-        return 'Không thể gửi báo cáo vì không kết nối được tới máy chủ Supabase. Hãy kiểm tra mạng hoặc cấu hình máy chủ.';
+        return l10n.errorReportServerUnreachable;
       }
     }
 
-    return 'Không thể gửi báo cáo lúc này. Vui lòng thử lại sau.';
+    return l10n.errorReportFailed;
   }
 }

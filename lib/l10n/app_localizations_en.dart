@@ -1942,4 +1942,115 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteAccountSharedWorkspaces => 'Leave these shared workspaces before deleting your account.';
+
+  @override
+  String get notice => 'Notice';
+
+  @override
+  String get errorOccurred => 'Something went wrong';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get reportError => 'Report';
+
+  @override
+  String get errorReportSent => 'Error report sent. Thank you!';
+
+  @override
+  String get errorReportOffline => 'Could not send the report because the device is offline or the server address could not be resolved.';
+
+  @override
+  String get errorReportServerUnreachable => 'Could not send the report because the server is unreachable. Check your network or server configuration.';
+
+  @override
+  String get errorReportFailed => 'Could not send the report right now. Please try again later.';
+
+  @override
+  String get noNetworkConnection => 'No network connection';
+
+  @override
+  String get noNetworkConnectionDesc => 'Could not connect to the server. Check your network connection and try again.';
+
+  @override
+  String get signInAgain => 'Sign in again';
+
+  @override
+  String get leaveWorkspaceSubtitle => 'Leave the current shared workspace';
+
+  @override
+  String get createWorkspace => 'Create workspace';
+
+  @override
+  String get createWorkspaceDesc => 'Create a shared workspace for your household or group.';
+
+  @override
+  String get workspaceNameLabel => 'Workspace name';
+
+  @override
+  String get workspaceNameRequired => 'Workspace name is required';
+
+  @override
+  String get description => 'Description';
+
+  @override
+  String get workspaceDetail => 'Workspace detail';
+
+  @override
+  String get workspace => 'Workspace';
+
+  @override
+  String get personal => 'Personal';
+
+  @override
+  String get invalidAmount => 'Invalid amount';
+
+  @override
+  String get createBudgetForCategory => 'Create budget for this category';
+
+  @override
+  String get budgetOnlyForExpense => 'Only available for expense categories';
+
+  @override
+  String get budgetPeriod => 'Budget period';
+
+  @override
+  String get noteAndReceipt => 'Note & receipt';
+
+  @override
+  String get needsAttention => 'Needs attention';
+
+  @override
+  String upcomingCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count upcoming',
+      one: '1 upcoming',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String exceededCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count exceeded',
+      one: '1 exceeded',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String nearLimitCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count near limit',
+      one: '1 near limit',
+    );
+    return '$_temp0';
+  }
 }

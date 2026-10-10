@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/auth/providers/auth_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/app/presentation/widgets/splash_view.dart';
@@ -111,18 +112,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Không có kết nối mạng'),
-        content: const Text(
-          'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng rồi thử lại.',
-        ),
+        title: Text(AppLocalizations.of(context)!.noNetworkConnection),
+        content: Text(AppLocalizations.of(context)!.noNetworkConnectionDesc),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Đăng nhập lại'),
+            child: Text(AppLocalizations.of(context)!.signInAgain),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Thử lại'),
+            child: Text(AppLocalizations.of(context)!.retry),
           ),
         ],
       ),

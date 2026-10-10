@@ -332,8 +332,7 @@ class TodayScreen extends ConsumerWidget {
               const SizedBox(height: AppSpacing.md),
               AppMetricCard.status(
                 label: l10n.recurringTransactions,
-                value:
-                    '${occurrences.length} ${l10n.notification.toLowerCase()}',
+                value: l10n.upcomingCount(occurrences.length),
                 icon: Icons.schedule,
                 tone: MetricCardTone.warning,
                 trailing: const Icon(Icons.chevron_right),
@@ -613,7 +612,7 @@ class TodayScreen extends ConsumerWidget {
         attentionCards.add(
           AppMetricCard.status(
             label: l10n.budgets,
-            value: '${exceededBudgets.length} ${l10n.exceeded.toLowerCase()}',
+            value: l10n.exceededCount(exceededBudgets.length),
             icon: Icons.warning_amber_outlined,
             tone: MetricCardTone.danger,
             onTap: () =>
@@ -624,7 +623,7 @@ class TodayScreen extends ConsumerWidget {
         attentionCards.add(
           AppMetricCard.status(
             label: l10n.budgets,
-            value: '${nearLimitBudgets.length} ${l10n.nearLimit.toLowerCase()}',
+            value: l10n.nearLimitCount(nearLimitBudgets.length),
             icon: Icons.warning_outlined,
             tone: MetricCardTone.warning,
             onTap: () =>
@@ -644,7 +643,7 @@ class TodayScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AppSectionHeader(
-            title: l10n.notification,
+            title: l10n.needsAttention,
             padding: EdgeInsets.zero,
           ),
           const SizedBox(height: AppSpacing.md),

@@ -28,7 +28,7 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
-            tooltip: 'Create workspace',
+            tooltip: l10n.createWorkspace,
             onPressed: () =>
                 Navigator.of(context).pushNamed('/workspace-create'),
           ),
@@ -133,7 +133,7 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
                               },
                             ),
                             AppButton(
-                              text: 'Create workspace',
+                              text: l10n.createWorkspace,
                               onPressed: () {
                                 Navigator.of(context)
                                     .pushNamed('/workspace-create');
