@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/budgets/services/budget_service.dart';
@@ -20,12 +21,15 @@ import 'package:flutter_money_management/src/features/wallets/presentation/widge
 import 'package:flutter_money_management/src/features/wallets/providers/wallet_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/models/workspace.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
+import 'package:flutter_money_management/src/shared/providers/preferences_provider.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
 import 'package:flutter_money_management/src/utils/voice_transaction_parser.dart';
 
 class _MockTransactionRepository extends Mock
     implements TransactionRepository {}
+
+late SharedPreferences _prefs;
 
 final _now = DateTime(2026, 10, 9);
 Category _category(String id, String name) => Category(
@@ -118,6 +122,7 @@ Widget _screen(
         walletsForWorkspaceProvider('workspace')
             .overrideWith((ref) async => _wallets),
         transactionsProvider.overrideWith((ref) async => history),
+        sharedPreferencesProvider.overrideWithValue(_prefs),
         if (repository != null)
           transactionRepositoryProvider.overrideWithValue(repository),
       ],
@@ -126,6 +131,11 @@ Widget _screen(
     );
 
 void main() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    _prefs = await SharedPreferences.getInstance();
+  });
+
   setUpAll(() {
     registerFallbackValue(Transaction(
       id: '',

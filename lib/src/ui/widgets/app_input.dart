@@ -21,6 +21,7 @@ class AppInput extends StatefulWidget {
   final bool showKeyboardToolbar;
   final VoidCallback? onToolbarOkPressed;
   final VoidCallback? onToolbarSkipPressed;
+  final bool autofocus;
 
   const AppInput({
     super.key,
@@ -40,6 +41,7 @@ class AppInput extends StatefulWidget {
     this.showKeyboardToolbar = true,
     this.onToolbarOkPressed,
     this.onToolbarSkipPressed,
+    this.autofocus = false,
   });
 
   @override
@@ -167,6 +169,7 @@ class _AppInputState extends State<AppInput> {
           maxLines: widget.maxLines,
           readOnly: widget.readOnly,
           focusNode: _focusNode,
+          autofocus: widget.autofocus,
           onTap: widget.onTap,
           onChanged: widget.onChanged,
           decoration: InputDecoration(

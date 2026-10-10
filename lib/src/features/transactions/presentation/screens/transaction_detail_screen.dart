@@ -6,6 +6,7 @@ import 'package:flutter_money_management/src/features/categories/presentation/wi
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/categories/models/uncategorized_category.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
+import 'package:flutter_money_management/src/features/transactions/presentation/widgets/transaction_form_fields.dart';
 import 'package:flutter_money_management/src/features/wallets/models/wallet.dart';
 import 'package:flutter_money_management/src/features/wallets/providers/wallet_providers.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
@@ -369,16 +370,9 @@ class TransactionDetailScreen extends ConsumerWidget {
                                         ),
                                       );
                                     },
-                                    child: Image.network(
-                                      imageUrl,
+                                    child: ReceiptNetworkImage(
+                                      imageUrl: imageUrl,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (_, __, ___) =>
-                                          const SizedBox(
-                                        height: 120,
-                                        child: Center(
-                                            child: Icon(
-                                                Icons.broken_image_outlined)),
-                                      ),
                                     ),
                                   );
                                 },
@@ -461,7 +455,15 @@ class _DetailRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: labelStyle),
-          Text(value, style: valueStyle),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Text(
+              value,
+              style: valueStyle,
+              softWrap: true,
+              textAlign: TextAlign.end,
+            ),
+          ),
         ],
       ),
     );
@@ -483,7 +485,7 @@ class _FullScreenImage extends StatelessWidget {
       ),
       body: Center(
         child: InteractiveViewer(
-          child: Image.network(imageUrl),
+          child: ReceiptNetworkImage(imageUrl: imageUrl),
         ),
       ),
     );

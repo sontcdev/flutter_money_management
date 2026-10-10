@@ -704,5 +704,12 @@
   "budgetAmountLeft": "残り {amount}",
   "budgetDaysLeft": "{count, plural, =0{最終日} other{残り{count}日}}",
   "budgetPerDayAllowance": "{amount}/日",
-  "budgetActions": "予算の操作"
+  "budgetActions": "予算の操作",
+  "discardChangesTitle": "変更を破棄しますか？",
+  "discardChangesMessage": "保存されていない変更は失われます。",
+  "discard": "破棄",
+  "keepEditing": "編集を続ける",
+  "takePhoto": "写真を撮る",
+  "chooseFromGallery": "ギャラリーから選択",
+  "imageLoadFailed": "画像を読み込めませんでした"
 }

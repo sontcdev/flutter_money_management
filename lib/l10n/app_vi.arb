@@ -704,5 +704,12 @@
   "budgetAmountLeft": "Còn {amount}",
   "budgetDaysLeft": "{count, plural, =0{Ngày cuối} other{Còn {count} ngày}}",
   "budgetPerDayAllowance": "{amount}/ngày",
-  "budgetActions": "Tùy chọn ngân sách"
+  "budgetActions": "Tùy chọn ngân sách",
+  "discardChangesTitle": "Bỏ thay đổi?",
+  "discardChangesMessage": "Các thay đổi chưa lưu sẽ bị mất.",
+  "discard": "Bỏ",
+  "keepEditing": "Tiếp tục sửa",
+  "takePhoto": "Chụp ảnh",
+  "chooseFromGallery": "Chọn từ thư viện",
+  "imageLoadFailed": "Không tải được ảnh"
 }

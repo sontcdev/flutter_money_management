@@ -2083,4 +2083,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get budgetActions => 'Budget actions';
+
+  @override
+  String get discardChangesTitle => 'Discard changes?';
+
+  @override
+  String get discardChangesMessage => 'Your unsaved changes will be lost.';
+
+  @override
+  String get discard => 'Discard';
+
+  @override
+  String get keepEditing => 'Keep editing';
+
+  @override
+  String get takePhoto => 'Take photo';
+
+  @override
+  String get chooseFromGallery => 'Choose from gallery';
+
+  @override
+  String get imageLoadFailed => 'Couldn\'t load image';
 }

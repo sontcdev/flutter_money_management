@@ -725,5 +725,12 @@
   "@budgetDaysLeft": {"placeholders": {"count": {"type": "int"}}},
   "budgetPerDayAllowance": "{amount}/day",
   "@budgetPerDayAllowance": {"placeholders": {"amount": {"type": "String"}}},
-  "budgetActions": "Budget actions"
+  "budgetActions": "Budget actions",
+  "discardChangesTitle": "Discard changes?",
+  "discardChangesMessage": "Your unsaved changes will be lost.",
+  "discard": "Discard",
+  "keepEditing": "Keep editing",
+  "takePhoto": "Take photo",
+  "chooseFromGallery": "Choose from gallery",
+  "imageLoadFailed": "Couldn't load image"
 }

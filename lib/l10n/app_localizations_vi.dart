@@ -2079,4 +2079,25 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get budgetActions => 'Tùy chọn ngân sách';
+
+  @override
+  String get discardChangesTitle => 'Bỏ thay đổi?';
+
+  @override
+  String get discardChangesMessage => 'Các thay đổi chưa lưu sẽ bị mất.';
+
+  @override
+  String get discard => 'Bỏ';
+
+  @override
+  String get keepEditing => 'Tiếp tục sửa';
+
+  @override
+  String get takePhoto => 'Chụp ảnh';
+
+  @override
+  String get chooseFromGallery => 'Chọn từ thư viện';
+
+  @override
+  String get imageLoadFailed => 'Không tải được ảnh';
 }

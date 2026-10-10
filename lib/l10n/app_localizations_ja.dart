@@ -2079,4 +2079,25 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get budgetActions => '予算の操作';
+
+  @override
+  String get discardChangesTitle => '変更を破棄しますか？';
+
+  @override
+  String get discardChangesMessage => '保存されていない変更は失われます。';
+
+  @override
+  String get discard => '破棄';
+
+  @override
+  String get keepEditing => '編集を続ける';
+
+  @override
+  String get takePhoto => '写真を撮る';
+
+  @override
+  String get chooseFromGallery => 'ギャラリーから選択';
+
+  @override
+  String get imageLoadFailed => '画像を読み込めませんでした';
 }
