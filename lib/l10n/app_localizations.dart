@@ -3948,6 +3948,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 near limit} other{{count} near limit}}'**
   String nearLimitCount(int count);
+
+  /// No description provided for @budgetPercentUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% used'**
+  String budgetPercentUsed(String percent);
+
+  /// No description provided for @budgetAmountLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} left'**
+  String budgetAmountLeft(String amount);
+
+  /// No description provided for @budgetDaysLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Last day} =1{1 day left} other{{count} days left}}'**
+  String budgetDaysLeft(int count);
+
+  /// No description provided for @budgetPerDayAllowance.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount}/day'**
+  String budgetPerDayAllowance(String amount);
+
+  /// No description provided for @budgetActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget actions'**
+  String get budgetActions;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

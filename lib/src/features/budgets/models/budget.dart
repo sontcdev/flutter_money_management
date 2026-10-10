@@ -13,6 +13,8 @@ enum PeriodType {
 
 enum SyncStatus { pending, synced, error }
 
+enum BudgetStatus { onTrack, nearLimit, exceeded }
+
 @freezed
 class Budget with _$Budget {
   const Budget._();
@@ -41,4 +43,12 @@ class Budget with _$Budget {
   double get progressPercentage =>
       limitCents > 0 ? (consumedCents / limitCents * 100).clamp(0, 100) : 0;
   bool get isExceeded => consumedCents > limitCents;
+  double get usedPercentage =>
+      limitCents > 0 ? consumedCents / limitCents * 100 : 0;
+  BudgetStatus get status {
+    final percentage = usedPercentage;
+    if (percentage > 100) return BudgetStatus.exceeded;
+    if (percentage >= 80) return BudgetStatus.nearLimit;
+    return BudgetStatus.onTrack;
+  }
 }

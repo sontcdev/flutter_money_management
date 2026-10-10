@@ -2050,4 +2050,33 @@ class AppLocalizationsVi extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String budgetPercentUsed(String percent) {
+    return 'Đã dùng $percent%';
+  }
+
+  @override
+  String budgetAmountLeft(String amount) {
+    return 'Còn $amount';
+  }
+
+  @override
+  String budgetDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Còn $count ngày',
+      zero: 'Ngày cuối',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String budgetPerDayAllowance(String amount) {
+    return '$amount/ngày';
+  }
+
+  @override
+  String get budgetActions => 'Tùy chọn ngân sách';
 }

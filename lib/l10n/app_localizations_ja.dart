@@ -2050,4 +2050,33 @@ class AppLocalizationsJa extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String budgetPercentUsed(String percent) {
+    return '$percent% 使用';
+  }
+
+  @override
+  String budgetAmountLeft(String amount) {
+    return '残り $amount';
+  }
+
+  @override
+  String budgetDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '残り$count日',
+      zero: '最終日',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String budgetPerDayAllowance(String amount) {
+    return '$amount/日';
+  }
+
+  @override
+  String get budgetActions => '予算の操作';
 }

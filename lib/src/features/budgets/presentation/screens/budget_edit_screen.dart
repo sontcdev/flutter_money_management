@@ -514,7 +514,10 @@ class BudgetEditScreen extends HookConsumerWidget {
                           Expanded(
                             child: Text(
                               l10n.noExpenseTransactionInPeriod,
-                              style: TextStyle(color: onSurfaceFaint),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(color: onSurfaceFaint),
                             ),
                           ),
                         ],
@@ -534,16 +537,20 @@ class BudgetEditScreen extends HookConsumerWidget {
                         ListTile(
                           title: Text(
                             '${l10n.transactionsInPeriod} (${categoryTransactions.length})',
-                            style: const TextStyle(fontWeight: FontWeight.w600),
+                            style: Theme.of(context).textTheme.titleSmall,
                           ),
                           subtitle: selectedTransactionIds.value.isNotEmpty
                               ? Text(
                                   '${l10n.selected}: ${CurrencyFormatter.formatVNDFromCents(selectedTotal, locale: l10n.localeName)}',
-                                  style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                 )
                               : Text(l10n.selectTransactionsForBudget),
                           trailing: IconButton(
@@ -620,10 +627,13 @@ class BudgetEditScreen extends HookConsumerWidget {
                                   t.amountCents,
                                   locale: l10n.localeName,
                                 ),
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: context.semanticColors.expense,
-                                ),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: context.semanticColors.expense,
+                                    ),
                               ),
                               dense: true,
                             );
@@ -771,7 +781,8 @@ class _DatePickerField extends StatelessWidget {
                 const SizedBox(width: AppSpacing.sm),
                 Text(
                   formatLocalizedDate(context, date),
-                  style: const TextStyle(fontWeight: FontWeight.w500),
+                  style: theme.textTheme.bodyMedium
+                      ?.copyWith(fontWeight: FontWeight.w500),
                 ),
               ],
             ),

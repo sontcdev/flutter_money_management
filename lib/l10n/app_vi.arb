@@ -699,5 +699,10 @@
   "needsAttention": "Cần chú ý",
   "upcomingCount": "{count, plural, other{{count} sắp đến hạn}}",
   "exceededCount": "{count, plural, other{{count} vượt hạn mức}}",
-  "nearLimitCount": "{count, plural, other{{count} gần hạn mức}}"
+  "nearLimitCount": "{count, plural, other{{count} gần hạn mức}}",
+  "budgetPercentUsed": "Đã dùng {percent}%",
+  "budgetAmountLeft": "Còn {amount}",
+  "budgetDaysLeft": "{count, plural, =0{Ngày cuối} other{Còn {count} ngày}}",
+  "budgetPerDayAllowance": "{amount}/ngày",
+  "budgetActions": "Tùy chọn ngân sách"
 }

@@ -2053,4 +2053,34 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String budgetPercentUsed(String percent) {
+    return '$percent% used';
+  }
+
+  @override
+  String budgetAmountLeft(String amount) {
+    return '$amount left';
+  }
+
+  @override
+  String budgetDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days left',
+      one: '1 day left',
+      zero: 'Last day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String budgetPerDayAllowance(String amount) {
+    return '$amount/day';
+  }
+
+  @override
+  String get budgetActions => 'Budget actions';
 }

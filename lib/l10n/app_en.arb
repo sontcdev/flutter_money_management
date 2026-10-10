@@ -716,5 +716,14 @@
   "exceededCount": "{count, plural, =1{1 exceeded} other{{count} exceeded}}",
   "@exceededCount": {"placeholders": {"count": {"type": "int"}}},
   "nearLimitCount": "{count, plural, =1{1 near limit} other{{count} near limit}}",
-  "@nearLimitCount": {"placeholders": {"count": {"type": "int"}}}
+  "@nearLimitCount": {"placeholders": {"count": {"type": "int"}}},
+  "budgetPercentUsed": "{percent}% used",
+  "@budgetPercentUsed": {"placeholders": {"percent": {"type": "String"}}},
+  "budgetAmountLeft": "{amount} left",
+  "@budgetAmountLeft": {"placeholders": {"amount": {"type": "String"}}},
+  "budgetDaysLeft": "{count, plural, =0{Last day} =1{1 day left} other{{count} days left}}",
+  "@budgetDaysLeft": {"placeholders": {"count": {"type": "int"}}},
+  "budgetPerDayAllowance": "{amount}/day",
+  "@budgetPerDayAllowance": {"placeholders": {"amount": {"type": "String"}}},
+  "budgetActions": "Budget actions"
 }

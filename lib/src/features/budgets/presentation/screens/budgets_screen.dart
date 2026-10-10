@@ -14,6 +14,8 @@ import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_metric_card.dart';
+import 'package:flutter_money_management/src/ui/widgets/app_segmented_filter.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 import 'package:flutter_money_management/src/ui/widgets/confirm_delete_dialog.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
@@ -182,18 +184,15 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
 
   List<Budget> get _filteredAndSortedBudgets {
     var result = widget.budgets.where((b) {
-      final percentage =
-          b.limitCents > 0 ? (b.consumedCents / b.limitCents * 100) : 0.0;
-
       switch (_filter) {
         case BudgetFilter.all:
           return true;
         case BudgetFilter.onTrack:
-          return percentage < 80;
+          return b.status == BudgetStatus.onTrack;
         case BudgetFilter.nearLimit:
-          return percentage >= 80 && percentage <= 100;
+          return b.status == BudgetStatus.nearLimit;
         case BudgetFilter.exceeded:
-          return percentage > 100;
+          return b.status == BudgetStatus.exceeded;
       }
     }).toList();
 
@@ -226,17 +225,12 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
         widget.budgets.fold<int>(0, (sum, b) => sum + b.consumedCents);
     final totalRemaining = totalLimit - totalSpent;
 
-    final onTrackCount = widget.budgets.where((b) {
-      final perc =
-          b.limitCents > 0 ? (b.consumedCents / b.limitCents * 100) : 0.0;
-      return perc < 80;
-    }).length;
-
-    final exceededCount = widget.budgets.where((b) {
-      final perc =
-          b.limitCents > 0 ? (b.consumedCents / b.limitCents * 100) : 0.0;
-      return perc > 100;
-    }).length;
+    final onTrackCount =
+        widget.budgets.where((b) => b.status == BudgetStatus.onTrack).length;
+    final nearLimitCount =
+        widget.budgets.where((b) => b.status == BudgetStatus.nearLimit).length;
+    final exceededCount =
+        widget.budgets.where((b) => b.status == BudgetStatus.exceeded).length;
 
     final filteredBudgets = _filteredAndSortedBudgets;
 
@@ -264,20 +258,20 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
                 Row(
                   children: [
                     Expanded(
-                      child: _StatusCard(
+                      child: AppMetricCard.status(
                         label: l10n.onTrack,
-                        count: onTrackCount,
-                        color: AppColors.primary,
+                        value: onTrackCount.toString(),
                         icon: Icons.check_circle_outline,
+                        tone: MetricCardTone.positive,
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
-                      child: _StatusCard(
+                      child: AppMetricCard.status(
                         label: l10n.exceeded,
-                        count: exceededCount,
-                        color: AppColors.error,
+                        value: exceededCount.toString(),
                         icon: Icons.warning_amber_outlined,
+                        tone: MetricCardTone.danger,
                       ),
                     ),
                   ],
@@ -297,48 +291,27 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
             child: Row(
               children: [
                 Expanded(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        _FilterChip(
-                          label: l10n.all,
-                          count: widget.budgets.length,
-                          isSelected: _filter == BudgetFilter.all,
-                          onTap: () =>
-                              setState(() => _filter = BudgetFilter.all),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        _FilterChip(
-                          label: l10n.onTrack,
-                          count: onTrackCount,
-                          isSelected: _filter == BudgetFilter.onTrack,
-                          onTap: () =>
-                              setState(() => _filter = BudgetFilter.onTrack),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        _FilterChip(
-                          label: l10n.nearLimit,
-                          count: widget.budgets.where((b) {
-                            final perc = b.limitCents > 0
-                                ? (b.consumedCents / b.limitCents * 100)
-                                : 0.0;
-                            return perc >= 80 && perc <= 100;
-                          }).length,
-                          isSelected: _filter == BudgetFilter.nearLimit,
-                          onTap: () =>
-                              setState(() => _filter = BudgetFilter.nearLimit),
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        _FilterChip(
-                          label: l10n.exceeded,
-                          count: exceededCount,
-                          isSelected: _filter == BudgetFilter.exceeded,
-                          onTap: () =>
-                              setState(() => _filter = BudgetFilter.exceeded),
-                        ),
-                      ],
-                    ),
+                  child: AppSegmentedFilter<BudgetFilter>(
+                    options: [
+                      FilterOption(
+                        label: '${l10n.all} (${widget.budgets.length})',
+                        value: BudgetFilter.all,
+                      ),
+                      FilterOption(
+                        label: '${l10n.onTrack} ($onTrackCount)',
+                        value: BudgetFilter.onTrack,
+                      ),
+                      FilterOption(
+                        label: '${l10n.nearLimit} ($nearLimitCount)',
+                        value: BudgetFilter.nearLimit,
+                      ),
+                      FilterOption(
+                        label: '${l10n.exceeded} ($exceededCount)',
+                        value: BudgetFilter.exceeded,
+                      ),
+                    ],
+                    selectedValue: _filter,
+                    onChanged: (filter) => setState(() => _filter = filter),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -448,61 +421,6 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
             ),
           ),
       ],
-    );
-  }
-}
-
-class _StatusCard extends StatelessWidget {
-  final String label;
-  final int count;
-  final Color color;
-  final IconData icon;
-
-  const _StatusCard({
-    required this.label,
-    required this.count,
-    required this.color,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.sm),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: AppSpacing.iconSizeSm),
-          const SizedBox(width: AppSpacing.xs),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  count.toString(),
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: color,
-                      ),
-                ),
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.6),
-                      ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -634,38 +552,6 @@ class _BudgetHeroCard extends StatelessWidget {
   }
 }
 
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final int count;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _FilterChip({
-    required this.label,
-    required this.count,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return ChoiceChip(
-      label: Text('$label ($count)'),
-      selected: isSelected,
-      onSelected: (_) => onTap(),
-      showCheckmark: false,
-      selectedColor: theme.colorScheme.primary,
-      labelStyle: theme.textTheme.labelMedium?.copyWith(
-        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-        color: isSelected
-            ? theme.colorScheme.onPrimary
-            : theme.colorScheme.onSurface.withValues(alpha: 0.65),
-      ),
-    );
-  }
-}
-
 class _SwipeableBudgetCard extends ConsumerWidget {
   final Budget budget;
   final VoidCallback onDeleted;
@@ -708,9 +594,39 @@ class _SwipeableBudgetCard extends ConsumerWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.only(bottom: AppSpacing.md),
-        child: _BudgetCard(budget: budget),
+        child: _BudgetCard(
+          budget: budget,
+          onEdit: () => _editBudget(context, ref),
+          onDelete: () => _confirmAndDeleteBudget(context, ref, l10n),
+        ),
       ),
     );
+  }
+
+  Future<void> _editBudget(BuildContext context, WidgetRef ref) async {
+    final result = await Navigator.pushNamed(
+      context,
+      '/budget-edit',
+      arguments: budget,
+    );
+    if (result == true) {
+      ref.invalidate(budgetsProvider);
+      ref.invalidate(budgetsWithConsumedProvider);
+    }
+  }
+
+  Future<void> _confirmAndDeleteBudget(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) async {
+    final categoryAsync = ref.read(categoryProvider(budget.categoryId));
+    final confirmed =
+        await _showDeleteConfirmDialog(context, l10n, categoryAsync);
+    if (!context.mounted) return;
+    if (confirmed) {
+      await _deleteBudget(ref, l10n, context);
+    }
   }
 
   Future<bool> _showDeleteConfirmDialog(
@@ -765,8 +681,14 @@ class _SwipeableBudgetCard extends ConsumerWidget {
 
 class _BudgetCard extends ConsumerWidget {
   final Budget budget;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
-  const _BudgetCard({required this.budget});
+  const _BudgetCard({
+    required this.budget,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -774,6 +696,17 @@ class _BudgetCard extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isExceeded = budget.isExceeded;
+    final status = budget.status;
+    final statusColor = switch (status) {
+      BudgetStatus.exceeded => AppColors.error,
+      BudgetStatus.nearLimit => context.semanticColors.warning,
+      BudgetStatus.onTrack => theme.colorScheme.primary,
+    };
+    final daysLeft = _budgetDaysLeft(
+      budget,
+      ref.watch(monthStartDayProvider),
+      DateTime.now(),
+    );
     final progress = budget.progressPercentage / 100;
     final amountColor = isExceeded
         ? AppColors.error
@@ -825,19 +758,27 @@ class _BudgetCard extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  loading: () => Text(l10n.loading),
+                  loading: () => Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: ShimmerLoading(
+                      width: 140,
+                      height: 16,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusXs),
+                    ),
+                  ),
                   error: (_, __) => Text(l10n.unknown),
                 ),
               ),
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                '${CurrencyFormatter.formatVNDFromCents(budget.consumedCents, locale: l10n.localeName)} / ${CurrencyFormatter.formatVNDFromCents(budget.limitCents, locale: l10n.localeName)}',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: amountColor,
-                ),
-              ),
+              _BudgetActionsMenu(onEdit: onEdit, onDelete: onDelete),
             ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            '${CurrencyFormatter.formatVNDFromCents(budget.consumedCents, locale: l10n.localeName)} / ${CurrencyFormatter.formatVNDFromCents(budget.limitCents, locale: l10n.localeName)}',
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: amountColor,
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Row(
@@ -849,25 +790,79 @@ class _BudgetCard extends ConsumerWidget {
                     value: progress.clamp(0.0, 1.0),
                     minHeight: 8,
                     backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                    valueColor: AlwaysStoppedAnimation(
-                      isExceeded ? AppColors.error : theme.colorScheme.primary,
-                    ),
+                    valueColor: AlwaysStoppedAnimation(statusColor),
                   ),
                 ),
               ),
-              if (isExceeded) ...[
+              if (status != BudgetStatus.onTrack) ...[
                 const SizedBox(width: AppSpacing.sm),
                 Icon(
                   Icons.warning_amber_rounded,
                   size: AppSpacing.iconSizeSm,
-                  color: AppColors.error,
-                  semanticLabel: l10n.exceeded,
+                  color: statusColor,
+                  semanticLabel: status == BudgetStatus.exceeded
+                      ? l10n.exceeded
+                      : l10n.nearLimit,
                 ),
               ],
             ],
           ),
+          const SizedBox(height: AppSpacing.sm),
+          _buildBudgetDetails(theme, l10n, daysLeft, statusColor),
         ],
       ),
+    );
+  }
+
+  Widget _buildBudgetDetails(
+    ThemeData theme,
+    AppLocalizations l10n,
+    int? daysLeft,
+    Color statusColor,
+  ) {
+    final locale = l10n.localeName;
+    final remaining = budget.remainingCents;
+    final detailStyle = theme.textTheme.bodySmall?.copyWith(
+      color: theme.colorScheme.onSurfaceVariant,
+    );
+    final percent = budget.usedPercentage.round().toString();
+
+    return Wrap(
+      spacing: AppSpacing.md,
+      runSpacing: AppSpacing.xs,
+      children: [
+        Text(
+          l10n.budgetPercentUsed(percent),
+          style: detailStyle?.copyWith(
+            color: statusColor,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        Text(
+          remaining >= 0
+              ? l10n.budgetAmountLeft(
+                  CurrencyFormatter.formatVNDFromCents(remaining,
+                      locale: locale),
+                )
+              : l10n.overBy(
+                  CurrencyFormatter.formatVNDFromCents(-remaining,
+                      locale: locale),
+                ),
+          style: detailStyle,
+        ),
+        if (daysLeft != null)
+          Text(l10n.budgetDaysLeft(daysLeft), style: detailStyle),
+        if (daysLeft != null && remaining > 0)
+          Text(
+            l10n.budgetPerDayAllowance(
+              CurrencyFormatter.formatVNDFromCents(
+                remaining ~/ (daysLeft + 1),
+                locale: locale,
+              ),
+            ),
+            style: detailStyle,
+          ),
+      ],
     );
   }
 
@@ -887,6 +882,65 @@ class _BudgetCard extends ConsumerWidget {
           categoryName: categoryName,
         ),
       ),
+    );
+  }
+}
+
+int? _budgetDaysLeft(Budget budget, int monthStartDay, DateTime now) {
+  final periodEnd = budget.periodType == PeriodType.monthly
+      ? CycleUtils.getCycleRangeForDate(now, monthStartDay).end
+      : budget.periodEnd;
+  final today = DateTime.utc(now.year, now.month, now.day);
+  final lastDay = DateTime.utc(periodEnd.year, periodEnd.month, periodEnd.day);
+  final daysLeft = lastDay.difference(today).inDays;
+  return daysLeft < 0 ? null : daysLeft;
+}
+
+class _BudgetActionsMenu extends StatelessWidget {
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const _BudgetActionsMenu({
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return PopupMenuButton<VoidCallback>(
+      tooltip: l10n.budgetActions,
+      icon: const Icon(Icons.more_vert),
+      onSelected: (action) => action(),
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: onEdit,
+          child: Row(
+            children: [
+              const Icon(Icons.edit_outlined, size: AppSpacing.iconSizeSm),
+              const SizedBox(width: AppSpacing.sm),
+              Text(l10n.edit),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: onDelete,
+          child: Row(
+            children: [
+              const Icon(
+                Icons.delete_outline,
+                size: AppSpacing.iconSizeSm,
+                color: AppColors.error,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                l10n.delete,
+                style: const TextStyle(color: AppColors.error),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

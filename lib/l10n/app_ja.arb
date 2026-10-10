@@ -699,5 +699,10 @@
   "needsAttention": "要確認",
   "upcomingCount": "{count, plural, other{{count}件の予定}}",
   "exceededCount": "{count, plural, other{{count}件超過}}",
-  "nearLimitCount": "{count, plural, other{{count}件が上限間近}}"
+  "nearLimitCount": "{count, plural, other{{count}件が上限間近}}",
+  "budgetPercentUsed": "{percent}% 使用",
+  "budgetAmountLeft": "残り {amount}",
+  "budgetDaysLeft": "{count, plural, =0{最終日} other{残り{count}日}}",
+  "budgetPerDayAllowance": "{amount}/日",
+  "budgetActions": "予算の操作"
 }
