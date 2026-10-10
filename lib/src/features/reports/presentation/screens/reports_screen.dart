@@ -265,169 +265,18 @@ class ReportsScreen extends HookConsumerWidget {
                                   .fold<int>(
                                       0, (sum, t) => sum + t.amountCents);
 
-                              final percentage = budget.limitCents > 0
-                                  ? (consumedCents / budget.limitCents * 100)
-                                  : 0.0;
-                              final isExceeded =
-                                  consumedCents > budget.limitCents;
-
-                              return Padding(
-                                padding: const EdgeInsets.only(
-                                    bottom: AppSpacing.sm),
-                                child: AppCard(
-                                  onTap: () =>
-                                      _showBudgetTransactionsWithPeriod(
-                                    context,
-                                    ref,
-                                    budget,
-                                    category.name,
-                                    dateRange.start,
-                                    dateRange.end,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Container(
-                                            width: 36,
-                                            height: 36,
-                                            decoration: BoxDecoration(
-                                              color: getCategoryColor(
-                                                      category.colorValue)
-                                                  .withValues(alpha: 0.2),
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                      AppSpacing.radiusCard),
-                                            ),
-                                            child: Center(
-                                              child: CategoryIconWidget(
-                                                iconName: category.iconName,
-                                                size: 18,
-                                                color: getCategoryColor(
-                                                    category.colorValue),
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  category.name,
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .titleMedium,
-                                                ),
-                                                Text(
-                                                  budget.periodType ==
-                                                          PeriodType.monthly
-                                                      ? l10n.monthly
-                                                      : l10n.yearly,
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodySmall,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 8, vertical: 4),
-                                            decoration: BoxDecoration(
-                                              color: isExceeded
-                                                  ? context.semanticColors.expense
-                                                      .withValues(alpha: 0.1)
-                                                  : context.semanticColors.income
-                                                      .withValues(alpha: 0.1),
-                                              borderRadius:
-                                                  BorderRadius.circular(
-                                                      AppSpacing.radiusFull),
-                                            ),
-                                            child: Text(
-                                              '${percentage.toStringAsFixed(1)}%',
-                                              style: TextStyle(
-                                                color: isExceeded
-                                                    ? context.semanticColors.expense
-                                                    : context.semanticColors.income,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: ClipRRect(
-                                              borderRadius: BorderRadius.circular(
-                                                  AppSpacing.radiusFull),
-                                              child: LinearProgressIndicator(
-                                                value: (percentage / 100)
-                                                    .clamp(0.0, 1.0),
-                                                minHeight: 8,
-                                                backgroundColor: Theme.of(context)
-                                                    .colorScheme
-                                                    .surfaceContainerHighest,
-                                                valueColor: AlwaysStoppedAnimation(
-                                                  isExceeded
-                                                      ? context.semanticColors.expense
-                                                      : getCategoryColor(
-                                                          category.colorValue),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          if (isExceeded) ...[
-                                            const SizedBox(width: AppSpacing.sm),
-                                            Icon(
-                                              Icons.warning_amber_rounded,
-                                              size: AppSpacing.iconSizeSm,
-                                              color: context.semanticColors.expense,
-                                              semanticLabel: l10n.exceeded,
-                                            ),
-                                          ],
-                                        ],
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Flexible(
-                                            child: Text(
-                                              '${CurrencyFormatter.formatVNDFromCents(consumedCents, locale: l10n.localeName)} / ${CurrencyFormatter.formatVNDFromCents(budget.limitCents, locale: l10n.localeName)}',
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Flexible(
-                                            child: Text(
-                                              '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents - consumedCents, locale: l10n.localeName)}',
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium
-                                                  ?.copyWith(
-                                                    color: isExceeded
-                                                        ? context.semanticColors.expense
-                                                        : context.semanticColors.income,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                              textAlign: TextAlign.right,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
+                              return _BudgetReportCard(
+                                budget: budget,
+                                category: category,
+                                consumedCents: consumedCents,
+                                onTap: () =>
+                                    _showBudgetTransactionsWithPeriod(
+                                  context,
+                                  ref,
+                                  budget,
+                                  category.name,
+                                  dateRange.start,
+                                  dateRange.end,
                                 ),
                               );
                             }).toList(),
@@ -571,19 +420,10 @@ class ReportsScreen extends HookConsumerWidget {
                                     l10n.uncategorized,
                                   ),
                                 );
-                                final percentage = totalExpense > 0
-                                    ? (entry.value / totalExpense * 100)
-                                        .toStringAsFixed(1)
-                                    : '0';
-                                final iconColor =
-                                    ThemeData.estimateBrightnessForColor(
-                                                getCategoryColor(
-                                                    category.colorValue)) ==
-                                            Brightness.dark
-                                        ? AppColors.textLight
-                                        : AppColors.textDark;
-
-                                return InkWell(
+                                return _CategoryBreakdownRow(
+                                  category: category,
+                                  amountCents: entry.value,
+                                  totalCents: totalExpense,
                                   onTap: () => _showCategoryTransactions(
                                     context,
                                     category.id,
@@ -594,104 +434,6 @@ class ReportsScreen extends HookConsumerWidget {
                                     period.value.label(l10n, monthStartDay),
                                     reportTypeFilter.value ==
                                         2, // isIncomeReport
-                                  ),
-                                  borderRadius: BorderRadius.circular(
-                                      AppSpacing.radiusCard),
-                                  child: Padding(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 8),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: BoxDecoration(
-                                            color: getCategoryColor(
-                                                category.colorValue),
-                                            borderRadius: BorderRadius.circular(
-                                                AppSpacing.radiusCard),
-                                          ),
-                                          child: Center(
-                                            child: CategoryIconWidget(
-                                              iconName: category.iconName,
-                                              size: AppSpacing.iconSizeXs,
-                                              color: iconColor,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                category.name,
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodyLarge
-                                                    ?.copyWith(
-                                                        fontWeight:
-                                                            FontWeight.w500),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                        AppSpacing.radiusFull),
-                                                child: LinearProgressIndicator(
-                                                  value: totalExpense > 0
-                                                      ? entry.value /
-                                                          totalExpense
-                                                      : 0,
-                                                  backgroundColor: Theme.of(
-                                                          context)
-                                                      .colorScheme
-                                                      .surfaceContainerHighest,
-                                                  valueColor:
-                                                      AlwaysStoppedAnimation(
-                                                          getCategoryColor(
-                                                              category
-                                                                  .colorValue)),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
-                                          children: [
-                                            Text(
-                                              CurrencyFormatter
-                                                  .formatVNDFromCents(
-                                                      entry.value,
-                                                      locale: l10n.localeName),
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyLarge
-                                                  ?.copyWith(
-                                                      fontWeight:
-                                                          FontWeight.w600),
-                                            ),
-                                            Text(
-                                              '$percentage%',
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodySmall,
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Icon(Icons.chevron_right,
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .onSurface
-                                                .withValues(alpha: 0.3),
-                                            size: 20),
-                                      ],
-                                    ),
                                   ),
                                 );
                               }).toList(),
@@ -817,6 +559,316 @@ class ReportsScreen extends HookConsumerWidget {
             : AppColors.primary.withValues(alpha: 0.35),
       );
     }).toList();
+  }
+}
+
+class _BudgetReportCard extends StatelessWidget {
+  const _BudgetReportCard({
+    required this.budget,
+    required this.category,
+    required this.consumedCents,
+    required this.onTap,
+  });
+
+  final Budget budget;
+  final Category category;
+  final int consumedCents;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final percentage = budget.limitCents > 0
+        ? (consumedCents / budget.limitCents * 100)
+        : 0.0;
+    final isExceeded = consumedCents > budget.limitCents;
+    String format(int cents) => CurrencyFormatter.formatVNDFromCents(
+          cents,
+          locale: l10n.localeName,
+        );
+
+    return Padding(
+      padding: const EdgeInsets.only(
+          bottom: AppSpacing.sm),
+      child: AppCard(
+        onTap: onTap,
+        child: Column(
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: getCategoryColor(
+                            category.colorValue)
+                        .withValues(alpha: 0.2),
+                    borderRadius:
+                        BorderRadius.circular(
+                            AppSpacing.radiusCard),
+                  ),
+                  child: Center(
+                    child: CategoryIconWidget(
+                      iconName: category.iconName,
+                      size: 18,
+                      color: getCategoryColor(
+                          category.colorValue),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        category.name,
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium,
+                      ),
+                      Text(
+                        budget.periodType ==
+                                PeriodType.monthly
+                            ? l10n.monthly
+                            : l10n.yearly,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isExceeded
+                        ? context.semanticColors.expense
+                            .withValues(alpha: 0.1)
+                        : context.semanticColors.income
+                            .withValues(alpha: 0.1),
+                    borderRadius:
+                        BorderRadius.circular(
+                            AppSpacing.radiusFull),
+                  ),
+                  child: Text(
+                    '${percentage.toStringAsFixed(1)}%',
+                    style: TextStyle(
+                      color: isExceeded
+                          ? context.semanticColors.expense
+                          : context.semanticColors.income,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(
+                        AppSpacing.radiusFull),
+                    child: LinearProgressIndicator(
+                      value: (percentage / 100)
+                          .clamp(0.0, 1.0),
+                      minHeight: 8,
+                      backgroundColor: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest,
+                      valueColor: AlwaysStoppedAnimation(
+                        isExceeded
+                            ? context.semanticColors.expense
+                            : getCategoryColor(
+                                category.colorValue),
+                      ),
+                    ),
+                  ),
+                ),
+                if (isExceeded) ...[
+                  const SizedBox(width: AppSpacing.sm),
+                  Icon(
+                    Icons.warning_amber_rounded,
+                    size: AppSpacing.iconSizeSm,
+                    color: context.semanticColors.expense,
+                    semanticLabel: l10n.exceeded,
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  child: Text(
+                    '${format(consumedCents)} / ${format(budget.limitCents)}',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    '${l10n.remaining}: '
+                    '${format(budget.limitCents - consumedCents)}',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(
+                          color: isExceeded
+                              ? context.semanticColors.expense
+                              : context.semanticColors.income,
+                          fontWeight: FontWeight.w600,
+                        ),
+                    textAlign: TextAlign.right,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryBreakdownRow extends StatelessWidget {
+  const _CategoryBreakdownRow({
+    required this.category,
+    required this.amountCents,
+    required this.totalCents,
+    required this.onTap,
+  });
+
+  final Category category;
+  final int amountCents;
+  final int totalCents;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final percentage = totalCents > 0
+        ? (amountCents / totalCents * 100).toStringAsFixed(1)
+        : '0';
+    final iconColor = ThemeData.estimateBrightnessForColor(
+              getCategoryColor(category.colorValue),
+            ) ==
+            Brightness.dark
+        ? AppColors.textLight
+        : AppColors.textDark;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(
+          AppSpacing.radiusCard),
+      child: Padding(
+        padding:
+            const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: getCategoryColor(
+                    category.colorValue),
+                borderRadius: BorderRadius.circular(
+                    AppSpacing.radiusCard),
+              ),
+              child: Center(
+                child: CategoryIconWidget(
+                  iconName: category.iconName,
+                  size: AppSpacing.iconSizeXs,
+                  color: iconColor,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    category.name,
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyLarge
+                        ?.copyWith(
+                            fontWeight:
+                                FontWeight.w500),
+                  ),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius:
+                        BorderRadius.circular(
+                            AppSpacing.radiusFull),
+                    child: LinearProgressIndicator(
+                      value: totalCents > 0
+                          ? amountCents /
+                              totalCents
+                          : 0,
+                      backgroundColor: Theme.of(
+                              context)
+                          .colorScheme
+                          .surfaceContainerHighest,
+                      valueColor:
+                          AlwaysStoppedAnimation(
+                              getCategoryColor(
+                                  category
+                                      .colorValue)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment.end,
+              children: [
+                Text(
+                  CurrencyFormatter
+                      .formatVNDFromCents(
+                          amountCents,
+                          locale: l10n.localeName),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyLarge
+                      ?.copyWith(
+                          fontWeight:
+                              FontWeight.w600),
+                ),
+                Text(
+                  '$percentage%',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall,
+                ),
+              ],
+            ),
+            const SizedBox(width: 8),
+            Icon(Icons.chevron_right,
+                color: Theme.of(context)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.3),
+                size: 20),
+          ],
+        ),
+      ),
+    );
   }
 }
 
