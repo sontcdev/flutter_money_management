@@ -55,24 +55,7 @@ class IconManagementScreen extends HookConsumerWidget {
 
           // My Icons section
           if (customIcons.isNotEmpty) ...[
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-              child: Row(
-                children: [
-                  Icon(Icons.star,
-                      color: Theme.of(context).colorScheme.primary,
-                      size: AppSpacing.iconSizeSm),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    l10n.myIcons,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
-                ],
-              ),
-            ),
+            const _MyIconsHeader(),
             const SizedBox(height: AppSpacing.sm),
             SizedBox(
               height: 80,
@@ -112,46 +95,13 @@ class IconManagementScreen extends HookConsumerWidget {
           ],
 
           // Available icons
-          Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
-            child: Row(
-              children: [
-                const Icon(Icons.apps, size: AppSpacing.iconSizeSm),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  l10n.availableIcons,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  '(${searchResults.length})',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                ),
-              ],
-            ),
-          ),
+          _AvailableIconsHeader(count: searchResults.length),
           const SizedBox(height: AppSpacing.sm),
 
           // Search results grid
           Expanded(
             child: searchResults.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.search_off,
-                            size: 48,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant),
-                        const SizedBox(height: AppSpacing.sm),
-                        Text(l10n.noIconsFound),
-                      ],
-                    ),
-                  )
+                ? const _NoIconsFound()
                 : GridView.builder(
                     padding: const EdgeInsets.all(AppSpacing.screenPadding),
                     gridDelegate:
@@ -200,6 +150,88 @@ class IconManagementScreen extends HookConsumerWidget {
                     },
                   ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MyIconsHeader extends StatelessWidget {
+  const _MyIconsHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding:
+          const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+      child: Row(
+        children: [
+          Icon(Icons.star,
+              color: Theme.of(context).colorScheme.primary,
+              size: AppSpacing.iconSizeSm),
+          const SizedBox(width: AppSpacing.sm),
+          Text(
+            l10n.myIcons,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AvailableIconsHeader extends StatelessWidget {
+  const _AvailableIconsHeader({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding:
+          const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
+      child: Row(
+        children: [
+          const Icon(Icons.apps, size: AppSpacing.iconSizeSm),
+          const SizedBox(width: AppSpacing.sm),
+          Text(
+            l10n.availableIcons,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Text(
+            '($count)',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _NoIconsFound extends StatelessWidget {
+  const _NoIconsFound();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.search_off,
+              size: 48,
+              color: Theme.of(context).colorScheme.onSurfaceVariant),
+          const SizedBox(height: AppSpacing.sm),
+          Text(l10n.noIconsFound),
         ],
       ),
     );

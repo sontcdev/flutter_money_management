@@ -90,12 +90,6 @@ class ResetPasswordScreen extends HookConsumerWidget {
       }
     }
 
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final secondaryText =
-        isDark ? AppColors.textLightSecondary : AppColors.textSecondary;
-
     return Scaffold(
       appBar: AppBar(title: Text(l10n.resetPasswordTitle)),
       body: SafeArea(
@@ -105,116 +99,36 @@ class ResetPasswordScreen extends HookConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: AppSpacing.lg),
-              Center(
-                child: Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.lock_reset_outlined,
-                    size: 36,
-                    color: colorScheme.primary,
-                  ),
-                ),
-              ),
+              const _ResetPasswordHeader(),
               const SizedBox(height: AppSpacing.xl),
-              Text(
-                l10n.resetPasswordTitle,
-                style: textTheme.headlineMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                l10n.resetPasswordCallbackMessage,
-                style: textTheme.bodyMedium?.copyWith(color: secondaryText),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              Text(l10n.password, style: textTheme.labelLarge),
-              const SizedBox(height: AppSpacing.sm),
-              TextField(
+              _ResetPasswordField(
+                label: l10n.password,
+                hintText: l10n.atLeastSixCharacters,
                 controller: passwordController,
-                decoration: InputDecoration(
-                  hintText: l10n.atLeastSixCharacters,
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  suffixIcon: IconButton(
-                    tooltip: obscurePassword.value
-                        ? l10n.showPassword
-                        : l10n.hidePassword,
-                    icon: Icon(
-                      obscurePassword.value
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
-                    ),
-                    onPressed: () {
-                      obscurePassword.value = !obscurePassword.value;
-                    },
-                  ),
-                ),
                 obscureText: obscurePassword.value,
+                onToggleObscure: () {
+                  obscurePassword.value = !obscurePassword.value;
+                },
                 enabled: !isLoading.value,
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: AppSpacing.lg),
-              Text(l10n.confirmPassword, style: textTheme.labelLarge),
-              const SizedBox(height: AppSpacing.sm),
-              TextField(
+              _ResetPasswordField(
+                label: l10n.confirmPassword,
+                hintText: l10n.reenterYourPassword,
                 controller: confirmPasswordController,
-                decoration: InputDecoration(
-                  hintText: l10n.reenterYourPassword,
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  suffixIcon: IconButton(
-                    tooltip: obscureConfirmPassword.value
-                        ? l10n.showPassword
-                        : l10n.hidePassword,
-                    icon: Icon(
-                      obscureConfirmPassword.value
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
-                    ),
-                    onPressed: () {
-                      obscureConfirmPassword.value =
-                          !obscureConfirmPassword.value;
-                    },
-                  ),
-                ),
                 obscureText: obscureConfirmPassword.value,
+                onToggleObscure: () {
+                  obscureConfirmPassword.value =
+                      !obscureConfirmPassword.value;
+                },
                 enabled: !isLoading.value,
                 textInputAction: TextInputAction.done,
                 onSubmitted: (_) => handleSubmit(),
               ),
               if (errorMessage.value != null) ...[
                 const SizedBox(height: AppSpacing.lg),
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  decoration: BoxDecoration(
-                    color: (isDark ? AppColors.errorDark : AppColors.error)
-                        .withValues(alpha: isDark ? 0.18 : 0.08),
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        color: isDark ? AppColors.errorDark : AppColors.error,
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: Text(
-                          errorMessage.value!,
-                          style: textTheme.bodyMedium?.copyWith(
-                            color: isDark
-                                ? AppColors.errorDark
-                                : AppColors.error,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                _ResetPasswordErrorBanner(message: errorMessage.value!),
               ],
               const SizedBox(height: AppSpacing.xl),
               AppButton.prominent(
@@ -227,6 +141,147 @@ class ResetPasswordScreen extends HookConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _ResetPasswordHeader extends StatelessWidget {
+  const _ResetPasswordHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final secondaryText =
+        isDark ? AppColors.textLightSecondary : AppColors.textSecondary;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Center(
+          child: Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.lock_reset_outlined,
+              size: 36,
+              color: colorScheme.primary,
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        Text(
+          l10n.resetPasswordTitle,
+          style: textTheme.headlineMedium,
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          l10n.resetPasswordCallbackMessage,
+          style: textTheme.bodyMedium?.copyWith(color: secondaryText),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+}
+
+class _ResetPasswordField extends StatelessWidget {
+  const _ResetPasswordField({
+    required this.label,
+    required this.hintText,
+    required this.controller,
+    required this.obscureText,
+    required this.onToggleObscure,
+    required this.enabled,
+    required this.textInputAction,
+    this.onSubmitted,
+  });
+
+  final String label;
+  final String hintText;
+  final TextEditingController controller;
+  final bool obscureText;
+  final VoidCallback onToggleObscure;
+  final bool enabled;
+  final TextInputAction textInputAction;
+  final ValueChanged<String>? onSubmitted;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(label, style: textTheme.labelLarge),
+        const SizedBox(height: AppSpacing.sm),
+        TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: hintText,
+            prefixIcon: const Icon(Icons.lock_outline),
+            suffixIcon: IconButton(
+              tooltip: obscureText ? l10n.showPassword : l10n.hidePassword,
+              icon: Icon(
+                obscureText
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
+              ),
+              onPressed: onToggleObscure,
+            ),
+          ),
+          obscureText: obscureText,
+          enabled: enabled,
+          textInputAction: textInputAction,
+          onSubmitted: onSubmitted,
+        ),
+      ],
+    );
+  }
+}
+
+class _ResetPasswordErrorBanner extends StatelessWidget {
+  const _ResetPasswordErrorBanner({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: (isDark ? AppColors.errorDark : AppColors.error)
+            .withValues(alpha: isDark ? 0.18 : 0.08),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.error_outline,
+            color: isDark ? AppColors.errorDark : AppColors.error,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              message,
+              style: textTheme.bodyMedium?.copyWith(
+                color: isDark ? AppColors.errorDark : AppColors.error,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

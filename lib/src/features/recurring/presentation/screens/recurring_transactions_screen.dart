@@ -520,25 +520,9 @@ class _OccurrenceDetailSheet extends ConsumerWidget {
               ),
             ],
             const SizedBox(height: AppSpacing.md),
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
-              children: [
-                AppStatusChip.info(
-                  icon: Icons.schedule,
-                  label: _frequencyLabel(recurringTransaction.frequency, l10n),
-                ),
-                AppStatusChip(
-                  icon: recurringTransaction.isExpense
-                      ? Icons.arrow_upward
-                      : Icons.arrow_downward,
-                  color: recurringTransaction.isExpense
-                      ? context.semanticColors.expense
-                      : context.semanticColors.income,
-                  label:
-                      recurringTransaction.isExpense ? l10n.expense : l10n.income,
-                ),
-              ],
+            _OccurrenceDetailChips(
+              recurringTransaction: recurringTransaction,
+              l10n: l10n,
             ),
             const SizedBox(height: AppSpacing.xl),
             Row(
@@ -573,6 +557,40 @@ class _OccurrenceDetailSheet extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _OccurrenceDetailChips extends StatelessWidget {
+  const _OccurrenceDetailChips({
+    required this.recurringTransaction,
+    required this.l10n,
+  });
+
+  final RecurringTransaction recurringTransaction;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.sm,
+      children: [
+        AppStatusChip.info(
+          icon: Icons.schedule,
+          label: _frequencyLabel(recurringTransaction.frequency, l10n),
+        ),
+        AppStatusChip(
+          icon: recurringTransaction.isExpense
+              ? Icons.arrow_upward
+              : Icons.arrow_downward,
+          color: recurringTransaction.isExpense
+              ? context.semanticColors.expense
+              : context.semanticColors.income,
+          label:
+              recurringTransaction.isExpense ? l10n.expense : l10n.income,
+        ),
+      ],
     );
   }
 

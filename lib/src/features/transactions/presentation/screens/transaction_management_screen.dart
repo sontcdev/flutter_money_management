@@ -19,6 +19,28 @@ import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
+void _useSearchDebounce(
+  TextEditingController searchController,
+  ValueNotifier<String> searchQuery,
+) {
+  useEffect(() {
+    Timer? debounce;
+    void listener() {
+      debounce?.cancel();
+      debounce = Timer(
+        const Duration(milliseconds: 300),
+        () => searchQuery.value = searchController.text,
+      );
+    }
+
+    searchController.addListener(listener);
+    return () {
+      debounce?.cancel();
+      searchController.removeListener(listener);
+    };
+  }, [searchController]);
+}
+
 class TransactionManagementScreen extends HookConsumerWidget {
   const TransactionManagementScreen({super.key});
 
@@ -38,22 +60,7 @@ class TransactionManagementScreen extends HookConsumerWidget {
     final isSelectionMode = useState(false);
 
     // Listen to search controller
-    useEffect(() {
-      Timer? debounce;
-      void listener() {
-        debounce?.cancel();
-        debounce = Timer(
-          const Duration(milliseconds: 300),
-          () => searchQuery.value = searchController.text,
-        );
-      }
-
-      searchController.addListener(listener);
-      return () {
-        debounce?.cancel();
-        searchController.removeListener(listener);
-      };
-    }, [searchController]);
+    _useSearchDebounce(searchController, searchQuery);
 
     return Scaffold(
       appBar: AppBar(
@@ -75,15 +82,14 @@ class TransactionManagementScreen extends HookConsumerWidget {
               ),
               tooltip: l10n.editSelected,
             ),
-          IconButton(
-            icon: Icon(isSelectionMode.value ? Icons.close : Icons.checklist),
+          _SelectionModeToggle(
+            isSelectionMode: isSelectionMode.value,
             onPressed: () {
               isSelectionMode.value = !isSelectionMode.value;
               if (!isSelectionMode.value) {
                 selectedTransactionIds.value = {};
               }
             },
-            tooltip: isSelectionMode.value ? l10n.cancel : l10n.selectAll,
           ),
         ],
       ),
@@ -102,45 +108,24 @@ class TransactionManagementScreen extends HookConsumerWidget {
 
           // Selection bar
           if (isSelectionMode.value && selectedTransactionIds.value.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: Theme.of(context).colorScheme.primaryContainer,
-              child: Row(
-                children: [
-                  Text(
-                    l10n.selectedCount(selectedTransactionIds.value.length),
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Spacer(),
-                  TextButton.icon(
-                    icon: const Icon(Icons.select_all),
-                    label: Text(l10n.selectAll),
-                    onPressed: () {
-                      final allTransactions =
-                          transactionsAsync.valueOrNull ?? [];
-                      final filteredIds = _filterTransactions(
-                        context,
-                        allTransactions,
-                        searchQuery.value,
-                        selectedCategoryId.value,
-                        selectedBudgetId.value,
-                        budgetsAsync.valueOrNull ?? [],
-                      ).map((t) => t.id).toSet();
-                      selectedTransactionIds.value = filteredIds;
-                    },
-                  ),
-                  TextButton.icon(
-                    icon: const Icon(Icons.deselect),
-                    label: Text(l10n.deselectAll),
-                    onPressed: () {
-                      selectedTransactionIds.value = {};
-                    },
-                  ),
-                ],
-              ),
+            _SelectionBar(
+              count: selectedTransactionIds.value.length,
+              onSelectAll: () {
+                final allTransactions =
+                    transactionsAsync.valueOrNull ?? [];
+                final filteredIds = _filterTransactions(
+                  context,
+                  allTransactions,
+                  searchQuery.value,
+                  selectedCategoryId.value,
+                  selectedBudgetId.value,
+                  budgetsAsync.valueOrNull ?? [],
+                ).map((t) => t.id).toSet();
+                selectedTransactionIds.value = filteredIds;
+              },
+              onDeselectAll: () {
+                selectedTransactionIds.value = {};
+              },
             ),
 
           // Transactions list
@@ -159,41 +144,15 @@ class TransactionManagementScreen extends HookConsumerWidget {
                   );
 
                   if (filteredTransactions.isEmpty) {
-                    final hasFilter = searchQuery.value.isNotEmpty ||
-                        selectedCategoryId.value != null ||
-                        selectedBudgetId.value != null;
-                    final emptyState = hasFilter
-                        ? EmptyState.noSearchResult(
-                            icon: Icons.search_off,
-                            title: l10n.noTransactionsMatch,
-                            message: l10n.adjustSearchTerms,
-                            actionLabel: l10n.clearFilter,
-                            actionIcon: Icons.filter_alt_off,
-                            onAction: () {
-                              searchController.clear();
-                              selectedCategoryId.value = null;
-                              selectedBudgetId.value = null;
-                            },
-                            compact: true,
-                          )
-                        : EmptyState(
-                            icon: Icons.receipt_long,
-                            title: l10n.noTransactions,
-                            message: l10n.onboardingSubtitle,
-                            actionLabel: l10n.addTransaction,
-                            onAction: () {
-                              Navigator.pushNamed(context, '/add-transaction');
-                            },
-                            compact: true,
-                          );
-                    return ListView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      children: [
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.6,
-                          child: emptyState,
-                        ),
-                      ],
+                    return _ManagementEmptyState(
+                      hasFilter: searchQuery.value.isNotEmpty ||
+                          selectedCategoryId.value != null ||
+                          selectedBudgetId.value != null,
+                      onClearFilter: () {
+                        searchController.clear();
+                        selectedCategoryId.value = null;
+                        selectedBudgetId.value = null;
+                      },
                     );
                   }
 
@@ -202,43 +161,16 @@ class TransactionManagementScreen extends HookConsumerWidget {
                       final categoryMap = {
                         for (final c in categories) c.id: c
                       };
-                      return ListView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.screenPadding,
-                          vertical: AppSpacing.md,
+                      return _TransactionRowsList(
+                        itemCount: filteredTransactions.length,
+                        itemBuilder: (i) => _buildTransactionRow(
+                          context,
+                          l10n,
+                          filteredTransactions[i],
+                          categoryMap,
+                          selectedTransactionIds,
+                          isSelectionMode,
                         ),
-                        children: [
-                          AppCard(
-                            margin: EdgeInsets.zero,
-                            clipBehavior: Clip.antiAlias,
-                            padding: const EdgeInsets.symmetric(
-                                vertical: AppSpacing.xs),
-                            child: Column(
-                              children: [
-                                for (var i = 0;
-                                    i < filteredTransactions.length;
-                                    i++) ...[
-                                  if (i > 0)
-                                    Divider(
-                                      height: 1,
-                                      color: Theme.of(context).dividerColor,
-                                      indent: AppSpacing.lg,
-                                      endIndent: AppSpacing.lg,
-                                    ),
-                                  _buildTransactionRow(
-                                    context,
-                                    l10n,
-                                    filteredTransactions[i],
-                                    categoryMap,
-                                    selectedTransactionIds,
-                                    isSelectionMode,
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ],
                       );
                     },
                     loading: () =>
@@ -714,5 +646,154 @@ class TransactionManagementScreen extends HookConsumerWidget {
         );
       }
     }
+  }
+}
+
+class _SelectionBar extends StatelessWidget {
+  const _SelectionBar({
+    required this.count,
+    required this.onSelectAll,
+    required this.onDeselectAll,
+  });
+
+  final int count;
+  final VoidCallback onSelectAll;
+  final VoidCallback onDeselectAll;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: Theme.of(context).colorScheme.primaryContainer,
+      child: Row(
+        children: [
+          Text(
+            l10n.selectedCount(count),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onPrimaryContainer,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const Spacer(),
+          TextButton.icon(
+            icon: const Icon(Icons.select_all),
+            label: Text(l10n.selectAll),
+            onPressed: onSelectAll,
+          ),
+          TextButton.icon(
+            icon: const Icon(Icons.deselect),
+            label: Text(l10n.deselectAll),
+            onPressed: onDeselectAll,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ManagementEmptyState extends StatelessWidget {
+  const _ManagementEmptyState({
+    required this.hasFilter,
+    required this.onClearFilter,
+  });
+
+  final bool hasFilter;
+  final VoidCallback onClearFilter;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final emptyState = hasFilter
+        ? EmptyState.noSearchResult(
+            icon: Icons.search_off,
+            title: l10n.noTransactionsMatch,
+            message: l10n.adjustSearchTerms,
+            actionLabel: l10n.clearFilter,
+            actionIcon: Icons.filter_alt_off,
+            onAction: onClearFilter,
+            compact: true,
+          )
+        : EmptyState(
+            icon: Icons.receipt_long,
+            title: l10n.noTransactions,
+            message: l10n.onboardingSubtitle,
+            actionLabel: l10n.addTransaction,
+            onAction: () {
+              Navigator.pushNamed(context, '/add-transaction');
+            },
+            compact: true,
+          );
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.6,
+          child: emptyState,
+        ),
+      ],
+    );
+  }
+}
+
+class _TransactionRowsList extends StatelessWidget {
+  const _TransactionRowsList({
+    required this.itemCount,
+    required this.itemBuilder,
+  });
+
+  final int itemCount;
+  final Widget Function(int index) itemBuilder;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.screenPadding,
+        vertical: AppSpacing.md,
+      ),
+      children: [
+        AppCard(
+          margin: EdgeInsets.zero,
+          clipBehavior: Clip.antiAlias,
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+          child: Column(
+            children: [
+              for (var i = 0; i < itemCount; i++) ...[
+                if (i > 0)
+                  Divider(
+                    height: 1,
+                    color: Theme.of(context).dividerColor,
+                    indent: AppSpacing.lg,
+                    endIndent: AppSpacing.lg,
+                  ),
+                itemBuilder(i),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SelectionModeToggle extends StatelessWidget {
+  const _SelectionModeToggle({
+    required this.isSelectionMode,
+    required this.onPressed,
+  });
+
+  final bool isSelectionMode;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return IconButton(
+      icon: Icon(isSelectionMode ? Icons.close : Icons.checklist),
+      onPressed: onPressed,
+      tooltip: isSelectionMode ? l10n.cancel : l10n.selectAll,
+    );
   }
 }

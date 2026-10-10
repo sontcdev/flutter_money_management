@@ -3,6 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
+import 'package:flutter_money_management/src/features/reports/models/report_calendar_models.dart';
 import 'package:flutter_money_management/src/features/reports/presentation/widgets/calendar_grid.dart';
 import 'package:flutter_money_management/src/features/reports/presentation/widgets/summary_bar.dart';
 import 'package:flutter_money_management/src/features/reports/presentation/widgets/transaction_group_header.dart';
@@ -133,53 +134,14 @@ class ReportCalendarScreen extends HookConsumerWidget {
           // ========== CALENDAR SECTION (CỐ ĐỊNH) ==========
           _buildCalendarSection(
             context,
-            Container(
-              color: Theme.of(context).colorScheme.surface,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(height: 8),
-                  _buildMonthSelector(context, ref, selectedMonth),
-                  const SizedBox(height: 4),
-                  calendarData.when(
-                    data: (data) => CalendarGrid(
-                      month: selectedMonth,
-                      cellData: data,
-                      selectedDate: selectedDate,
-                      monthStartDay: monthStartDay,
-                      onDateSelected: onDateSelected,
-                    ),
-                    loading: () =>
-                        const SectionSkeleton(height: 280, lineCount: 6),
-                    error: (e, s) => SizedBox(
-                      height: 280,
-                      child: InlineLoadErrorState(
-                        onRetry: () =>
-                            ref.invalidate(calendarDataProvider(selectedMonth)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  monthlySummary.when(
-                    data: (summary) => SummaryBar(
-                      totalIncome: summary['income'] ?? 0,
-                      totalExpense: summary['expense'] ?? 0,
-                      net: summary['net'] ?? 0,
-                    ),
-                    loading: () =>
-                        const SectionSkeleton(height: 70, lineCount: 2),
-                    error: (e, s) => SizedBox(
-                      height: 70,
-                      child: InlineLoadErrorState(
-                        onRetry: () => ref.invalidate(
-                          monthlySummaryProvider(selectedMonth),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const Divider(height: 1),
-                ],
-              ),
+            _CalendarHeader(
+              selectedMonth: selectedMonth,
+              monthStartDay: monthStartDay,
+              selectedDate: selectedDate,
+              calendarData: calendarData,
+              monthlySummary: monthlySummary,
+              monthSelector: _buildMonthSelector(context, ref, selectedMonth),
+              onDateSelected: onDateSelected,
             ),
           ),
 
@@ -191,63 +153,14 @@ class ReportCalendarScreen extends HookConsumerWidget {
                     .read(transactionListNotifierProvider.notifier)
                     .refresh();
               },
-              child: groups.isEmpty
-                  ? ListView(
-                      // Empty ListView để RefreshIndicator hoạt động
-                      children: [
-                        const SizedBox(height: 80),
-                        EmptyState.compact(
-                          icon: Icons.event_busy_outlined,
-                          title: l10n.noTransactionsThisMonth,
-                          message: '',
-                          actionLabel: l10n.addTransaction,
-                          onAction: () {
-                            Navigator.pushNamed(context, '/add-transaction');
-                          },
-                        ),
-                      ],
-                    )
-                  : SingleChildScrollView(
-                      child: Column(
-                        children: List.generate(groups.length, (index) {
-                          final group = groups[index];
-                          final isHighlighted = selectedDate != null &&
-                              _isSameDay(group.date, selectedDate);
-
-                          return Container(
-                            key: groupKeysRef.value[index],
-                            child: Column(
-                              children: [
-                                TransactionGroupHeader(
-                                  date: group.date,
-                                  totalIncome: group.totalIncome,
-                                  totalExpense: group.totalExpense,
-                                  isHighlighted: isHighlighted,
-                                ),
-                                ...group.transactions
-                                    .map((txnWithCat) => TransactionListItem(
-                                          transactionWithCategory: txnWithCat,
-                                          onTap: () {
-                                            Navigator.pushNamed(
-                                              context,
-                                              '/transaction-detail',
-                                              arguments:
-                                                  txnWithCat.transaction.id,
-                                            );
-                                          },
-                                          onLongPress: () {
-                                            _showTransactionActions(
-                                                context, ref, txnWithCat);
-                                          },
-                                        )),
-                                if (index < groups.length - 1)
-                                  const Divider(height: 1),
-                              ],
-                            ),
-                          );
-                        }),
-                      ),
-                    ),
+              child: _CalendarTransactionList(
+                groups: groups,
+                groupKeys: groupKeysRef.value,
+                selectedDate: selectedDate,
+                onLongPress: (txnWithCat) {
+                  _showTransactionActions(context, ref, txnWithCat);
+                },
+              ),
             ),
           ),
         ],
@@ -437,6 +350,150 @@ class ReportCalendarScreen extends HookConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+class _CalendarHeader extends ConsumerWidget {
+  final DateTime selectedMonth;
+  final int monthStartDay;
+  final DateTime? selectedDate;
+  final AsyncValue<Map<DateTime, List<AmountBadge>>> calendarData;
+  final AsyncValue<Map<String, int>> monthlySummary;
+  final Widget monthSelector;
+  final ValueChanged<DateTime> onDateSelected;
+
+  const _CalendarHeader({
+    required this.selectedMonth,
+    required this.monthStartDay,
+    required this.selectedDate,
+    required this.calendarData,
+    required this.monthlySummary,
+    required this.monthSelector,
+    required this.onDateSelected,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      color: Theme.of(context).colorScheme.surface,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 8),
+          monthSelector,
+          const SizedBox(height: 4),
+          calendarData.when(
+            data: (data) => CalendarGrid(
+              month: selectedMonth,
+              cellData: data,
+              selectedDate: selectedDate,
+              monthStartDay: monthStartDay,
+              onDateSelected: onDateSelected,
+            ),
+            loading: () => const SectionSkeleton(height: 280, lineCount: 6),
+            error: (e, s) => SizedBox(
+              height: 280,
+              child: InlineLoadErrorState(
+                onRetry: () =>
+                    ref.invalidate(calendarDataProvider(selectedMonth)),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          monthlySummary.when(
+            data: (summary) => SummaryBar(
+              totalIncome: summary['income'] ?? 0,
+              totalExpense: summary['expense'] ?? 0,
+              net: summary['net'] ?? 0,
+            ),
+            loading: () => const SectionSkeleton(height: 70, lineCount: 2),
+            error: (e, s) => SizedBox(
+              height: 70,
+              child: InlineLoadErrorState(
+                onRetry: () => ref.invalidate(
+                  monthlySummaryProvider(selectedMonth),
+                ),
+              ),
+            ),
+          ),
+          const Divider(height: 1),
+        ],
+      ),
+    );
+  }
+}
+
+class _CalendarTransactionList extends StatelessWidget {
+  final List<TransactionGroup> groups;
+  final List<GlobalKey> groupKeys;
+  final DateTime? selectedDate;
+  final ValueChanged<TransactionWithCategory> onLongPress;
+
+  const _CalendarTransactionList({
+    required this.groups,
+    required this.groupKeys,
+    required this.selectedDate,
+    required this.onLongPress,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final selectedDate = this.selectedDate;
+    return groups.isEmpty
+        ? ListView(
+            // Empty ListView để RefreshIndicator hoạt động
+            children: [
+              const SizedBox(height: 80),
+              EmptyState.compact(
+                icon: Icons.event_busy_outlined,
+                title: l10n.noTransactionsThisMonth,
+                message: '',
+                actionLabel: l10n.addTransaction,
+                onAction: () {
+                  Navigator.pushNamed(context, '/add-transaction');
+                },
+              ),
+            ],
+          )
+        : SingleChildScrollView(
+            child: Column(
+              children: List.generate(groups.length, (index) {
+                final group = groups[index];
+                final isHighlighted = selectedDate != null &&
+                    _isSameDay(group.date, selectedDate);
+
+                return Container(
+                  key: groupKeys[index],
+                  child: Column(
+                    children: [
+                      TransactionGroupHeader(
+                        date: group.date,
+                        totalIncome: group.totalIncome,
+                        totalExpense: group.totalExpense,
+                        isHighlighted: isHighlighted,
+                      ),
+                      ...group.transactions
+                          .map((txnWithCat) => TransactionListItem(
+                                transactionWithCategory: txnWithCat,
+                                onTap: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    '/transaction-detail',
+                                    arguments: txnWithCat.transaction.id,
+                                  );
+                                },
+                                onLongPress: () {
+                                  onLongPress(txnWithCat);
+                                },
+                              )),
+                      if (index < groups.length - 1) const Divider(height: 1),
+                    ],
+                  ),
+                );
+              }),
+            ),
+          );
   }
 }
 

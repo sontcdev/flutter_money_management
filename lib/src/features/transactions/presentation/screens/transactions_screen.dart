@@ -52,106 +52,16 @@ class TransactionsScreen extends HookConsumerWidget {
       searchDebounce.value = null;
     }
 
-    Future<bool> canManage(Transaction transaction) async {
-      try {
-        return await ref.read(
-          transactionCanManageProvider(transaction.id).future,
-        );
-      } catch (_) {
-        return false;
-      }
-    }
+    Future<bool> confirmSwipe(Transaction t, DismissDirection d) =>
+        _confirmSwipe(context, ref, l10n, t, d);
 
-    Future<bool> confirmSwipe(
-      Transaction transaction,
-      DismissDirection direction,
-    ) async {
-      if (!await canManage(transaction)) {
-        if (context.mounted) {
-          showAppSnackBar(
-            context,
-            l10n.transactionManageNotAllowed,
-            type: AppSnackBarType.error,
-          );
-        }
-        return false;
-      }
-      if (direction == DismissDirection.endToStart) return true;
-      if (!context.mounted) return false;
-      final result = await Navigator.pushNamed(
-        context,
-        '/edit-transaction',
-        arguments: transaction.id,
-      );
-      if (result == true && context.mounted) {
-        ref.invalidate(transactionsProvider);
-        ref.invalidate(walletBalancesProvider);
-      }
-      return false;
-    }
-
-    Future<void> deleteWithUndo(Transaction transaction) async {
-      final container = ProviderScope.containerOf(context, listen: false);
-      final repository = ref.read(transactionRepositoryProvider);
-      final receiptService = ref.read(transactionReceiptServiceProvider);
-      pendingDeleteIds.value = {...pendingDeleteIds.value, transaction.id};
-
-      void restore() {
-        if (!context.mounted) return;
-        pendingDeleteIds.value = {...pendingDeleteIds.value}
-          ..remove(transaction.id);
-      }
-
-      final reason = await showAppSnackBar(
-        context,
-        l10n.transactionDeleted,
-        onUndo: () {},
-      ).closed;
-      if (reason == SnackBarClosedReason.action) {
-        restore();
-        return;
-      }
-      try {
-        await receiptService
-            .removeReceipt(transaction.id)
-            .catchError((Object _) {});
-        await repository.deleteTransaction(transaction.id);
-      } catch (e) {
-        restore();
-        if (context.mounted) {
-          showAppSnackBar(
-            context,
-            mapSupabaseException(e).toString(),
-            type: AppSnackBarType.error,
-          );
-        }
-        return;
-      }
-      container
-        ..invalidate(transactionsProvider)
-        ..invalidate(budgetsProvider)
-        ..invalidate(budgetsWithConsumedProvider)
-        ..invalidate(walletBalancesProvider);
-    }
+    Future<void> deleteWithUndo(Transaction t) =>
+        _deleteWithUndo(context, ref, l10n, pendingDeleteIds, t);
 
     return Scaffold(
       appBar: AppBar(
         title: showSearch.value
-            ? TextField(
-                autofocus: true,
-                decoration: InputDecoration(
-                  hintText: l10n.search,
-                  border: InputBorder.none,
-                  hintStyle: TextStyle(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.5),
-                  ),
-                ),
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
+            ? _SearchField(
                 onChanged: (value) {
                   searchDebounce.value?.cancel();
                   searchDebounce.value = Timer(
@@ -163,63 +73,24 @@ class TransactionsScreen extends HookConsumerWidget {
             : Text(l10n.transactions),
         automaticallyImplyLeading: false,
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: AppSpacing.sm),
-            child: Material(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              shape: const CircleBorder(),
-              clipBehavior: Clip.antiAlias,
-              child: IconButton(
-                tooltip: showSearch.value ? l10n.close : l10n.search,
-                icon: Icon(showSearch.value ? Icons.close : Icons.search),
-                onPressed: () {
-                  showSearch.value = !showSearch.value;
-                  if (!showSearch.value) {
-                    cancelSearchDebounce();
-                    searchQuery.value = '';
-                  }
-                },
-              ),
-            ),
+          _SearchToggleButton(
+            showSearch: showSearch.value,
+            onPressed: () {
+              showSearch.value = !showSearch.value;
+              if (!showSearch.value) {
+                cancelSearchDebounce();
+                searchQuery.value = '';
+              }
+            },
           ),
         ],
       ),
       body: Column(
         children: [
           // Filter with improved visual clarity
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.screenPadding,
-              vertical: AppSpacing.md,
-            ),
-            child: AppSegmentedFilter<TransactionFilter>(
-              options: [
-                FilterOption(
-                  label: l10n.all,
-                  value: TransactionFilter.all,
-                  icon: Icons.list,
-                ),
-                FilterOption(
-                  label: l10n.expense,
-                  value: TransactionFilter.expense,
-                  icon: Icons.arrow_upward,
-                  color: context.semanticColors.expense,
-                ),
-                FilterOption(
-                  label: l10n.income,
-                  value: TransactionFilter.income,
-                  icon: Icons.arrow_downward,
-                  color: context.semanticColors.income,
-                ),
-                FilterOption(
-                  label: l10n.transfer,
-                  value: TransactionFilter.transfer,
-                  icon: Icons.swap_horiz,
-                ),
-              ],
-              selectedValue: selectedFilter.value,
-              onChanged: (value) => selectedFilter.value = value,
-            ),
+          _TransactionFilterBar(
+            selectedValue: selectedFilter.value,
+            onChanged: (value) => selectedFilter.value = value,
           ),
 
           // Transactions List
@@ -227,114 +98,28 @@ class TransactionsScreen extends HookConsumerWidget {
             child: transactionsAsync.when(
               data: (transactions) {
                 // Apply filters
-                var filteredTransactions = transactions
-                    .where((t) => !pendingDeleteIds.value.contains(t.id))
-                    .toList();
-
-                // Filter by type
-                if (selectedFilter.value == TransactionFilter.expense) {
-                  filteredTransactions = filteredTransactions
-                      .where((t) => t.type == TransactionType.expense)
-                      .toList();
-                } else if (selectedFilter.value == TransactionFilter.income) {
-                  filteredTransactions = filteredTransactions
-                      .where((t) => t.type == TransactionType.income)
-                      .toList();
-                } else if (selectedFilter.value == TransactionFilter.transfer) {
-                  filteredTransactions = filteredTransactions
-                      .where((t) => t.type == TransactionType.transfer)
-                      .toList();
-                }
-
-                // Filter by search query
-                if (searchQuery.value.isNotEmpty) {
-                  filteredTransactions = filteredTransactions.where((t) {
-                    final query = searchQuery.value.toLowerCase();
-                    final amount = CurrencyFormatter.formatVNDFromCents(
-                      t.amountCents,
-                      locale: l10n.localeName,
-                    ).toLowerCase();
-                    final note = (t.note ?? '').toLowerCase();
-                    return amount.contains(query) || note.contains(query);
-                  }).toList();
-                }
+                final filteredTransactions = _applyFilters(
+                  transactions,
+                  pendingDeleteIds: pendingDeleteIds.value,
+                  filter: selectedFilter.value,
+                  searchQuery: searchQuery.value,
+                  localeName: l10n.localeName,
+                );
 
                 // Handle empty states
                 if (filteredTransactions.isEmpty) {
-                  Widget emptyState;
-                  if (searchQuery.value.isNotEmpty) {
-                    emptyState = EmptyState.noSearchResult(
-                      icon: Icons.search_off,
-                      title: l10n.noTransactionsMatch,
-                      message: l10n.adjustSearchTerms,
-                      actionLabel: l10n.clearFilter,
-                      actionIcon: Icons.filter_alt_off,
-                      onAction: () {
-                        cancelSearchDebounce();
-                        showSearch.value = false;
-                        searchQuery.value = '';
-                      },
-                      compact: true,
-                    );
-                  } else if (selectedFilter.value != TransactionFilter.all) {
-                    final (icon, title, message) =
-                        switch (selectedFilter.value) {
-                      TransactionFilter.expense => (
-                          Icons.arrow_upward,
-                          l10n.noExpenseTitle,
-                          l10n.noExpenseTransactionsFound,
-                        ),
-                      TransactionFilter.transfer => (
-                          Icons.swap_horiz,
-                          l10n.noTransferTitle,
-                          l10n.noTransferTransactionsFound,
-                        ),
-                      _ => (
-                          Icons.arrow_downward,
-                          l10n.noIncomeTitle,
-                          l10n.noIncomeTransactionsFound,
-                        ),
-                    };
-                    emptyState = EmptyState(
-                      icon: icon,
-                      title: title,
-                      message: message,
-                      actionLabel: l10n.addTransaction,
-                      onAction: () {
-                        Navigator.pushNamed(context, '/add-transaction');
-                      },
-                      secondaryActionLabel: l10n.clearFilter,
-                      onSecondaryAction: () {
-                        selectedFilter.value = TransactionFilter.all;
-                      },
-                      compact: true,
-                      type: EmptyStateType.noFilterResult,
-                    );
-                  } else {
-                    emptyState = EmptyState.firstRun(
-                      icon: Icons.receipt_long,
-                      title: l10n.startTracking,
-                      message: l10n.onboardingSubtitle,
-                      actionLabel: l10n.addTransaction,
-                      onAction: () {
-                        Navigator.pushNamed(context, '/add-transaction');
-                      },
-                    );
-                  }
-
-                  return RefreshIndicator(
+                  return _TransactionsEmptyView(
+                    hasSearchQuery: searchQuery.value.isNotEmpty,
+                    filter: selectedFilter.value,
                     onRefresh: () => syncCurrentWorkspaceData(ref),
-                    child: ListView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      children: [
-                        ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minHeight: MediaQuery.of(context).size.height * 0.6,
-                          ),
-                          child: emptyState,
-                        ),
-                      ],
-                    ),
+                    onClearSearch: () {
+                      cancelSearchDebounce();
+                      showSearch.value = false;
+                      searchQuery.value = '';
+                    },
+                    onClearFilter: () {
+                      selectedFilter.value = TransactionFilter.all;
+                    },
                   );
                 }
 
@@ -389,6 +174,137 @@ class TransactionsScreen extends HookConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<bool> _canManage(WidgetRef ref, Transaction transaction) async {
+    try {
+      return await ref.read(
+        transactionCanManageProvider(transaction.id).future,
+      );
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> _confirmSwipe(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    Transaction transaction,
+    DismissDirection direction,
+  ) async {
+    if (!await _canManage(ref, transaction)) {
+      if (context.mounted) {
+        showAppSnackBar(
+          context,
+          l10n.transactionManageNotAllowed,
+          type: AppSnackBarType.error,
+        );
+      }
+      return false;
+    }
+    if (direction == DismissDirection.endToStart) return true;
+    if (!context.mounted) return false;
+    final result = await Navigator.pushNamed(
+      context,
+      '/edit-transaction',
+      arguments: transaction.id,
+    );
+    if (result == true && context.mounted) {
+      ref.invalidate(transactionsProvider);
+      ref.invalidate(walletBalancesProvider);
+    }
+    return false;
+  }
+
+  Future<void> _deleteWithUndo(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    ValueNotifier<Set<String>> pendingDeleteIds,
+    Transaction transaction,
+  ) async {
+    final container = ProviderScope.containerOf(context, listen: false);
+    final repository = ref.read(transactionRepositoryProvider);
+    final receiptService = ref.read(transactionReceiptServiceProvider);
+    pendingDeleteIds.value = {...pendingDeleteIds.value, transaction.id};
+
+    void restore() {
+      if (!context.mounted) return;
+      pendingDeleteIds.value = {...pendingDeleteIds.value}
+        ..remove(transaction.id);
+    }
+
+    final reason = await showAppSnackBar(
+      context,
+      l10n.transactionDeleted,
+      onUndo: () {},
+    ).closed;
+    if (reason == SnackBarClosedReason.action) {
+      restore();
+      return;
+    }
+    try {
+      await receiptService
+          .removeReceipt(transaction.id)
+          .catchError((Object _) {});
+      await repository.deleteTransaction(transaction.id);
+    } catch (e) {
+      restore();
+      if (context.mounted) {
+        showAppSnackBar(
+          context,
+          mapSupabaseException(e).toString(),
+          type: AppSnackBarType.error,
+        );
+      }
+      return;
+    }
+    container
+      ..invalidate(transactionsProvider)
+      ..invalidate(budgetsProvider)
+      ..invalidate(budgetsWithConsumedProvider)
+      ..invalidate(walletBalancesProvider);
+  }
+
+  List<Transaction> _applyFilters(
+    List<Transaction> transactions, {
+    required Set<String> pendingDeleteIds,
+    required TransactionFilter filter,
+    required String searchQuery,
+    required String localeName,
+  }) {
+    var filteredTransactions =
+        transactions.where((t) => !pendingDeleteIds.contains(t.id)).toList();
+
+    // Filter by type
+    if (filter == TransactionFilter.expense) {
+      filteredTransactions = filteredTransactions
+          .where((t) => t.type == TransactionType.expense)
+          .toList();
+    } else if (filter == TransactionFilter.income) {
+      filteredTransactions = filteredTransactions
+          .where((t) => t.type == TransactionType.income)
+          .toList();
+    } else if (filter == TransactionFilter.transfer) {
+      filteredTransactions = filteredTransactions
+          .where((t) => t.type == TransactionType.transfer)
+          .toList();
+    }
+
+    // Filter by search query
+    if (searchQuery.isNotEmpty) {
+      filteredTransactions = filteredTransactions.where((t) {
+        final query = searchQuery.toLowerCase();
+        final amount = CurrencyFormatter.formatVNDFromCents(
+          t.amountCents,
+          locale: localeName,
+        ).toLowerCase();
+        final note = (t.note ?? '').toLowerCase();
+        return amount.contains(query) || note.contains(query);
+      }).toList();
+    }
+    return filteredTransactions;
   }
 
   List<_TransactionDateGroup> _groupTransactionsByDate(
@@ -637,6 +553,195 @@ class _SwipeBackground extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SearchField extends StatelessWidget {
+  const _SearchField({required this.onChanged});
+
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return TextField(
+      autofocus: true,
+      decoration: InputDecoration(
+        hintText: l10n.search,
+        border: InputBorder.none,
+        hintStyle: TextStyle(
+          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+        ),
+      ),
+      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+      onChanged: onChanged,
+    );
+  }
+}
+
+class _SearchToggleButton extends StatelessWidget {
+  const _SearchToggleButton({
+    required this.showSearch,
+    required this.onPressed,
+  });
+
+  final bool showSearch;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.only(right: AppSpacing.sm),
+      child: Material(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        shape: const CircleBorder(),
+        clipBehavior: Clip.antiAlias,
+        child: IconButton(
+          tooltip: showSearch ? l10n.close : l10n.search,
+          icon: Icon(showSearch ? Icons.close : Icons.search),
+          onPressed: onPressed,
+        ),
+      ),
+    );
+  }
+}
+
+class _TransactionFilterBar extends StatelessWidget {
+  const _TransactionFilterBar({
+    required this.selectedValue,
+    required this.onChanged,
+  });
+
+  final TransactionFilter selectedValue;
+  final ValueChanged<TransactionFilter> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.screenPadding,
+        vertical: AppSpacing.md,
+      ),
+      child: AppSegmentedFilter<TransactionFilter>(
+        options: [
+          FilterOption(
+            label: l10n.all,
+            value: TransactionFilter.all,
+            icon: Icons.list,
+          ),
+          FilterOption(
+            label: l10n.expense,
+            value: TransactionFilter.expense,
+            icon: Icons.arrow_upward,
+            color: context.semanticColors.expense,
+          ),
+          FilterOption(
+            label: l10n.income,
+            value: TransactionFilter.income,
+            icon: Icons.arrow_downward,
+            color: context.semanticColors.income,
+          ),
+          FilterOption(
+            label: l10n.transfer,
+            value: TransactionFilter.transfer,
+            icon: Icons.swap_horiz,
+          ),
+        ],
+        selectedValue: selectedValue,
+        onChanged: onChanged,
+      ),
+    );
+  }
+}
+
+class _TransactionsEmptyView extends StatelessWidget {
+  const _TransactionsEmptyView({
+    required this.hasSearchQuery,
+    required this.filter,
+    required this.onRefresh,
+    required this.onClearSearch,
+    required this.onClearFilter,
+  });
+
+  final bool hasSearchQuery;
+  final TransactionFilter filter;
+  final Future<void> Function() onRefresh;
+  final VoidCallback onClearSearch;
+  final VoidCallback onClearFilter;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    Widget emptyState;
+    if (hasSearchQuery) {
+      emptyState = EmptyState.noSearchResult(
+        icon: Icons.search_off,
+        title: l10n.noTransactionsMatch,
+        message: l10n.adjustSearchTerms,
+        actionLabel: l10n.clearFilter,
+        actionIcon: Icons.filter_alt_off,
+        onAction: onClearSearch,
+        compact: true,
+      );
+    } else if (filter != TransactionFilter.all) {
+      final (icon, title, message) = switch (filter) {
+        TransactionFilter.expense => (
+            Icons.arrow_upward,
+            l10n.noExpenseTitle,
+            l10n.noExpenseTransactionsFound,
+          ),
+        TransactionFilter.transfer => (
+            Icons.swap_horiz,
+            l10n.noTransferTitle,
+            l10n.noTransferTransactionsFound,
+          ),
+        _ => (
+            Icons.arrow_downward,
+            l10n.noIncomeTitle,
+            l10n.noIncomeTransactionsFound,
+          ),
+      };
+      emptyState = EmptyState(
+        icon: icon,
+        title: title,
+        message: message,
+        actionLabel: l10n.addTransaction,
+        onAction: () {
+          Navigator.pushNamed(context, '/add-transaction');
+        },
+        secondaryActionLabel: l10n.clearFilter,
+        onSecondaryAction: onClearFilter,
+        compact: true,
+        type: EmptyStateType.noFilterResult,
+      );
+    } else {
+      emptyState = EmptyState.firstRun(
+        icon: Icons.receipt_long,
+        title: l10n.startTracking,
+        message: l10n.onboardingSubtitle,
+        actionLabel: l10n.addTransaction,
+        onAction: () {
+          Navigator.pushNamed(context, '/add-transaction');
+        },
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: MediaQuery.of(context).size.height * 0.6,
+            ),
+            child: emptyState,
+          ),
+        ],
       ),
     );
   }

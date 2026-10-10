@@ -69,59 +69,17 @@ class ReportsScreen extends HookConsumerWidget {
                 period: period.value,
                 monthStartDay: monthStartDay,
                 onChanged: (value) => period.value = value,
-                onPickPeriod: () async {
-                  final current = period.value;
-                  final result = await _showCustomPeriodPicker(
-                    context,
-                    current.range(monthStartDay).end,
-                    current.anchor.year,
-                  );
-                  if (result == null) return;
-                  period.value = result['type'] == 'month'
-                      ? ReportPeriod(
-                          ReportPeriodUnit.month,
-                          result['value'] as DateTime,
-                        )
-                      : ReportPeriod(
-                          ReportPeriodUnit.year,
-                          DateTime(result['value'] as int),
-                        );
-                },
+                onPickPeriod: () =>
+                    _pickPeriod(context, period, monthStartDay),
               ),
 
               const SizedBox(height: 16),
 
               // Summary Card
-              transactionsAsync.when(
-                data: (transactions) {
-                  final current = transactions
-                      .where((t) =>
-                          period.value.contains(t.dateTime, monthStartDay))
-                      .toList();
-                  final previousPeriod = period.value.previous(monthStartDay);
-                  final previous = transactions
-                      .where((t) =>
-                          previousPeriod.contains(t.dateTime, monthStartDay))
-                      .toList();
-                  int total(List<Transaction> items, TransactionType type) =>
-                      items
-                          .where((t) => t.type == type)
-                          .fold<int>(0, (sum, t) => sum + t.amountCents);
-                  return ReportSummarySection(
-                    totalIncome: total(current, TransactionType.income),
-                    totalExpense: total(current, TransactionType.expense),
-                    previousIncome: total(previous, TransactionType.income),
-                    previousExpense: total(previous, TransactionType.expense),
-                    transactionCount: current.length,
-                  );
-                },
-                loading: () => const SectionSkeleton(height: 180),
-                error: (err, _) => AppCard(
-                  child: _buildReportsLoadError(
-                    l10n,
-                    onRetry: () => ref.invalidate(transactionsProvider),
-                  ),
-                ),
+              _ReportSummaryCard(
+                transactionsAsync: transactionsAsync,
+                period: period.value,
+                monthStartDay: monthStartDay,
               ),
 
               const SizedBox(height: 16),
@@ -186,127 +144,13 @@ class ReportsScreen extends HookConsumerWidget {
               ),
               const SizedBox(height: 8),
               // Combine budgets, categories and transactions for budget reports
-              budgetsAsync.when(
-                data: (budgets) {
-                  if (budgets.isEmpty) {
-                    return AppCard(
-                      child: EmptyState.compact(
-                        icon: Icons.pie_chart_outline,
-                        title: l10n.noBudgets,
-                        message: '',
-                        actionLabel: l10n.addBudget,
-                        onAction: () =>
-                            Navigator.pushNamed(context, '/budget-edit'),
-                      ),
-                    );
-                  }
-
-                  return categoriesAsync.when(
-                    data: (categories) {
-                      return transactionsAsync.when(
-                        data: (transactions) {
-                          // Get date range based on selected period
-                          final dateRange =
-                              period.value.range(monthStartDay);
-
-                          // Filter budgets based on category type
-                          final categoryMap = {
-                            for (var c in categories) c.id: c
-                          };
-                          List<Budget> filteredBudgets;
-                          if (reportTypeFilter.value == 1) {
-                            filteredBudgets = budgets.where((b) {
-                              final cat = categoryMap[b.categoryId];
-                              return cat?.type == CategoryType.expense;
-                            }).toList();
-                          } else if (reportTypeFilter.value == 2) {
-                            filteredBudgets = budgets.where((b) {
-                              final cat = categoryMap[b.categoryId];
-                              return cat?.type == CategoryType.income;
-                            }).toList();
-                          } else {
-                            filteredBudgets = budgets;
-                          }
-
-                          if (filteredBudgets.isEmpty) {
-                            return AppCard(
-                              child: Center(
-                                child: Text(
-                                  reportTypeFilter.value == 1
-                                      ? l10n.noExpenseBudgets
-                                      : reportTypeFilter.value == 2
-                                          ? l10n.noIncomeBudgets
-                                          : l10n.noBudgets,
-                                ),
-                              ),
-                            );
-                          }
-
-                          return Column(
-                            children: filteredBudgets.map((budget) {
-                              final category = categories.firstWhere(
-                                (c) => c.id == budget.categoryId,
-                                orElse: () => uncategorizedCategory(
-                                  budget.categoryId,
-                                  l10n.uncategorized,
-                                ),
-                              );
-
-                              // Calculate consumed based on selected period
-                              final consumedCents = transactions
-                                  .where((t) =>
-                                      t.categoryId == budget.categoryId &&
-                                      t.type == TransactionType.expense &&
-                                      t.dateTime.isAfter(dateRange.start
-                                          .subtract(
-                                              const Duration(seconds: 1))) &&
-                                      t.dateTime.isBefore(dateRange.end
-                                          .add(const Duration(seconds: 1))))
-                                  .fold<int>(
-                                      0, (sum, t) => sum + t.amountCents);
-
-                              return _BudgetReportCard(
-                                budget: budget,
-                                category: category,
-                                consumedCents: consumedCents,
-                                onTap: () =>
-                                    _showBudgetTransactionsWithPeriod(
-                                  context,
-                                  ref,
-                                  budget,
-                                  category.name,
-                                  dateRange.start,
-                                  dateRange.end,
-                                ),
-                              );
-                            }).toList(),
-                          );
-                        },
-                        loading: () => const SectionSkeleton(height: 160),
-                        error: (err, _) => AppCard(
-                          child: _buildReportsLoadError(
-                            l10n,
-                            onRetry: () => ref.invalidate(transactionsProvider),
-                          ),
-                        ),
-                      );
-                    },
-                    loading: () => const SectionSkeleton(height: 160),
-                    error: (err, _) => AppCard(
-                      child: _buildReportsLoadError(
-                        l10n,
-                        onRetry: () => ref.invalidate(categoriesProvider),
-                      ),
-                    ),
-                  );
-                },
-                loading: () => const SectionSkeleton(height: 160),
-                error: (err, _) => AppCard(
-                  child: _buildReportsLoadError(
-                    l10n,
-                    onRetry: () => ref.invalidate(budgetsProvider),
-                  ),
-                ),
+              _BudgetReportsSection(
+                budgetsAsync: budgetsAsync,
+                categoriesAsync: categoriesAsync,
+                transactionsAsync: transactionsAsync,
+                period: period.value,
+                monthStartDay: monthStartDay,
+                reportTypeFilter: reportTypeFilter.value,
               ),
 
               const SizedBox(height: 16),
@@ -319,151 +163,41 @@ class ReportsScreen extends HookConsumerWidget {
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               const SizedBox(height: 8),
-              transactionsAsync.when(
-                data: (transactions) {
-                  return categoriesAsync.when(
-                    data: (categories) {
-                      // Filter by transaction type based on reportTypeFilter
-                      final transactionTypeFilter = reportTypeFilter.value == 2
-                          ? TransactionType.income
-                          : TransactionType.expense;
-
-                      var filteredTransactions = transactions
-                          .where((t) =>
-                              t.type == transactionTypeFilter &&
-                              period.value.contains(t.dateTime, monthStartDay))
-                          .toList();
-
-                      // Also filter by category type if needed
-                      if (reportTypeFilter.value == 1) {
-                        final expenseCategories = categories
-                            .where((c) => c.type == CategoryType.expense)
-                            .map((c) => c.id)
-                            .toSet();
-                        filteredTransactions = filteredTransactions
-                            .where(
-                                (t) => expenseCategories.contains(t.categoryId))
-                            .toList();
-                      } else if (reportTypeFilter.value == 2) {
-                        final incomeCategories = categories
-                            .where((c) => c.type == CategoryType.income)
-                            .map((c) => c.id)
-                            .toSet();
-                        filteredTransactions = filteredTransactions
-                            .where(
-                                (t) => incomeCategories.contains(t.categoryId))
-                            .toList();
-                      }
-
-                      if (filteredTransactions.isEmpty) {
-                        return AppCard(
-                          child: Center(
-                            child: Text(
-                              reportTypeFilter.value == 2
-                                  ? l10n.noIncomeThisPeriod
-                                  : l10n.noExpenseThisPeriod,
-                            ),
-                          ),
-                        );
-                      }
-
-                      // Group by category
-                      final Map<String, int> categoryTotals = {};
-                      for (final t in filteredTransactions) {
-                        // Transfers carry no category and never reach here.
-                        final categoryId = t.categoryId;
-                        if (categoryId == null) {
-                          continue;
-                        }
-                        categoryTotals[categoryId] =
-                            (categoryTotals[categoryId] ?? 0) + t.amountCents;
-                      }
-
-                      final totalExpense = filteredTransactions.fold<int>(
-                          0, (sum, t) => sum + t.amountCents);
-
-                      final sortedCategories = categoryTotals.entries.toList()
-                        ..sort((a, b) => b.value.compareTo(a.value));
-
-                      final pieData = sortedCategories.map((entry) {
-                        final category = categories.firstWhere(
-                          (c) => c.id == entry.key,
-                          orElse: () => uncategorizedCategory(
-                            entry.key,
-                            l10n.uncategorized,
-                          ),
-                        );
-                        final percentage = totalExpense > 0
-                            ? (entry.value / totalExpense * 100)
-                            : 0.0;
-                        return ChartData(
-                          label: category.name,
-                          value: entry.value.toDouble(),
-                          percentage: percentage,
-                          color: getCategoryColor(category.colorValue),
-                        );
-                      }).toList();
-
-                      return Column(
-                        children: [
-                          AppCard(
-                            child: PieChartWidget(data: pieData),
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          AppCard(
-                            child: Column(
-                              children: sortedCategories.map((entry) {
-                                final category = categories.firstWhere(
-                                  (c) => c.id == entry.key,
-                                  orElse: () => uncategorizedCategory(
-                                    entry.key,
-                                    l10n.uncategorized,
-                                  ),
-                                );
-                                return _CategoryBreakdownRow(
-                                  category: category,
-                                  amountCents: entry.value,
-                                  totalCents: totalExpense,
-                                  onTap: () => _showCategoryTransactions(
-                                    context,
-                                    category.id,
-                                    category.name,
-                                    category.iconName,
-                                    category.colorValue,
-                                    period.value.range(monthStartDay),
-                                    period.value.label(l10n, monthStartDay),
-                                    reportTypeFilter.value ==
-                                        2, // isIncomeReport
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                    loading: () => const SectionSkeleton(height: 160),
-                    error: (err, _) => AppCard(
-                      child: _buildReportsLoadError(
-                        l10n,
-                        onRetry: () => ref.invalidate(categoriesProvider),
-                      ),
-                    ),
-                  );
-                },
-                loading: () => const SectionSkeleton(height: 160),
-                error: (err, _) => AppCard(
-                  child: _buildReportsLoadError(
-                    l10n,
-                    onRetry: () => ref.invalidate(transactionsProvider),
-                  ),
-                ),
+              _CategoryBreakdownSection(
+                transactionsAsync: transactionsAsync,
+                categoriesAsync: categoriesAsync,
+                period: period.value,
+                monthStartDay: monthStartDay,
+                reportTypeFilter: reportTypeFilter.value,
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _pickPeriod(
+    BuildContext context,
+    ValueNotifier<ReportPeriod> period,
+    int monthStartDay,
+  ) async {
+    final current = period.value;
+    final result = await _showCustomPeriodPicker(
+      context,
+      current.range(monthStartDay).end,
+      current.anchor.year,
+    );
+    if (result == null) return;
+    period.value = result['type'] == 'month'
+        ? ReportPeriod(
+            ReportPeriodUnit.month,
+            result['value'] as DateTime,
+          )
+        : ReportPeriod(
+            ReportPeriodUnit.year,
+            DateTime(result['value'] as int),
+          );
   }
 
   Future<Map<String, dynamic>?> _showCustomPeriodPicker(
@@ -482,53 +216,6 @@ class ReportsScreen extends HookConsumerWidget {
       builder: (context) => _CustomPeriodPickerSheet(
         initialMonth: currentMonth ?? DateTime.now(),
         initialYear: currentYear ?? DateTime.now().year,
-      ),
-    );
-  }
-
-  void _showCategoryTransactions(
-    BuildContext context,
-    String categoryId,
-    String categoryName,
-    String categoryIcon,
-    int categoryColor,
-    ReportDateRange range,
-    String periodLabel,
-    bool isIncomeReport,
-  ) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => CategoryTransactionsScreen(
-          categoryId: categoryId,
-          categoryName: categoryName,
-          categoryIcon: categoryIcon,
-          categoryColor: categoryColor,
-          startDate: range.start,
-          endDate: range.end,
-          periodLabel: periodLabel,
-          isIncomeReport: isIncomeReport,
-        ),
-      ),
-    );
-  }
-
-  void _showBudgetTransactionsWithPeriod(
-    BuildContext context,
-    WidgetRef ref,
-    Budget budget,
-    String categoryName,
-    DateTime periodStart,
-    DateTime periodEnd,
-  ) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BudgetTransactionsScreen(
-          budget:
-              budget.copyWith(periodStart: periodStart, periodEnd: periodEnd),
-          categoryName: categoryName,
-        ),
       ),
     );
   }
@@ -559,6 +246,407 @@ class ReportsScreen extends HookConsumerWidget {
             : AppColors.primary.withValues(alpha: 0.35),
       );
     }).toList();
+  }
+}
+
+class _ReportSummaryCard extends ConsumerWidget {
+  const _ReportSummaryCard({
+    required this.transactionsAsync,
+    required this.period,
+    required this.monthStartDay,
+  });
+
+  final AsyncValue<List<Transaction>> transactionsAsync;
+  final ReportPeriod period;
+  final int monthStartDay;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    return transactionsAsync.when(
+      data: (transactions) {
+        final current = transactions
+            .where((t) =>
+                period.contains(t.dateTime, monthStartDay))
+            .toList();
+        final previousPeriod = period.previous(monthStartDay);
+        final previous = transactions
+            .where((t) =>
+                previousPeriod.contains(t.dateTime, monthStartDay))
+            .toList();
+        int total(List<Transaction> items, TransactionType type) =>
+            items
+                .where((t) => t.type == type)
+                .fold<int>(0, (sum, t) => sum + t.amountCents);
+        return ReportSummarySection(
+          totalIncome: total(current, TransactionType.income),
+          totalExpense: total(current, TransactionType.expense),
+          previousIncome: total(previous, TransactionType.income),
+          previousExpense: total(previous, TransactionType.expense),
+          transactionCount: current.length,
+        );
+      },
+      loading: () => const SectionSkeleton(height: 180),
+      error: (err, _) => AppCard(
+        child: _buildReportsLoadError(
+          l10n,
+          onRetry: () => ref.invalidate(transactionsProvider),
+        ),
+      ),
+    );
+  }
+}
+
+class _BudgetReportsSection extends ConsumerWidget {
+  const _BudgetReportsSection({
+    required this.budgetsAsync,
+    required this.categoriesAsync,
+    required this.transactionsAsync,
+    required this.period,
+    required this.monthStartDay,
+    required this.reportTypeFilter,
+  });
+
+  final AsyncValue<List<Budget>> budgetsAsync;
+  final AsyncValue<List<Category>> categoriesAsync;
+  final AsyncValue<List<Transaction>> transactionsAsync;
+  final ReportPeriod period;
+  final int monthStartDay;
+  final int reportTypeFilter;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    return budgetsAsync.when(
+      data: (budgets) {
+        if (budgets.isEmpty) {
+          return AppCard(
+            child: EmptyState.compact(
+              icon: Icons.pie_chart_outline,
+              title: l10n.noBudgets,
+              message: '',
+              actionLabel: l10n.addBudget,
+              onAction: () =>
+                  Navigator.pushNamed(context, '/budget-edit'),
+            ),
+          );
+        }
+
+        return categoriesAsync.when(
+          data: (categories) {
+            return transactionsAsync.when(
+              data: (transactions) {
+                // Get date range based on selected period
+                final dateRange =
+                    period.range(monthStartDay);
+
+                // Filter budgets based on category type
+                final categoryMap = {
+                  for (var c in categories) c.id: c
+                };
+                List<Budget> filteredBudgets;
+                if (reportTypeFilter == 1) {
+                  filteredBudgets = budgets.where((b) {
+                    final cat = categoryMap[b.categoryId];
+                    return cat?.type == CategoryType.expense;
+                  }).toList();
+                } else if (reportTypeFilter == 2) {
+                  filteredBudgets = budgets.where((b) {
+                    final cat = categoryMap[b.categoryId];
+                    return cat?.type == CategoryType.income;
+                  }).toList();
+                } else {
+                  filteredBudgets = budgets;
+                }
+
+                if (filteredBudgets.isEmpty) {
+                  return AppCard(
+                    child: Center(
+                      child: Text(
+                        reportTypeFilter == 1
+                            ? l10n.noExpenseBudgets
+                            : reportTypeFilter == 2
+                                ? l10n.noIncomeBudgets
+                                : l10n.noBudgets,
+                      ),
+                    ),
+                  );
+                }
+
+                return Column(
+                  children: filteredBudgets.map((budget) {
+                    final category = categories.firstWhere(
+                      (c) => c.id == budget.categoryId,
+                      orElse: () => uncategorizedCategory(
+                        budget.categoryId,
+                        l10n.uncategorized,
+                      ),
+                    );
+
+                    // Calculate consumed based on selected period
+                    final consumedCents = transactions
+                        .where((t) =>
+                            t.categoryId == budget.categoryId &&
+                            t.type == TransactionType.expense &&
+                            t.dateTime.isAfter(dateRange.start
+                                .subtract(
+                                    const Duration(seconds: 1))) &&
+                            t.dateTime.isBefore(dateRange.end
+                                .add(const Duration(seconds: 1))))
+                        .fold<int>(
+                            0, (sum, t) => sum + t.amountCents);
+
+                    return _BudgetReportCard(
+                      budget: budget,
+                      category: category,
+                      consumedCents: consumedCents,
+                      onTap: () =>
+                          _showBudgetTransactionsWithPeriod(
+                        context,
+                        ref,
+                        budget,
+                        category.name,
+                        dateRange.start,
+                        dateRange.end,
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+              loading: () => const SectionSkeleton(height: 160),
+              error: (err, _) => AppCard(
+                child: _buildReportsLoadError(
+                  l10n,
+                  onRetry: () => ref.invalidate(transactionsProvider),
+                ),
+              ),
+            );
+          },
+          loading: () => const SectionSkeleton(height: 160),
+          error: (err, _) => AppCard(
+            child: _buildReportsLoadError(
+              l10n,
+              onRetry: () => ref.invalidate(categoriesProvider),
+            ),
+          ),
+        );
+      },
+      loading: () => const SectionSkeleton(height: 160),
+      error: (err, _) => AppCard(
+        child: _buildReportsLoadError(
+          l10n,
+          onRetry: () => ref.invalidate(budgetsProvider),
+        ),
+      ),
+    );
+  }
+
+  void _showBudgetTransactionsWithPeriod(
+    BuildContext context,
+    WidgetRef ref,
+    Budget budget,
+    String categoryName,
+    DateTime periodStart,
+    DateTime periodEnd,
+  ) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BudgetTransactionsScreen(
+          budget:
+              budget.copyWith(periodStart: periodStart, periodEnd: periodEnd),
+          categoryName: categoryName,
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryBreakdownSection extends ConsumerWidget {
+  const _CategoryBreakdownSection({
+    required this.transactionsAsync,
+    required this.categoriesAsync,
+    required this.period,
+    required this.monthStartDay,
+    required this.reportTypeFilter,
+  });
+
+  final AsyncValue<List<Transaction>> transactionsAsync;
+  final AsyncValue<List<Category>> categoriesAsync;
+  final ReportPeriod period;
+  final int monthStartDay;
+  final int reportTypeFilter;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    return transactionsAsync.when(
+      data: (transactions) {
+        return categoriesAsync.when(
+          data: (categories) {
+            // Filter by transaction type based on reportTypeFilter
+            final transactionTypeFilter = reportTypeFilter == 2
+                ? TransactionType.income
+                : TransactionType.expense;
+
+            var filteredTransactions = transactions
+                .where((t) =>
+                    t.type == transactionTypeFilter &&
+                    period.contains(t.dateTime, monthStartDay))
+                .toList();
+
+            // Also filter by category type if needed
+            if (reportTypeFilter == 1) {
+              final expenseCategories = categories
+                  .where((c) => c.type == CategoryType.expense)
+                  .map((c) => c.id)
+                  .toSet();
+              filteredTransactions = filteredTransactions
+                  .where(
+                      (t) => expenseCategories.contains(t.categoryId))
+                  .toList();
+            } else if (reportTypeFilter == 2) {
+              final incomeCategories = categories
+                  .where((c) => c.type == CategoryType.income)
+                  .map((c) => c.id)
+                  .toSet();
+              filteredTransactions = filteredTransactions
+                  .where(
+                      (t) => incomeCategories.contains(t.categoryId))
+                  .toList();
+            }
+
+            if (filteredTransactions.isEmpty) {
+              return AppCard(
+                child: Center(
+                  child: Text(
+                    reportTypeFilter == 2
+                        ? l10n.noIncomeThisPeriod
+                        : l10n.noExpenseThisPeriod,
+                  ),
+                ),
+              );
+            }
+
+            // Group by category
+            final Map<String, int> categoryTotals = {};
+            for (final t in filteredTransactions) {
+              // Transfers carry no category and never reach here.
+              final categoryId = t.categoryId;
+              if (categoryId == null) {
+                continue;
+              }
+              categoryTotals[categoryId] =
+                  (categoryTotals[categoryId] ?? 0) + t.amountCents;
+            }
+
+            final totalExpense = filteredTransactions.fold<int>(
+                0, (sum, t) => sum + t.amountCents);
+
+            final sortedCategories = categoryTotals.entries.toList()
+              ..sort((a, b) => b.value.compareTo(a.value));
+
+            final pieData = sortedCategories.map((entry) {
+              final category = categories.firstWhere(
+                (c) => c.id == entry.key,
+                orElse: () => uncategorizedCategory(
+                  entry.key,
+                  l10n.uncategorized,
+                ),
+              );
+              final percentage = totalExpense > 0
+                  ? (entry.value / totalExpense * 100)
+                  : 0.0;
+              return ChartData(
+                label: category.name,
+                value: entry.value.toDouble(),
+                percentage: percentage,
+                color: getCategoryColor(category.colorValue),
+              );
+            }).toList();
+
+            return Column(
+              children: [
+                AppCard(
+                  child: PieChartWidget(data: pieData),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                AppCard(
+                  child: Column(
+                    children: sortedCategories.map((entry) {
+                      final category = categories.firstWhere(
+                        (c) => c.id == entry.key,
+                        orElse: () => uncategorizedCategory(
+                          entry.key,
+                          l10n.uncategorized,
+                        ),
+                      );
+                      return _CategoryBreakdownRow(
+                        category: category,
+                        amountCents: entry.value,
+                        totalCents: totalExpense,
+                        onTap: () => _showCategoryTransactions(
+                          context,
+                          category.id,
+                          category.name,
+                          category.iconName,
+                          category.colorValue,
+                          period.range(monthStartDay),
+                          period.label(l10n, monthStartDay),
+                          reportTypeFilter ==
+                              2, // isIncomeReport
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+            );
+          },
+          loading: () => const SectionSkeleton(height: 160),
+          error: (err, _) => AppCard(
+            child: _buildReportsLoadError(
+              l10n,
+              onRetry: () => ref.invalidate(categoriesProvider),
+            ),
+          ),
+        );
+      },
+      loading: () => const SectionSkeleton(height: 160),
+      error: (err, _) => AppCard(
+        child: _buildReportsLoadError(
+          l10n,
+          onRetry: () => ref.invalidate(transactionsProvider),
+        ),
+      ),
+    );
+  }
+
+  void _showCategoryTransactions(
+    BuildContext context,
+    String categoryId,
+    String categoryName,
+    String categoryIcon,
+    int categoryColor,
+    ReportDateRange range,
+    String periodLabel,
+    bool isIncomeReport,
+  ) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CategoryTransactionsScreen(
+          categoryId: categoryId,
+          categoryName: categoryName,
+          categoryIcon: categoryIcon,
+          categoryColor: categoryColor,
+          startDate: range.start,
+          endDate: range.end,
+          periodLabel: periodLabel,
+          isIncomeReport: isIncomeReport,
+        ),
+      ),
+    );
   }
 }
 
@@ -596,76 +684,11 @@ class _BudgetReportCard extends StatelessWidget {
           crossAxisAlignment:
               CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: getCategoryColor(
-                            category.colorValue)
-                        .withValues(alpha: 0.2),
-                    borderRadius:
-                        BorderRadius.circular(
-                            AppSpacing.radiusCard),
-                  ),
-                  child: Center(
-                    child: CategoryIconWidget(
-                      iconName: category.iconName,
-                      size: 18,
-                      color: getCategoryColor(
-                          category.colorValue),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        category.name,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium,
-                      ),
-                      Text(
-                        budget.periodType ==
-                                PeriodType.monthly
-                            ? l10n.monthly
-                            : l10n.yearly,
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall,
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isExceeded
-                        ? context.semanticColors.expense
-                            .withValues(alpha: 0.1)
-                        : context.semanticColors.income
-                            .withValues(alpha: 0.1),
-                    borderRadius:
-                        BorderRadius.circular(
-                            AppSpacing.radiusFull),
-                  ),
-                  child: Text(
-                    '${percentage.toStringAsFixed(1)}%',
-                    style: TextStyle(
-                      color: isExceeded
-                          ? context.semanticColors.expense
-                          : context.semanticColors.income,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
+            _BudgetReportCardHeader(
+              budget: budget,
+              category: category,
+              percentage: percentage,
+              isExceeded: isExceeded,
             ),
             const SizedBox(height: 12),
             Row(
@@ -738,6 +761,96 @@ class _BudgetReportCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _BudgetReportCardHeader extends StatelessWidget {
+  const _BudgetReportCardHeader({
+    required this.budget,
+    required this.category,
+    required this.percentage,
+    required this.isExceeded,
+  });
+
+  final Budget budget;
+  final Category category;
+  final double percentage;
+  final bool isExceeded;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Row(
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: getCategoryColor(
+                    category.colorValue)
+                .withValues(alpha: 0.2),
+            borderRadius:
+                BorderRadius.circular(
+                    AppSpacing.radiusCard),
+          ),
+          child: Center(
+            child: CategoryIconWidget(
+              iconName: category.iconName,
+              size: 18,
+              color: getCategoryColor(
+                  category.colorValue),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+            children: [
+              Text(
+                category.name,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium,
+              ),
+              Text(
+                budget.periodType ==
+                        PeriodType.monthly
+                    ? l10n.monthly
+                    : l10n.yearly,
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall,
+              ),
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(
+              horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: isExceeded
+                ? context.semanticColors.expense
+                    .withValues(alpha: 0.1)
+                : context.semanticColors.income
+                    .withValues(alpha: 0.1),
+            borderRadius:
+                BorderRadius.circular(
+                    AppSpacing.radiusFull),
+          ),
+          child: Text(
+            '${percentage.toStringAsFixed(1)}%',
+            style: TextStyle(
+              color: isExceeded
+                  ? context.semanticColors.expense
+                  : context.semanticColors.income,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -986,37 +1099,11 @@ class CategoryTransactionsScreen extends ConsumerWidget {
           return Column(
             children: [
               // Total summary card
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Color(categoryColor).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
-                  border: Border.all(
-                      color: Color(categoryColor).withValues(alpha: 0.3)),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      isIncomeReport ? l10n.totalIncome : l10n.totalExpense,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      CurrencyFormatter.formatVNDFromCents(totalAmount,
-                          locale: l10n.localeName),
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineMedium
-                          ?.copyWith(color: Color(categoryColor)),
-                    ),
-                    Text(
-                      '${categoryTransactions.length} ${l10n.transactionsCount}',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
+              _CategoryTotalCard(
+                categoryTransactions: categoryTransactions,
+                totalAmount: totalAmount,
+                categoryColor: categoryColor,
+                isIncomeReport: isIncomeReport,
               ),
               // Transactions list
               Expanded(
@@ -1029,73 +1116,12 @@ class CategoryTransactionsScreen extends ConsumerWidget {
                     final dayTotal = dayTransactions.fold<int>(
                         0, (sum, t) => sum + t.amountCents);
 
-                    return AppCard(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: EdgeInsets.zero,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Date header
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .surfaceContainerHighest,
-                              borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(AppSpacing.radiusCard)),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  formatLocalizedDate(context, date),
-                                  style: Theme.of(context).textTheme.titleSmall,
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Color(categoryColor)
-                                        .withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(
-                                        AppSpacing.radiusCard),
-                                  ),
-                                  child: Text(
-                                    '${isIncomeReport ? "+" : "-"}${CurrencyFormatter.formatVNDFromCents(dayTotal, locale: l10n.localeName)}',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(categoryColor),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Transactions
-                          ...dayTransactions.map((t) => ListTile(
-                                title: Text(t.note ?? l10n.noNote),
-                                trailing: Text(
-                                  '${isIncomeReport ? "+" : "-"}${CurrencyFormatter.formatVNDFromCents(t.amountCents, locale: l10n.localeName)}',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    color: isIncomeReport
-                                        ? context.semanticColors.income
-                                        : Theme.of(context)
-                                            .colorScheme
-                                            .onSurface,
-                                  ),
-                                ),
-                                onTap: () {
-                                  Navigator.pushNamed(
-                                    context,
-                                    '/transaction-detail',
-                                    arguments: t.id,
-                                  );
-                                },
-                              )),
-                        ],
-                      ),
+                    return _CategoryDayCard(
+                      date: date,
+                      dayTransactions: dayTransactions,
+                      dayTotal: dayTotal,
+                      categoryColor: categoryColor,
+                      isIncomeReport: isIncomeReport,
                     );
                   },
                 ),
@@ -1108,6 +1134,146 @@ class CategoryTransactionsScreen extends ConsumerWidget {
           l10n,
           onRetry: () => ref.invalidate(transactionsProvider),
         ),
+      ),
+    );
+  }
+}
+
+class _CategoryTotalCard extends StatelessWidget {
+  const _CategoryTotalCard({
+    required this.categoryTransactions,
+    required this.totalAmount,
+    required this.categoryColor,
+    required this.isIncomeReport,
+  });
+
+  final List<Transaction> categoryTransactions;
+  final int totalAmount;
+  final int categoryColor;
+  final bool isIncomeReport;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Color(categoryColor).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+        border: Border.all(
+            color: Color(categoryColor).withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          Text(
+            isIncomeReport ? l10n.totalIncome : l10n.totalExpense,
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            CurrencyFormatter.formatVNDFromCents(totalAmount,
+                locale: l10n.localeName),
+            style: Theme.of(context)
+                .textTheme
+                .headlineMedium
+                ?.copyWith(color: Color(categoryColor)),
+          ),
+          Text(
+            '${categoryTransactions.length} ${l10n.transactionsCount}',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CategoryDayCard extends StatelessWidget {
+  const _CategoryDayCard({
+    required this.date,
+    required this.dayTransactions,
+    required this.dayTotal,
+    required this.categoryColor,
+    required this.isIncomeReport,
+  });
+
+  final DateTime date;
+  final List<Transaction> dayTransactions;
+  final int dayTotal;
+  final int categoryColor;
+  final bool isIncomeReport;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return AppCard(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Date header
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Theme.of(context)
+                  .colorScheme
+                  .surfaceContainerHighest,
+              borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(AppSpacing.radiusCard)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  formatLocalizedDate(context, date),
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Color(categoryColor)
+                        .withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(
+                        AppSpacing.radiusCard),
+                  ),
+                  child: Text(
+                    '${isIncomeReport ? "+" : "-"}${CurrencyFormatter.formatVNDFromCents(dayTotal, locale: l10n.localeName)}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color(categoryColor),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Transactions
+          ...dayTransactions.map((t) => ListTile(
+                title: Text(t.note ?? l10n.noNote),
+                trailing: Text(
+                  '${isIncomeReport ? "+" : "-"}${CurrencyFormatter.formatVNDFromCents(t.amountCents, locale: l10n.localeName)}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: isIncomeReport
+                        ? context.semanticColors.income
+                        : Theme.of(context)
+                            .colorScheme
+                            .onSurface,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/transaction-detail',
+                    arguments: t.id,
+                  );
+                },
+              )),
+        ],
       ),
     );
   }
@@ -1173,98 +1339,11 @@ class BudgetTransactionsScreen extends ConsumerWidget {
           return Column(
             children: [
               // Budget summary header
-              Container(
-                padding: const EdgeInsets.all(16),
-                color: Theme.of(context)
-                    .colorScheme
-                    .surfaceContainerHighest
-                    .withValues(alpha: 0.3),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.spent,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
-                            Text(
-                              CurrencyFormatter.formatVNDFromCents(
-                                  consumedCents,
-                                  locale: l10n.localeName),
-                              style: Theme.of(context).textTheme.headlineMedium,
-                            ),
-                          ],
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: isExceeded
-                                ? context.semanticColors.expense
-                                    .withValues(alpha: 0.1)
-                                : context.semanticColors.income
-                                    .withValues(alpha: 0.1),
-                            borderRadius:
-                                BorderRadius.circular(AppSpacing.radiusFull),
-                          ),
-                          child: Text(
-                            '${percentage.toStringAsFixed(1)}%',
-                            style: Theme.of(
-                              context,
-                            ).textTheme.titleMedium?.copyWith(
-                              color: isExceeded
-                                  ? context.semanticColors.expense
-                                  : context.semanticColors.income,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    ClipRRect(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusFull),
-                      child: LinearProgressIndicator(
-                        value: (percentage / 100).clamp(0.0, 1.0),
-                        minHeight: 10,
-                        backgroundColor: Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerHighest,
-                        valueColor: AlwaysStoppedAnimation(
-                          isExceeded
-                              ? context.semanticColors.expense
-                              : Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '${l10n.limit}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents, locale: l10n.localeName)}',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                        Text(
-                          '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents - consumedCents, locale: l10n.localeName)}',
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: isExceeded
-                                        ? context.semanticColors.expense
-                                        : context.semanticColors.income,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+              _BudgetSummaryHeader(
+                budget: budget,
+                consumedCents: consumedCents,
+                percentage: percentage,
+                isExceeded: isExceeded,
               ),
 
               // Transactions list
@@ -1423,6 +1502,118 @@ class BudgetTransactionsScreen extends ConsumerWidget {
   }
 }
 
+class _BudgetSummaryHeader extends StatelessWidget {
+  const _BudgetSummaryHeader({
+    required this.budget,
+    required this.consumedCents,
+    required this.percentage,
+    required this.isExceeded,
+  });
+
+  final Budget budget;
+  final int consumedCents;
+  final double percentage;
+  final bool isExceeded;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      color: Theme.of(context)
+          .colorScheme
+          .surfaceContainerHighest
+          .withValues(alpha: 0.3),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    l10n.spent,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  Text(
+                    CurrencyFormatter.formatVNDFromCents(
+                        consumedCents,
+                        locale: l10n.localeName),
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: isExceeded
+                      ? context.semanticColors.expense
+                          .withValues(alpha: 0.1)
+                      : context.semanticColors.income
+                          .withValues(alpha: 0.1),
+                  borderRadius:
+                      BorderRadius.circular(AppSpacing.radiusFull),
+                ),
+                child: Text(
+                  '${percentage.toStringAsFixed(1)}%',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(
+                    color: isExceeded
+                        ? context.semanticColors.expense
+                        : context.semanticColors.income,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ClipRRect(
+            borderRadius:
+                BorderRadius.circular(AppSpacing.radiusFull),
+            child: LinearProgressIndicator(
+              value: (percentage / 100).clamp(0.0, 1.0),
+              minHeight: 10,
+              backgroundColor: Theme.of(context)
+                  .colorScheme
+                  .surfaceContainerHighest,
+              valueColor: AlwaysStoppedAnimation(
+                isExceeded
+                    ? context.semanticColors.expense
+                    : Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '${l10n.limit}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents, locale: l10n.localeName)}',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              Text(
+                '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents - consumedCents, locale: l10n.localeName)}',
+                style:
+                    Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: isExceeded
+                              ? context.semanticColors.expense
+                              : context.semanticColors.income,
+                          fontWeight: FontWeight.w600,
+                        ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _CustomPeriodPickerSheet extends HookWidget {
   final DateTime initialMonth;
   final int initialYear;
@@ -1477,63 +1668,17 @@ class _CustomPeriodPickerSheet extends HookWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: GestureDetector(
+                    child: _PeriodTab(
+                      label: l10n.byMonth,
+                      selected: selectedTab.value == 0,
                       onTap: () => selectedTab.value = 0,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          color: selectedTab.value == 0
-                              ? Theme.of(context).colorScheme.primary
-                              : Colors.transparent,
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusCard),
-                        ),
-                        child: Center(
-                          child: Text(
-                            l10n.byMonth,
-                            style: TextStyle(
-                              color: selectedTab.value == 0
-                                  ? Theme.of(context).colorScheme.onPrimary
-                                  : Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
-                              fontWeight: selectedTab.value == 0
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
-                            ),
-                          ),
-                        ),
-                      ),
                     ),
                   ),
                   Expanded(
-                    child: GestureDetector(
+                    child: _PeriodTab(
+                      label: l10n.byYear,
+                      selected: selectedTab.value == 1,
                       onTap: () => selectedTab.value = 1,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          color: selectedTab.value == 1
-                              ? Theme.of(context).colorScheme.primary
-                              : Colors.transparent,
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusCard),
-                        ),
-                        child: Center(
-                          child: Text(
-                            l10n.byYear,
-                            style: TextStyle(
-                              color: selectedTab.value == 1
-                                  ? Theme.of(context).colorScheme.onPrimary
-                                  : Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
-                              fontWeight: selectedTab.value == 1
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
-                            ),
-                          ),
-                        ),
-                      ),
                     ),
                   ),
                 ],
@@ -1573,129 +1718,213 @@ class _CustomPeriodPickerSheet extends HookWidget {
               ),
               const SizedBox(height: 16),
               // Month grid
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  childAspectRatio: 2,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                ),
-                itemCount: 12,
-                itemBuilder: (context, index) {
-                  final monthNum = index + 1;
-                  final isCurrentSelection =
-                      selectedYear.value == initialMonth.year &&
-                          monthNum == initialMonth.month;
-                  final isCurrentMonth =
-                      selectedYear.value == now.year && monthNum == now.month;
-
-                  return Material(
-                    color: isCurrentSelection
-                        ? Theme.of(context).colorScheme.primary
-                        : isCurrentMonth
-                            ? Theme.of(context)
-                                .colorScheme
-                                .primary
-                                .withValues(alpha: 0.1)
-                            : Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
-                    child: InkWell(
-                      onTap: () => Navigator.pop(context, {
-                        'type': 'month',
-                        'value': DateTime(selectedYear.value, monthNum),
-                      }),
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusCard),
-                      child: Center(
-                        child: Text(
-                          months[index],
-                          style: TextStyle(
-                            color: isCurrentSelection
-                                ? Theme.of(context).colorScheme.onPrimary
-                                : (isCurrentMonth
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Theme.of(context)
-                                        .textTheme
-                                        .bodyLarge
-                                        ?.color),
-                            fontWeight: isCurrentSelection || isCurrentMonth
-                                ? FontWeight.bold
-                                : null,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
+              _MonthGrid(
+                selectedYear: selectedYear.value,
+                initialMonth: initialMonth,
+                now: now,
+                months: months,
               ),
             ] else ...[
               // Theo năm: Year grid
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  childAspectRatio: 2,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                ),
-                itemCount: years.length,
-                itemBuilder: (context, index) {
-                  final year = years[index];
-                  final isCurrentSelection = year == initialYear;
-                  final isCurrentYear = year == now.year;
-
-                  return Material(
-                    color: isCurrentSelection
-                        ? Theme.of(context).colorScheme.primary
-                        : isCurrentYear
-                            ? Theme.of(context)
-                                .colorScheme
-                                .primary
-                                .withValues(alpha: 0.1)
-                            : Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
-                    child: InkWell(
-                      onTap: () => Navigator.pop(context, {
-                        'type': 'year',
-                        'value': year,
-                      }),
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusCard),
-                      child: Center(
-                        child: Text(
-                          year.toString(),
-                          style: Theme.of(
-                            context,
-                          ).textTheme.titleMedium?.copyWith(
-                            color: isCurrentSelection
-                                ? Theme.of(context).colorScheme.onPrimary
-                                : (isCurrentYear
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Theme.of(context)
-                                        .textTheme
-                                        .bodyLarge
-                                        ?.color),
-                            fontWeight: isCurrentSelection || isCurrentYear
-                                ? FontWeight.bold
-                                : null,
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
+              _YearGrid(
+                years: years,
+                initialYear: initialYear,
+                now: now,
               ),
             ],
           ],
         ),
       ),
+    );
+  }
+}
+
+class _PeriodTab extends StatelessWidget {
+  const _PeriodTab({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: selected
+              ? Theme.of(context).colorScheme.primary
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: selected
+                  ? Theme.of(context).colorScheme.onPrimary
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MonthGrid extends StatelessWidget {
+  const _MonthGrid({
+    required this.selectedYear,
+    required this.initialMonth,
+    required this.now,
+    required this.months,
+  });
+
+  final int selectedYear;
+  final DateTime initialMonth;
+  final DateTime now;
+  final List<String> months;
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        childAspectRatio: 2,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+      ),
+      itemCount: 12,
+      itemBuilder: (context, index) {
+        final monthNum = index + 1;
+        final isCurrentSelection =
+            selectedYear == initialMonth.year &&
+                monthNum == initialMonth.month;
+        final isCurrentMonth =
+            selectedYear == now.year && monthNum == now.month;
+
+        return Material(
+          color: isCurrentSelection
+              ? Theme.of(context).colorScheme.primary
+              : isCurrentMonth
+                  ? Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.1)
+                  : Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+          child: InkWell(
+            onTap: () => Navigator.pop(context, {
+              'type': 'month',
+              'value': DateTime(selectedYear, monthNum),
+            }),
+            borderRadius:
+                BorderRadius.circular(AppSpacing.radiusCard),
+            child: Center(
+              child: Text(
+                months[index],
+                style: TextStyle(
+                  color: isCurrentSelection
+                      ? Theme.of(context).colorScheme.onPrimary
+                      : (isCurrentMonth
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context)
+                              .textTheme
+                              .bodyLarge
+                              ?.color),
+                  fontWeight: isCurrentSelection || isCurrentMonth
+                      ? FontWeight.bold
+                      : null,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _YearGrid extends StatelessWidget {
+  const _YearGrid({
+    required this.years,
+    required this.initialYear,
+    required this.now,
+  });
+
+  final List<int> years;
+  final int initialYear;
+  final DateTime now;
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        childAspectRatio: 2,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+      ),
+      itemCount: years.length,
+      itemBuilder: (context, index) {
+        final year = years[index];
+        final isCurrentSelection = year == initialYear;
+        final isCurrentYear = year == now.year;
+
+        return Material(
+          color: isCurrentSelection
+              ? Theme.of(context).colorScheme.primary
+              : isCurrentYear
+                  ? Theme.of(context)
+                      .colorScheme
+                      .primary
+                      .withValues(alpha: 0.1)
+                  : Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+          child: InkWell(
+            onTap: () => Navigator.pop(context, {
+              'type': 'year',
+              'value': year,
+            }),
+            borderRadius:
+                BorderRadius.circular(AppSpacing.radiusCard),
+            child: Center(
+              child: Text(
+                year.toString(),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(
+                  color: isCurrentSelection
+                      ? Theme.of(context).colorScheme.onPrimary
+                      : (isCurrentYear
+                          ? Theme.of(context).colorScheme.primary
+                          : Theme.of(context)
+                              .textTheme
+                              .bodyLarge
+                              ?.color),
+                  fontWeight: isCurrentSelection || isCurrentYear
+                      ? FontWeight.bold
+                      : null,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

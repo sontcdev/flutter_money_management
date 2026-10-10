@@ -62,6 +62,96 @@ class WalletEditScreen extends HookConsumerWidget {
     this.workspaceId,
   });
 
+  Future<void> _save(
+    BuildContext context,
+    WidgetRef ref, {
+    required AppLocalizations l10n,
+    required TextEditingController nameController,
+    required TextEditingController balanceController,
+    required ValueNotifier<WalletType> selectedType,
+    required ValueNotifier<String> selectedIcon,
+    required ValueNotifier<int> selectedColor,
+    required ValueNotifier<bool> isDefault,
+    required ValueNotifier<bool> isNegativeBalance,
+    required ValueNotifier<bool> isLoading,
+  }) async {
+    if (nameController.text.trim().isEmpty) {
+      showAppSnackBar(
+        context,
+        l10n.categoryNameRequiredError,
+        type: AppSnackBarType.error,
+      );
+      return;
+    }
+
+    isLoading.value = true;
+
+    try {
+      final parsedBalance =
+          CurrencyFormatter.parseVND(balanceController.text) ?? 0;
+      final balanceMinor = CurrencyFormatter.toCents(parsedBalance);
+
+      final repository = ref.read(walletRepositoryProvider);
+      final edited = Wallet(
+        id: wallet?.id ?? '',
+        workspaceId: wallet?.workspaceId ?? workspaceId ?? '',
+        name: nameController.text.trim(),
+        walletType: selectedType.value,
+        iconName: selectedIcon.value,
+        colorValue: selectedColor.value,
+        openingBalanceMinor:
+            isNegativeBalance.value ? -balanceMinor : balanceMinor,
+        currencyCode: wallet?.currencyCode ?? 'VND',
+        isDefault: isDefault.value,
+        isArchived: wallet?.isArchived ?? false,
+        sortOrder: wallet?.sortOrder ?? 0,
+        createdAt: wallet?.createdAt ?? DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      if (wallet == null) {
+        await repository.createWallet(
+          edited,
+          workspaceIdOverride: workspaceId,
+        );
+      } else {
+        await repository.updateWallet(
+          edited,
+          workspaceIdOverride: workspaceId,
+        );
+      }
+
+      ref.invalidate(walletsProvider);
+      ref.invalidate(allWalletsIncludingArchivedProvider);
+      if (workspaceId != null && workspaceId!.isNotEmpty) {
+        ref.invalidate(walletsForWorkspaceProvider(workspaceId!));
+      }
+
+      if (context.mounted) {
+        Navigator.of(context).pop(true);
+        showAppSnackBar(context, l10n.success, type: AppSnackBarType.success);
+      }
+    } catch (e, stackTrace) {
+      if (context.mounted) {
+        await ErrorReportHelper.handleApiError(
+          context: context,
+          ref: ref,
+          error: e,
+          stackTrace: stackTrace,
+          feature: 'wallet',
+          action: wallet == null ? 'create_wallet' : 'update_wallet',
+          screen: 'wallet_edit_screen',
+          extraContext: {
+            if (wallet != null) 'wallet_id': wallet!.id,
+            'wallet_type': selectedType.value.name,
+          },
+        );
+      }
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
@@ -108,83 +198,19 @@ class WalletEditScreen extends HookConsumerWidget {
       0xFF9E9E9E,
     ];
 
-    Future<void> save() async {
-      if (nameController.text.trim().isEmpty) {
-        showAppSnackBar(
+    Future<void> save() => _save(
           context,
-          l10n.categoryNameRequiredError,
-          type: AppSnackBarType.error,
+          ref,
+          l10n: l10n,
+          nameController: nameController,
+          balanceController: balanceController,
+          selectedType: selectedType,
+          selectedIcon: selectedIcon,
+          selectedColor: selectedColor,
+          isDefault: isDefault,
+          isNegativeBalance: isNegativeBalance,
+          isLoading: isLoading,
         );
-        return;
-      }
-
-      isLoading.value = true;
-
-      try {
-        final parsedBalance =
-            CurrencyFormatter.parseVND(balanceController.text) ?? 0;
-        final balanceMinor = CurrencyFormatter.toCents(parsedBalance);
-
-        final repository = ref.read(walletRepositoryProvider);
-        final edited = Wallet(
-          id: wallet?.id ?? '',
-          workspaceId: wallet?.workspaceId ?? workspaceId ?? '',
-          name: nameController.text.trim(),
-          walletType: selectedType.value,
-          iconName: selectedIcon.value,
-          colorValue: selectedColor.value,
-          openingBalanceMinor:
-              isNegativeBalance.value ? -balanceMinor : balanceMinor,
-          currencyCode: wallet?.currencyCode ?? 'VND',
-          isDefault: isDefault.value,
-          isArchived: wallet?.isArchived ?? false,
-          sortOrder: wallet?.sortOrder ?? 0,
-          createdAt: wallet?.createdAt ?? DateTime.now(),
-          updatedAt: DateTime.now(),
-        );
-
-        if (wallet == null) {
-          await repository.createWallet(
-            edited,
-            workspaceIdOverride: workspaceId,
-          );
-        } else {
-          await repository.updateWallet(
-            edited,
-            workspaceIdOverride: workspaceId,
-          );
-        }
-
-        ref.invalidate(walletsProvider);
-        ref.invalidate(allWalletsIncludingArchivedProvider);
-        if (workspaceId != null && workspaceId!.isNotEmpty) {
-          ref.invalidate(walletsForWorkspaceProvider(workspaceId!));
-        }
-
-        if (context.mounted) {
-          Navigator.of(context).pop(true);
-          showAppSnackBar(context, l10n.success, type: AppSnackBarType.success);
-        }
-      } catch (e, stackTrace) {
-        if (context.mounted) {
-          await ErrorReportHelper.handleApiError(
-            context: context,
-            ref: ref,
-            error: e,
-            stackTrace: stackTrace,
-            feature: 'wallet',
-            action: wallet == null ? 'create_wallet' : 'update_wallet',
-            screen: 'wallet_edit_screen',
-            extraContext: {
-              if (wallet != null) 'wallet_id': wallet!.id,
-              'wallet_type': selectedType.value.name,
-            },
-          );
-        }
-      } finally {
-        isLoading.value = false;
-      }
-    }
 
     final theme = Theme.of(context);
     final sectionLabelStyle = theme.textTheme.labelLarge?.copyWith(
@@ -201,18 +227,9 @@ class WalletEditScreen extends HookConsumerWidget {
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
         child: Column(
           children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: previewColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              ),
-              child: Icon(
-                CategoryIcons.getIcon(selectedIcon.value),
-                size: 32,
-                color: previewColor,
-              ),
+            _WalletPreview(
+              iconName: selectedIcon.value,
+              previewColor: previewColor,
             ),
             const SizedBox(height: AppSpacing.xl),
             AppInput(
@@ -225,23 +242,10 @@ class WalletEditScreen extends HookConsumerWidget {
               child: Text(l10n.walletType, style: sectionLabelStyle),
             ),
             const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
-              children: WalletType.values.map((type) {
-                return ChoiceChip(
-                  label: Text(walletTypeLabel(l10n, type)),
-                  selected: selectedType.value == type,
-                  onSelected: (_) {
-                    selectedType.value = type;
-                    // Only steer the icon while creating, so an explicit pick
-                    // on an existing wallet is never overwritten.
-                    if (wallet == null) {
-                      selectedIcon.value = defaultIconForWalletType(type);
-                    }
-                  },
-                );
-              }).toList(),
+            _WalletTypeChips(
+              isCreating: wallet == null,
+              selectedType: selectedType,
+              selectedIcon: selectedIcon,
             ),
             const SizedBox(height: AppSpacing.lg),
             AppInput(
@@ -254,27 +258,9 @@ class WalletEditScreen extends HookConsumerWidget {
               ],
             ),
             const SizedBox(height: AppSpacing.sm),
-            AppCard(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.xs,
-              ),
-              child: Column(
-                children: [
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(l10n.negativeOpeningBalance),
-                    value: isNegativeBalance.value,
-                    onChanged: (value) => isNegativeBalance.value = value,
-                  ),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(l10n.setAsDefaultWallet),
-                    value: isDefault.value,
-                    onChanged: (value) => isDefault.value = value,
-                  ),
-                ],
-              ),
+            _WalletToggles(
+              isNegativeBalance: isNegativeBalance,
+              isDefault: isDefault,
             ),
             const SizedBox(height: AppSpacing.lg),
             Align(
@@ -282,38 +268,10 @@ class WalletEditScreen extends HookConsumerWidget {
               child: Text(l10n.walletIcon, style: sectionLabelStyle),
             ),
             const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
-              children: iconKeys.map((iconKey) {
-                final isSelected = selectedIcon.value == iconKey;
-                return GestureDetector(
-                  onTap: () => selectedIcon.value = iconKey,
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? previewColor.withValues(alpha: 0.15)
-                          : theme.colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
-                      border: Border.all(
-                        color: isSelected
-                            ? previewColor
-                            : theme.colorScheme.outlineVariant,
-                        width: isSelected ? 2 : 1,
-                      ),
-                    ),
-                    child: Icon(
-                      CategoryIcons.getIcon(iconKey),
-                      size: AppSpacing.iconSize,
-                      color: isSelected
-                          ? previewColor
-                          : theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                );
-              }).toList(),
+            _WalletIconPicker(
+              iconKeys: iconKeys,
+              selectedIcon: selectedIcon,
+              previewColor: previewColor,
             ),
             const SizedBox(height: AppSpacing.lg),
             Align(
@@ -321,32 +279,9 @@ class WalletEditScreen extends HookConsumerWidget {
               child: Text(l10n.walletColor, style: sectionLabelStyle),
             ),
             const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: AppSpacing.md,
-              runSpacing: AppSpacing.md,
-              children: colors.map((color) {
-                final isSelected = selectedColor.value == color;
-                return GestureDetector(
-                  onTap: () => selectedColor.value = color,
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    padding: const EdgeInsets.all(3),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: isSelected
-                          ? Border.all(color: Color(color), width: 2)
-                          : null,
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Color(color),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
+            _WalletColorPicker(
+              colors: colors,
+              selectedColor: selectedColor,
             ),
             const SizedBox(height: AppSpacing.xl),
             AppButton(
@@ -358,6 +293,196 @@ class WalletEditScreen extends HookConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _WalletPreview extends StatelessWidget {
+  final String iconName;
+  final Color previewColor;
+
+  const _WalletPreview({
+    required this.iconName,
+    required this.previewColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 72,
+      height: 72,
+      decoration: BoxDecoration(
+        color: previewColor.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+      ),
+      child: Icon(
+        CategoryIcons.getIcon(iconName),
+        size: 32,
+        color: previewColor,
+      ),
+    );
+  }
+}
+
+class _WalletTypeChips extends StatelessWidget {
+  final bool isCreating;
+  final ValueNotifier<WalletType> selectedType;
+  final ValueNotifier<String> selectedIcon;
+
+  const _WalletTypeChips({
+    required this.isCreating,
+    required this.selectedType,
+    required this.selectedIcon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Wrap(
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.sm,
+      children: WalletType.values.map((type) {
+        return ChoiceChip(
+          label: Text(walletTypeLabel(l10n, type)),
+          selected: selectedType.value == type,
+          onSelected: (_) {
+            selectedType.value = type;
+            // Only steer the icon while creating, so an explicit pick
+            // on an existing wallet is never overwritten.
+            if (isCreating) {
+              selectedIcon.value = defaultIconForWalletType(type);
+            }
+          },
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _WalletToggles extends StatelessWidget {
+  final ValueNotifier<bool> isNegativeBalance;
+  final ValueNotifier<bool> isDefault;
+
+  const _WalletToggles({
+    required this.isNegativeBalance,
+    required this.isDefault,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return AppCard(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.xs,
+      ),
+      child: Column(
+        children: [
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(l10n.negativeOpeningBalance),
+            value: isNegativeBalance.value,
+            onChanged: (value) => isNegativeBalance.value = value,
+          ),
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(l10n.setAsDefaultWallet),
+            value: isDefault.value,
+            onChanged: (value) => isDefault.value = value,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WalletIconPicker extends StatelessWidget {
+  final List<String> iconKeys;
+  final ValueNotifier<String> selectedIcon;
+  final Color previewColor;
+
+  const _WalletIconPicker({
+    required this.iconKeys,
+    required this.selectedIcon,
+    required this.previewColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Wrap(
+      spacing: AppSpacing.sm,
+      runSpacing: AppSpacing.sm,
+      children: iconKeys.map((iconKey) {
+        final isSelected = selectedIcon.value == iconKey;
+        return GestureDetector(
+          onTap: () => selectedIcon.value = iconKey,
+          child: Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? previewColor.withValues(alpha: 0.15)
+                  : theme.colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+              border: Border.all(
+                color: isSelected
+                    ? previewColor
+                    : theme.colorScheme.outlineVariant,
+                width: isSelected ? 2 : 1,
+              ),
+            ),
+            child: Icon(
+              CategoryIcons.getIcon(iconKey),
+              size: AppSpacing.iconSize,
+              color: isSelected
+                  ? previewColor
+                  : theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _WalletColorPicker extends StatelessWidget {
+  final List<int> colors;
+  final ValueNotifier<int> selectedColor;
+
+  const _WalletColorPicker({
+    required this.colors,
+    required this.selectedColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: AppSpacing.md,
+      runSpacing: AppSpacing.md,
+      children: colors.map((color) {
+        final isSelected = selectedColor.value == color;
+        return GestureDetector(
+          onTap: () => selectedColor.value = color,
+          child: Container(
+            width: 34,
+            height: 34,
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: isSelected
+                  ? Border.all(color: Color(color), width: 2)
+                  : null,
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Color(color),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }

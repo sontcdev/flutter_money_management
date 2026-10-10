@@ -163,25 +163,7 @@ class VoiceInputSheet extends HookWidget {
             for (final result in results) ...[
               const SizedBox(height: AppSpacing.md),
               Text(result.note ?? result.rawText),
-              Wrap(
-                spacing: AppSpacing.sm,
-                children: [
-                  if (result.amountVnd != null)
-                    Chip(
-                        label: Text(
-                            '${l10n.amount}: ${CurrencyFormatter.formatVND(result.amountVnd!)}')),
-                  if (result.date != null)
-                    Chip(
-                        label: Text(
-                            '${l10n.date}: ${formatLocalizedDate(context, result.date!)}')),
-                  if (result.categoryName != null)
-                    Chip(
-                        label:
-                            Text('${l10n.category}: ${result.categoryName!}')),
-                  if (result.walletName != null)
-                    Chip(label: Text('${l10n.wallet}: ${result.walletName!}')),
-                ],
-              ),
+              _ParsedResultChips(result: result),
               if (result.hasExtraAmounts)
                 Text(l10n.quickInputExtraAmounts,
                     style:
@@ -204,6 +186,34 @@ class VoiceInputSheet extends HookWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ParsedResultChips extends StatelessWidget {
+  const _ParsedResultChips({required this.result});
+
+  final VoiceParseResult result;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Wrap(
+      spacing: AppSpacing.sm,
+      children: [
+        if (result.amountVnd != null)
+          Chip(
+              label: Text(
+                  '${l10n.amount}: ${CurrencyFormatter.formatVND(result.amountVnd!)}')),
+        if (result.date != null)
+          Chip(
+              label: Text(
+                  '${l10n.date}: ${formatLocalizedDate(context, result.date!)}')),
+        if (result.categoryName != null)
+          Chip(label: Text('${l10n.category}: ${result.categoryName!}')),
+        if (result.walletName != null)
+          Chip(label: Text('${l10n.wallet}: ${result.walletName!}')),
+      ],
     );
   }
 }

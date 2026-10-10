@@ -6,6 +6,7 @@ import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/auth/providers/auth_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_management_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
+import 'package:flutter_money_management/src/features/workspace/models/workspace.dart';
 import 'package:flutter_money_management/src/features/workspace/models/workspace_management_models.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
@@ -80,105 +81,21 @@ class WorkspaceManagementScreen extends HookConsumerWidget {
                 ? l10n.workspaceInviteAlreadyPending
                 : null;
 
-    Future<void> submitInvite() async {
-      final workspace = activeWorkspace;
-      final email = emailController.text.trim();
-      if (workspace == null ||
-          email.isEmpty ||
-          isSubmitting.value ||
-          invalidEmail ||
-          duplicateMember ||
-          duplicateInvite) {
-        return;
-      }
-
-      isSubmitting.value = true;
-      try {
-        final invite =
-            await ref.read(workspaceManagementServiceProvider).createInvite(
-                  workspaceId: workspace.id,
-                  email: email,
-                );
-        emailController.clear();
-        draftEmail.value = '';
-        ref.invalidate(workspacePendingInvitesProvider);
-
-        if (!context.mounted) {
-          return;
-        }
-
-        await _showInviteCodeDialog(
-          context: context,
-          invite: invite,
-          title: l10n.inviteCreated,
-          message: l10n.shareInviteCodeWith(invite.email),
-        );
-      } catch (e, stackTrace) {
-        if (!context.mounted) {
-          return;
-        }
-
-        await ErrorReportHelper.handleApiError(
+    Future<void> submitInvite() => _submitInvite(
           context: context,
           ref: ref,
-          error: e,
-          stackTrace: stackTrace,
-          feature: 'workspace',
-          action: 'create_invite',
-          screen: 'workspace_management_screen',
-          extraContext: {
-            'workspace_id': workspace.id,
-            'email_masked': ErrorReportHelper.maskEmail(email),
-          },
+          l10n: l10n,
+          activeWorkspace: activeWorkspace,
+          emailController: emailController,
+          draftEmail: draftEmail,
+          isSubmitting: isSubmitting,
+          invalidEmail: invalidEmail,
+          duplicateMember: duplicateMember,
+          duplicateInvite: duplicateInvite,
         );
-      } finally {
-        isSubmitting.value = false;
-      }
-    }
 
-    Future<void> refreshInvite(WorkspaceInviteSummary invite) async {
-      if (isSubmitting.value) {
-        return;
-      }
-
-      isSubmitting.value = true;
-      try {
-        final refreshedInvite = await ref
-            .read(workspaceManagementServiceProvider)
-            .refreshInvite(invite.id);
-        ref.invalidate(workspacePendingInvitesProvider);
-
-        if (!context.mounted) {
-          return;
-        }
-
-        await _showInviteCodeDialog(
-          context: context,
-          invite: refreshedInvite,
-          title: l10n.inviteRefreshed,
-          message: l10n.shareNewInviteCodeWith(refreshedInvite.email),
-        );
-      } catch (e, stackTrace) {
-        if (!context.mounted) {
-          return;
-        }
-
-        await ErrorReportHelper.handleApiError(
-          context: context,
-          ref: ref,
-          error: e,
-          stackTrace: stackTrace,
-          feature: 'workspace',
-          action: 'refresh_invite',
-          screen: 'workspace_management_screen',
-          extraContext: {
-            'invite_id': invite.id,
-          },
-        );
-      } finally {
-        isSubmitting.value = false;
-      }
-    }
+    Future<void> refreshInvite(WorkspaceInviteSummary invite) =>
+        _refreshInvite(context, ref, l10n, isSubmitting, invite);
 
     return Scaffold(
       appBar: AppBar(
@@ -200,132 +117,21 @@ class WorkspaceManagementScreen extends HookConsumerWidget {
               child: ListView(
                 padding: const EdgeInsets.all(AppSpacing.screenPadding),
                 children: [
-                  AppCard(
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary,
-                            borderRadius:
-                                BorderRadius.circular(AppSpacing.radiusCard),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            activeWorkspace.name.substring(0, 1).toUpperCase(),
-                            style:
-                                Theme.of(context).textTheme.titleMedium?.copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.lg),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                activeWorkspace.name,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(fontWeight: FontWeight.w700),
-                              ),
-                              const SizedBox(height: AppSpacing.sm),
-                              Wrap(
-                                spacing: AppSpacing.sm,
-                                runSpacing: AppSpacing.xs,
-                                children: [
-                                  AppStatusChip.info(
-                                    label: isOwner
-                                        ? l10n.ownerRole
-                                        : l10n.roleValue(activeWorkspace.role),
-                                  ),
-                                  AppStatusChip(
-                                    label: l10n.workspaceTypeValue(
-                                      activeWorkspace.type,
-                                    ),
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                  _WorkspaceSummaryCard(
+                    activeWorkspace: activeWorkspace,
+                    isOwner: isOwner,
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   if (canManageMembers) ...[
-                    AppCard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.inviteMember,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(fontWeight: FontWeight.w700),
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(l10n.inviteMemberDesc),
-                          const SizedBox(height: AppSpacing.md),
-                          TextField(
-                            controller: emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            textInputAction: TextInputAction.done,
-                            onChanged: (value) {
-                              draftEmail.value = value;
-                            },
-                            decoration: InputDecoration(
-                              labelText: l10n.memberEmail,
-                              hintText: l10n.emailExample,
-                              errorText: inviteErrorText,
-                            ),
-                            onSubmitted: (_) => submitInvite(),
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: Wrap(
-                              spacing: AppSpacing.md,
-                              runSpacing: AppSpacing.md,
-                              alignment: WrapAlignment.end,
-                              children: [
-                                if (existingInvite != null && !duplicateMember)
-                                  OutlinedButton.icon(
-                                    onPressed: isSubmitting.value
-                                        ? null
-                                        : () => refreshInvite(existingInvite),
-                                    icon: const Icon(Icons.refresh),
-                                    label: Text(l10n.refreshInvite),
-                                  ),
-                                FilledButton.icon(
-                                  onPressed: isSubmitting.value ||
-                                          inviteErrorText != null
-                                      ? null
-                                      : submitInvite,
-                                  icon: isSubmitting.value
-                                      ? const SizedBox(
-                                          width: 16,
-                                          height: 16,
-                                          child: CircularProgressIndicator(
-                                              strokeWidth: 2),
-                                        )
-                                      : const Icon(Icons.person_add_alt_1),
-                                  label: Text(l10n.createInvite),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                    _InviteMemberCard(
+                      emailController: emailController,
+                      draftEmail: draftEmail,
+                      isSubmitting: isSubmitting,
+                      inviteErrorText: inviteErrorText,
+                      existingInvite: existingInvite,
+                      duplicateMember: duplicateMember,
+                      submitInvite: submitInvite,
+                      refreshInvite: refreshInvite,
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     _InviteSection(invitesAsync: invitesAsync),
@@ -342,49 +148,429 @@ class WorkspaceManagementScreen extends HookConsumerWidget {
                   if (canLeaveWorkspace) ...[
                     const SizedBox(height: AppSpacing.lg),
                     _DangerZoneCard(
-                      onLeaveWorkspace: () async {
-                        final confirmed = await ConfirmDeleteDialog.show(
-                          context,
-                          title: l10n.leaveWorkspace,
-                          message: l10n.leaveWorkspaceConfirm,
-                          consequence: l10n.leaveWorkspaceDesc,
-                          confirmLabel: l10n.leave,
-                        );
-                        if (!confirmed || !context.mounted) {
-                          return;
-                        }
-                        try {
-                          await ref
-                              .read(workspaceManagementServiceProvider)
-                              .leaveWorkspace(activeWorkspace.id);
-                          ref.invalidate(workspaceListProvider);
-                          clearActiveWorkspace(ref);
-                          if (context.mounted) {
-                            Navigator.of(context).pushNamedAndRemoveUntil(
-                              '/workspace-selection',
-                              (route) => false,
-                            );
-                          }
-                        } catch (e, stackTrace) {
-                          if (!context.mounted) {
-                            return;
-                          }
-                          await ErrorReportHelper.handleApiError(
-                            context: context,
-                            ref: ref,
-                            error: e,
-                            stackTrace: stackTrace,
-                            feature: 'workspace',
-                            action: 'leave_workspace',
-                            screen: 'workspace_management_screen',
-                          );
-                        }
-                      },
+                      onLeaveWorkspace: () => _leaveWorkspace(
+                        context,
+                        ref,
+                        l10n,
+                        activeWorkspace,
+                      ),
                     ),
                   ],
                 ],
               ),
             ),
+    );
+  }
+
+  Future<void> _submitInvite({
+    required BuildContext context,
+    required WidgetRef ref,
+    required AppLocalizations l10n,
+    required Workspace? activeWorkspace,
+    required TextEditingController emailController,
+    required ValueNotifier<String> draftEmail,
+    required ValueNotifier<bool> isSubmitting,
+    required bool invalidEmail,
+    required bool duplicateMember,
+    required bool duplicateInvite,
+  }) async {
+    final workspace = activeWorkspace;
+    final email = emailController.text.trim();
+    if (workspace == null ||
+        email.isEmpty ||
+        isSubmitting.value ||
+        invalidEmail ||
+        duplicateMember ||
+        duplicateInvite) {
+      return;
+    }
+
+    isSubmitting.value = true;
+    try {
+      final invite =
+          await ref.read(workspaceManagementServiceProvider).createInvite(
+                workspaceId: workspace.id,
+                email: email,
+              );
+      emailController.clear();
+      draftEmail.value = '';
+      ref.invalidate(workspacePendingInvitesProvider);
+
+      if (!context.mounted) {
+        return;
+      }
+
+      await _showInviteCodeDialog(
+        context: context,
+        invite: invite,
+        title: l10n.inviteCreated,
+        message: l10n.shareInviteCodeWith(invite.email),
+      );
+    } catch (e, stackTrace) {
+      if (!context.mounted) {
+        return;
+      }
+
+      await ErrorReportHelper.handleApiError(
+        context: context,
+        ref: ref,
+        error: e,
+        stackTrace: stackTrace,
+        feature: 'workspace',
+        action: 'create_invite',
+        screen: 'workspace_management_screen',
+        extraContext: {
+          'workspace_id': workspace.id,
+          'email_masked': ErrorReportHelper.maskEmail(email),
+        },
+      );
+    } finally {
+      isSubmitting.value = false;
+    }
+  }
+
+  Future<void> _refreshInvite(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    ValueNotifier<bool> isSubmitting,
+    WorkspaceInviteSummary invite,
+  ) async {
+    if (isSubmitting.value) {
+      return;
+    }
+
+    isSubmitting.value = true;
+    try {
+      final refreshedInvite = await ref
+          .read(workspaceManagementServiceProvider)
+          .refreshInvite(invite.id);
+      ref.invalidate(workspacePendingInvitesProvider);
+
+      if (!context.mounted) {
+        return;
+      }
+
+      await _showInviteCodeDialog(
+        context: context,
+        invite: refreshedInvite,
+        title: l10n.inviteRefreshed,
+        message: l10n.shareNewInviteCodeWith(refreshedInvite.email),
+      );
+    } catch (e, stackTrace) {
+      if (!context.mounted) {
+        return;
+      }
+
+      await ErrorReportHelper.handleApiError(
+        context: context,
+        ref: ref,
+        error: e,
+        stackTrace: stackTrace,
+        feature: 'workspace',
+        action: 'refresh_invite',
+        screen: 'workspace_management_screen',
+        extraContext: {
+          'invite_id': invite.id,
+        },
+      );
+    } finally {
+      isSubmitting.value = false;
+    }
+  }
+
+  Future<void> _leaveWorkspace(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    Workspace activeWorkspace,
+  ) async {
+    final confirmed = await ConfirmDeleteDialog.show(
+      context,
+      title: l10n.leaveWorkspace,
+      message: l10n.leaveWorkspaceConfirm,
+      consequence: l10n.leaveWorkspaceDesc,
+      confirmLabel: l10n.leave,
+    );
+    if (!confirmed || !context.mounted) {
+      return;
+    }
+    try {
+      await ref
+          .read(workspaceManagementServiceProvider)
+          .leaveWorkspace(activeWorkspace.id);
+      ref.invalidate(workspaceListProvider);
+      clearActiveWorkspace(ref);
+      if (context.mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/workspace-selection',
+          (route) => false,
+        );
+      }
+    } catch (e, stackTrace) {
+      if (!context.mounted) {
+        return;
+      }
+      await ErrorReportHelper.handleApiError(
+        context: context,
+        ref: ref,
+        error: e,
+        stackTrace: stackTrace,
+        feature: 'workspace',
+        action: 'leave_workspace',
+        screen: 'workspace_management_screen',
+      );
+    }
+  }
+}
+
+class _WorkspaceSummaryCard extends StatelessWidget {
+  const _WorkspaceSummaryCard({
+    required this.activeWorkspace,
+    required this.isOwner,
+  });
+
+  final Workspace activeWorkspace;
+  final bool isOwner;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return AppCard(
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+              borderRadius:
+                  BorderRadius.circular(AppSpacing.radiusCard),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              activeWorkspace.name.substring(0, 1).toUpperCase(),
+              style:
+                  Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.lg),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  activeWorkspace.name,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.xs,
+                  children: [
+                    AppStatusChip.info(
+                      label: isOwner
+                          ? l10n.ownerRole
+                          : l10n.roleValue(activeWorkspace.role),
+                    ),
+                    AppStatusChip(
+                      label: l10n.workspaceTypeValue(
+                        activeWorkspace.type,
+                      ),
+                      color:
+                          Theme.of(context).colorScheme.primary,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InviteMemberCard extends StatelessWidget {
+  const _InviteMemberCard({
+    required this.emailController,
+    required this.draftEmail,
+    required this.isSubmitting,
+    required this.inviteErrorText,
+    required this.existingInvite,
+    required this.duplicateMember,
+    required this.submitInvite,
+    required this.refreshInvite,
+  });
+
+  final TextEditingController emailController;
+  final ValueNotifier<String> draftEmail;
+  final ValueNotifier<bool> isSubmitting;
+  final String? inviteErrorText;
+  final WorkspaceInviteSummary? existingInvite;
+  final bool duplicateMember;
+  final Future<void> Function() submitInvite;
+  final Future<void> Function(WorkspaceInviteSummary invite) refreshInvite;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final existingInvite = this.existingInvite;
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.inviteMember,
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium
+                ?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(l10n.inviteMemberDesc),
+          const SizedBox(height: AppSpacing.md),
+          TextField(
+            controller: emailController,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.done,
+            onChanged: (value) {
+              draftEmail.value = value;
+            },
+            decoration: InputDecoration(
+              labelText: l10n.memberEmail,
+              hintText: l10n.emailExample,
+              errorText: inviteErrorText,
+            ),
+            onSubmitted: (_) => submitInvite(),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Wrap(
+              spacing: AppSpacing.md,
+              runSpacing: AppSpacing.md,
+              alignment: WrapAlignment.end,
+              children: [
+                if (existingInvite != null && !duplicateMember)
+                  OutlinedButton.icon(
+                    onPressed: isSubmitting.value
+                        ? null
+                        : () => refreshInvite(existingInvite),
+                    icon: const Icon(Icons.refresh),
+                    label: Text(l10n.refreshInvite),
+                  ),
+                FilledButton.icon(
+                  onPressed: isSubmitting.value ||
+                          inviteErrorText != null
+                      ? null
+                      : submitInvite,
+                  icon: isSubmitting.value
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2),
+                        )
+                      : const Icon(Icons.person_add_alt_1),
+                  label: Text(l10n.createInvite),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _InviteFilterBar extends StatelessWidget {
+  const _InviteFilterBar({
+    required this.emailFilterController,
+    required this.emailFilter,
+    required this.sortOption,
+  });
+
+  final TextEditingController emailFilterController;
+  final ValueNotifier<String> emailFilter;
+  final ValueNotifier<String> sortOption;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 560;
+        final filterField = TextField(
+          controller: emailFilterController,
+          decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.search),
+            labelText: l10n.filterInvitesByEmail,
+            hintText: l10n.filterInvitesByEmailHint,
+            suffixIcon: emailFilter.value.isEmpty
+                ? null
+                : IconButton(
+                    tooltip: l10n.clearFilter,
+                    onPressed: () {
+                      emailFilterController.clear();
+                      emailFilter.value = '';
+                    },
+                    icon: const Icon(Icons.clear),
+                  ),
+          ),
+          onChanged: (value) {
+            emailFilter.value = value;
+          },
+        );
+        final sortMenu = DropdownMenu<String>(
+          width: double.infinity,
+          initialSelection: sortOption.value,
+          label: Text(l10n.sortInvites),
+          dropdownMenuEntries: [
+            DropdownMenuEntry(
+              value: 'newest',
+              label: l10n.sortByNewest,
+            ),
+            DropdownMenuEntry(
+              value: 'oldest',
+              label: l10n.sortByOldest,
+            ),
+            DropdownMenuEntry(
+              value: 'email',
+              label: l10n.sortByEmail,
+            ),
+          ],
+          onSelected: (value) {
+            if (value != null) {
+              sortOption.value = value;
+            }
+          },
+        );
+        if (isWide) {
+          return Row(
+            children: [
+              Expanded(child: filterField),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(child: sortMenu),
+            ],
+          );
+        }
+        return Column(
+          children: [
+            filterField,
+            const SizedBox(height: AppSpacing.md),
+            sortMenu,
+          ],
+        );
+      },
     );
   }
 }
@@ -748,71 +934,10 @@ class _InviteSection extends HookConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: AppSpacing.md),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final isWide = constraints.maxWidth >= 560;
-                    final filterField = TextField(
-                      controller: emailFilterController,
-                      decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.search),
-                        labelText: l10n.filterInvitesByEmail,
-                        hintText: l10n.filterInvitesByEmailHint,
-                        suffixIcon: emailFilter.value.isEmpty
-                            ? null
-                            : IconButton(
-                                tooltip: l10n.clearFilter,
-                                onPressed: () {
-                                  emailFilterController.clear();
-                                  emailFilter.value = '';
-                                },
-                                icon: const Icon(Icons.clear),
-                              ),
-                      ),
-                      onChanged: (value) {
-                        emailFilter.value = value;
-                      },
-                    );
-                    final sortMenu = DropdownMenu<String>(
-                      width: double.infinity,
-                      initialSelection: sortOption.value,
-                      label: Text(l10n.sortInvites),
-                      dropdownMenuEntries: [
-                        DropdownMenuEntry(
-                          value: 'newest',
-                          label: l10n.sortByNewest,
-                        ),
-                        DropdownMenuEntry(
-                          value: 'oldest',
-                          label: l10n.sortByOldest,
-                        ),
-                        DropdownMenuEntry(
-                          value: 'email',
-                          label: l10n.sortByEmail,
-                        ),
-                      ],
-                      onSelected: (value) {
-                        if (value != null) {
-                          sortOption.value = value;
-                        }
-                      },
-                    );
-                    if (isWide) {
-                      return Row(
-                        children: [
-                          Expanded(child: filterField),
-                          const SizedBox(width: AppSpacing.md),
-                          Expanded(child: sortMenu),
-                        ],
-                      );
-                    }
-                    return Column(
-                      children: [
-                        filterField,
-                        const SizedBox(height: AppSpacing.md),
-                        sortMenu,
-                      ],
-                    );
-                  },
+                _InviteFilterBar(
+                  emailFilterController: emailFilterController,
+                  emailFilter: emailFilter,
+                  sortOption: sortOption,
                 ),
                 const SizedBox(height: AppSpacing.md),
                 Text(

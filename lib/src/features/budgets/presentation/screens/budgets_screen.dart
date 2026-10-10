@@ -315,59 +315,9 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
-                PopupMenuButton<BudgetSort>(
-                  icon: const Icon(Icons.sort),
+                _BudgetSortMenu(
+                  sort: _sort,
                   onSelected: (sort) => setState(() => _sort = sort),
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: BudgetSort.percentage,
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.percent,
-                            size: AppSpacing.iconSizeSm,
-                            color: _sort == BudgetSort.percentage
-                                ? Theme.of(context).colorScheme.primary
-                                : null,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(l10n.byUsagePercent),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: BudgetSort.amount,
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.attach_money,
-                            size: AppSpacing.iconSizeSm,
-                            color: _sort == BudgetSort.amount
-                                ? Theme.of(context).colorScheme.primary
-                                : null,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(l10n.byAmount),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: BudgetSort.name,
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.sort_by_alpha,
-                            size: AppSpacing.iconSizeSm,
-                            color: _sort == BudgetSort.name
-                                ? Theme.of(context).colorScheme.primary
-                                : null,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(l10n.byName),
-                        ],
-                      ),
-                    ),
-                  ],
                 ),
               ],
             ),
@@ -376,30 +326,8 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
 
         // Budget list
         if (filteredBudgets.isEmpty)
-          SliverFillRemaining(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.filter_list_off,
-                      size: 64,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.3)),
-                  const SizedBox(height: AppSpacing.md),
-                  Text(
-                    l10n.noBudgetsMatchFilter,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.5),
-                        ),
-                  ),
-                ],
-              ),
-            ),
+          const SliverFillRemaining(
+            child: _NoMatchingBudgets(),
           )
         else
           SliverPadding(
@@ -421,6 +349,104 @@ class _BudgetsContentState extends ConsumerState<_BudgetsContent> {
             ),
           ),
       ],
+    );
+  }
+}
+
+class _BudgetSortMenu extends StatelessWidget {
+  final BudgetSort sort;
+  final ValueChanged<BudgetSort> onSelected;
+
+  const _BudgetSortMenu({required this.sort, required this.onSelected});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return PopupMenuButton<BudgetSort>(
+      icon: const Icon(Icons.sort),
+      onSelected: onSelected,
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: BudgetSort.percentage,
+          child: Row(
+            children: [
+              Icon(
+                Icons.percent,
+                size: AppSpacing.iconSizeSm,
+                color: sort == BudgetSort.percentage
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+              ),
+              const SizedBox(width: 8),
+              Text(l10n.byUsagePercent),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: BudgetSort.amount,
+          child: Row(
+            children: [
+              Icon(
+                Icons.attach_money,
+                size: AppSpacing.iconSizeSm,
+                color: sort == BudgetSort.amount
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+              ),
+              const SizedBox(width: 8),
+              Text(l10n.byAmount),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: BudgetSort.name,
+          child: Row(
+            children: [
+              Icon(
+                Icons.sort_by_alpha,
+                size: AppSpacing.iconSizeSm,
+                color: sort == BudgetSort.name
+                    ? Theme.of(context).colorScheme.primary
+                    : null,
+              ),
+              const SizedBox(width: 8),
+              Text(l10n.byName),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _NoMatchingBudgets extends StatelessWidget {
+  const _NoMatchingBudgets();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.filter_list_off,
+              size: 64,
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.3)),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            l10n.noBudgetsMatchFilter,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.5),
+                ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1014,123 +1040,10 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
       body: Column(
         children: [
           // Hero summary card with gradient
-          Builder(builder: (context) {
-            final theme = Theme.of(context);
-            final statusColor = percentage > 100
-                ? AppColors.error
-                : percentage >= 80
-                    ? context.semanticColors.warning
-                    : AppColors.primary;
-            final statusContainerColor = percentage > 100
-                ? context.semanticColors.expenseContainer
-                : percentage >= 80
-                    ? context.semanticColors.warningContainer
-                    : context.semanticColors.incomeContainer;
-            return Container(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    statusContainerColor,
-                    statusContainerColor.withValues(alpha: 0.6),
-                  ],
-                ),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.spent,
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: theme.colorScheme.onSurface
-                                    .withValues(alpha: 0.6),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: AppSpacing.xs),
-                            Text(
-                              CurrencyFormatter.formatVNDFromCents(
-                                  budget.consumedCents,
-                                  locale: l10n.localeName),
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                          vertical: AppSpacing.xs,
-                        ),
-                        decoration: BoxDecoration(
-                          color: statusColor,
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusFull),
-                        ),
-                        child: Text(
-                          '${percentage.toStringAsFixed(1)}%',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: ThemeData.estimateBrightnessForColor(
-                                        statusColor) ==
-                                    Brightness.dark
-                                ? AppColors.textLight
-                                : AppColors.textDark,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                    child: LinearProgressIndicator(
-                      value: (percentage / 100).clamp(0.0, 1.0),
-                      minHeight: 12,
-                      backgroundColor: Theme.of(context)
-                          .colorScheme
-                          .onPrimary
-                          .withValues(alpha: 0.5),
-                      valueColor: AlwaysStoppedAnimation(statusColor),
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '${l10n.limit}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents, locale: l10n.localeName)}',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.6),
-                        ),
-                      ),
-                      Text(
-                        '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents - budget.consumedCents, locale: l10n.localeName)}',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: budget.consumedCents > budget.limitCents
-                              ? AppColors.error
-                              : AppColors.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          }),
+          _BudgetTransactionsHero(
+            budget: budget,
+            percentage: percentage,
+          ),
 
           // Transactions list
           Expanded(
@@ -1194,104 +1107,10 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                     final dayTotal = dayTransactions.fold<int>(
                         0, (sum, t) => sum + t.amountCents);
 
-                    return AppCard(
-                      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-                      padding: EdgeInsets.zero,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(AppSpacing.sm),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .surfaceContainerHighest,
-                              borderRadius: const BorderRadius.vertical(
-                                top: Radius.circular(AppSpacing.radiusCard),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  _formatDate(context, date),
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w600),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.xs,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .primary
-                                        .withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(
-                                        AppSpacing.radiusCard),
-                                  ),
-                                  child: Text(
-                                    '-${CurrencyFormatter.formatVNDFromCents(dayTotal, locale: l10n.localeName)}',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          ...dayTransactions.map((t) => ListTile(
-                                leading: Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: BoxDecoration(
-                                    color: context.semanticColors.expense
-                                        .withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(
-                                        AppSpacing.radiusCard),
-                                  ),
-                                  child: Icon(
-                                    Icons.shopping_cart,
-                                    color: context.semanticColors.expense,
-                                    size: AppSpacing.iconSizeSm,
-                                  ),
-                                ),
-                                title: Text(
-                                  t.note ?? l10n.noNote,
-                                  style: Theme.of(context).textTheme.bodyMedium,
-                                ),
-                                subtitle: Text(
-                                  formatLocalizedTime(context, t.dateTime),
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.bodySmall?.copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .onSurface
-                                        .withValues(alpha: 0.6),
-                                  ),
-                                ),
-                                trailing: Text(
-                                  '-${CurrencyFormatter.formatVNDFromCents(t.amountCents, locale: l10n.localeName)}',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color:
-                                        Theme.of(context).colorScheme.onSurface,
-                                  ),
-                                ),
-                                onTap: () {
-                                  Navigator.pushNamed(
-                                    context,
-                                    '/transaction-detail',
-                                    arguments: t.id,
-                                  );
-                                },
-                              )),
-                        ],
-                      ),
+                    return _BudgetDayGroupCard(
+                      dateLabel: _formatDate(context, date),
+                      dayTotal: dayTotal,
+                      dayTransactions: dayTransactions,
                     );
                   },
                 );
@@ -1312,5 +1131,252 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
 
   String _formatDate(BuildContext context, DateTime date) {
     return formatLocalizedDateWithWeekday(context, date);
+  }
+}
+
+class _BudgetTransactionsHero extends StatelessWidget {
+  final Budget budget;
+  final double percentage;
+
+  const _BudgetTransactionsHero({
+    required this.budget,
+    required this.percentage,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final statusColor = percentage > 100
+        ? AppColors.error
+        : percentage >= 80
+            ? context.semanticColors.warning
+            : AppColors.primary;
+    final statusContainerColor = percentage > 100
+        ? context.semanticColors.expenseContainer
+        : percentage >= 80
+            ? context.semanticColors.warningContainer
+            : context.semanticColors.incomeContainer;
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            statusContainerColor,
+            statusContainerColor.withValues(alpha: 0.6),
+          ],
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.spent,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface
+                            .withValues(alpha: 0.6),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      CurrencyFormatter.formatVNDFromCents(
+                          budget.consumedCents,
+                          locale: l10n.localeName),
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xs,
+                ),
+                decoration: BoxDecoration(
+                  color: statusColor,
+                  borderRadius:
+                      BorderRadius.circular(AppSpacing.radiusFull),
+                ),
+                child: Text(
+                  '${percentage.toStringAsFixed(1)}%',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: ThemeData.estimateBrightnessForColor(
+                                statusColor) ==
+                            Brightness.dark
+                        ? AppColors.textLight
+                        : AppColors.textDark,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+            child: LinearProgressIndicator(
+              value: (percentage / 100).clamp(0.0, 1.0),
+              minHeight: 12,
+              backgroundColor: Theme.of(context)
+                  .colorScheme
+                  .onPrimary
+                  .withValues(alpha: 0.5),
+              valueColor: AlwaysStoppedAnimation(statusColor),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '${l10n.limit}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents, locale: l10n.localeName)}',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: theme.colorScheme.onSurface
+                      .withValues(alpha: 0.6),
+                ),
+              ),
+              Text(
+                '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents - budget.consumedCents, locale: l10n.localeName)}',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: budget.consumedCents > budget.limitCents
+                      ? AppColors.error
+                      : AppColors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BudgetDayGroupCard extends StatelessWidget {
+  final String dateLabel;
+  final int dayTotal;
+  final List<Transaction> dayTransactions;
+
+  const _BudgetDayGroupCard({
+    required this.dateLabel,
+    required this.dayTotal,
+    required this.dayTransactions,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return AppCard(
+      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+      padding: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: Theme.of(context)
+                  .colorScheme
+                  .surfaceContainerHighest,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(AppSpacing.radiusCard),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  dateLabel,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w600),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xs,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .primary
+                        .withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(
+                        AppSpacing.radiusCard),
+                  ),
+                  child: Text(
+                    '-${CurrencyFormatter.formatVNDFromCents(dayTotal, locale: l10n.localeName)}',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color:
+                          Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ...dayTransactions.map((t) => ListTile(
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: context.semanticColors.expense
+                        .withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(
+                        AppSpacing.radiusCard),
+                  ),
+                  child: Icon(
+                    Icons.shopping_cart,
+                    color: context.semanticColors.expense,
+                    size: AppSpacing.iconSizeSm,
+                  ),
+                ),
+                title: Text(
+                  t.note ?? l10n.noNote,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                subtitle: Text(
+                  formatLocalizedTime(context, t.dateTime),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.6),
+                  ),
+                ),
+                trailing: Text(
+                  '-${CurrencyFormatter.formatVNDFromCents(t.amountCents, locale: l10n.localeName)}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color:
+                        Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/transaction-detail',
+                    arguments: t.id,
+                  );
+                },
+              )),
+        ],
+      ),
+    );
   }
 }

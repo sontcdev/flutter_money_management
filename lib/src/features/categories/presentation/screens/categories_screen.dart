@@ -129,54 +129,28 @@ class CategoriesScreen extends HookConsumerWidget {
                       AppSpacing.screenPadding,
                     ),
                     children: [
-                      AppCard(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.xs,
-                          vertical: AppSpacing.xs,
-                        ),
-                        child: Column(
-                          children: [
-                            for (var i = 0;
-                                i < filteredCategories.length;
-                                i++) ...[
-                              CategoryItem(
-                                category: filteredCategories[i],
-                                onEdit: canManageContent
-                                    ? () async {
-                                        final result =
-                                            await Navigator.pushNamed(
-                                          context,
-                                          '/category-edit',
-                                          arguments: filteredCategories[i],
-                                        );
-                                        if (result == true) {
-                                          ref.invalidate(categoriesProvider);
-                                        }
-                                      }
-                                    : null,
-                                onDelete: canManageContent
-                                    ? () => _deleteCategory(
-                                          context: context,
-                                          ref: ref,
-                                          l10n: l10n,
-                                          category: filteredCategories[i],
-                                        )
-                                    : null,
-                              ),
-                              if (i != filteredCategories.length - 1)
-                                Divider(
-                                  height: 1,
-                                  thickness: 1,
-                                  indent: AppSpacing.md,
-                                  endIndent: AppSpacing.md,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .outlineVariant
-                                      .withValues(alpha: 0.6),
-                                ),
-                            ],
-                          ],
-                        ),
+                      _CategoryListCard(
+                        categories: filteredCategories,
+                        onEdit: canManageContent
+                            ? (category) async {
+                                final result = await Navigator.pushNamed(
+                                  context,
+                                  '/category-edit',
+                                  arguments: category,
+                                );
+                                if (result == true) {
+                                  ref.invalidate(categoriesProvider);
+                                }
+                              }
+                            : null,
+                        onDelete: canManageContent
+                            ? (category) => _deleteCategory(
+                                  context: context,
+                                  ref: ref,
+                                  l10n: l10n,
+                                  category: category,
+                                )
+                            : null,
                       ),
                     ],
                   ),
@@ -244,5 +218,50 @@ class CategoriesScreen extends HookConsumerWidget {
         }
       }
     }
+  }
+}
+
+class _CategoryListCard extends StatelessWidget {
+  const _CategoryListCard({
+    required this.categories,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final List<Category> categories;
+  final void Function(Category category)? onEdit;
+  final void Function(Category category)? onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.xs,
+        vertical: AppSpacing.xs,
+      ),
+      child: Column(
+        children: [
+          for (var i = 0; i < categories.length; i++) ...[
+            CategoryItem(
+              category: categories[i],
+              onEdit: onEdit == null ? null : () => onEdit!(categories[i]),
+              onDelete:
+                  onDelete == null ? null : () => onDelete!(categories[i]),
+            ),
+            if (i != categories.length - 1)
+              Divider(
+                height: 1,
+                thickness: 1,
+                indent: AppSpacing.md,
+                endIndent: AppSpacing.md,
+                color: Theme.of(context)
+                    .colorScheme
+                    .outlineVariant
+                    .withValues(alpha: 0.6),
+              ),
+          ],
+        ],
+      ),
+    );
   }
 }

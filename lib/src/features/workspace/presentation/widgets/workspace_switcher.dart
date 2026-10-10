@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/notifications/providers/notification_providers.dart';
+import 'package:flutter_money_management/src/features/workspace/models/workspace.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/services/workspace_sync_helper.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
@@ -29,35 +30,9 @@ class WorkspaceSwitcher extends ConsumerWidget {
 
         return PopupMenuButton<String>(
           tooltip: l10n.switchWorkspace,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.workspace_premium,
-                  size: AppSpacing.iconSizeSm,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                if (unreadCount > 0)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 4),
-                    child: Badge(
-                      label: Text('$unreadCount'),
-                      child: const SizedBox(width: 1, height: 1),
-                    ),
-                  ),
-                const SizedBox(width: 8),
-                Text(
-                  activeWorkspace?.name ?? l10n.selectWorkspace,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                ),
-                const SizedBox(width: 4),
-                const Icon(Icons.arrow_drop_down, size: AppSpacing.iconSizeSm),
-              ],
-            ),
+          child: _WorkspaceSwitcherLabel(
+            unreadCount: unreadCount,
+            label: activeWorkspace?.name ?? l10n.selectWorkspace,
           ),
           itemBuilder: (context) => [
             // Current workspaces
@@ -65,47 +40,9 @@ class WorkspaceSwitcher extends ConsumerWidget {
               final isActive = workspace.id == activeWorkspace?.id;
               return PopupMenuItem<String>(
                 value: workspace.id,
-                child: Row(
-                  children: [
-                    Icon(
-                      isActive ? Icons.check_circle : Icons.circle_outlined,
-                      size: AppSpacing.iconSizeSm,
-                      color: isActive
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.6),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            workspace.name,
-                            style: TextStyle(
-                              fontWeight: isActive
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                            ),
-                          ),
-                          Text(
-                            workspace.type == 'personal'
-                                ? '${workspace.role} • personal'
-                                : workspace.role,
-                            style:
-                                Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface
-                                          .withValues(alpha: 0.6),
-                                    ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                child: _WorkspaceMenuRow(
+                  workspace: workspace,
+                  isActive: isActive,
                 ),
               );
             }),
@@ -194,6 +131,97 @@ class WorkspaceSwitcher extends ConsumerWidget {
         ),
         onPressed: () => ref.invalidate(workspaceListProvider),
       ),
+    );
+  }
+}
+
+class _WorkspaceSwitcherLabel extends StatelessWidget {
+  const _WorkspaceSwitcherLabel({
+    required this.unreadCount,
+    required this.label,
+  });
+
+  final int unreadCount;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.workspace_premium,
+            size: AppSpacing.iconSizeSm,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          if (unreadCount > 0)
+            Padding(
+              padding: const EdgeInsets.only(left: 4),
+              child: Badge(
+                label: Text('$unreadCount'),
+                child: const SizedBox(width: 1, height: 1),
+              ),
+            ),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+          const SizedBox(width: 4),
+          const Icon(Icons.arrow_drop_down, size: AppSpacing.iconSizeSm),
+        ],
+      ),
+    );
+  }
+}
+
+class _WorkspaceMenuRow extends StatelessWidget {
+  const _WorkspaceMenuRow({required this.workspace, required this.isActive});
+
+  final Workspace workspace;
+  final bool isActive;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(
+          isActive ? Icons.check_circle : Icons.circle_outlined,
+          size: AppSpacing.iconSizeSm,
+          color: isActive
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                workspace.name,
+                style: TextStyle(
+                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+              Text(
+                workspace.type == 'personal'
+                    ? '${workspace.role} • personal'
+                    : workspace.role,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.6),
+                    ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

@@ -41,64 +41,6 @@ class SignInScreen extends HookConsumerWidget {
 
     final authService = ref.read(supabaseAuthServiceProvider);
 
-    Future<void> handlePostLoginFlow() async {
-      if (!context.mounted) return;
-
-      try {
-        AppLogger.info('Post-login workspace resolution started',
-            name: 'MM.Auth');
-
-        // Invalidate workspace list to force refresh with new session
-        ref.invalidate(workspaceListProvider);
-
-        // Fetch user's workspaces
-        final workspaces = await ref.read(workspaceListProvider.future);
-        AppLogger.info(
-          'Workspace resolution completed: ${workspaces.length} workspaces',
-          name: 'MM.Workspace',
-        );
-
-        if (!context.mounted) return;
-
-        if (workspaces.isNotEmpty) {
-          final activeWorkspaceId = ref.read(activeWorkspaceIdProvider);
-          final workspaceId = activeWorkspaceId ?? workspaces.first.id;
-
-          ref.read(activeWorkspaceIdProvider.notifier).state = workspaceId;
-          AppLogger.info('Navigating to home after sign in', name: 'MM.UI');
-
-          Navigator.of(context).pushReplacementNamed('/home');
-        } else {
-          AppLogger.info('Navigating to workspace selection after sign in',
-              name: 'MM.UI');
-          Navigator.of(context).pushReplacementNamed('/workspace-selection');
-        }
-      } catch (e, stackTrace) {
-        AppLogger.error(
-          'Post-login workspace resolution failed',
-          name: 'MM.Auth',
-          error: e,
-          stackTrace: stackTrace,
-        );
-        errorMessage.value = l10n.failedToLoadWorkspaces('$e');
-
-        if (context.mounted) {
-          await ErrorReportHelper.handleApiError(
-            context: context,
-            ref: ref,
-            error: e,
-            stackTrace: stackTrace,
-            feature: 'auth',
-            action: 'post_login_workspace_resolution',
-            screen: 'sign_in_screen',
-            extraContext: {
-              'source': 'workspaceListProvider.future',
-            },
-          );
-        }
-      }
-    }
-
     Future<void> handleSignIn() async {
       final email = emailController.text.trim();
       final password = passwordController.text;
@@ -143,7 +85,8 @@ class SignInScreen extends HookConsumerWidget {
           await emailPersistence.saveEmail(email);
 
           // Sign in successful, now resolve post-login flow
-          await handlePostLoginFlow();
+          if (!context.mounted) return;
+          await _handlePostLoginFlow(context, ref, l10n, errorMessage);
         }
       } catch (e, stackTrace) {
         AppLogger.error(
@@ -184,202 +127,85 @@ class SignInScreen extends HookConsumerWidget {
       );
     }
 
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.xl,
-            AppSpacing.sm,
-            AppSpacing.xl,
-            AppSpacing.xl,
-          ),
-          child: AutofillGroup(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: AppSpacing.xl),
-
-                // Brand icon
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
-                  ),
-                  child: Icon(
-                    Icons.account_balance_wallet_outlined,
-                    color: colorScheme.onPrimary,
-                    size: 26,
-                  ),
-                ),
-
-                const SizedBox(height: AppSpacing.xl),
-
-                Text(
-                  l10n.welcomeBack,
-                  style: textTheme.headlineLarge,
-                ),
-
-                const SizedBox(height: AppSpacing.xs),
-
-                Text(
-                  l10n.signInToSyncAcrossDevices,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: isDark
-                        ? AppColors.textLightSecondary
-                        : AppColors.textSecondary,
-                  ),
-                ),
-
-                const SizedBox(height: AppSpacing.xl),
-
-                // Email Field
-                Text(l10n.email, style: textTheme.labelLarge),
-                const SizedBox(height: AppSpacing.sm),
-                ValueListenableBuilder(
-                  valueListenable: emailController,
-                  builder: (context, value, child) {
-                    return TextField(
-                      controller: emailController,
-                      decoration: InputDecoration(
-                        hintText: l10n.emailExample,
-                        prefixIcon: const Icon(Icons.email_outlined),
-                        suffixIcon: value.text.isNotEmpty
-                            ? IconButton(
-                                tooltip: l10n.clear,
-                                icon: const Icon(Icons.clear),
-                                onPressed: () {
-                                  emailController.clear();
-                                  emailPersistence.clearEmail();
-                                },
-                              )
-                            : null,
-                      ),
-                      keyboardType: TextInputType.emailAddress,
-                      autofillHints: const [AutofillHints.email],
-                      textInputAction: TextInputAction.next,
-                      enabled: !isLoading.value,
-                    );
-                  },
-                ),
-
-                const SizedBox(height: AppSpacing.lg),
-
-                // Password Field
-                Text(l10n.password, style: textTheme.labelLarge),
-                const SizedBox(height: AppSpacing.sm),
-                TextField(
-                  controller: passwordController,
-                  decoration: InputDecoration(
-                    hintText: l10n.enterYourPassword,
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      tooltip: obscurePassword.value
-                          ? l10n.showPassword
-                          : l10n.hidePassword,
-                      icon: Icon(
-                        obscurePassword.value
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                      ),
-                      onPressed: () {
-                        obscurePassword.value = !obscurePassword.value;
-                      },
-                    ),
-                  ),
-                  obscureText: obscurePassword.value,
-                  autofillHints: const [AutofillHints.password],
-                  textInputAction: TextInputAction.done,
-                  enabled: !isLoading.value,
-                  onSubmitted: (_) => handleSignIn(),
-                ),
-
-                const SizedBox(height: AppSpacing.sm),
-
-                // Forgot Password Link
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: isLoading.value ? null : handleForgotPassword,
-                    child: Text(l10n.forgotPassword),
-                  ),
-                ),
-
-                // Error Message
-                if (errorMessage.value != null) ...[
-                  const SizedBox(height: AppSpacing.sm),
-                  Container(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    decoration: BoxDecoration(
-                      color: (isDark ? AppColors.errorDark : AppColors.error)
-                          .withValues(alpha: isDark ? 0.18 : 0.08),
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusCard),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          color: isDark ? AppColors.errorDark : AppColors.error,
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: Text(
-                            errorMessage.value!,
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: isDark
-                                  ? AppColors.errorDark
-                                  : AppColors.error,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-
-                const SizedBox(height: AppSpacing.lg),
-
-                // Sign In Button
-                AppButton.prominent(
-                  text: l10n.signIn,
-                  isLoading: isLoading.value,
-                  fullWidth: true,
-                  onPressed: isLoading.value ? null : handleSignIn,
-                ),
-
-                const SizedBox(height: AppSpacing.xl),
-
-                // Sign Up Link
-                Center(
-                  child: TextButton.icon(
-                    onPressed: isLoading.value
-                        ? null
-                        : () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const SignUpScreen(),
-                              ),
-                            );
-                          },
-                    icon: const Icon(
-                      Icons.person_add_outlined,
-                      size: AppSpacing.iconSizeXs,
-                    ),
-                    label: Text(l10n.createNewAccount),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    return _SignInForm(
+      emailController: emailController,
+      passwordController: passwordController,
+      isLoading: isLoading.value,
+      errorMessage: errorMessage.value,
+      obscurePassword: obscurePassword.value,
+      onClearEmail: () {
+        emailController.clear();
+        emailPersistence.clearEmail();
+      },
+      onToggleObscurePassword: () {
+        obscurePassword.value = !obscurePassword.value;
+      },
+      onSignIn: handleSignIn,
+      onForgotPassword: handleForgotPassword,
     );
+  }
+
+  Future<void> _handlePostLoginFlow(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+    ValueNotifier<String?> errorMessage,
+  ) async {
+    if (!context.mounted) return;
+
+    try {
+      AppLogger.info('Post-login workspace resolution started',
+          name: 'MM.Auth');
+
+      // Invalidate workspace list to force refresh with new session
+      ref.invalidate(workspaceListProvider);
+
+      // Fetch user's workspaces
+      final workspaces = await ref.read(workspaceListProvider.future);
+      AppLogger.info(
+        'Workspace resolution completed: ${workspaces.length} workspaces',
+        name: 'MM.Workspace',
+      );
+
+      if (!context.mounted) return;
+
+      if (workspaces.isNotEmpty) {
+        final activeWorkspaceId = ref.read(activeWorkspaceIdProvider);
+        final workspaceId = activeWorkspaceId ?? workspaces.first.id;
+
+        ref.read(activeWorkspaceIdProvider.notifier).state = workspaceId;
+        AppLogger.info('Navigating to home after sign in', name: 'MM.UI');
+
+        Navigator.of(context).pushReplacementNamed('/home');
+      } else {
+        AppLogger.info('Navigating to workspace selection after sign in',
+            name: 'MM.UI');
+        Navigator.of(context).pushReplacementNamed('/workspace-selection');
+      }
+    } catch (e, stackTrace) {
+      AppLogger.error(
+        'Post-login workspace resolution failed',
+        name: 'MM.Auth',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      errorMessage.value = l10n.failedToLoadWorkspaces('$e');
+
+      if (context.mounted) {
+        await ErrorReportHelper.handleApiError(
+          context: context,
+          ref: ref,
+          error: e,
+          stackTrace: stackTrace,
+          feature: 'auth',
+          action: 'post_login_workspace_resolution',
+          screen: 'sign_in_screen',
+          extraContext: {
+            'source': 'workspaceListProvider.future',
+          },
+        );
+      }
+    }
   }
 
   String _getErrorMessage(AppLocalizations l10n, Object exception) {
@@ -402,5 +228,248 @@ class SignInScreen extends HookConsumerWidget {
       return l10n.tooManyAttempts;
     }
     return l10n.signInFailed;
+  }
+}
+
+class _SignInForm extends StatelessWidget {
+  const _SignInForm({
+    required this.emailController,
+    required this.passwordController,
+    required this.isLoading,
+    required this.errorMessage,
+    required this.obscurePassword,
+    required this.onClearEmail,
+    required this.onToggleObscurePassword,
+    required this.onSignIn,
+    required this.onForgotPassword,
+  });
+
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
+  final bool isLoading;
+  final String? errorMessage;
+  final bool obscurePassword;
+  final VoidCallback onClearEmail;
+  final VoidCallback onToggleObscurePassword;
+  final VoidCallback onSignIn;
+  final VoidCallback onForgotPassword;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            AppSpacing.sm,
+            AppSpacing.xl,
+            AppSpacing.xl,
+          ),
+          child: AutofillGroup(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: AppSpacing.xl),
+
+                // Brand icon
+                const _SignInHeader(),
+
+                const SizedBox(height: AppSpacing.xl),
+
+                // Email Field
+                Text(l10n.email, style: textTheme.labelLarge),
+                const SizedBox(height: AppSpacing.sm),
+                ValueListenableBuilder(
+                  valueListenable: emailController,
+                  builder: (context, value, child) {
+                    return TextField(
+                      controller: emailController,
+                      decoration: InputDecoration(
+                        hintText: l10n.emailExample,
+                        prefixIcon: const Icon(Icons.email_outlined),
+                        suffixIcon: value.text.isNotEmpty
+                            ? IconButton(
+                                tooltip: l10n.clear,
+                                icon: const Icon(Icons.clear),
+                                onPressed: onClearEmail,
+                              )
+                            : null,
+                      ),
+                      keyboardType: TextInputType.emailAddress,
+                      autofillHints: const [AutofillHints.email],
+                      textInputAction: TextInputAction.next,
+                      enabled: !isLoading,
+                    );
+                  },
+                ),
+
+                const SizedBox(height: AppSpacing.lg),
+
+                // Password Field
+                Text(l10n.password, style: textTheme.labelLarge),
+                const SizedBox(height: AppSpacing.sm),
+                TextField(
+                  controller: passwordController,
+                  decoration: InputDecoration(
+                    hintText: l10n.enterYourPassword,
+                    prefixIcon: const Icon(Icons.lock_outline),
+                    suffixIcon: IconButton(
+                      tooltip: obscurePassword
+                          ? l10n.showPassword
+                          : l10n.hidePassword,
+                      icon: Icon(
+                        obscurePassword
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                      ),
+                      onPressed: onToggleObscurePassword,
+                    ),
+                  ),
+                  obscureText: obscurePassword,
+                  autofillHints: const [AutofillHints.password],
+                  textInputAction: TextInputAction.done,
+                  enabled: !isLoading,
+                  onSubmitted: (_) => onSignIn(),
+                ),
+
+                const SizedBox(height: AppSpacing.sm),
+
+                // Forgot Password Link
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: isLoading ? null : onForgotPassword,
+                    child: Text(l10n.forgotPassword),
+                  ),
+                ),
+
+                // Error Message
+                if (errorMessage != null) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  _SignInErrorBanner(message: errorMessage!),
+                ],
+
+                const SizedBox(height: AppSpacing.lg),
+
+                // Sign In Button
+                AppButton.prominent(
+                  text: l10n.signIn,
+                  isLoading: isLoading,
+                  fullWidth: true,
+                  onPressed: isLoading ? null : onSignIn,
+                ),
+
+                const SizedBox(height: AppSpacing.xl),
+
+                // Sign Up Link
+                Center(
+                  child: TextButton.icon(
+                    onPressed: isLoading
+                        ? null
+                        : () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const SignUpScreen(),
+                              ),
+                            );
+                          },
+                    icon: const Icon(
+                      Icons.person_add_outlined,
+                      size: AppSpacing.iconSizeXs,
+                    ),
+                    label: Text(l10n.createNewAccount),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SignInHeader extends StatelessWidget {
+  const _SignInHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            color: colorScheme.primary,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+          ),
+          child: Icon(
+            Icons.account_balance_wallet_outlined,
+            color: colorScheme.onPrimary,
+            size: 26,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        Text(
+          l10n.welcomeBack,
+          style: textTheme.headlineLarge,
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          l10n.signInToSyncAcrossDevices,
+          style: textTheme.bodyMedium?.copyWith(
+            color:
+                isDark ? AppColors.textLightSecondary : AppColors.textSecondary,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SignInErrorBanner extends StatelessWidget {
+  const _SignInErrorBanner({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: (isDark ? AppColors.errorDark : AppColors.error)
+            .withValues(alpha: isDark ? 0.18 : 0.08),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.error_outline,
+            color: isDark ? AppColors.errorDark : AppColors.error,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              message,
+              style: textTheme.bodyMedium?.copyWith(
+                color: isDark ? AppColors.errorDark : AppColors.error,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -68,6 +68,44 @@ class RecurringTransactionEditScreen extends HookConsumerWidget {
   }
 }
 
+class _RecurringFormState {
+  const _RecurringFormState({
+    required this.titleController,
+    required this.amountController,
+    required this.noteController,
+    required this.intervalCountController,
+    required this.reminderDaysController,
+    required this.selectedType,
+    required this.selectedFrequency,
+    required this.selectedMode,
+    required this.selectedStartDate,
+    required this.selectedEndDate,
+    required this.selectedCategoryId,
+    required this.dayOfMonth,
+    required this.dayOfWeek,
+    required this.monthOfYear,
+    required this.isActive,
+    required this.isSaving,
+  });
+
+  final TextEditingController titleController;
+  final TextEditingController amountController;
+  final TextEditingController noteController;
+  final TextEditingController intervalCountController;
+  final TextEditingController reminderDaysController;
+  final ValueNotifier<RecurringTransactionType> selectedType;
+  final ValueNotifier<RecurringFrequency> selectedFrequency;
+  final ValueNotifier<RecurringMode> selectedMode;
+  final ValueNotifier<DateTime> selectedStartDate;
+  final ValueNotifier<DateTime?> selectedEndDate;
+  final ValueNotifier<String?> selectedCategoryId;
+  final ValueNotifier<int?> dayOfMonth;
+  final ValueNotifier<int?> dayOfWeek;
+  final ValueNotifier<int?> monthOfYear;
+  final ValueNotifier<bool> isActive;
+  final ValueNotifier<bool> isSaving;
+}
+
 class _RecurringTransactionEditForm extends HookConsumerWidget {
   const _RecurringTransactionEditForm({
     required this.recurringTransactionId,
@@ -133,92 +171,24 @@ class _RecurringTransactionEditForm extends HookConsumerWidget {
       dayOfWeek: dayOfWeek.value,
       monthOfYear: monthOfYear.value,
     );
-
-    Future<void> submit() async {
-      if (titleController.text.trim().isEmpty) {
-        showAppSnackBar(
-          context,
-          l10n.emptyContent,
-          type: AppSnackBarType.error,
-        );
-        return;
-      }
-      if (selectedCategoryId.value == null) {
-        showAppSnackBar(
-          context,
-          l10n.selectCategory,
-          type: AppSnackBarType.error,
-        );
-        return;
-      }
-
-      final amount = CurrencyFormatter.parseVND(amountController.text);
-      if (amount == null || amount <= 0) {
-        showAppSnackBar(
-          context,
-          l10n.amountRequiredError,
-          type: AppSnackBarType.error,
-        );
-        return;
-      }
-
-      final intervalCount = int.tryParse(intervalCountController.text) ?? 1;
-      final reminderDays = int.tryParse(reminderDaysController.text) ?? 0;
-
-      isSaving.value = true;
-      try {
-        await ref
-            .read(recurringTransactionServiceProvider)
-            .saveRecurringTransaction(
-              existingId: recurringTransactionId,
-              title: titleController.text,
-              categoryId: selectedCategoryId.value!,
-              amountCents: CurrencyFormatter.toCents(amount),
-              type: selectedType.value,
-              frequency: selectedFrequency.value,
-              mode: selectedMode.value,
-              intervalCount: intervalCount,
-              startDate: selectedStartDate.value,
-              reminderDaysBefore: reminderDays,
-              note: noteController.text,
-              dayOfMonth:
-                  selectedFrequency.value == RecurringFrequency.monthly ||
-                          selectedFrequency.value == RecurringFrequency.yearly
-                      ? dayOfMonth.value
-                      : null,
-              dayOfWeek: selectedFrequency.value == RecurringFrequency.weekly
-                  ? dayOfWeek.value
-                  : null,
-              monthOfYear: selectedFrequency.value == RecurringFrequency.yearly
-                  ? monthOfYear.value
-                  : null,
-              endDate: selectedEndDate.value,
-              isActive: isActive.value,
-            );
-        ref.invalidate(recurringTransactionsProvider);
-        ref.invalidate(upcomingRecurringOccurrencesProvider);
-        if (context.mounted) {
-          showAppSnackBar(context, l10n.success, type: AppSnackBarType.success);
-          Navigator.of(context).pop(true);
-        }
-      } catch (e, stackTrace) {
-        if (context.mounted) {
-          await ErrorReportHelper.handleApiError(
-            context: context,
-            ref: ref,
-            error: e,
-            stackTrace: stackTrace,
-            feature: 'recurring',
-            action: isEditing
-                ? 'update_recurring_transaction'
-                : 'create_recurring_transaction',
-            screen: 'recurring_transaction_edit_screen',
-          );
-        }
-      } finally {
-        isSaving.value = false;
-      }
-    }
+    final form = _RecurringFormState(
+      titleController: titleController,
+      amountController: amountController,
+      noteController: noteController,
+      intervalCountController: intervalCountController,
+      reminderDaysController: reminderDaysController,
+      selectedType: selectedType,
+      selectedFrequency: selectedFrequency,
+      selectedMode: selectedMode,
+      selectedStartDate: selectedStartDate,
+      selectedEndDate: selectedEndDate,
+      selectedCategoryId: selectedCategoryId,
+      dayOfMonth: dayOfMonth,
+      dayOfWeek: dayOfWeek,
+      monthOfYear: monthOfYear,
+      isActive: isActive,
+      isSaving: isSaving,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -246,280 +216,32 @@ class _RecurringTransactionEditForm extends HookConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                AppCard(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: Text(
-                          selectedMode.value == RecurringMode.manualConfirm
-                              ? l10n.recurringModeManualConfirm
-                              : l10n.recurringModeReminderOnly,
-                        ),
-                      ),
-                    ],
-                  ),
+                _RecurringModeBanner(
+                  mode: selectedMode.value,
+                  l10n: l10n,
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                AppInput(
-                  label: l10n.recurringTitle,
-                  controller: titleController,
+                _RecurringBasicFields(
+                  form: form,
+                  filteredCategories: filteredCategories,
+                  l10n: l10n,
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                SegmentedButton<RecurringTransactionType>(
-                  segments: [
-                    ButtonSegment(
-                      value: RecurringTransactionType.expense,
-                      label: Text(l10n.expense),
-                      icon: const Icon(Icons.arrow_upward),
-                    ),
-                    ButtonSegment(
-                      value: RecurringTransactionType.income,
-                      label: Text(l10n.income),
-                      icon: const Icon(Icons.arrow_downward),
-                    ),
-                  ],
-                  selected: {selectedType.value},
-                  onSelectionChanged: (selection) {
-                    selectedType.value = selection.first;
-                    selectedCategoryId.value = null;
-                  },
-                ),
+                _RecurringScheduleFields(form: form, l10n: l10n),
                 const SizedBox(height: AppSpacing.lg),
-                AppInput(
-                  label: l10n.amount,
-                  hint: '0',
-                  controller: amountController,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    VNDInputFormatter(),
-                  ],
-                  suffixIcon: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.screenPadding,
-                      vertical: AppSpacing.screenPadding,
-                    ),
-                    child: Text(CurrencyFormatter.getCurrencySymbol('VND')),
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                DropdownButtonFormField<String>(
-                  initialValue: selectedCategoryId.value,
-                  decoration: InputDecoration(labelText: l10n.category),
-                  items: filteredCategories
-                      .map(
-                        (category) => DropdownMenuItem<String>(
-                          value: category.id,
-                          child: Text(category.name),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) => selectedCategoryId.value = value,
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                DropdownButtonFormField<RecurringFrequency>(
-                  initialValue: selectedFrequency.value,
-                  decoration:
-                      InputDecoration(labelText: l10n.recurringFrequency),
-                  items: [
-                    DropdownMenuItem(
-                      value: RecurringFrequency.weekly,
-                      child: Text(l10n.weekly),
-                    ),
-                    DropdownMenuItem(
-                      value: RecurringFrequency.monthly,
-                      child: Text(l10n.monthly),
-                    ),
-                    DropdownMenuItem(
-                      value: RecurringFrequency.yearly,
-                      child: Text(l10n.yearly),
-                    ),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      selectedFrequency.value = value;
-                    }
-                  },
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                AppInput(
-                  label: l10n.recurringInterval,
-                  controller: intervalCountController,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                if (selectedFrequency.value == RecurringFrequency.monthly ||
-                    selectedFrequency.value == RecurringFrequency.yearly)
-                  DropdownButtonFormField<int>(
-                    initialValue: dayOfMonth.value,
-                    decoration:
-                        InputDecoration(labelText: l10n.recurringDayOfMonth),
-                    items: List.generate(
-                      31,
-                      (index) => DropdownMenuItem(
-                        value: index + 1,
-                        child: Text('${index + 1}'),
-                      ),
-                    ),
-                    onChanged: (value) => dayOfMonth.value = value,
-                  ),
-                if (selectedFrequency.value == RecurringFrequency.weekly)
-                  DropdownButtonFormField<int>(
-                    initialValue: dayOfWeek.value,
-                    decoration:
-                        InputDecoration(labelText: l10n.recurringDayOfWeek),
-                    items: List.generate(
-                      7,
-                      (index) => DropdownMenuItem(
-                        value: index + 1,
-                        child: Text(_weekdayLabel(index + 1, l10n)),
-                      ),
-                    ),
-                    onChanged: (value) => dayOfWeek.value = value,
-                  ),
-                if (selectedFrequency.value == RecurringFrequency.yearly) ...[
-                  const SizedBox(height: AppSpacing.lg),
-                  DropdownButtonFormField<int>(
-                    initialValue: monthOfYear.value,
-                    decoration: InputDecoration(labelText: l10n.month),
-                    items: List.generate(
-                      12,
-                      (index) => DropdownMenuItem(
-                        value: index + 1,
-                        child: Text('${index + 1}'),
-                      ),
-                    ),
-                    onChanged: (value) => monthOfYear.value = value,
-                  ),
-                ],
-                const SizedBox(height: AppSpacing.lg),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.startDate),
-                  subtitle: Text(_formatDate(selectedStartDate.value)),
-                  trailing: const Icon(Icons.calendar_today),
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate: selectedStartDate.value,
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime(2100),
-                    );
-                    if (picked != null) {
-                      selectedStartDate.value = picked;
-                    }
-                  },
-                ),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.recurringEndDate),
-                  subtitle: Text(
-                    selectedEndDate.value == null
-                        ? l10n.recurringNoEndDate
-                        : _formatDate(selectedEndDate.value!),
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (selectedEndDate.value != null)
-                        IconButton(
-                          tooltip: l10n.clear,
-                          onPressed: () => selectedEndDate.value = null,
-                          icon: const Icon(Icons.clear),
-                        ),
-                      const Icon(Icons.calendar_today),
-                    ],
-                  ),
-                  onTap: () async {
-                    final picked = await showDatePicker(
-                      context: context,
-                      initialDate:
-                          selectedEndDate.value ?? selectedStartDate.value,
-                      firstDate: selectedStartDate.value,
-                      lastDate: DateTime(2100),
-                    );
-                    if (picked != null) {
-                      selectedEndDate.value = picked;
-                    }
-                  },
-                ),
+                _RecurringDateFields(form: form, l10n: l10n),
                 if (previewDates.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    l10n.recurringNextOccurrences,
-                    style: Theme.of(context).textTheme.titleSmall,
+                  _RecurringOccurrencePreview(
+                    dates: previewDates,
+                    l10n: l10n,
                   ),
-                  const SizedBox(height: AppSpacing.xs),
-                  for (final date in previewDates)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.event_outlined,
-                            size: AppSpacing.iconSizeXs,
-                            color:
-                                Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: AppSpacing.sm),
-                          Text(formatLocalizedDateWithWeekday(context, date)),
-                        ],
-                      ),
-                    ),
                 ],
                 const SizedBox(height: AppSpacing.lg),
-                DropdownButtonFormField<RecurringMode>(
-                  initialValue: selectedMode.value,
-                  decoration: InputDecoration(labelText: l10n.recurringMode),
-                  items: [
-                    DropdownMenuItem(
-                      value: RecurringMode.manualConfirm,
-                      child: Text(l10n.recurringModeManualConfirm),
-                    ),
-                    DropdownMenuItem(
-                      value: RecurringMode.reminderOnly,
-                      child: Text(l10n.recurringModeReminderOnly),
-                    ),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      selectedMode.value = value;
-                    }
-                  },
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                AppInput(
-                  label: l10n.recurringReminderDaysBefore,
-                  controller: reminderDaysController,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                AppInput(
-                  label: l10n.note,
-                  controller: noteController,
-                  maxLines: 3,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.recurringActive),
-                  value: isActive.value,
-                  onChanged: (value) => isActive.value = value,
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                AppButton(
-                  text: l10n.save,
-                  onPressed: isSaving.value ? null : submit,
-                  isLoading: isSaving.value,
-                  fullWidth: true,
+                _RecurringReminderFields(
+                  form: form,
+                  l10n: l10n,
+                  onSave: () => _submit(context, ref, form),
                 ),
               ],
             ),
@@ -533,6 +255,301 @@ class _RecurringTransactionEditForm extends HookConsumerWidget {
           onRetry: () => ref.invalidate(categoriesProvider),
         ),
       ),
+    );
+  }
+
+  Future<void> _submit(
+    BuildContext context,
+    WidgetRef ref,
+    _RecurringFormState form,
+  ) async {
+    final titleController = form.titleController;
+    final selectedCategoryId = form.selectedCategoryId;
+    final selectedFrequency = form.selectedFrequency;
+    final isSaving = form.isSaving;
+    if (titleController.text.trim().isEmpty) {
+      showAppSnackBar(
+        context,
+        l10n.emptyContent,
+        type: AppSnackBarType.error,
+      );
+      return;
+    }
+    if (selectedCategoryId.value == null) {
+      showAppSnackBar(
+        context,
+        l10n.selectCategory,
+        type: AppSnackBarType.error,
+      );
+      return;
+    }
+
+    final amount = CurrencyFormatter.parseVND(form.amountController.text);
+    if (amount == null || amount <= 0) {
+      showAppSnackBar(
+        context,
+        l10n.amountRequiredError,
+        type: AppSnackBarType.error,
+      );
+      return;
+    }
+
+    final intervalCount = int.tryParse(form.intervalCountController.text) ?? 1;
+    final reminderDays = int.tryParse(form.reminderDaysController.text) ?? 0;
+
+    isSaving.value = true;
+    try {
+      await ref
+          .read(recurringTransactionServiceProvider)
+          .saveRecurringTransaction(
+            existingId: recurringTransactionId,
+            title: titleController.text,
+            categoryId: selectedCategoryId.value!,
+            amountCents: CurrencyFormatter.toCents(amount),
+            type: form.selectedType.value,
+            frequency: selectedFrequency.value,
+            mode: form.selectedMode.value,
+            intervalCount: intervalCount,
+            startDate: form.selectedStartDate.value,
+            reminderDaysBefore: reminderDays,
+            note: form.noteController.text,
+            dayOfMonth: selectedFrequency.value == RecurringFrequency.monthly ||
+                    selectedFrequency.value == RecurringFrequency.yearly
+                ? form.dayOfMonth.value
+                : null,
+            dayOfWeek: selectedFrequency.value == RecurringFrequency.weekly
+                ? form.dayOfWeek.value
+                : null,
+            monthOfYear: selectedFrequency.value == RecurringFrequency.yearly
+                ? form.monthOfYear.value
+                : null,
+            endDate: form.selectedEndDate.value,
+            isActive: form.isActive.value,
+          );
+      ref.invalidate(recurringTransactionsProvider);
+      ref.invalidate(upcomingRecurringOccurrencesProvider);
+      if (context.mounted) {
+        showAppSnackBar(context, l10n.success, type: AppSnackBarType.success);
+        Navigator.of(context).pop(true);
+      }
+    } catch (e, stackTrace) {
+      if (context.mounted) {
+        await ErrorReportHelper.handleApiError(
+          context: context,
+          ref: ref,
+          error: e,
+          stackTrace: stackTrace,
+          feature: 'recurring',
+          action: isEditing
+              ? 'update_recurring_transaction'
+              : 'create_recurring_transaction',
+          screen: 'recurring_transaction_edit_screen',
+        );
+      }
+    } finally {
+      isSaving.value = false;
+    }
+  }
+}
+
+class _RecurringModeBanner extends StatelessWidget {
+  const _RecurringModeBanner({required this.mode, required this.l10n});
+
+  final RecurringMode mode;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      color: Theme.of(context).colorScheme.primaryContainer,
+      child: Row(
+        children: [
+          Icon(
+            Icons.info_outline,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              mode == RecurringMode.manualConfirm
+                  ? l10n.recurringModeManualConfirm
+                  : l10n.recurringModeReminderOnly,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RecurringBasicFields extends StatelessWidget {
+  const _RecurringBasicFields({
+    required this.form,
+    required this.filteredCategories,
+    required this.l10n,
+  });
+
+  final _RecurringFormState form;
+  final List<Category> filteredCategories;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedType = form.selectedType;
+    final selectedCategoryId = form.selectedCategoryId;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AppInput(
+          label: l10n.recurringTitle,
+          controller: form.titleController,
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        SegmentedButton<RecurringTransactionType>(
+          segments: [
+            ButtonSegment(
+              value: RecurringTransactionType.expense,
+              label: Text(l10n.expense),
+              icon: const Icon(Icons.arrow_upward),
+            ),
+            ButtonSegment(
+              value: RecurringTransactionType.income,
+              label: Text(l10n.income),
+              icon: const Icon(Icons.arrow_downward),
+            ),
+          ],
+          selected: {selectedType.value},
+          onSelectionChanged: (selection) {
+            selectedType.value = selection.first;
+            selectedCategoryId.value = null;
+          },
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        AppInput(
+          label: l10n.amount,
+          hint: '0',
+          controller: form.amountController,
+          keyboardType: TextInputType.number,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            VNDInputFormatter(),
+          ],
+          suffixIcon: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.screenPadding,
+              vertical: AppSpacing.screenPadding,
+            ),
+            child: Text(CurrencyFormatter.getCurrencySymbol('VND')),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        DropdownButtonFormField<String>(
+          initialValue: selectedCategoryId.value,
+          decoration: InputDecoration(labelText: l10n.category),
+          items: filteredCategories
+              .map(
+                (category) => DropdownMenuItem<String>(
+                  value: category.id,
+                  child: Text(category.name),
+                ),
+              )
+              .toList(),
+          onChanged: (value) => selectedCategoryId.value = value,
+        ),
+      ],
+    );
+  }
+}
+
+class _RecurringScheduleFields extends StatelessWidget {
+  const _RecurringScheduleFields({required this.form, required this.l10n});
+
+  final _RecurringFormState form;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedFrequency = form.selectedFrequency;
+    final dayOfMonth = form.dayOfMonth;
+    final dayOfWeek = form.dayOfWeek;
+    final monthOfYear = form.monthOfYear;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        DropdownButtonFormField<RecurringFrequency>(
+          initialValue: selectedFrequency.value,
+          decoration: InputDecoration(labelText: l10n.recurringFrequency),
+          items: [
+            DropdownMenuItem(
+              value: RecurringFrequency.weekly,
+              child: Text(l10n.weekly),
+            ),
+            DropdownMenuItem(
+              value: RecurringFrequency.monthly,
+              child: Text(l10n.monthly),
+            ),
+            DropdownMenuItem(
+              value: RecurringFrequency.yearly,
+              child: Text(l10n.yearly),
+            ),
+          ],
+          onChanged: (value) {
+            if (value != null) {
+              selectedFrequency.value = value;
+            }
+          },
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        AppInput(
+          label: l10n.recurringInterval,
+          controller: form.intervalCountController,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        if (selectedFrequency.value == RecurringFrequency.monthly ||
+            selectedFrequency.value == RecurringFrequency.yearly)
+          DropdownButtonFormField<int>(
+            initialValue: dayOfMonth.value,
+            decoration: InputDecoration(labelText: l10n.recurringDayOfMonth),
+            items: List.generate(
+              31,
+              (index) => DropdownMenuItem(
+                value: index + 1,
+                child: Text('${index + 1}'),
+              ),
+            ),
+            onChanged: (value) => dayOfMonth.value = value,
+          ),
+        if (selectedFrequency.value == RecurringFrequency.weekly)
+          DropdownButtonFormField<int>(
+            initialValue: dayOfWeek.value,
+            decoration: InputDecoration(labelText: l10n.recurringDayOfWeek),
+            items: List.generate(
+              7,
+              (index) => DropdownMenuItem(
+                value: index + 1,
+                child: Text(_weekdayLabel(index + 1, l10n)),
+              ),
+            ),
+            onChanged: (value) => dayOfWeek.value = value,
+          ),
+        if (selectedFrequency.value == RecurringFrequency.yearly) ...[
+          const SizedBox(height: AppSpacing.lg),
+          DropdownButtonFormField<int>(
+            initialValue: monthOfYear.value,
+            decoration: InputDecoration(labelText: l10n.month),
+            items: List.generate(
+              12,
+              (index) => DropdownMenuItem(
+                value: index + 1,
+                child: Text('${index + 1}'),
+              ),
+            ),
+            onChanged: (value) => monthOfYear.value = value,
+          ),
+        ],
+      ],
     );
   }
 
@@ -554,9 +571,182 @@ class _RecurringTransactionEditForm extends HookConsumerWidget {
         return l10n.sunday;
     }
   }
+}
+
+class _RecurringDateFields extends StatelessWidget {
+  const _RecurringDateFields({required this.form, required this.l10n});
+
+  final _RecurringFormState form;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedStartDate = form.selectedStartDate;
+    final selectedEndDate = form.selectedEndDate;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(l10n.startDate),
+          subtitle: Text(_formatDate(selectedStartDate.value)),
+          trailing: const Icon(Icons.calendar_today),
+          onTap: () async {
+            final picked = await showDatePicker(
+              context: context,
+              initialDate: selectedStartDate.value,
+              firstDate: DateTime(2020),
+              lastDate: DateTime(2100),
+            );
+            if (picked != null) {
+              selectedStartDate.value = picked;
+            }
+          },
+        ),
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(l10n.recurringEndDate),
+          subtitle: Text(
+            selectedEndDate.value == null
+                ? l10n.recurringNoEndDate
+                : _formatDate(selectedEndDate.value!),
+          ),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (selectedEndDate.value != null)
+                IconButton(
+                  tooltip: l10n.clear,
+                  onPressed: () => selectedEndDate.value = null,
+                  icon: const Icon(Icons.clear),
+                ),
+              const Icon(Icons.calendar_today),
+            ],
+          ),
+          onTap: () async {
+            final picked = await showDatePicker(
+              context: context,
+              initialDate: selectedEndDate.value ?? selectedStartDate.value,
+              firstDate: selectedStartDate.value,
+              lastDate: DateTime(2100),
+            );
+            if (picked != null) {
+              selectedEndDate.value = picked;
+            }
+          },
+        ),
+      ],
+    );
+  }
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
+  }
+}
+
+class _RecurringOccurrencePreview extends StatelessWidget {
+  const _RecurringOccurrencePreview({required this.dates, required this.l10n});
+
+  final List<DateTime> dates;
+  final AppLocalizations l10n;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          l10n.recurringNextOccurrences,
+          style: Theme.of(context).textTheme.titleSmall,
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        for (final date in dates)
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.event_outlined,
+                  size: AppSpacing.iconSizeXs,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Text(formatLocalizedDateWithWeekday(context, date)),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _RecurringReminderFields extends StatelessWidget {
+  const _RecurringReminderFields({
+    required this.form,
+    required this.l10n,
+    required this.onSave,
+  });
+
+  final _RecurringFormState form;
+  final AppLocalizations l10n;
+  final VoidCallback onSave;
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedMode = form.selectedMode;
+    final isActive = form.isActive;
+    final isSaving = form.isSaving;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        DropdownButtonFormField<RecurringMode>(
+          initialValue: selectedMode.value,
+          decoration: InputDecoration(labelText: l10n.recurringMode),
+          items: [
+            DropdownMenuItem(
+              value: RecurringMode.manualConfirm,
+              child: Text(l10n.recurringModeManualConfirm),
+            ),
+            DropdownMenuItem(
+              value: RecurringMode.reminderOnly,
+              child: Text(l10n.recurringModeReminderOnly),
+            ),
+          ],
+          onChanged: (value) {
+            if (value != null) {
+              selectedMode.value = value;
+            }
+          },
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        AppInput(
+          label: l10n.recurringReminderDaysBefore,
+          controller: form.reminderDaysController,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        AppInput(
+          label: l10n.note,
+          controller: form.noteController,
+          maxLines: 3,
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: Text(l10n.recurringActive),
+          value: isActive.value,
+          onChanged: (value) => isActive.value = value,
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        AppButton(
+          text: l10n.save,
+          onPressed: isSaving.value ? null : onSave,
+          isLoading: isSaving.value,
+          fullWidth: true,
+        ),
+      ],
+    );
   }
 }
 

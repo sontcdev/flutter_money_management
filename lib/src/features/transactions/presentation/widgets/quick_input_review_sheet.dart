@@ -106,81 +106,30 @@ class QuickInputReviewSheet extends HookWidget {
                   style: Theme.of(context).textTheme.titleLarge),
               Text(l10n.quickInputReviewHint),
               for (var index = 0; index < pending.value.length; index++)
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.cardPadding),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(pending.value[index].note ??
-                            pending.value[index].rawText),
-                        Wrap(
-                          spacing: AppSpacing.sm,
-                          children: [
-                            if (pending.value[index].amountVnd != null)
-                              Text(CurrencyFormatter.formatVND(
-                                  pending.value[index].amountVnd!)),
-                            if (pending.value[index].date != null)
-                              Text(formatLocalizedDate(
-                                  context, pending.value[index].date!)),
-                            if (pending.value[index].categoryName != null)
-                              Text(pending.value[index].categoryName!),
-                            if (pending.value[index].walletName != null)
-                              Text(pending.value[index].walletName!),
-                          ],
-                        ),
-                        if (pending.value[index].hasExtraAmounts)
-                          Text(l10n.quickInputExtraAmounts,
-                              style: TextStyle(
-                                  color: Theme.of(context).colorScheme.error)),
-                        if (!isComplete(pending.value[index]))
-                          Text(l10n.quickInputMissingFields,
-                              style: TextStyle(
-                                  color: Theme.of(context).colorScheme.error)),
-                        Wrap(
-                          spacing: AppSpacing.sm,
-                          children: [
-                            TextButton.icon(
-                              onPressed: saving.value
-                                  ? null
-                                  : () async {
-                                      final edited =
-                                          await showDialog<VoiceParseResult>(
-                                        context: context,
-                                        builder: (context) =>
-                                            _QuickInputEditDialog(
-                                          item: pending.value[index],
-                                          categories: categories,
-                                          wallets: wallets,
-                                        ),
-                                      );
-                                      if (edited != null && context.mounted) {
-                                        final items = List<VoiceParseResult>.of(
-                                            pending.value);
-                                        items[index] = edited;
-                                        pending.value = items;
-                                      }
-                                    },
-                              icon: const Icon(Icons.edit_outlined),
-                              label: Text(l10n.edit),
-                            ),
-                            TextButton.icon(
-                              onPressed: saving.value
-                                  ? null
-                                  : () {
-                                      final items = List<VoiceParseResult>.of(
-                                          pending.value);
-                                      items.removeAt(index);
-                                      pending.value = items;
-                                    },
-                              icon: const Icon(Icons.delete_outline),
-                              label: Text(l10n.delete),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                _PendingItemCard(
+                  item: pending.value[index],
+                  isComplete: isComplete(pending.value[index]),
+                  saving: saving.value,
+                  onEdit: () async {
+                    final edited = await showDialog<VoiceParseResult>(
+                      context: context,
+                      builder: (context) => _QuickInputEditDialog(
+                        item: pending.value[index],
+                        categories: categories,
+                        wallets: wallets,
+                      ),
+                    );
+                    if (edited != null && context.mounted) {
+                      final items = List<VoiceParseResult>.of(pending.value);
+                      items[index] = edited;
+                      pending.value = items;
+                    }
+                  },
+                  onDelete: () {
+                    final items = List<VoiceParseResult>.of(pending.value);
+                    items.removeAt(index);
+                    pending.value = items;
+                  },
                 ),
               if (failed.value)
                 Text(l10n.quickInputSaveStopped,
@@ -209,6 +158,70 @@ class QuickInputReviewSheet extends HookWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PendingItemCard extends StatelessWidget {
+  const _PendingItemCard({
+    required this.item,
+    required this.isComplete,
+    required this.saving,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final VoiceParseResult item;
+  final bool isComplete;
+  final bool saving;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.cardPadding),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(item.note ?? item.rawText),
+            Wrap(
+              spacing: AppSpacing.sm,
+              children: [
+                if (item.amountVnd != null)
+                  Text(CurrencyFormatter.formatVND(item.amountVnd!)),
+                if (item.date != null)
+                  Text(formatLocalizedDate(context, item.date!)),
+                if (item.categoryName != null) Text(item.categoryName!),
+                if (item.walletName != null) Text(item.walletName!),
+              ],
+            ),
+            if (item.hasExtraAmounts)
+              Text(l10n.quickInputExtraAmounts,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            if (!isComplete)
+              Text(l10n.quickInputMissingFields,
+                  style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            Wrap(
+              spacing: AppSpacing.sm,
+              children: [
+                TextButton.icon(
+                  onPressed: saving ? null : onEdit,
+                  icon: const Icon(Icons.edit_outlined),
+                  label: Text(l10n.edit),
+                ),
+                TextButton.icon(
+                  onPressed: saving ? null : onDelete,
+                  icon: const Icon(Icons.delete_outline),
+                  label: Text(l10n.delete),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

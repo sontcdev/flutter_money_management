@@ -93,24 +93,7 @@ class SignUpScreen extends HookConsumerWidget {
             if (context.mounted) {
               AppLogger.info('Showing email verification dialog',
                   name: 'MM.UI');
-              await showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (context) => AlertDialog(
-                  title: Text(l10n.accountCreatedTitle),
-                  content: Text(l10n.accountCreatedMessage),
-                  actions: [
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        // Navigate back to sign in
-                        Navigator.of(context).pop();
-                      },
-                      child: Text(l10n.goToSignIn),
-                    ),
-                  ],
-                ),
-              );
+              await _showAccountCreatedDialog(context, l10n);
             }
           }
         }
@@ -144,229 +127,45 @@ class SignUpScreen extends HookConsumerWidget {
       }
     }
 
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final secondaryText =
-        isDark ? AppColors.textLightSecondary : AppColors.textSecondary;
-    final faintText = context.semanticColors.textFaint;
+    return _SignUpForm(
+      displayNameController: displayNameController,
+      emailController: emailController,
+      passwordController: passwordController,
+      confirmPasswordController: confirmPasswordController,
+      isLoading: isLoading.value,
+      errorMessage: errorMessage.value,
+      obscurePassword: obscurePassword.value,
+      obscureConfirmPassword: obscureConfirmPassword.value,
+      onToggleObscurePassword: () {
+        obscurePassword.value = !obscurePassword.value;
+      },
+      onToggleObscureConfirmPassword: () {
+        obscureConfirmPassword.value = !obscureConfirmPassword.value;
+      },
+      onSignUp: handleSignUp,
+    );
+  }
 
-    return Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.xl,
-            AppSpacing.sm,
-            AppSpacing.xl,
-            AppSpacing.xl,
+  Future<void> _showAccountCreatedDialog(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.accountCreatedTitle),
+        content: Text(l10n.accountCreatedMessage),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              // Navigate back to sign in
+              Navigator.of(context).pop();
+            },
+            child: Text(l10n.goToSignIn),
           ),
-          child: AutofillGroup(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: AppSpacing.sm),
-
-                // Back button
-                IconButton(
-                  tooltip: l10n.back,
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.arrow_back),
-                  style: IconButton.styleFrom(
-                    side: BorderSide(color: colorScheme.outline, width: 1.5),
-                    shape: const CircleBorder(),
-                  ),
-                ),
-
-                const SizedBox(height: AppSpacing.lg),
-
-                Text(
-                  l10n.createAccount,
-                  style: textTheme.headlineLarge,
-                ),
-
-                const SizedBox(height: AppSpacing.xs),
-
-                Text(
-                  l10n.createAccountToSync,
-                  style: textTheme.bodyMedium?.copyWith(color: secondaryText),
-                ),
-
-                const SizedBox(height: AppSpacing.xs),
-
-                Text(
-                  l10n.verifyEmailBeforeSignInHint,
-                  style: textTheme.bodySmall?.copyWith(
-                    color: faintText,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-
-                const SizedBox(height: AppSpacing.xl),
-
-                // Username Field
-                Text(l10n.displayNameOptional, style: textTheme.labelLarge),
-                const SizedBox(height: AppSpacing.sm),
-                TextField(
-                  controller: displayNameController,
-                  decoration: InputDecoration(
-                    hintText: l10n.displayNameHint,
-                    prefixIcon: const Icon(Icons.person_outline),
-                  ),
-                  autofillHints: const [AutofillHints.newUsername],
-                  textInputAction: TextInputAction.next,
-                  enabled: !isLoading.value,
-                ),
-
-                const SizedBox(height: AppSpacing.lg),
-
-                // Email Field
-                Text(l10n.email, style: textTheme.labelLarge),
-                const SizedBox(height: AppSpacing.sm),
-                TextField(
-                  controller: emailController,
-                  decoration: InputDecoration(
-                    hintText: l10n.emailExample,
-                    prefixIcon: const Icon(Icons.email_outlined),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  autofillHints: const [AutofillHints.email],
-                  textInputAction: TextInputAction.next,
-                  enabled: !isLoading.value,
-                ),
-
-                const SizedBox(height: AppSpacing.lg),
-
-                // Password Field
-                Text(l10n.password, style: textTheme.labelLarge),
-                const SizedBox(height: AppSpacing.sm),
-                TextField(
-                  controller: passwordController,
-                  decoration: InputDecoration(
-                    hintText: l10n.atLeastSixCharacters,
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      tooltip: obscurePassword.value
-                          ? l10n.showPassword
-                          : l10n.hidePassword,
-                      icon: Icon(
-                        obscurePassword.value
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                      ),
-                      onPressed: () {
-                        obscurePassword.value = !obscurePassword.value;
-                      },
-                    ),
-                  ),
-                  obscureText: obscurePassword.value,
-                  autofillHints: const [AutofillHints.newPassword],
-                  textInputAction: TextInputAction.next,
-                  enabled: !isLoading.value,
-                ),
-
-                const SizedBox(height: AppSpacing.lg),
-
-                // Confirm Password Field
-                Text(l10n.confirmPassword, style: textTheme.labelLarge),
-                const SizedBox(height: AppSpacing.sm),
-                TextField(
-                  controller: confirmPasswordController,
-                  decoration: InputDecoration(
-                    hintText: l10n.reenterYourPassword,
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      tooltip: obscureConfirmPassword.value
-                          ? l10n.showPassword
-                          : l10n.hidePassword,
-                      icon: Icon(
-                        obscureConfirmPassword.value
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                      ),
-                      onPressed: () {
-                        obscureConfirmPassword.value =
-                            !obscureConfirmPassword.value;
-                      },
-                    ),
-                  ),
-                  obscureText: obscureConfirmPassword.value,
-                  autofillHints: const [AutofillHints.newPassword],
-                  textInputAction: TextInputAction.done,
-                  enabled: !isLoading.value,
-                  onSubmitted: (_) => handleSignUp(),
-                ),
-
-                // Error Message
-                if (errorMessage.value != null) ...[
-                  const SizedBox(height: AppSpacing.lg),
-                  Container(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    decoration: BoxDecoration(
-                      color: (isDark ? AppColors.errorDark : AppColors.error)
-                          .withValues(alpha: isDark ? 0.18 : 0.08),
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusCard),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          color: isDark ? AppColors.errorDark : AppColors.error,
-                        ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: Text(
-                            errorMessage.value!,
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: isDark
-                                  ? AppColors.errorDark
-                                  : AppColors.error,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-
-                const SizedBox(height: AppSpacing.xl),
-
-                // Sign Up Button
-                AppButton.prominent(
-                  text: l10n.createAccount,
-                  isLoading: isLoading.value,
-                  fullWidth: true,
-                  icon: isLoading.value ? null : Icons.person_add_outlined,
-                  onPressed: isLoading.value ? null : handleSignUp,
-                ),
-
-                const SizedBox(height: AppSpacing.xl),
-
-                // Sign In Link
-                Center(
-                  child: Wrap(
-                    alignment: WrapAlignment.center,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Text(
-                        l10n.alreadyHaveAccount,
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: secondaryText,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: isLoading.value
-                            ? null
-                            : () => Navigator.of(context).pop(),
-                        child: Text(l10n.signIn),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+        ],
       ),
     );
   }
@@ -397,5 +196,310 @@ class SignUpScreen extends HookConsumerWidget {
       return l10n.networkErrorCheckConnection;
     }
     return l10n.genericTryAgainError;
+  }
+}
+
+class _SignUpForm extends StatelessWidget {
+  const _SignUpForm({
+    required this.displayNameController,
+    required this.emailController,
+    required this.passwordController,
+    required this.confirmPasswordController,
+    required this.isLoading,
+    required this.errorMessage,
+    required this.obscurePassword,
+    required this.obscureConfirmPassword,
+    required this.onToggleObscurePassword,
+    required this.onToggleObscureConfirmPassword,
+    required this.onSignUp,
+  });
+
+  final TextEditingController displayNameController;
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
+  final TextEditingController confirmPasswordController;
+  final bool isLoading;
+  final String? errorMessage;
+  final bool obscurePassword;
+  final bool obscureConfirmPassword;
+  final VoidCallback onToggleObscurePassword;
+  final VoidCallback onToggleObscureConfirmPassword;
+  final VoidCallback onSignUp;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final secondaryText =
+        isDark ? AppColors.textLightSecondary : AppColors.textSecondary;
+
+    return Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            AppSpacing.sm,
+            AppSpacing.xl,
+            AppSpacing.xl,
+          ),
+          child: AutofillGroup(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: AppSpacing.sm),
+
+                // Back button
+                const _SignUpHeader(),
+
+                const SizedBox(height: AppSpacing.xl),
+
+                // Username Field
+                Text(l10n.displayNameOptional, style: textTheme.labelLarge),
+                const SizedBox(height: AppSpacing.sm),
+                TextField(
+                  controller: displayNameController,
+                  decoration: InputDecoration(
+                    hintText: l10n.displayNameHint,
+                    prefixIcon: const Icon(Icons.person_outline),
+                  ),
+                  autofillHints: const [AutofillHints.newUsername],
+                  textInputAction: TextInputAction.next,
+                  enabled: !isLoading,
+                ),
+
+                const SizedBox(height: AppSpacing.lg),
+
+                // Email Field
+                Text(l10n.email, style: textTheme.labelLarge),
+                const SizedBox(height: AppSpacing.sm),
+                TextField(
+                  controller: emailController,
+                  decoration: InputDecoration(
+                    hintText: l10n.emailExample,
+                    prefixIcon: const Icon(Icons.email_outlined),
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                  autofillHints: const [AutofillHints.email],
+                  textInputAction: TextInputAction.next,
+                  enabled: !isLoading,
+                ),
+
+                const SizedBox(height: AppSpacing.lg),
+
+                // Password Field
+                _SignUpPasswordField(
+                  label: l10n.password,
+                  hintText: l10n.atLeastSixCharacters,
+                  controller: passwordController,
+                  obscureText: obscurePassword,
+                  onToggleObscure: onToggleObscurePassword,
+                  textInputAction: TextInputAction.next,
+                  enabled: !isLoading,
+                ),
+
+                const SizedBox(height: AppSpacing.lg),
+
+                // Confirm Password Field
+                _SignUpPasswordField(
+                  label: l10n.confirmPassword,
+                  hintText: l10n.reenterYourPassword,
+                  controller: confirmPasswordController,
+                  obscureText: obscureConfirmPassword,
+                  onToggleObscure: onToggleObscureConfirmPassword,
+                  textInputAction: TextInputAction.done,
+                  enabled: !isLoading,
+                  onSubmitted: (_) => onSignUp(),
+                ),
+
+                // Error Message
+                if (errorMessage != null) ...[
+                  const SizedBox(height: AppSpacing.lg),
+                  _SignUpErrorBanner(message: errorMessage!),
+                ],
+
+                const SizedBox(height: AppSpacing.xl),
+
+                // Sign Up Button
+                AppButton.prominent(
+                  text: l10n.createAccount,
+                  isLoading: isLoading,
+                  fullWidth: true,
+                  icon: isLoading ? null : Icons.person_add_outlined,
+                  onPressed: isLoading ? null : onSignUp,
+                ),
+
+                const SizedBox(height: AppSpacing.xl),
+
+                // Sign In Link
+                Center(
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(
+                        l10n.alreadyHaveAccount,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: secondaryText,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: isLoading
+                            ? null
+                            : () => Navigator.of(context).pop(),
+                        child: Text(l10n.signIn),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SignUpHeader extends StatelessWidget {
+  const _SignUpHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final secondaryText =
+        isDark ? AppColors.textLightSecondary : AppColors.textSecondary;
+    final faintText = context.semanticColors.textFaint;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        IconButton(
+          tooltip: l10n.back,
+          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(Icons.arrow_back),
+          style: IconButton.styleFrom(
+            side: BorderSide(color: colorScheme.outline, width: 1.5),
+            shape: const CircleBorder(),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        Text(
+          l10n.createAccount,
+          style: textTheme.headlineLarge,
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          l10n.createAccountToSync,
+          style: textTheme.bodyMedium?.copyWith(color: secondaryText),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          l10n.verifyEmailBeforeSignInHint,
+          style: textTheme.bodySmall?.copyWith(
+            color: faintText,
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SignUpPasswordField extends StatelessWidget {
+  const _SignUpPasswordField({
+    required this.label,
+    required this.hintText,
+    required this.controller,
+    required this.obscureText,
+    required this.onToggleObscure,
+    required this.textInputAction,
+    required this.enabled,
+    this.onSubmitted,
+  });
+
+  final String label;
+  final String hintText;
+  final TextEditingController controller;
+  final bool obscureText;
+  final VoidCallback onToggleObscure;
+  final TextInputAction textInputAction;
+  final bool enabled;
+  final ValueChanged<String>? onSubmitted;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(label, style: textTheme.labelLarge),
+        const SizedBox(height: AppSpacing.sm),
+        TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: hintText,
+            prefixIcon: const Icon(Icons.lock_outline),
+            suffixIcon: IconButton(
+              tooltip: obscureText ? l10n.showPassword : l10n.hidePassword,
+              icon: Icon(
+                obscureText
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
+              ),
+              onPressed: onToggleObscure,
+            ),
+          ),
+          obscureText: obscureText,
+          autofillHints: const [AutofillHints.newPassword],
+          textInputAction: textInputAction,
+          enabled: enabled,
+          onSubmitted: onSubmitted,
+        ),
+      ],
+    );
+  }
+}
+
+class _SignUpErrorBanner extends StatelessWidget {
+  const _SignUpErrorBanner({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: (isDark ? AppColors.errorDark : AppColors.error)
+            .withValues(alpha: isDark ? 0.18 : 0.08),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.error_outline,
+            color: isDark ? AppColors.errorDark : AppColors.error,
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              message,
+              style: textTheme.bodyMedium?.copyWith(
+                color: isDark ? AppColors.errorDark : AppColors.error,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

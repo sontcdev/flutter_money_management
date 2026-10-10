@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/budgets/models/budget.dart';
+import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
@@ -59,85 +60,11 @@ class BudgetDetailScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(AppSpacing.lg),
             children: [
               // Hero: icon + category name + amount + status subtitle
-              Center(
-                child: Column(
-                  children: [
-                    categoryAsync.when(
-                      data: (category) => Container(
-                        width: 64,
-                        height: 64,
-                        decoration: BoxDecoration(
-                          color: statusColor.withValues(alpha: 0.12),
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusLg),
-                        ),
-                        child: Center(
-                          child: category != null
-                              ? CategoryIconWidget(
-                                  iconName: category.iconName,
-                                  size: 28,
-                                  color: statusColor,
-                                )
-                              : Icon(Icons.category_outlined,
-                                  size: 28, color: statusColor),
-                        ),
-                      ),
-                      loading: () => Container(
-                        width: 64,
-                        height: 64,
-                        decoration: BoxDecoration(
-                          color: statusColor.withValues(alpha: 0.12),
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusLg),
-                        ),
-                      ),
-                      error: (_, __) => Container(
-                        width: 64,
-                        height: 64,
-                        decoration: BoxDecoration(
-                          color: statusColor.withValues(alpha: 0.12),
-                          borderRadius:
-                              BorderRadius.circular(AppSpacing.radiusLg),
-                        ),
-                        child: Icon(Icons.category_outlined,
-                            size: 28, color: statusColor),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    categoryAsync.when(
-                      data: (category) => Text(
-                        category?.name ?? l10n.unknown,
-                        style: theme.textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                      loading: () => Text(l10n.loading),
-                      error: (_, __) => Text(l10n.unknown),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      CurrencyFormatter.formatVNDFromCents(
-                        budget.consumedCents,
-                        locale: l10n.localeName,
-                      ),
-                      style: theme.textTheme.displaySmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: statusColor,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      isExceeded
-                          ? '${l10n.limit}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents, locale: l10n.localeName)} · ${l10n.exceeded} ${CurrencyFormatter.formatVNDFromCents(budget.consumedCents - budget.limitCents, locale: l10n.localeName)}'
-                          : '${l10n.limit}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents, locale: l10n.localeName)}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurface
-                            .withValues(alpha: 0.6),
-                        fontWeight: FontWeight.w600,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
+              _BudgetHero(
+                budget: budget,
+                categoryAsync: categoryAsync,
+                statusColor: statusColor,
+                isExceeded: isExceeded,
               ),
               const SizedBox(height: AppSpacing.xl),
 
@@ -197,6 +124,107 @@ class BudgetDetailScreen extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _BudgetHero extends StatelessWidget {
+  final Budget budget;
+  final AsyncValue<Category?> categoryAsync;
+  final Color statusColor;
+  final bool isExceeded;
+
+  const _BudgetHero({
+    required this.budget,
+    required this.categoryAsync,
+    required this.statusColor,
+    required this.isExceeded,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
+    return Center(
+      child: Column(
+        children: [
+          categoryAsync.when(
+            data: (category) => Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.12),
+                borderRadius:
+                    BorderRadius.circular(AppSpacing.radiusLg),
+              ),
+              child: Center(
+                child: category != null
+                    ? CategoryIconWidget(
+                        iconName: category.iconName,
+                        size: 28,
+                        color: statusColor,
+                      )
+                    : Icon(Icons.category_outlined,
+                        size: 28, color: statusColor),
+              ),
+            ),
+            loading: () => Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.12),
+                borderRadius:
+                    BorderRadius.circular(AppSpacing.radiusLg),
+              ),
+            ),
+            error: (_, __) => Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.12),
+                borderRadius:
+                    BorderRadius.circular(AppSpacing.radiusLg),
+              ),
+              child: Icon(Icons.category_outlined,
+                  size: 28, color: statusColor),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          categoryAsync.when(
+            data: (category) => Text(
+              category?.name ?? l10n.unknown,
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w700),
+            ),
+            loading: () => Text(l10n.loading),
+            error: (_, __) => Text(l10n.unknown),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            CurrencyFormatter.formatVNDFromCents(
+              budget.consumedCents,
+              locale: l10n.localeName,
+            ),
+            style: theme.textTheme.displaySmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: statusColor,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            isExceeded
+                ? '${l10n.limit}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents, locale: l10n.localeName)} · ${l10n.exceeded} ${CurrencyFormatter.formatVNDFromCents(budget.consumedCents - budget.limitCents, locale: l10n.localeName)}'
+                : '${l10n.limit}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents, locale: l10n.localeName)}',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface
+                  .withValues(alpha: 0.6),
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 }
