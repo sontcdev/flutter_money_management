@@ -1814,6 +1814,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get voiceInputPermissionDenied => '音声入力にはマイクの権限が必要です';
 
   @override
+  String get voiceInputPermissionHelp => '音声入力を使うには、端末の設定でマイクへのアクセスを許可してください。取引は文字で入力することもできます。';
+
+  @override
+  String get openDeviceSettings => '設定を開く';
+
+  @override
   String get voiceInputApply => '適用';
 
   @override

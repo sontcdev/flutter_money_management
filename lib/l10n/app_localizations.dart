@@ -3523,6 +3523,18 @@ abstract class AppLocalizations {
   /// **'Microphone permission is required for voice input'**
   String get voiceInputPermissionDenied;
 
+  /// No description provided for @voiceInputPermissionHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow microphone access in your device settings to use voice input. You can still type the transaction instead.'**
+  String get voiceInputPermissionHelp;
+
+  /// No description provided for @openDeviceSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open settings'**
+  String get openDeviceSettings;
+
   /// No description provided for @voiceInputApply.
   ///
   /// In en, this message translates to:

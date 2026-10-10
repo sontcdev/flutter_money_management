@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/transactions/services/voice_input_service.dart';
@@ -149,6 +150,16 @@ class VoiceInputSheet extends HookWidget {
             if (status.value == VoiceInputStatus.error)
               Text(errorText.value ?? l10n.voiceInputNoSpeechDetected,
                   style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            if (status.value == VoiceInputStatus.error &&
+                errorText.value == l10n.voiceInputPermissionDenied) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text(l10n.voiceInputPermissionHelp),
+              TextButton.icon(
+                onPressed: openAppSettings,
+                icon: const Icon(Icons.settings_outlined),
+                label: Text(l10n.openDeviceSettings),
+              ),
+            ],
             for (final result in results) ...[
               const SizedBox(height: AppSpacing.md),
               Text(result.note ?? result.rawText),

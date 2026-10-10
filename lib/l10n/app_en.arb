@@ -629,6 +629,8 @@
   "voiceInputListening": "Listening...",
   "voiceInputNoSpeechDetected": "Couldn't hear anything, please try again",
   "voiceInputPermissionDenied": "Microphone permission is required for voice input",
+  "voiceInputPermissionHelp": "Allow microphone access in your device settings to use voice input. You can still type the transaction instead.",
+  "openDeviceSettings": "Open settings",
   "voiceInputApply": "Apply",
   "voiceInputTryAgain": "Try again",
   "deleteAccount": "Delete account",

@@ -629,6 +629,8 @@
   "voiceInputListening": "Đang nghe...",
   "voiceInputNoSpeechDetected": "Không nghe rõ, vui lòng thử lại",
   "voiceInputPermissionDenied": "Cần quyền micro để dùng nhập bằng giọng nói",
+  "voiceInputPermissionHelp": "Hãy cho phép truy cập micrô trong phần cài đặt của thiết bị để dùng nhập bằng giọng nói. Bạn vẫn có thể nhập giao dịch bằng bàn phím.",
+  "openDeviceSettings": "Mở cài đặt",
   "voiceInputApply": "Áp dụng",
   "voiceInputTryAgain": "Thử lại",
   "deleteAccount": "Xóa tài khoản",

@@ -629,6 +629,8 @@
   "voiceInputListening": "聞き取り中...",
   "voiceInputNoSpeechDetected": "聞き取れませんでした。もう一度お試しください",
   "voiceInputPermissionDenied": "音声入力にはマイクの権限が必要です",
+  "voiceInputPermissionHelp": "音声入力を使うには、端末の設定でマイクへのアクセスを許可してください。取引は文字で入力することもできます。",
+  "openDeviceSettings": "設定を開く",
   "voiceInputApply": "適用",
   "voiceInputTryAgain": "もう一度",
   "deleteAccount": "アカウントを削除",

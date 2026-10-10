@@ -1814,6 +1814,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get voiceInputPermissionDenied => 'Cần quyền micro để dùng nhập bằng giọng nói';
 
   @override
+  String get voiceInputPermissionHelp => 'Hãy cho phép truy cập micrô trong phần cài đặt của thiết bị để dùng nhập bằng giọng nói. Bạn vẫn có thể nhập giao dịch bằng bàn phím.';
+
+  @override
+  String get openDeviceSettings => 'Mở cài đặt';
+
+  @override
   String get voiceInputApply => 'Áp dụng';
 
   @override

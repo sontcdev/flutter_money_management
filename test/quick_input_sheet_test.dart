@@ -480,6 +480,41 @@ void main() {
     });
   }
 
+  testWidgets('dismissing review with pending items asks to discard',
+      (tester) async {
+    await tester.pumpWidget(_app(
+      Builder(
+        builder: (context) => Scaffold(
+          body: TextButton(
+            onPressed: () => showQuickInputReviewSheet(
+              context,
+              results: [_item('Cafe')],
+              categories: _categories,
+              wallets: _wallets,
+              onSave: (_) async => true,
+            ),
+            child: const Text('Open review'),
+          ),
+        ),
+      ),
+    ));
+    await tester.tap(find.text('Open review'));
+    await tester.pumpAndSettle();
+
+    await tester.tapAt(const Offset(10, 10));
+    await tester.pumpAndSettle();
+    expect(find.text('Discard changes?'), findsOneWidget);
+    await tester.tap(find.text('Keep editing'));
+    await tester.pumpAndSettle();
+    expect(find.byType(QuickInputReviewSheet), findsOneWidget);
+
+    await tester.tapAt(const Offset(10, 10));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Discard'));
+    await tester.pumpAndSettle();
+    expect(find.byType(QuickInputReviewSheet), findsNothing);
+  });
+
   testWidgets('transaction entry opens quick input in phone landscape',
       (tester) async {
     tester.view.physicalSize = const Size(844, 390);

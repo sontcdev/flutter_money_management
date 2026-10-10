@@ -1814,6 +1814,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get voiceInputPermissionDenied => 'Microphone permission is required for voice input';
 
   @override
+  String get voiceInputPermissionHelp => 'Allow microphone access in your device settings to use voice input. You can still type the transaction instead.';
+
+  @override
+  String get openDeviceSettings => 'Open settings';
+
+  @override
   String get voiceInputApply => 'Apply';
 
   @override

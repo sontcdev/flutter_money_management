@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
+import 'package:flutter_money_management/src/features/transactions/presentation/widgets/transaction_form_fields.dart';
 import 'package:flutter_money_management/src/features/wallets/models/wallet.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
@@ -22,8 +23,8 @@ Future<bool?> showQuickInputReviewSheet(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    isDismissible: false,
-    enableDrag: false,
+    isDismissible: true,
+    enableDrag: true,
     builder: (context) => QuickInputReviewSheet(
       results: results,
       categories: categories,
@@ -83,7 +84,12 @@ class QuickInputReviewSheet extends HookWidget {
     }
 
     return PopScope(
-      canPop: !saving.value,
+      canPop: !saving.value && pending.value.isEmpty,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop || saving.value) return;
+        final navigator = Navigator.of(context);
+        if (await confirmDiscardChanges(context)) navigator.pop(result);
+      },
       child: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(
