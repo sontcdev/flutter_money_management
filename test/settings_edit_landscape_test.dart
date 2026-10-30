@@ -46,7 +46,7 @@ void main() {
           final prefs = await SharedPreferences.getInstance();
           PackageInfo.setMockInitialValues(
             appName: 'My Money',
-            packageName: 'com.sontc.mymoney',
+            packageName: 'com.sontc.financeappv1',
             version: '1.2.0',
             buildNumber: '7',
             buildSignature: '',

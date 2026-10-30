@@ -4,7 +4,7 @@ setlocal EnableExtensions
 set "ROOT_DIR=%~dp0.."
 for %%I in ("%ROOT_DIR%") do set "ROOT_DIR=%%~fI"
 set "OUTPUT_PATH=%ROOT_DIR%\build\app\outputs\flutter-apk\app-release.apk"
-set "PACKAGE_NAME=com.sontc.mymoney"
+set "PACKAGE_NAME=com.sontc.financeappv1"
 
 call :require_tool flutter
 if errorlevel 1 exit /b 1

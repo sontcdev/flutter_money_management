@@ -4,7 +4,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 OUTPUT_PATH="$ROOT_DIR/build/app/outputs/flutter-apk/app-release.apk"
-PACKAGE_NAME="com.sontc.mymoney"
+PACKAGE_NAME="com.sontc.financeappv1"
 
 cd "$ROOT_DIR"
 

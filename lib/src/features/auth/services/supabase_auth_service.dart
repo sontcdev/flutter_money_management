@@ -182,7 +182,7 @@ class SupabaseAuthService {
     AppLogger.info('Password reset started for $maskedEmail', name: _logName);
     try {
       await _client.auth.resetPasswordForEmail(
-        email,
+        email.trim(),
         redirectTo: SupabaseConfig.mobileAuthCallbackUrl,
       );
       AppLogger.info('Password reset request succeeded for $maskedEmail',
