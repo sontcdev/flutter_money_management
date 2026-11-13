@@ -7,10 +7,12 @@ import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/wallets/models/wallet.dart';
 import 'package:flutter_money_management/src/features/wallets/providers/wallet_providers.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/theme/app_surface_tokens.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
+import 'package:flutter_money_management/src/ui/widgets/unsaved_changes_guard.dart';
 import 'package:flutter_money_management/src/utils/category_icons.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
@@ -50,6 +52,29 @@ String defaultIconForWalletType(WalletType type) {
     case WalletType.other:
       return 'wallet';
   }
+}
+
+const double _walletTintAlpha = 0.15;
+
+Color _walletIconForeground(
+  BuildContext context,
+  Color tint, {
+  Color? extraBackground,
+}) {
+  final theme = Theme.of(context);
+  return AppSurfaceTokens.ensureContrastOnAll(
+    tint,
+    [
+      for (final bg in {
+        theme.colorScheme.surface,
+        theme.scaffoldBackgroundColor,
+        if (extraBackground != null) extraBackground,
+      })
+        Color.alphaBlend(tint.withValues(alpha: _walletTintAlpha), bg),
+    ],
+    minRatio: 3,
+    toward: theme.colorScheme.onSurface,
+  );
 }
 
 class WalletEditScreen extends HookConsumerWidget {
@@ -108,13 +133,26 @@ class WalletEditScreen extends HookConsumerWidget {
       0xFF9E9E9E,
     ];
 
+    final formKey = useMemoized(() => GlobalKey<FormState>());
+    final guardController = useMemoized(() => UnsavedChangesController());
+    final balanceFocus = useFocusNode();
+    useListenable(nameController);
+    useListenable(balanceController);
+
+    String digitsOf(String s) => s.replaceAll(RegExp(r'[^0-9]'), '');
+    final initialBalanceDigits =
+        wallet == null ? '' : wallet!.openingBalanceMinor.abs().toString();
+    final isDirty = nameController.text.trim() != (wallet?.name ?? '').trim() ||
+        digitsOf(balanceController.text) != digitsOf(initialBalanceDigits) ||
+        selectedType.value != (wallet?.walletType ?? WalletType.cash) ||
+        selectedIcon.value != (wallet?.iconName ?? 'wallet') ||
+        selectedColor.value != (wallet?.colorValue ?? 0xFF00A86B) ||
+        isDefault.value != (wallet?.isDefault ?? false) ||
+        isNegativeBalance.value != ((wallet?.openingBalanceMinor ?? 0) < 0);
+
     Future<void> save() async {
-      if (nameController.text.trim().isEmpty) {
-        showAppSnackBar(
-          context,
-          l10n.categoryNameRequiredError,
-          type: AppSnackBarType.error,
-        );
+      if (isLoading.value) return;
+      if (!(formKey.currentState?.validate() ?? false)) {
         return;
       }
 
@@ -162,6 +200,7 @@ class WalletEditScreen extends HookConsumerWidget {
         }
 
         if (context.mounted) {
+          guardController.markSaved();
           Navigator.of(context).pop(true);
           showAppSnackBar(context, l10n.success, type: AppSnackBarType.success);
         }
@@ -193,169 +232,191 @@ class WalletEditScreen extends HookConsumerWidget {
     );
     final previewColor = Color(selectedColor.value);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(wallet == null ? l10n.addWallet : l10n.editWallet),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.screenPadding),
-        child: Column(
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: previewColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              ),
-              child: Icon(
-                CategoryIcons.getIcon(selectedIcon.value),
-                size: 32,
-                color: previewColor,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            AppInput(
-              label: l10n.walletName,
-              controller: nameController,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(l10n.walletType, style: sectionLabelStyle),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
-              children: WalletType.values.map((type) {
-                return ChoiceChip(
-                  label: Text(walletTypeLabel(l10n, type)),
-                  selected: selectedType.value == type,
-                  onSelected: (_) {
-                    selectedType.value = type;
-                    // Only steer the icon while creating, so an explicit pick
-                    // on an existing wallet is never overwritten.
-                    if (wallet == null) {
-                      selectedIcon.value = defaultIconForWalletType(type);
-                    }
-                  },
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            AppInput(
-              label: l10n.openingBalance,
-              controller: balanceController,
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                VNDInputFormatter(),
+    return UnsavedChangesGuard(
+      isDirty: isDirty,
+      controller: guardController,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(wallet == null ? l10n.addWallet : l10n.editWallet),
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
+          child: Form(
+            key: formKey,
+            child: Column(
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: previewColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                  ),
+                  child: Icon(
+                    CategoryIcons.getIcon(selectedIcon.value),
+                    size: 32,
+                    color: _walletIconForeground(context, previewColor),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                AppInput(
+                  label: l10n.walletName,
+                  controller: nameController,
+                  textInputAction: TextInputAction.next,
+                  // Chips sit between the fields, so jump to balance explicitly.
+                  onFieldSubmitted: (_) => balanceFocus.requestFocus(),
+                  validator: (value) => (value ?? '').trim().isEmpty
+                      ? l10n.categoryNameRequiredError
+                      : null,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(l10n.walletType, style: sectionLabelStyle),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: WalletType.values.map((type) {
+                    return ChoiceChip(
+                      label: Text(walletTypeLabel(l10n, type)),
+                      selected: selectedType.value == type,
+                      onSelected: (_) {
+                        selectedType.value = type;
+                        // Only steer the icon while creating, so an explicit pick
+                        // on an existing wallet is never overwritten.
+                        if (wallet == null) {
+                          selectedIcon.value = defaultIconForWalletType(type);
+                        }
+                      },
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                AppInput(
+                  label: l10n.openingBalance,
+                  controller: balanceController,
+                  keyboardType: TextInputType.number,
+                  focusNode: balanceFocus,
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => save(),
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    VNDInputFormatter(),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                AppCard(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.xs,
+                  ),
+                  child: Column(
+                    children: [
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(l10n.negativeOpeningBalance),
+                        value: isNegativeBalance.value,
+                        onChanged: (value) => isNegativeBalance.value = value,
+                      ),
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(l10n.setAsDefaultWallet),
+                        value: isDefault.value,
+                        onChanged: (value) => isDefault.value = value,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(l10n.walletIcon, style: sectionLabelStyle),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: iconKeys.map((iconKey) {
+                    final isSelected = selectedIcon.value == iconKey;
+                    return GestureDetector(
+                      onTap: () => selectedIcon.value = iconKey,
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? previewColor.withValues(alpha: 0.15)
+                              : theme.colorScheme.surfaceContainerHighest,
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusCard),
+                          border: Border.all(
+                            color: isSelected
+                                ? previewColor
+                                : theme.colorScheme.outlineVariant,
+                            width: isSelected ? 2 : 1,
+                          ),
+                        ),
+                        child: Icon(
+                          CategoryIcons.getIcon(iconKey),
+                          size: AppSpacing.iconSize,
+                          color: isSelected
+                              ? _walletIconForeground(
+                                  context,
+                                  previewColor,
+                                  extraBackground:
+                                      theme.colorScheme.surfaceContainerHighest,
+                                )
+                              : theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(l10n.walletColor, style: sectionLabelStyle),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Wrap(
+                  spacing: AppSpacing.md,
+                  runSpacing: AppSpacing.md,
+                  children: colors.map((color) {
+                    final isSelected = selectedColor.value == color;
+                    return GestureDetector(
+                      onTap: () => selectedColor.value = color,
+                      child: Container(
+                        width: 34,
+                        height: 34,
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: isSelected
+                              ? Border.all(color: Color(color), width: 2)
+                              : null,
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Color(color),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                AppButton(
+                  text: l10n.save,
+                  onPressed: save,
+                  isLoading: isLoading.value,
+                  fullWidth: true,
+                ),
               ],
             ),
-            const SizedBox(height: AppSpacing.sm),
-            AppCard(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.xs,
-              ),
-              child: Column(
-                children: [
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(l10n.negativeOpeningBalance),
-                    value: isNegativeBalance.value,
-                    onChanged: (value) => isNegativeBalance.value = value,
-                  ),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(l10n.setAsDefaultWallet),
-                    value: isDefault.value,
-                    onChanged: (value) => isDefault.value = value,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(l10n.walletIcon, style: sectionLabelStyle),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
-              children: iconKeys.map((iconKey) {
-                final isSelected = selectedIcon.value == iconKey;
-                return GestureDetector(
-                  onTap: () => selectedIcon.value = iconKey,
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? previewColor.withValues(alpha: 0.15)
-                          : theme.colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
-                      border: Border.all(
-                        color: isSelected
-                            ? previewColor
-                            : theme.colorScheme.outlineVariant,
-                        width: isSelected ? 2 : 1,
-                      ),
-                    ),
-                    child: Icon(
-                      CategoryIcons.getIcon(iconKey),
-                      size: AppSpacing.iconSize,
-                      color: isSelected
-                          ? previewColor
-                          : theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(l10n.walletColor, style: sectionLabelStyle),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: AppSpacing.md,
-              runSpacing: AppSpacing.md,
-              children: colors.map((color) {
-                final isSelected = selectedColor.value == color;
-                return GestureDetector(
-                  onTap: () => selectedColor.value = color,
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    padding: const EdgeInsets.all(3),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: isSelected
-                          ? Border.all(color: Color(color), width: 2)
-                          : null,
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Color(color),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            AppButton(
-              text: l10n.save,
-              onPressed: save,
-              isLoading: isLoading.value,
-              fullWidth: true,
-            ),
-          ],
+          ),
         ),
       ),
     );

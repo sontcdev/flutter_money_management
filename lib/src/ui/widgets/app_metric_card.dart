@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
+import '../../theme/app_surface_tokens.dart';
 import 'app_card.dart';
 
 enum MetricCardSize {
@@ -75,8 +76,12 @@ class AppMetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveColor = _getEffectiveColor(context);
     final effectiveBackgroundColor = _getEffectiveBackgroundColor(context);
+    final effectiveColor = _readableColor(
+      context,
+      _getEffectiveColor(context),
+      effectiveBackgroundColor,
+    );
 
     final card = AppCard(
       color: effectiveBackgroundColor,
@@ -104,14 +109,44 @@ class AppMetricCard extends StatelessWidget {
 
     switch (tone) {
       case MetricCardTone.positive:
-        return AppColors.success;
+        return context.semanticColors.income;
       case MetricCardTone.warning:
         return context.semanticColors.warning;
       case MetricCardTone.danger:
-        return AppColors.error;
+        return context.semanticColors.expense;
       case MetricCardTone.neutral:
         return Theme.of(context).colorScheme.primary;
     }
+  }
+
+  Color _surfaceColor(BuildContext context, Color? fill) {
+    final theme = Theme.of(context);
+    final base = fill ?? theme.cardTheme.color ?? theme.colorScheme.surface;
+    return Color.alphaBlend(base, theme.colorScheme.surface);
+  }
+
+  /// Keeps the semantic hue but shifts it toward onSurface until it reads on
+  /// the actual card fill and on the icon tint drawn over it.
+  Color _readableColor(BuildContext context, Color color, Color? fill) {
+    final theme = Theme.of(context);
+    final bg = _surfaceColor(context, fill);
+    final tint = Color.alphaBlend(color.withValues(alpha: 0.15), bg);
+    return AppSurfaceTokens.ensureContrastOnAll(
+      color,
+      [bg, tint],
+      toward: theme.colorScheme.onSurface,
+    );
+  }
+
+  Color _mutedText(BuildContext context, double alpha) {
+    final theme = Theme.of(context);
+    final bg = _surfaceColor(context, _getEffectiveBackgroundColor(context));
+    final onSurface = theme.colorScheme.onSurface;
+    return AppSurfaceTokens.ensureContrast(
+      Color.alphaBlend(onSurface.withValues(alpha: alpha), bg),
+      bg,
+      toward: onSurface,
+    );
   }
 
   Color? _getEffectiveBackgroundColor(BuildContext context) {
@@ -174,10 +209,7 @@ class AppMetricCard extends StatelessWidget {
               child: Text(
                 label,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.7),
+                      color: _mutedText(context, 0.7),
                       fontWeight: FontWeight.w500,
                     ),
               ),
@@ -198,10 +230,7 @@ class AppMetricCard extends StatelessWidget {
           Text(
             subtitle!,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.6),
+                  color: _mutedText(context, 0.6),
                 ),
           ),
         ],
@@ -235,10 +264,7 @@ class AppMetricCard extends StatelessWidget {
               child: Text(
                 label,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.7),
+                      color: _mutedText(context, 0.7),
                     ),
               ),
             ),
@@ -258,10 +284,7 @@ class AppMetricCard extends StatelessWidget {
           Text(
             subtitle!,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withValues(alpha: 0.6),
+                  color: _mutedText(context, 0.6),
                 ),
           ),
         ],
@@ -288,10 +311,7 @@ class AppMetricCard extends StatelessWidget {
               Text(
                 label,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.7),
+                      color: _mutedText(context, 0.7),
                     ),
               ),
               const SizedBox(height: AppSpacing.xs),

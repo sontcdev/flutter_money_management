@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../theme/app_surface_tokens.dart';
 
 class AppInput extends StatefulWidget {
   final String label;
@@ -21,6 +22,10 @@ class AppInput extends StatefulWidget {
   final bool showKeyboardToolbar;
   final VoidCallback? onToolbarOkPressed;
   final VoidCallback? onToolbarSkipPressed;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onFieldSubmitted;
+  final FocusNode? focusNode;
+  final AutovalidateMode? autovalidateMode;
 
   const AppInput({
     super.key,
@@ -40,6 +45,10 @@ class AppInput extends StatefulWidget {
     this.showKeyboardToolbar = true,
     this.onToolbarOkPressed,
     this.onToolbarSkipPressed,
+    this.textInputAction,
+    this.onFieldSubmitted,
+    this.focusNode,
+    this.autovalidateMode,
   });
 
   @override
@@ -47,21 +56,41 @@ class AppInput extends StatefulWidget {
 }
 
 class _AppInputState extends State<AppInput> {
+  FocusNode? _ownedFocusNode;
   late FocusNode _focusNode;
   OverlayEntry? _overlayEntry;
+
+  FocusNode _resolveNode() =>
+      widget.focusNode ?? (_ownedFocusNode ??= FocusNode());
 
   @override
   void initState() {
     super.initState();
-    _focusNode = FocusNode();
+    _focusNode = _resolveNode();
     _focusNode.addListener(_onFocusChange);
+  }
+
+  @override
+  void didUpdateWidget(covariant AppInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final next = _resolveNode();
+    if (!identical(next, _focusNode)) {
+      _removeOverlay();
+      _focusNode.removeListener(_onFocusChange);
+      _focusNode = next;
+      _focusNode.addListener(_onFocusChange);
+      if (widget.focusNode != null) {
+        _ownedFocusNode?.dispose();
+        _ownedFocusNode = null;
+      }
+    }
   }
 
   @override
   void dispose() {
     _removeOverlay();
     _focusNode.removeListener(_onFocusChange);
-    _focusNode.dispose();
+    _ownedFocusNode?.dispose();
     super.dispose();
   }
 
@@ -84,6 +113,18 @@ class _AppInputState extends State<AppInput> {
     _overlayEntry = OverlayEntry(
       builder: (context) {
         final colorScheme = Theme.of(context).colorScheme;
+        final toolbarBg = Theme.of(context).scaffoldBackgroundColor;
+        final okColor = AppSurfaceTokens.ensureContrast(
+          colorScheme.primary,
+          toolbarBg,
+          toward: colorScheme.onSurface,
+        );
+        final skipColor = AppSurfaceTokens.ensureContrast(
+          Color.alphaBlend(
+              colorScheme.onSurface.withValues(alpha: 0.6), toolbarBg),
+          toolbarBg,
+          toward: colorScheme.onSurface,
+        );
         return Positioned(
           bottom: MediaQuery.of(context).viewInsets.bottom,
           left: 0,
@@ -111,7 +152,7 @@ class _AppInputState extends State<AppInput> {
                     child: Text(
                       AppLocalizations.of(context)!.skip,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: colorScheme.onSurface.withValues(alpha: 0.6),
+                        color: skipColor,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -127,7 +168,7 @@ class _AppInputState extends State<AppInput> {
                     child: Text(
                       AppLocalizations.of(context)!.done,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: colorScheme.primary,
+                        color: okColor,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -169,6 +210,9 @@ class _AppInputState extends State<AppInput> {
           focusNode: _focusNode,
           onTap: widget.onTap,
           onChanged: widget.onChanged,
+          textInputAction: widget.textInputAction,
+          onFieldSubmitted: widget.onFieldSubmitted,
+          autovalidateMode: widget.autovalidateMode,
           decoration: InputDecoration(
             hintText: widget.hint,
             suffixIcon: widget.suffixIcon,

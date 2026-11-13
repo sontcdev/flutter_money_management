@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_semantic_colors.dart';
 import 'app_spacing.dart';
+import 'app_surface_tokens.dart';
 
 class AppTheme {
   /// Tabular-figure style for currency amounts, using the platform's system
@@ -172,6 +173,11 @@ class AppTheme {
 
   static ThemeData lightTheme({Color? primaryColor}) {
     final primary = primaryColor ?? AppColors.primary;
+    final accentText = _accentText(primary, const [
+      AppColors.background,
+      AppColors.surface,
+      AppColors.surface2,
+    ], toward: AppColors.textPrimary);
 
     return ThemeData(
       useMaterial3: true,
@@ -213,6 +219,7 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+          side: const BorderSide(color: AppColors.separator, width: 1),
         ),
         margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
       ),
@@ -254,11 +261,11 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: primary,
+          foregroundColor: accentText,
           textStyle: _sf(
             fontSize: 17,
             fontWeight: FontWeight.w400,
-            color: primary,
+            color: accentText,
             letterSpacing: -0.43,
           ),
         ),
@@ -322,14 +329,14 @@ class AppTheme {
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: AppColors.surface,
-        selectedItemColor: primary,
+        selectedItemColor: accentText,
         unselectedItemColor: AppColors.textFaint,
         elevation: 0,
         type: BottomNavigationBarType.fixed,
         selectedLabelStyle: _sf(
           fontSize: 11,
           fontWeight: FontWeight.w600,
-          color: primary,
+          color: accentText,
         ),
         unselectedLabelStyle: _sf(
           fontSize: 11,
@@ -338,14 +345,14 @@ class AppTheme {
         ),
       ),
       tabBarTheme: TabBarThemeData(
-        labelColor: primary,
+        labelColor: accentText,
         unselectedLabelColor: AppColors.textSecondary,
         indicatorColor: primary,
         indicatorSize: TabBarIndicatorSize.label,
         labelStyle: _sf(
           fontSize: 15,
           fontWeight: FontWeight.w600,
-          color: primary,
+          color: accentText,
           letterSpacing: -0.24,
         ),
         unselectedLabelStyle: _sf(
@@ -361,6 +368,7 @@ class AppTheme {
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surface2,
         selectedColor: primary.withValues(alpha: 0.15),
+        side: const BorderSide(color: AppColors.separator, width: 1),
         labelStyle: _sf(
           fontSize: 13,
           fontWeight: FontWeight.w500,
@@ -372,12 +380,28 @@ class AppTheme {
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
         ),
       ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.surface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusHero),
+        ),
+      ),
+      listTileTheme: const ListTileThemeData(
+        iconColor: AppColors.textSecondary,
+        textColor: AppColors.textPrimary,
+      ),
       switchTheme: _switchTheme(primary, AppColors.surface, AppColors.border),
     );
   }
 
   static ThemeData darkTheme({Color? primaryColor}) {
     final primary = _darkAccent(primaryColor ?? AppColors.primaryDark);
+    final accentText = _accentText(primary, const [
+      AppColors.backgroundDark,
+      AppColors.surfaceDark,
+      AppColors.surface2Dark,
+    ], toward: AppColors.textLight);
 
     return ThemeData(
       useMaterial3: true,
@@ -460,11 +484,11 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: primary,
+          foregroundColor: accentText,
           textStyle: _sf(
             fontSize: 17,
             fontWeight: FontWeight.w400,
-            color: primary,
+            color: accentText,
             letterSpacing: -0.43,
           ),
         ),
@@ -528,14 +552,14 @@ class AppTheme {
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: AppColors.surfaceDark,
-        selectedItemColor: primary,
+        selectedItemColor: accentText,
         unselectedItemColor: AppColors.textLightFaint,
         elevation: 0,
         type: BottomNavigationBarType.fixed,
         selectedLabelStyle: _sf(
           fontSize: 11,
           fontWeight: FontWeight.w600,
-          color: primary,
+          color: accentText,
         ),
         unselectedLabelStyle: _sf(
           fontSize: 11,
@@ -544,14 +568,14 @@ class AppTheme {
         ),
       ),
       tabBarTheme: TabBarThemeData(
-        labelColor: primary,
+        labelColor: accentText,
         unselectedLabelColor: AppColors.textLightSecondary,
         indicatorColor: primary,
         indicatorSize: TabBarIndicatorSize.label,
         labelStyle: _sf(
           fontSize: 15,
           fontWeight: FontWeight.w600,
-          color: primary,
+          color: accentText,
           letterSpacing: -0.24,
         ),
         unselectedLabelStyle: _sf(
@@ -601,11 +625,21 @@ class AppTheme {
     return la > lb ? (la + 0.05) / (lb + 0.05) : (lb + 0.05) / (la + 0.05);
   }
 
+  /// Pure black or white, whichever measures higher against [accent]. The
+  /// best of the two always reaches at least 4.5:1 for an opaque fill.
   static Color _onAccent(Color accent) {
-    return _contrast(AppColors.textDark, accent) >
-            _contrast(AppColors.textLight, accent) + 0.1
-        ? AppColors.textDark
-        : AppColors.textLight;
+    return _contrast(Colors.black, accent) >= _contrast(Colors.white, accent)
+        ? Colors.black
+        : Colors.white;
+  }
+
+  /// Normal-text role for the chosen accent: keeps the hue where it already
+  /// reaches 4.5:1 on every neutral [backgrounds], otherwise shifts it toward
+  /// [toward]. `ColorScheme.primary` stays the chosen fill.
+  static Color _accentText(Color accent, List<Color> backgrounds,
+      {required Color toward}) {
+    return AppSurfaceTokens.ensureContrastOnAll(accent, backgrounds,
+        toward: toward);
   }
 
   static Color _darkAccent(Color accent) {

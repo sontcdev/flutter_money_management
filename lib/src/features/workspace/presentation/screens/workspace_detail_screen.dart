@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/budgets/models/budget.dart';
 import 'package:flutter_money_management/src/features/budgets/providers/budget_providers.dart';
+import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/features/categories/providers/category_providers.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart'
     as model;
@@ -97,6 +98,26 @@ class WorkspaceDetailScreen extends HookConsumerWidget {
         ),
       ),
     );
+  }
+}
+
+String _categoryTypeLabel(AppLocalizations l10n, CategoryType type) {
+  switch (type) {
+    case CategoryType.expense:
+      return l10n.expense;
+    case CategoryType.income:
+      return l10n.income;
+  }
+}
+
+String _periodTypeLabel(AppLocalizations l10n, PeriodType type) {
+  switch (type) {
+    case PeriodType.monthly:
+      return l10n.monthly;
+    case PeriodType.yearly:
+      return l10n.yearly;
+    case PeriodType.custom:
+      return l10n.custom;
   }
 }
 
@@ -197,7 +218,7 @@ class _CategoriesTab extends ConsumerWidget {
                       (category) => ListTile(
                         contentPadding: EdgeInsets.zero,
                         title: Text(category.name),
-                        subtitle: Text(category.type.name),
+                        subtitle: Text(_categoryTypeLabel(l10n, category.type)),
                       ),
                     )
                     .toList(),
@@ -262,7 +283,7 @@ class _BudgetsTab extends ConsumerWidget {
                             locale: l10n.localeName,
                           ),
                         ),
-                        subtitle: Text(budget.periodType.name),
+                        subtitle: Text(_periodTypeLabel(l10n, budget.periodType)),
                       ),
                     )
                     .toList(),

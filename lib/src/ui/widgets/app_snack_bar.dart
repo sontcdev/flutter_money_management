@@ -3,8 +3,23 @@ import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../theme/app_semantic_colors.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_surface_tokens.dart';
 
 enum AppSnackBarType { info, success, error }
+
+/// Foreground (message and undo action) readable on the actual snackbar
+/// [fill]. Keeps [preferred] when it reaches 4.5:1; otherwise black or white,
+/// whichever contrasts best.
+Color snackBarForegroundOn(Color fill, {Color? preferred}) {
+  if (preferred != null &&
+      AppSurfaceTokens.contrast(preferred, fill) >= 4.5) {
+    return preferred;
+  }
+  return AppSurfaceTokens.contrast(Colors.black, fill) >=
+          AppSurfaceTokens.contrast(Colors.white, fill)
+      ? Colors.black
+      : Colors.white;
+}
 
 ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showAppSnackBar(
   BuildContext context,
@@ -16,13 +31,14 @@ ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showAppSnackBar(
 }) {
   final colorScheme = Theme.of(context).colorScheme;
   final messenger = ScaffoldMessenger.of(context);
+  final income = context.semanticColors.income;
   final (Color? background, Color? foreground) = switch (type) {
     AppSnackBarType.info => (null, null),
-    AppSnackBarType.success => (
-        context.semanticColors.income,
-        colorScheme.onPrimary,
+    AppSnackBarType.success => (income, snackBarForegroundOn(income)),
+    AppSnackBarType.error => (
+        colorScheme.error,
+        snackBarForegroundOn(colorScheme.error, preferred: colorScheme.onError),
       ),
-    AppSnackBarType.error => (colorScheme.error, colorScheme.onError),
   };
   final resolvedAction = action ??
       (onUndo == null

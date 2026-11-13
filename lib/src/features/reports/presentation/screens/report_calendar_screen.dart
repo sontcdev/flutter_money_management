@@ -37,7 +37,14 @@ class ReportCalendarScreen extends HookConsumerWidget {
     final selectedDate = ref.watch(selectedDateProvider);
 
     // Lấy groups hiện tại
-    final groups = transactionGroups.valueOrNull ?? [];
+    // null = no data yet (loading or error without previous data).
+    // A settled failure always surfaces Retry, even if Riverpod retained
+    // previous data inside the AsyncError. Previous data is kept only while
+    // a (re)load is in flight.
+    final showGroupsError = transactionGroups.hasError &&
+        !transactionGroups.isLoading;
+    final loadedGroups = showGroupsError ? null : transactionGroups.valueOrNull;
+    final groups = loadedGroups ?? const <TransactionGroup>[];
 
     // ========== GLOBAL KEYS CHO MỖI GROUP ==========
     // Dùng useRef để giữ keys stable, không tạo mới mỗi build
@@ -50,6 +57,10 @@ class ReportCalendarScreen extends HookConsumerWidget {
 
     // ========== SCROLL FUNCTION ==========
     void scrollToDate(DateTime targetDate) {
+      if (loadedGroups == null) {
+        // Data unavailable (loading/error): nothing to scroll to.
+        return;
+      }
       if (groups.isEmpty) {
         _showNoTransactionsMessage(context);
         return;
@@ -114,15 +125,6 @@ class ReportCalendarScreen extends HookConsumerWidget {
         title: Text(l10n.calendar),
         centerTitle: true,
         automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            tooltip: l10n.search,
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // TODO: Implement search
-            },
-          ),
-        ],
       ),
       // ========== LAYOUT CỐ ĐỊNH CALENDAR, CHỈ SCROLL TRANSACTION LIST ==========
       body: Column(
@@ -166,7 +168,13 @@ class ReportCalendarScreen extends HookConsumerWidget {
                       net: summary['net'] ?? 0,
                     ),
                     loading: () => const SizedBox(height: 70),
-                    error: (e, s) => const SizedBox(height: 70),
+                    error: (e, s) => SizedBox(
+                      height: 70,
+                      child: InlineLoadErrorState(
+                        onRetry: () => ref
+                            .invalidate(monthlySummaryProvider(selectedMonth)),
+                      ),
+                    ),
                   ),
                   const Divider(height: 1),
                 ],
@@ -182,8 +190,26 @@ class ReportCalendarScreen extends HookConsumerWidget {
                     .read(transactionListNotifierProvider.notifier)
                     .refresh();
               },
-              child: groups.isEmpty
+              child: loadedGroups == null
                   ? ListView(
+                      // Always scrollable so pull-to-refresh works.
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        if (showGroupsError)
+                          InlineLoadErrorState(
+                            onRetry: () => ref.invalidate(
+                                transactionGroupsProvider(selectedMonth)),
+                          )
+                        else
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 80),
+                            child: Center(child: CircularProgressIndicator()),
+                          ),
+                      ],
+                    )
+                  : groups.isEmpty
+                  ? ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
                       // Empty ListView để RefreshIndicator hoạt động
                       children: [
                         const SizedBox(height: 80),
@@ -199,6 +225,7 @@ class ReportCalendarScreen extends HookConsumerWidget {
                       ],
                     )
                   : SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
                       child: Column(
                         children: List.generate(groups.length, (index) {
                           final group = groups[index];
@@ -411,14 +438,6 @@ class ReportCalendarScreen extends HookConsumerWidget {
                       .read(transactionListNotifierProvider.notifier)
                       .deleteTransaction(txn.id);
                 }
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.share),
-              title: Text(AppLocalizations.of(context)!.share),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Implement share
               },
             ),
           ],

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_surface_tokens.dart';
 
 /// Standardized status chip for displaying status badges
 class AppStatusChip extends StatelessWidget {
@@ -77,7 +78,19 @@ class AppStatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final surface = theme.colorScheme.surface;
+    final fill = isOutlined
+        ? surface
+        : Color.alphaBlend(
+            color.withValues(alpha: isDark ? 0.22 : 0.12), surface);
+    // Same hue, shifted toward onSurface until it reads on the actual fill.
+    final foreground = AppSurfaceTokens.ensureContrast(
+      color,
+      fill,
+      toward: theme.colorScheme.onSurface,
+    );
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
@@ -97,15 +110,19 @@ class AppStatusChip extends StatelessWidget {
             Icon(
               icon,
               size: 14,
-              color: color,
+              color: foreground,
             ),
             const SizedBox(width: AppSpacing.xs),
           ],
-          Text(
-            label,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w600,
+          // Flexible lets a long label wrap inside bounded width instead of
+          // overflowing the Row.
+          Flexible(
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],

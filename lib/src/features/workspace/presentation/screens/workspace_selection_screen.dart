@@ -8,6 +8,7 @@ import 'package:flutter_money_management/src/features/workspace/providers/worksp
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/theme/app_surface_tokens.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
@@ -84,20 +85,30 @@ class WorkspaceSelectionScreen extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Container(
-                          width: 72,
-                          height: 72,
-                          decoration: BoxDecoration(
-                            color: context.semanticColors.warning
-                                .withValues(alpha: 0.12),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            Icons.error_outline,
-                            size: 36,
-                            color: context.semanticColors.warning,
-                          ),
-                        ),
+                        Builder(builder: (context) {
+                          final warning = context.semanticColors.warning;
+                          final page = Theme.of(context).scaffoldBackgroundColor;
+                          final tint = Color.alphaBlend(
+                              warning.withValues(alpha: 0.12), page);
+                          return Container(
+                            width: 72,
+                            height: 72,
+                            decoration: BoxDecoration(
+                              color: warning.withValues(alpha: 0.12),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.error_outline,
+                              size: 36,
+                              color: AppSurfaceTokens.ensureContrast(
+                                warning,
+                                tint,
+                                minRatio: 3,
+                                toward: colorScheme.onSurface,
+                              ),
+                            ),
+                          );
+                        }),
                         const SizedBox(height: AppSpacing.lg),
                         Text(
                           l10n.workspaceSetupIncomplete,

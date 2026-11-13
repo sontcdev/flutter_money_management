@@ -10,11 +10,13 @@ import 'package:flutter_money_management/src/features/workspace/models/workspace
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/theme/app_surface_tokens.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_status_chip.dart';
 import 'package:flutter_money_management/src/ui/widgets/confirm_delete_dialog.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
+import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 
@@ -200,65 +202,13 @@ class WorkspaceManagementScreen extends HookConsumerWidget {
               child: ListView(
                 padding: const EdgeInsets.all(AppSpacing.screenPadding),
                 children: [
-                  AppCard(
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary,
-                            borderRadius:
-                                BorderRadius.circular(AppSpacing.radiusCard),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            activeWorkspace.name.substring(0, 1).toUpperCase(),
-                            style:
-                                Theme.of(context).textTheme.titleMedium?.copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.lg),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                activeWorkspace.name,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleMedium
-                                    ?.copyWith(fontWeight: FontWeight.w700),
-                              ),
-                              const SizedBox(height: AppSpacing.sm),
-                              Wrap(
-                                spacing: AppSpacing.sm,
-                                runSpacing: AppSpacing.xs,
-                                children: [
-                                  AppStatusChip.info(
-                                    label: isOwner
-                                        ? l10n.ownerRole
-                                        : l10n.roleValue(activeWorkspace.role),
-                                  ),
-                                  AppStatusChip(
-                                    label: l10n.workspaceTypeValue(
-                                      activeWorkspace.type,
-                                    ),
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                  _MemberSection(
+                    workspaceId: activeWorkspace.id,
+                    canManageMembers: canManageMembers,
+                    membersAsync: membersAsync,
+                    currentUserId: currentUser?.id,
+                    ownerId: activeWorkspace.ownerId,
+                    isOwner: isOwner,
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   if (canManageMembers) ...[
@@ -331,14 +281,76 @@ class WorkspaceManagementScreen extends HookConsumerWidget {
                     _InviteSection(invitesAsync: invitesAsync),
                     const SizedBox(height: AppSpacing.lg),
                   ],
-                  _MemberSection(
-                    workspaceId: activeWorkspace.id,
-                    canManageMembers: canManageMembers,
-                    membersAsync: membersAsync,
-                    currentUserId: currentUser?.id,
-                    ownerId: activeWorkspace.ownerId,
-                    isOwner: isOwner,
+                  Text(
+                    l10n.settings,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.w700),
                   ),
+                  const SizedBox(height: AppSpacing.md),
+                  AppCard(
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primary,
+                            borderRadius:
+                                BorderRadius.circular(AppSpacing.radiusCard),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            activeWorkspace.name.substring(0, 1).toUpperCase(),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.lg),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                activeWorkspace.name,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.w700),
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                              Wrap(
+                                spacing: AppSpacing.sm,
+                                runSpacing: AppSpacing.xs,
+                                children: [
+                                  AppStatusChip.info(
+                                    label: isOwner
+                                        ? l10n.ownerRole
+                                        : l10n.roleValue(activeWorkspace.role),
+                                  ),
+                                  AppStatusChip(
+                                    label: l10n.workspaceTypeValue(
+                                      activeWorkspace.type,
+                                    ),
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
                   if (canLeaveWorkspace) ...[
                     const SizedBox(height: AppSpacing.lg),
                     _DangerZoneCard(
@@ -508,7 +520,9 @@ class _MemberSection extends ConsumerWidget {
           ],
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Text(l10n.failedToLoadMembers('$error')),
+        error: (error, _) => InlineLoadErrorState(
+          onRetry: () => ref.invalidate(workspaceMembersProvider),
+        ),
       ),
     );
   }
@@ -690,6 +704,8 @@ class _InviteSection extends HookConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TabBar(
+                  isScrollable: true,
+                  tabAlignment: TabAlignment.start,
                   onTap: (index) {
                     selectedStatus.value = switch (index) {
                       1 => 'declined',
@@ -1148,6 +1164,13 @@ String _inviteExpiryLabel(AppLocalizations l10n, DateTime expiresAt) {
 _InviteExpiryStatus _inviteExpiryStatus(
     BuildContext context, AppLocalizations l10n, DateTime expiresAt) {
   final isDark = Theme.of(context).brightness == Brightness.dark;
+  final theme = Theme.of(context);
+  final cardBackground = theme.cardTheme.color ?? theme.colorScheme.surface;
+  Color readable(Color c) => AppSurfaceTokens.ensureContrast(
+        c,
+        cardBackground,
+        toward: theme.colorScheme.onSurface,
+      );
   final now = DateTime.now();
   final localExpiry = expiresAt.toLocal();
   final difference = localExpiry.difference(now);
@@ -1165,7 +1188,7 @@ _InviteExpiryStatus _inviteExpiryStatus(
     return _InviteExpiryStatus(
       label: _inviteExpiryLabel(l10n, expiresAt),
       statusLabel: l10n.urgentStatus,
-      color: context.semanticColors.warning,
+      color: readable(context.semanticColors.warning),
     );
   }
 
@@ -1173,7 +1196,7 @@ _InviteExpiryStatus _inviteExpiryStatus(
     return _InviteExpiryStatus(
       label: _inviteExpiryLabel(l10n, expiresAt),
       statusLabel: l10n.expiringSoonStatus,
-      color: context.semanticColors.warning,
+      color: readable(context.semanticColors.warning),
     );
   }
 

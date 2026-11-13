@@ -13,6 +13,7 @@ import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/theme/app_surface_tokens.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 import 'package:flutter_money_management/src/ui/widgets/confirm_delete_dialog.dart';
@@ -877,6 +878,17 @@ class _BudgetCard extends ConsumerWidget {
 }
 
 // Budget Transactions Detail Screen
+/// Text color for a pill filled with [fill], guaranteed >= 4.5:1 contrast.
+Color _pillTextColor(Color fill) {
+  final light =
+      ThemeData.estimateBrightnessForColor(fill) == Brightness.dark;
+  return AppSurfaceTokens.ensureContrast(
+    light ? AppColors.textLight : AppColors.textDark,
+    fill,
+    toward: light ? Colors.white : Colors.black,
+  );
+}
+
 class BudgetTransactionsDetailScreen extends ConsumerWidget {
   final Budget budget;
   final String categoryName;
@@ -947,6 +959,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
           // Hero summary card with gradient
           Builder(builder: (context) {
             final theme = Theme.of(context);
+            final isDarkTheme = theme.brightness == Brightness.dark;
             final statusColor = percentage > 100
                 ? AppColors.error
                 : percentage >= 80
@@ -957,6 +970,28 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                 : percentage >= 80
                     ? context.semanticColors.warningContainer
                     : context.semanticColors.incomeContainer;
+            final gradientEnd = Color.alphaBlend(
+              statusContainerColor.withValues(alpha: 0.6),
+              theme.scaffoldBackgroundColor,
+            );
+            final onSurface = theme.colorScheme.onSurface;
+            final trackColor = Color.alphaBlend(
+              onSurface.withValues(alpha: isDarkTheme ? 0.2 : 0.14),
+              statusContainerColor,
+            );
+            final fillColor = AppSurfaceTokens.ensureContrastOnAll(
+              statusColor,
+              [trackColor, statusContainerColor, gradientEnd],
+              minRatio: 3,
+              toward: onSurface,
+            );
+            final remainingColor = AppSurfaceTokens.ensureContrastOnAll(
+              budget.consumedCents > budget.limitCents
+                  ? AppColors.error
+                  : context.semanticColors.income,
+              [statusContainerColor, gradientEnd],
+              toward: onSurface,
+            );
             return Container(
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
@@ -1012,11 +1047,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                         child: Text(
                           '${percentage.toStringAsFixed(1)}%',
                           style: theme.textTheme.titleMedium?.copyWith(
-                            color: ThemeData.estimateBrightnessForColor(
-                                        statusColor) ==
-                                    Brightness.dark
-                                ? AppColors.textLight
-                                : AppColors.textDark,
+                            color: _pillTextColor(statusColor),
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -1029,8 +1060,8 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                     child: LinearProgressIndicator(
                       value: (percentage / 100).clamp(0.0, 1.0),
                       minHeight: 12,
-                      backgroundColor: Colors.white.withValues(alpha: 0.5),
-                      valueColor: AlwaysStoppedAnimation(statusColor),
+                      backgroundColor: trackColor,
+                      valueColor: AlwaysStoppedAnimation(fillColor),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
@@ -1047,9 +1078,7 @@ class BudgetTransactionsDetailScreen extends ConsumerWidget {
                       Text(
                         '${l10n.remaining}: ${CurrencyFormatter.formatVNDFromCents(budget.limitCents - budget.consumedCents, locale: l10n.localeName)}',
                         style: theme.textTheme.bodyMedium?.copyWith(
-                          color: budget.consumedCents > budget.limitCents
-                              ? AppColors.error
-                              : AppColors.primary,
+                          color: remainingColor,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

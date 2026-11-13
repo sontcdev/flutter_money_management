@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter_money_management/src/features/reports/models/report_calendar_models.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/theme/app_surface_tokens.dart';
 import 'package:flutter_money_management/src/theme/report_theme.dart';
 
 class CalendarDateCell extends StatelessWidget {
@@ -28,6 +29,19 @@ class CalendarDateCell extends StatelessWidget {
     final isCurrentMonth =
         date.year == displayedMonth.year && date.month == displayedMonth.month;
     final semanticColors = context.semanticColors;
+    final scheme = Theme.of(context).colorScheme;
+    final cellBase = isSelected
+        ? semanticColors.calendarSelected
+        : (isToday
+            ? semanticColors.calendarToday
+            : Theme.of(context).scaffoldBackgroundColor);
+    final dayColor = AppSurfaceTokens.ensureContrast(
+      (isSelected || isToday || isCurrentMonth)
+          ? scheme.onSurface
+          : scheme.onSurfaceVariant,
+      cellBase,
+      toward: scheme.onSurface,
+    );
 
     return GestureDetector(
       onTap: onTap,
@@ -43,8 +57,7 @@ class CalendarDateCell extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
           border: isToday && !isSelected
               ? Border.all(
-                  color: semanticColors.income.withValues(alpha: 0.3),
-                  width: 1)
+                  color: semanticColors.income.withValues(alpha: 0.3), width: 1)
               : null,
         ),
         child: Column(
@@ -55,15 +68,7 @@ class CalendarDateCell extends StatelessWidget {
               date.day.toString(),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                    color: (isSelected || isToday)
-                        ? Theme.of(context).colorScheme.onSurface
-                        : (isCurrentMonth
-                            ? Theme.of(context).textTheme.bodyLarge?.color
-                            : Theme.of(context)
-                                .textTheme
-                                .bodyLarge
-                                ?.color
-                                ?.withValues(alpha: 0.4)),
+                    color: dayColor,
                   ),
             ),
             if (badges.isNotEmpty) ...[
@@ -72,7 +77,7 @@ class CalendarDateCell extends StatelessWidget {
                 child: Column(
                   children: badges
                       .take(2)
-                      .map((badge) => _buildBadge(context, badge))
+                      .map((badge) => _buildBadge(context, badge, cellBase))
                       .toList(),
                 ),
               ),
@@ -83,7 +88,17 @@ class CalendarDateCell extends StatelessWidget {
     );
   }
 
-  Widget _buildBadge(BuildContext context, AmountBadge badge) {
+  Widget _buildBadge(BuildContext context, AmountBadge badge, Color cellBase) {
+    final scheme = Theme.of(context).colorScheme;
+    final accent = badge.isIncome
+        ? context.semanticColors.income
+        : context.semanticColors.expense;
+    final fill = accent.withValues(alpha: 0.15);
+    final textColor = AppSurfaceTokens.ensureContrast(
+      accent,
+      Color.alphaBlend(fill, cellBase),
+      toward: scheme.onSurface,
+    );
     final locale = Localizations.localeOf(context);
     final localeName = locale.countryCode?.isNotEmpty == true
         ? '${locale.languageCode}_${locale.countryCode}'
@@ -95,18 +110,14 @@ class CalendarDateCell extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
       padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0),
       decoration: BoxDecoration(
-        color: badge.isIncome
-            ? context.semanticColors.income.withValues(alpha: 0.15)
-            : context.semanticColors.expense.withValues(alpha: 0.15),
+        color: fill,
         borderRadius: BorderRadius.circular(AppSpacing.radiusXxs),
       ),
       child: Text(
         amountText,
         style: TextStyle(
-          fontSize: 7,
-          color: badge.isIncome
-              ? context.semanticColors.income
-              : context.semanticColors.expense,
+          fontSize: 9,
+          color: textColor,
           fontWeight: FontWeight.w600,
         ),
         maxLines: 1,

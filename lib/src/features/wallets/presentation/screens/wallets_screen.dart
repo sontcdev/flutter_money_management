@@ -9,6 +9,7 @@ import 'package:flutter_money_management/src/features/wallets/repositories/walle
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/services/workspace_sync_helper.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/theme/app_surface_tokens.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_metric_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
@@ -19,6 +20,24 @@ import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
 import 'package:flutter_money_management/src/utils/category_icons.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
+
+const double _walletTintAlpha = 0.15;
+
+Color _walletIconForeground(BuildContext context, Color tint) {
+  final theme = Theme.of(context);
+  return AppSurfaceTokens.ensureContrastOnAll(
+    tint,
+    [
+      for (final bg in {
+        theme.colorScheme.surface,
+        theme.scaffoldBackgroundColor
+      })
+        Color.alphaBlend(tint.withValues(alpha: _walletTintAlpha), bg),
+    ],
+    minRatio: 3,
+    toward: theme.colorScheme.onSurface,
+  );
+}
 
 class WalletsScreen extends ConsumerWidget {
   const WalletsScreen({super.key});
@@ -232,42 +251,72 @@ class _WalletRow extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
         ),
         child: Icon(CategoryIcons.getIcon(wallet.iconName),
-            size: AppSpacing.iconSizeSm, color: color),
+            size: AppSpacing.iconSizeSm,
+            color: _walletIconForeground(context, color)),
       ),
       title: Row(
         children: [
-          Flexible(child: Text(wallet.name, overflow: TextOverflow.ellipsis)),
+          Flexible(
+            child: Text(
+              wallet.name,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
           if (wallet.isDefault) ...[
             const SizedBox(width: AppSpacing.xs),
             Icon(Icons.star, size: 14, color: theme.colorScheme.primary),
           ],
         ],
       ),
-      subtitle: Text(walletTypeLabel(l10n, wallet.walletType)),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
+            walletTypeLabel(l10n, wallet.walletType),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
             CurrencyFormatter.formatVNDFromCents(
-                balance,
+              balance,
               locale: l10n.localeName,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: theme.textTheme.titleSmall?.copyWith(
               fontWeight: FontWeight.w700,
               color: balance < 0 ? theme.colorScheme.error : null,
             ),
           ),
-          if (onDelete != null)
-            IconButton(
-              tooltip: l10n.deleteWallet,
-              icon: const Icon(
-                Icons.delete_outline,
-                size: AppSpacing.iconSizeSm,
-              ),
-              onPressed: onDelete,
-            ),
         ],
       ),
+      trailing: (onTap != null || onDelete != null)
+          ? PopupMenuButton<_WalletAction>(
+              onSelected: (action) {
+                switch (action) {
+                  case _WalletAction.edit:
+                    onTap?.call();
+                  case _WalletAction.delete:
+                    onDelete?.call();
+                }
+              },
+              itemBuilder: (context) => [
+                if (onTap != null)
+                  PopupMenuItem(
+                    value: _WalletAction.edit,
+                    child: Text(l10n.edit),
+                  ),
+                if (onDelete != null)
+                  PopupMenuItem(
+                    value: _WalletAction.delete,
+                    child: Text(l10n.delete),
+                  ),
+              ],
+            )
+          : null,
     );
   }
 }
+
+enum _WalletAction { edit, delete }

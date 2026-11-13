@@ -9,7 +9,6 @@ import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
-import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
 class CreateWorkspaceScreen extends HookConsumerWidget {
@@ -21,17 +20,13 @@ class CreateWorkspaceScreen extends HookConsumerWidget {
     final nameController = useTextEditingController();
     final descriptionController = useTextEditingController();
     final isLoading = useState(false);
+    final formKey = useMemoized(() => GlobalKey<FormState>());
 
     Future<void> submit() async {
       if (isLoading.value) {
         return;
       }
-      if (nameController.text.trim().isEmpty) {
-        showAppSnackBar(
-          context,
-          'Workspace name is required',
-          type: AppSnackBarType.error,
-        );
+      if (!(formKey.currentState?.validate() ?? false)) {
         return;
       }
 
@@ -73,30 +68,36 @@ class CreateWorkspaceScreen extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Workspace')),
-      body: ListView(
+      appBar: AppBar(title: Text(l10n.createWorkspaceTitle)),
+      body: Form(
+        key: formKey,
+        child: ListView(
         padding: const EdgeInsets.all(AppSpacing.screenPadding),
         children: [
           Text(
-            'Create a shared workspace for your household or group.',
+            l10n.createWorkspaceDescription,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: context.semanticColors.textFaint,
                 ),
           ),
           const SizedBox(height: AppSpacing.lg),
           AppInput(
-            label: 'Workspace name',
+            label: l10n.workspaceNameLabel,
             controller: nameController,
+            textInputAction: TextInputAction.next,
+            validator: (value) => (value ?? '').trim().isEmpty
+                ? l10n.workspaceNameRequired
+                : null,
           ),
           const SizedBox(height: AppSpacing.lg),
           AppInput(
-            label: 'Description',
+            label: l10n.note,
             controller: descriptionController,
             maxLines: 3,
           ),
           const SizedBox(height: AppSpacing.xl),
           AppButton(
-            text: 'Create workspace',
+            text: l10n.createWorkspaceAction,
             onPressed: submit,
             isLoading: isLoading.value,
           ),
@@ -108,6 +109,7 @@ class CreateWorkspaceScreen extends HookConsumerWidget {
                 ),
           ),
         ],
+        ),
       ),
     );
   }

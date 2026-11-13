@@ -20,30 +20,31 @@ class AppColors {
   static const Color primarySoftDark = Color(0xFF12301E);
 
   // Surfaces
-  static const Color background = Color(0xFFF2F1EE);
+  static const Color background = Color(0xFFF7F9FC);
   static const Color backgroundDark = Color(0xFF110F09);
   static const Color surface = Color(0xFFFFFFFF);
   static const Color surfaceDark = Color(0xFF1D1A13);
-  static const Color surface2 = Color(0xFFF1EFEA);
+  static const Color surface2 = Color(0xFFEEF2F7);
   static const Color surface2Dark = Color(0xFF27241C);
 
   // Text / ink
-  static const Color textPrimary = Color(0xFF16140C);
-  static const Color textSecondary = Color(0xFF5C584C);
-  static const Color textFaint = Color(0xFF8F8C83);
+  static const Color textPrimary = Color(0xFF14213D);
+  static const Color textSecondary = Color(0xFF475569);
+  static const Color textFaint = Color(0xFF586579);
   static const Color textLight = Color(0xFFF3F2ED);
   static const Color textLightSecondary = Color(0xFFB1AEA6);
   static const Color textLightFaint = Color(0xFF8F8C83);
+  // Unchanged warm near-black: used as foreground on light fills in dark mode.
   static const Color textDark = Color(0xFF16140C);
 
   // Borders
-  static const Color border = Color(0xFFE0DED7);
+  static const Color border = Color(0xFFDDE4EE);
   static const Color borderDark = Color(0xFF35332C);
 
   // iOS separators & fills
-  static const Color separator = Color(0xFFE4E2DC);
+  static const Color separator = Color(0xFFE3E9F1);
   static const Color separatorDark = Color(0xFF35332C);
-  static const Color iosFill = Color(0x1F78766E);
+  static const Color iosFill = Color(0x1F64748B);
   static const Color iosFillDark = Color(0x3D8F8C83);
   static const Color segmentThumbDark = Color(0xFF48453C);
 
@@ -76,7 +77,7 @@ class AppColors {
   static const Color infoContainerDark = Color(0xFF1A2941);
 
   // Elevation/shadow
-  static const Color shadow = Color(0x1A16140C);
+  static const Color shadow = Color(0x1A14213D);
   static const Color shadowDark = Color(0x59000000);
 
   // Settings row icon tints

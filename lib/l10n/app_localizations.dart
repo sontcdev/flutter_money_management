@@ -2032,7 +2032,7 @@ abstract class AppLocalizations {
   /// No description provided for @signInDesc.
   ///
   /// In en, this message translates to:
-  /// **'Sign in to sync your data'**
+  /// **'Sign in to access your account and data'**
   String get signInDesc;
 
   /// No description provided for @signOutTitle.
@@ -2044,7 +2044,7 @@ abstract class AppLocalizations {
   /// No description provided for @signOutConfirm.
   ///
   /// In en, this message translates to:
-  /// **'Are you sure you want to sign out?\n\nYour local data will be kept and synced when you sign in again.'**
+  /// **'Are you sure you want to sign out?\n\nYour data stays in your account and will be available when you sign in again.'**
   String get signOutConfirm;
 
   /// No description provided for @signOutFailed.
@@ -2100,6 +2100,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Owner'**
   String get ownerRole;
+
+  /// No description provided for @adminRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get adminRole;
+
+  /// No description provided for @memberRole.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get memberRole;
 
   /// No description provided for @roleValue.
   ///
@@ -2758,7 +2770,7 @@ abstract class AppLocalizations {
   /// No description provided for @signInToSyncAcrossDevices.
   ///
   /// In en, this message translates to:
-  /// **'Sign in to sync your data across devices'**
+  /// **'Sign in to access your data on any device'**
   String get signInToSyncAcrossDevices;
 
   /// No description provided for @enterYourPassword.
@@ -2866,7 +2878,7 @@ abstract class AppLocalizations {
   /// No description provided for @createAccountToSync.
   ///
   /// In en, this message translates to:
-  /// **'Create your account to sync across devices'**
+  /// **'Create your account to access your data on any device'**
   String get createAccountToSync;
 
   /// No description provided for @verifyEmailBeforeSignInHint.
@@ -3756,6 +3768,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Leave these shared workspaces before deleting your account.'**
   String get deleteAccountSharedWorkspaces;
+
+  /// No description provided for @createWorkspaceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create workspace'**
+  String get createWorkspaceTitle;
+
+  /// No description provided for @createWorkspaceDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A workspace keeps transactions, budgets and categories for you and the people you share with.'**
+  String get createWorkspaceDescription;
+
+  /// No description provided for @workspaceNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a workspace name'**
+  String get workspaceNameRequired;
+
+  /// No description provided for @createWorkspaceAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create workspace'**
+  String get createWorkspaceAction;
+
+  /// No description provided for @createBudgetForCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a budget for this category'**
+  String get createBudgetForCategory;
+
+  /// No description provided for @budgetOnlyForExpense.
+  ///
+  /// In en, this message translates to:
+  /// **'Budgets are only available for expense categories'**
+  String get budgetOnlyForExpense;
+
+  /// No description provided for @noCategoriesInFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories in this filter'**
+  String get noCategoriesInFilter;
+
+  /// No description provided for @noCategoriesInFilterMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Try another filter to see your other categories.'**
+  String get noCategoriesInFilterMessage;
+
+  /// No description provided for @budgetNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Budget not found'**
+  String get budgetNotFound;
+
+  /// No description provided for @workspaceNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Workspace name'**
+  String get workspaceNameLabel;
+
+  /// No description provided for @discardChangesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard changes?'**
+  String get discardChangesTitle;
+
+  /// No description provided for @discardChangesMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You have unsaved changes. If you leave now, they will be lost.'**
+  String get discardChangesMessage;
+
+  /// No description provided for @discard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get discard;
+
+  /// No description provided for @keepEditing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep editing'**
+  String get keepEditing;
+
+  /// No description provided for @quickInputDiscardPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard {count} pending items?'**
+  String quickInputDiscardPending(int count);
+
+  /// No description provided for @recurringNextOccurrence.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: {date}'**
+  String recurringNextOccurrence(String date);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

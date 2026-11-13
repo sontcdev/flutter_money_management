@@ -13,6 +13,7 @@ import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
+import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
@@ -233,14 +234,20 @@ class TransactionManagementScreen extends HookConsumerWidget {
                     },
                     loading: () =>
                         const Center(child: CircularProgressIndicator()),
-                    error: (error, stack) => Center(
-                      child: Text(l10n.errorLoadingCategories('$error')),
+                    error: (error, stack) => LoadErrorState(
+                      title: l10n.dataLoadFailed,
+                      message: l10n.dataLoadFailedHint,
+                      retryLabel: l10n.retry,
+                      onRetry: () => ref.invalidate(categoriesProvider),
                     ),
                   );
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (error, stack) => Center(
-                  child: Text(l10n.errorLoadingTransactions('$error')),
+                error: (error, stack) => LoadErrorState(
+                  title: l10n.dataLoadFailed,
+                  message: l10n.dataLoadFailedHint,
+                  retryLabel: l10n.retry,
+                  onRetry: () => ref.invalidate(transactionsProvider),
                 ),
               ),
             ),

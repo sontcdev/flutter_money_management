@@ -6,6 +6,7 @@ import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_motion.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/theme/app_surface_tokens.dart';
 
 class PieChartWidget extends StatelessWidget {
   final List<ChartData> data;
@@ -47,21 +48,19 @@ class PieChartWidget extends StatelessWidget {
             PieChartData(
               sections: data.map((item) {
                 final showLabel = item.percentage >= _minLabelPercentage;
+                final sliceColor = item.resolveColor(context);
                 return PieChartSectionData(
                   value: item.value,
                   title: showLabel
                       ? '${item.percentage.toStringAsFixed(1)}%'
                       : '',
-                  color: item.color,
+                  color: sliceColor,
                   radius: sectionRadius,
                   titlePositionPercentageOffset: 0.6,
                   titleStyle: TextStyle(
                     fontSize: labelFontSize,
                     fontWeight: FontWeight.bold,
-                    color: ThemeData.estimateBrightnessForColor(item.color) ==
-                            Brightness.dark
-                        ? AppColors.textLight
-                        : AppColors.textDark,
+                    color: pieLabelColor(sliceColor),
                   ),
                 );
               }).toList(),
@@ -97,19 +96,45 @@ class BarChartWidget extends StatelessWidget {
       );
     }
 
+    final axisStyle = TextStyle(
+      fontSize: 10,
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
+
+    final maxY = data.map((e) => e.value).reduce((a, b) => a > b ? a : b) * 1.2;
+    final scaler = MediaQuery.textScalerOf(context);
+    final direction = Directionality.of(context);
+    double measure(double v) {
+      final painter = TextPainter(
+        text: TextSpan(text: labelFormatter(v), style: axisStyle),
+        textDirection: direction,
+        textScaler: scaler,
+        maxLines: 1,
+      )..layout();
+      final w = painter.width;
+      painter.dispose();
+      return w;
+    }
+
+    // Widest plausible tick is the max value; add side padding.
+    final leftReserved = [measure(0), measure(maxY), measure(maxY / 2)]
+            .reduce((a, b) => a > b ? a : b)
+            .ceilToDouble() +
+        8;
+
     return AspectRatio(
       aspectRatio: 1.5,
       child: BarChart(
         BarChartData(
           alignment: BarChartAlignment.spaceAround,
-          maxY: data.map((e) => e.value).reduce((a, b) => a > b ? a : b) * 1.2,
+          maxY: maxY,
           barGroups: data.asMap().entries.map((entry) {
             return BarChartGroupData(
               x: entry.key,
               barRods: [
                 BarChartRodData(
                   toY: entry.value.value,
-                  color: entry.value.color,
+                  color: entry.value.resolveColor(context),
                   width: 20,
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(AppSpacing.radiusXs),
@@ -129,7 +154,7 @@ class BarChartWidget extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
                         data[value.toInt()].label,
-                        style: const TextStyle(fontSize: 10),
+                        style: axisStyle,
                       ),
                     );
                   }
@@ -140,11 +165,23 @@ class BarChartWidget extends StatelessWidget {
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                reservedSize: 40,
+                reservedSize: leftReserved,
                 getTitlesWidget: (value, meta) {
+                  // Drop the irregular auto-added max endpoint when it is not
+                  // on the interval grid; it sits too close to the last tick.
+                  final interval = meta.appliedInterval;
+                  if (interval > 0 && value == meta.max) {
+                    final steps = value / interval;
+                    if ((steps - steps.roundToDouble()).abs() > 0.01) {
+                      return const SizedBox.shrink();
+                    }
+                  }
                   return Text(
                     labelFormatter(value),
-                    style: const TextStyle(fontSize: 10),
+                    style: axisStyle,
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.visible,
                   );
                 },
               ),
@@ -169,13 +206,28 @@ class ChartData {
   final String label;
   final double value;
   final double percentage;
-  final Color color;
+  /// Explicit slice/bar color. When null the widgets fall back to the theme
+  /// primary (see [resolveColor]).
+  final Color? color;
 
   ChartData({
     required this.label,
     required this.value,
     double? percentage,
-    Color? color,
-  })  : percentage = percentage ?? value,
-        color = color ?? Colors.blue;
+    this.color,
+  }) : percentage = percentage ?? value;
+
+  Color resolveColor(BuildContext context) =>
+      color ?? Theme.of(context).colorScheme.primary;
+}
+
+/// Pie label color: white/black chosen by slice luminance, then pushed until
+/// it reaches 4.5:1 against the slice fill.
+Color pieLabelColor(Color slice) {
+  final dark = ThemeData.estimateBrightnessForColor(slice) == Brightness.dark;
+  return AppSurfaceTokens.ensureContrast(
+    dark ? AppColors.textLight : AppColors.textDark,
+    slice,
+    toward: dark ? Colors.white : Colors.black,
+  );
 }

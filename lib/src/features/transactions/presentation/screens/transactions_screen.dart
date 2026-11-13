@@ -416,7 +416,8 @@ class _TransactionGroup extends StatelessWidget {
                             : category != null
                                 ? getCategoryColor(category.colorValue)
                                 : null,
-                        showDate: true, // Show date in subtitle
+                        // The day header above already shows the date.
+                        showDate: false,
                         showChevron: true,
                         onTap: () {
                           Navigator.pushNamed(

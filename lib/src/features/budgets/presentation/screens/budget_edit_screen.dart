@@ -11,12 +11,14 @@ import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/theme/app_surface_tokens.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 import 'package:flutter_money_management/src/ui/widgets/confirm_delete_dialog.dart';
 import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
+import 'package:flutter_money_management/src/ui/widgets/unsaved_changes_guard.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 import 'package:flutter_money_management/src/utils/vnd_input_formatter.dart';
@@ -44,6 +46,13 @@ class BudgetEditScreen extends HookConsumerWidget {
         useState<PeriodType>(budget?.periodType ?? PeriodType.monthly);
     final allowOverdraft = useState(budget?.allowOverdraft ?? false);
     final isLoading = useState(false);
+    final formKey = useMemoized(() => GlobalKey<FormState>());
+    final guardController = useMemoized(() => UnsavedChangesController());
+    useListenable(limitController);
+
+    // Initial values used to detect unsaved edits.
+    final initialLimitDigits =
+        budget != null ? ((budget!.limitCents / 100).round()).toString() : '';
 
     // Custom period dates
     final customStartDate =
@@ -54,6 +63,21 @@ class BudgetEditScreen extends HookConsumerWidget {
     // Selected transactions to include in budget
     final selectedTransactionIds = useState<Set<String>>({});
     final showTransactionSelector = useState(false);
+
+    DateTime dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
+    final initialStart = dateOnly(budget?.periodStart ?? DateTime.now());
+    final initialEnd = dateOnly(
+        budget?.periodEnd ?? DateTime.now().add(const Duration(days: 30)));
+    final isDirty = limitController.text.replaceAll(RegExp(r'[^0-9]'), '') !=
+            initialLimitDigits ||
+        selectedCategoryId.value != budget?.categoryId ||
+        selectedPeriodType.value !=
+            (budget?.periodType ?? PeriodType.monthly) ||
+        allowOverdraft.value != (budget?.allowOverdraft ?? false) ||
+        selectedTransactionIds.value.isNotEmpty ||
+        (selectedPeriodType.value == PeriodType.custom &&
+            (dateOnly(customStartDate.value) != initialStart ||
+                dateOnly(customEndDate.value) != initialEnd));
 
     // Get transactions for selected category within period
     List<Transaction> getCategoryTransactions() {
@@ -108,8 +132,7 @@ class BudgetEditScreen extends HookConsumerWidget {
     }
 
     Future<void> handleDelete() async {
-      final categoryName =
-          categoriesAsync.valueOrNull
+      final categoryName = categoriesAsync.valueOrNull
               ?.where((c) => c.id == budget!.categoryId)
               .firstOrNull
               ?.name ??
@@ -129,6 +152,7 @@ class BudgetEditScreen extends HookConsumerWidget {
         await budgetRepo.deleteBudget(budget!.id);
         ref.invalidate(budgetsProvider);
         ref.invalidate(budgetsWithConsumedProvider);
+        guardController.markSaved();
         if (context.mounted) {
           Navigator.of(context).pop(true);
           showAppSnackBar(
@@ -156,14 +180,8 @@ class BudgetEditScreen extends HookConsumerWidget {
     }
 
     Future<void> handleSave() async {
-      if (limitController.text.isEmpty) {
-        showAppSnackBar(
-          context,
-          l10n.limitRequiredError,
-          type: AppSnackBarType.error,
-        );
-        return;
-      }
+      if (isLoading.value) return;
+      if (!(formKey.currentState?.validate() ?? false)) return;
 
       if (selectedCategoryId.value == null) {
         showAppSnackBar(
@@ -235,6 +253,7 @@ class BudgetEditScreen extends HookConsumerWidget {
         ref.invalidate(budgetsWithConsumedProvider);
         ref.invalidate(transactionsProvider);
 
+        guardController.markSaved();
         if (context.mounted) {
           Navigator.of(context).pop(true);
           showAppSnackBar(context, l10n.success, type: AppSnackBarType.success);
@@ -262,411 +281,432 @@ class BudgetEditScreen extends HookConsumerWidget {
       }
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(budget == null ? l10n.addBudget : l10n.editBudget),
-        leading: IconButton(
-          tooltip: l10n.back,
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            // Unfocus to hide keyboard before popping
-            FocusScope.of(context).unfocus();
-            Navigator.of(context).pop();
-          },
+    return UnsavedChangesGuard(
+      isDirty: isDirty,
+      controller: guardController,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(budget == null ? l10n.addBudget : l10n.editBudget),
+          leading: IconButton(
+            tooltip: l10n.back,
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              // Unfocus to hide keyboard before popping
+              FocusScope.of(context).unfocus();
+              Navigator.of(context).maybePop();
+            },
+          ),
         ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Form(
+            key: formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      l10n.category,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    TextButton.icon(
+                      onPressed: () async {
+                        final result = await Navigator.pushNamed(
+                          context,
+                          '/category-edit',
+                          arguments: {'initialType': CategoryType.expense},
+                        );
+                        if (result == true) {
+                          // Force refresh categories immediately
+                          ref.invalidate(categoriesProvider);
+                          ref.invalidate(categoriesForWorkspaceProvider);
+                          // Trigger a new fetch
+                          await ref.read(categoriesProvider.future);
+                        }
+                      },
+                      icon: const Icon(Icons.add, size: 18),
+                      label: Text(l10n.add),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.sm),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                categoriesAsync.when(
+                  data: (categories) {
+                    final expenseCategories = categories
+                        .where((c) => c.type == CategoryType.expense)
+                        .toList();
+                    return DropdownButtonFormField<String>(
+                      key: ValueKey(selectedCategoryId.value),
+                      decoration: InputDecoration(
+                        labelText: l10n.category,
+                        filled: true,
+                        fillColor: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
+                        border: OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusCard),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusCard),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusCard),
+                          borderSide: BorderSide(
+                            color: Theme.of(context).colorScheme.primary,
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                      initialValue: selectedCategoryId.value,
+                      items: expenseCategories.map((category) {
+                        return DropdownMenuItem<String>(
+                          value: category.id,
+                          child: Row(
+                            children: [
+                              CategoryIconWidget(
+                                  iconName: category.iconName,
+                                  size: AppSpacing.iconSizeSm),
+                              const SizedBox(width: 8),
+                              Text(category.name),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        selectedCategoryId.value = value;
+                        selectedTransactionIds.value =
+                            {}; // Reset selected transactions
+                        showTransactionSelector.value = false;
+                      },
+                    );
+                  },
+                  loading: () => const CircularProgressIndicator(),
+                  error: (err, stack) => InlineLoadErrorState(
+                    onRetry: () => ref.invalidate(categoriesProvider),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                AppInput(
+                  label: '${l10n.limit} (${l10n.currency})',
+                  controller: limitController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    VNDInputFormatter(),
+                  ],
+                  hint: '0',
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => handleSave(),
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (value) => (value == null || value.trim().isEmpty)
+                      ? l10n.limitRequiredError
+                      : null,
+                  suffixIcon: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md, vertical: AppSpacing.lg),
+                    child: Text(
+                      CurrencyFormatter.getCurrencySymbol('VND'),
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
                 Text(
-                  l10n.category,
+                  l10n.period,
                   style: Theme.of(context)
                       .textTheme
                       .titleSmall
                       ?.copyWith(fontWeight: FontWeight.w700),
                 ),
-                TextButton.icon(
-                  onPressed: () async {
-                    final result = await Navigator.pushNamed(
-                      context,
-                      '/category-edit',
-                      arguments: {'initialType': CategoryType.expense},
-                    );
-                    if (result == true) {
-                      // Force refresh categories immediately
-                      ref.invalidate(categoriesProvider);
-                      ref.invalidate(categoriesForWorkspaceProvider);
-                      // Trigger a new fetch
-                      await ref.read(categoriesProvider.future);
-                    }
-                  },
-                  icon: const Icon(Icons.add, size: 18),
-                  label: Text(l10n.add),
-                  style: TextButton.styleFrom(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                    visualDensity: VisualDensity.compact,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            categoriesAsync.when(
-              data: (categories) {
-                final expenseCategories = categories
-                    .where((c) => c.type == CategoryType.expense)
-                    .toList();
-                return DropdownButtonFormField<String>(
-                  key: ValueKey(selectedCategoryId.value),
-                  decoration: InputDecoration(
-                    labelText: l10n.category,
-                    filled: true,
-                    fillColor:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
-                    border: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusCard),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusCard),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSpacing.radiusCard),
-                      borderSide: BorderSide(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 1.5,
+                const SizedBox(height: AppSpacing.sm),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _PeriodOptionButton(
+                        label: l10n.monthly,
+                        icon: Icons.calendar_month,
+                        isSelected:
+                            selectedPeriodType.value == PeriodType.monthly,
+                        onTap: () {
+                          selectedPeriodType.value = PeriodType.monthly;
+                          selectedTransactionIds.value = {};
+                        },
                       ),
                     ),
-                  ),
-                  initialValue: selectedCategoryId.value,
-                  items: expenseCategories.map((category) {
-                    return DropdownMenuItem<String>(
-                      value: category.id,
-                      child: Row(
-                        children: [
-                          CategoryIconWidget(
-                              iconName: category.iconName,
-                              size: AppSpacing.iconSizeSm),
-                          const SizedBox(width: 8),
-                          Text(category.name),
-                        ],
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: _PeriodOptionButton(
+                        label: l10n.yearly,
+                        icon: Icons.calendar_today,
+                        isSelected:
+                            selectedPeriodType.value == PeriodType.yearly,
+                        onTap: () {
+                          selectedPeriodType.value = PeriodType.yearly;
+                          selectedTransactionIds.value = {};
+                        },
                       ),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    selectedCategoryId.value = value;
-                    selectedTransactionIds.value =
-                        {}; // Reset selected transactions
-                    showTransactionSelector.value = false;
-                  },
-                );
-              },
-              loading: () => const CircularProgressIndicator(),
-              error: (err, stack) => InlineLoadErrorState(
-                onRetry: () => ref.invalidate(categoriesProvider),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            AppInput(
-              label: '${l10n.limit} (${l10n.currency})',
-              controller: limitController,
-              keyboardType: TextInputType.number,
-              inputFormatters: [
-                FilteringTextInputFormatter.digitsOnly,
-                VNDInputFormatter(),
-              ],
-              hint: '0',
-              suffixIcon: Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md, vertical: AppSpacing.lg),
-                child: Text(
-                  CurrencyFormatter.getCurrencySymbol('VND'),
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: _PeriodOptionButton(
+                        label: l10n.custom,
+                        icon: Icons.date_range,
+                        isSelected:
+                            selectedPeriodType.value == PeriodType.custom,
+                        onTap: () {
+                          selectedPeriodType.value = PeriodType.custom;
+                          selectedTransactionIds.value = {};
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Text(
-              l10n.period,
-              style: Theme.of(context)
-                  .textTheme
-                  .titleSmall
-                  ?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Row(
-              children: [
-                Expanded(
-                  child: _PeriodOptionButton(
-                    label: l10n.monthly,
-                    icon: Icons.calendar_month,
-                    isSelected: selectedPeriodType.value == PeriodType.monthly,
-                    onTap: () {
-                      selectedPeriodType.value = PeriodType.monthly;
-                      selectedTransactionIds.value = {};
-                    },
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: _PeriodOptionButton(
-                    label: l10n.yearly,
-                    icon: Icons.calendar_today,
-                    isSelected: selectedPeriodType.value == PeriodType.yearly,
-                    onTap: () {
-                      selectedPeriodType.value = PeriodType.yearly;
-                      selectedTransactionIds.value = {};
-                    },
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: _PeriodOptionButton(
-                    label: l10n.custom,
-                    icon: Icons.date_range,
-                    isSelected: selectedPeriodType.value == PeriodType.custom,
-                    onTap: () {
-                      selectedPeriodType.value = PeriodType.custom;
-                      selectedTransactionIds.value = {};
-                    },
-                  ),
-                ),
-              ],
-            ),
 
-            // Custom date range picker
-            if (selectedPeriodType.value == PeriodType.custom) ...[
-              const SizedBox(height: AppSpacing.lg),
-              Row(
-                children: [
-                  Expanded(
-                    child: _DatePickerField(
-                      label: l10n.fromDate,
-                      date: customStartDate.value,
-                      onTap: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: customStartDate.value,
-                          firstDate: DateTime(2020),
-                          lastDate: DateTime(2100),
-                        );
-                        if (picked != null) {
-                          customStartDate.value = picked;
-                          selectedTransactionIds.value = {};
-                        }
-                      },
-                    ),
+                // Custom date range picker
+                if (selectedPeriodType.value == PeriodType.custom) ...[
+                  const SizedBox(height: AppSpacing.lg),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _DatePickerField(
+                          label: l10n.fromDate,
+                          date: customStartDate.value,
+                          onTap: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: customStartDate.value,
+                              firstDate: DateTime(2020),
+                              lastDate: DateTime(2100),
+                            );
+                            if (picked != null) {
+                              customStartDate.value = picked;
+                              selectedTransactionIds.value = {};
+                            }
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: _DatePickerField(
+                          label: l10n.toDate,
+                          date: customEndDate.value,
+                          onTap: () async {
+                            final picked = await showDatePicker(
+                              context: context,
+                              initialDate: customEndDate.value,
+                              firstDate: customStartDate.value,
+                              lastDate: DateTime(2100),
+                            );
+                            if (picked != null) {
+                              customEndDate.value = picked;
+                              selectedTransactionIds.value = {};
+                            }
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: _DatePickerField(
-                      label: l10n.toDate,
-                      date: customEndDate.value,
-                      onTap: () async {
-                        final picked = await showDatePicker(
-                          context: context,
-                          initialDate: customEndDate.value,
-                          firstDate: customStartDate.value,
-                          lastDate: DateTime(2100),
+                ],
+
+                // Transaction selector for new budgets
+                if (budget == null && selectedCategoryId.value != null) ...[
+                  const SizedBox(height: AppSpacing.lg),
+                  Builder(
+                    builder: (context) {
+                      final categoryTransactions = getCategoryTransactions();
+
+                      if (categoryTransactions.isEmpty) {
+                        final onSurfaceFaint = Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.6);
+                        return AppCard(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
+                          padding: const EdgeInsets.all(AppSpacing.lg),
+                          child: Row(
+                            children: [
+                              Icon(Icons.info_outline, color: onSurfaceFaint),
+                              const SizedBox(width: AppSpacing.md),
+                              Expanded(
+                                child: Text(
+                                  l10n.noExpenseTransactionInPeriod,
+                                  style: TextStyle(color: onSurfaceFaint),
+                                ),
+                              ),
+                            ],
+                          ),
                         );
-                        if (picked != null) {
-                          customEndDate.value = picked;
-                          selectedTransactionIds.value = {};
-                        }
-                      },
+                      }
+
+                      final selectedTotal = getSelectedTotal();
+                      final allSelected = selectedTransactionIds.value.length ==
+                          categoryTransactions.length;
+
+                      return AppCard(
+                        padding: EdgeInsets.zero,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ListTile(
+                              title: Text(
+                                '${l10n.transactionsInPeriod} (${categoryTransactions.length})',
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w600),
+                              ),
+                              subtitle: selectedTransactionIds.value.isNotEmpty
+                                  ? Text(
+                                      '${l10n.selected}: ${CurrencyFormatter.formatVNDFromCents(selectedTotal, locale: l10n.localeName)}',
+                                      style: TextStyle(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    )
+                                  : Text(l10n.selectTransactionsForBudget),
+                              trailing: IconButton(
+                                tooltip: showTransactionSelector.value
+                                    ? l10n.collapse
+                                    : l10n.expand,
+                                icon: Icon(
+                                  showTransactionSelector.value
+                                      ? Icons.expand_less
+                                      : Icons.expand_more,
+                                ),
+                                onPressed: () {
+                                  showTransactionSelector.value =
+                                      !showTransactionSelector.value;
+                                },
+                              ),
+                            ),
+                            if (showTransactionSelector.value) ...[
+                              const Divider(height: 1),
+                              // Select all / Deselect all
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                                child: Row(
+                                  children: [
+                                    TextButton.icon(
+                                      icon: Icon(
+                                        allSelected
+                                            ? Icons.check_box
+                                            : Icons.check_box_outline_blank,
+                                      ),
+                                      label: Text(allSelected
+                                          ? l10n.deselectAll
+                                          : l10n.selectAll),
+                                      onPressed: () {
+                                        if (allSelected) {
+                                          selectedTransactionIds.value = {};
+                                        } else {
+                                          selectedTransactionIds.value =
+                                              categoryTransactions
+                                                  .map((t) => t.id)
+                                                  .toSet();
+                                        }
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // Transaction list
+                              ...categoryTransactions.map((t) {
+                                final isSelected =
+                                    selectedTransactionIds.value.contains(t.id);
+                                return CheckboxListTile(
+                                  value: isSelected,
+                                  onChanged: (value) {
+                                    final newSet = Set<String>.from(
+                                        selectedTransactionIds.value);
+                                    if (value == true) {
+                                      newSet.add(t.id);
+                                    } else {
+                                      newSet.remove(t.id);
+                                    }
+                                    selectedTransactionIds.value = newSet;
+                                  },
+                                  title: Text(
+                                    t.note ?? l10n.noNote,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  subtitle: Text(
+                                    formatLocalizedDate(context, t.dateTime),
+                                  ),
+                                  secondary: Text(
+                                    CurrencyFormatter.formatVNDFromCents(
+                                      t.amountCents,
+                                      locale: l10n.localeName,
+                                    ),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: context.semanticColors.expense,
+                                    ),
+                                  ),
+                                  dense: true,
+                                );
+                              }),
+                              const SizedBox(height: AppSpacing.sm),
+                            ],
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+
+                const SizedBox(height: AppSpacing.lg),
+                SwitchListTile(
+                  title: Text(l10n.allowOverdraft),
+                  subtitle: Text(l10n.allowOverdraftDesc),
+                  value: allowOverdraft.value,
+                  onChanged: (value) => allowOverdraft.value = value,
+                ),
+                const SizedBox(height: AppSpacing.xxl),
+                AppButton(
+                  text: l10n.save,
+                  onPressed: handleSave,
+                  isLoading: isLoading.value,
+                ),
+                if (budget != null) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: isLoading.value ? null : handleDelete,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.error,
+                        side: const BorderSide(color: AppColors.error),
+                      ),
+                      icon: const Icon(Icons.delete_outline,
+                          size: AppSpacing.iconSizeSm),
+                      label: Text(l10n.deleteBudget),
                     ),
                   ),
                 ],
-              ),
-            ],
-
-            // Transaction selector for new budgets
-            if (budget == null && selectedCategoryId.value != null) ...[
-              const SizedBox(height: AppSpacing.lg),
-              Builder(
-                builder: (context) {
-                  final categoryTransactions = getCategoryTransactions();
-
-                  if (categoryTransactions.isEmpty) {
-                    final onSurfaceFaint = Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.6);
-                    return AppCard(
-                      color:
-                          Theme.of(context).colorScheme.surfaceContainerHighest,
-                      padding: const EdgeInsets.all(AppSpacing.lg),
-                      child: Row(
-                        children: [
-                          Icon(Icons.info_outline, color: onSurfaceFaint),
-                          const SizedBox(width: AppSpacing.md),
-                          Expanded(
-                            child: Text(
-                              l10n.noExpenseTransactionInPeriod,
-                              style: TextStyle(color: onSurfaceFaint),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  final selectedTotal = getSelectedTotal();
-                  final allSelected = selectedTransactionIds.value.length ==
-                      categoryTransactions.length;
-
-                  return AppCard(
-                    padding: EdgeInsets.zero,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ListTile(
-                          title: Text(
-                            '${l10n.transactionsInPeriod} (${categoryTransactions.length})',
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          subtitle: selectedTransactionIds.value.isNotEmpty
-                              ? Text(
-                                  '${l10n.selected}: ${CurrencyFormatter.formatVNDFromCents(selectedTotal, locale: l10n.localeName)}',
-                                  style: TextStyle(
-                                    color:
-                                        Theme.of(context).colorScheme.primary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                )
-                              : Text(l10n.selectTransactionsForBudget),
-                          trailing: IconButton(
-                            tooltip: showTransactionSelector.value
-                                ? l10n.collapse
-                                : l10n.expand,
-                            icon: Icon(
-                              showTransactionSelector.value
-                                  ? Icons.expand_less
-                                  : Icons.expand_more,
-                            ),
-                            onPressed: () {
-                              showTransactionSelector.value =
-                                  !showTransactionSelector.value;
-                            },
-                          ),
-                        ),
-                        if (showTransactionSelector.value) ...[
-                          const Divider(height: 1),
-                          // Select all / Deselect all
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Row(
-                              children: [
-                                TextButton.icon(
-                                  icon: Icon(
-                                    allSelected
-                                        ? Icons.check_box
-                                        : Icons.check_box_outline_blank,
-                                  ),
-                                  label: Text(allSelected
-                                      ? l10n.deselectAll
-                                      : l10n.selectAll),
-                                  onPressed: () {
-                                    if (allSelected) {
-                                      selectedTransactionIds.value = {};
-                                    } else {
-                                      selectedTransactionIds.value =
-                                          categoryTransactions
-                                              .map((t) => t.id)
-                                              .toSet();
-                                    }
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Transaction list
-                          ...categoryTransactions.map((t) {
-                            final isSelected =
-                                selectedTransactionIds.value.contains(t.id);
-                            return CheckboxListTile(
-                              value: isSelected,
-                              onChanged: (value) {
-                                final newSet = Set<String>.from(
-                                    selectedTransactionIds.value);
-                                if (value == true) {
-                                  newSet.add(t.id);
-                                } else {
-                                  newSet.remove(t.id);
-                                }
-                                selectedTransactionIds.value = newSet;
-                              },
-                              title: Text(
-                                t.note ?? l10n.noNote,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              subtitle: Text(
-                                formatLocalizedDate(context, t.dateTime),
-                              ),
-                              secondary: Text(
-                                CurrencyFormatter.formatVNDFromCents(
-                                  t.amountCents,
-                                  locale: l10n.localeName,
-                                ),
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: context.semanticColors.expense,
-                                ),
-                              ),
-                              dense: true,
-                            );
-                          }),
-                          const SizedBox(height: AppSpacing.sm),
-                        ],
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ],
-
-            const SizedBox(height: AppSpacing.lg),
-            SwitchListTile(
-              title: Text(l10n.allowOverdraft),
-              subtitle: Text(l10n.allowOverdraftDesc),
-              value: allowOverdraft.value,
-              onChanged: (value) => allowOverdraft.value = value,
+              ],
             ),
-            const SizedBox(height: AppSpacing.xxl),
-            AppButton(
-              text: l10n.save,
-              onPressed: handleSave,
-              isLoading: isLoading.value,
-            ),
-            if (budget != null) ...[
-              const SizedBox(height: AppSpacing.md),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: isLoading.value ? null : handleDelete,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.error,
-                    side: const BorderSide(color: AppColors.error),
-                  ),
-                  icon: const Icon(Icons.delete_outline,
-                      size: AppSpacing.iconSizeSm),
-                  label: Text(l10n.deleteBudget),
-                ),
-              ),
-            ],
-          ],
+          ),
         ),
       ),
     );
@@ -689,8 +729,16 @@ class _PeriodOptionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final unselectedForeground =
-        theme.colorScheme.onSurface.withValues(alpha: 0.6);
+    final unselectedForeground = AppSurfaceTokens.ensureContrast(
+      theme.colorScheme.onSurface.withValues(alpha: 0.6),
+      theme.colorScheme.surfaceContainerHighest,
+      toward: theme.colorScheme.onSurface,
+    );
+    final selectedForeground = AppSurfaceTokens.ensureContrast(
+      theme.colorScheme.onPrimary,
+      theme.colorScheme.primary,
+      toward: theme.colorScheme.onPrimary,
+    );
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
@@ -708,16 +756,16 @@ class _PeriodOptionButton extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? Colors.white : unselectedForeground,
+              color: isSelected ? selectedForeground : unselectedForeground,
               size: AppSpacing.iconSizeXs,
             ),
             const SizedBox(width: AppSpacing.xs),
             Text(
               label,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected ? Colors.white : unselectedForeground,
-              ),
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    color: isSelected ? selectedForeground : unselectedForeground,
+                  ),
             ),
           ],
         ),

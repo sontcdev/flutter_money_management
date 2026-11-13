@@ -995,13 +995,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get welcomeBack => 'Welcome back';
 
   @override
-  String get signInDesc => 'Sign in to sync your data';
+  String get signInDesc => 'Sign in to access your account and data';
 
   @override
   String get signOutTitle => 'Sign Out';
 
   @override
-  String get signOutConfirm => 'Are you sure you want to sign out?\n\nYour local data will be kept and synced when you sign in again.';
+  String get signOutConfirm => 'Are you sure you want to sign out?\n\nYour data stays in your account and will be available when you sign in again.';
 
   @override
   String signOutFailed(Object error) {
@@ -1033,6 +1033,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ownerRole => 'Owner';
+
+  @override
+  String get adminRole => 'Admin';
+
+  @override
+  String get memberRole => 'Member';
 
   @override
   String roleValue(Object role) {
@@ -1418,7 +1424,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get failedToSendResetEmail => 'Failed to send reset email. Please try again.';
 
   @override
-  String get signInToSyncAcrossDevices => 'Sign in to sync your data across devices';
+  String get signInToSyncAcrossDevices => 'Sign in to access your data on any device';
 
   @override
   String get enterYourPassword => 'Enter your password';
@@ -1472,7 +1478,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createAccount => 'Create Account';
 
   @override
-  String get createAccountToSync => 'Create your account to sync across devices';
+  String get createAccountToSync => 'Create your account to access your data on any device';
 
   @override
   String get verifyEmailBeforeSignInHint => 'You will need to verify your email before signing in';
@@ -1933,4 +1939,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteAccountSharedWorkspaces => 'Leave these shared workspaces before deleting your account.';
+
+  @override
+  String get createWorkspaceTitle => 'Create workspace';
+
+  @override
+  String get createWorkspaceDescription => 'A workspace keeps transactions, budgets and categories for you and the people you share with.';
+
+  @override
+  String get workspaceNameRequired => 'Enter a workspace name';
+
+  @override
+  String get createWorkspaceAction => 'Create workspace';
+
+  @override
+  String get createBudgetForCategory => 'Create a budget for this category';
+
+  @override
+  String get budgetOnlyForExpense => 'Budgets are only available for expense categories';
+
+  @override
+  String get noCategoriesInFilter => 'No categories in this filter';
+
+  @override
+  String get noCategoriesInFilterMessage => 'Try another filter to see your other categories.';
+
+  @override
+  String get budgetNotFound => 'Budget not found';
+
+  @override
+  String get workspaceNameLabel => 'Workspace name';
+
+  @override
+  String get discardChangesTitle => 'Discard changes?';
+
+  @override
+  String get discardChangesMessage => 'You have unsaved changes. If you leave now, they will be lost.';
+
+  @override
+  String get discard => 'Discard';
+
+  @override
+  String get keepEditing => 'Keep editing';
+
+  @override
+  String quickInputDiscardPending(int count) {
+    return 'Discard $count pending items?';
+  }
+
+  @override
+  String recurringNextOccurrence(String date) {
+    return 'Next: $date';
+  }
 }

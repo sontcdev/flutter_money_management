@@ -3,8 +3,27 @@ import 'package:flutter_money_management/src/features/categories/presentation/wi
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/theme/app_surface_tokens.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
+
+const double _tintAlpha = 0.15;
+
+Color _iconForeground(BuildContext context, Color tint) {
+  final theme = Theme.of(context);
+  return AppSurfaceTokens.ensureContrastOnAll(
+    tint,
+    [
+      for (final bg in {
+        theme.colorScheme.surface,
+        theme.scaffoldBackgroundColor
+      })
+        Color.alphaBlend(tint.withValues(alpha: _tintAlpha), bg),
+    ],
+    minRatio: 3,
+    toward: theme.colorScheme.onSurface,
+  );
+}
 
 enum TransactionItemDensity {
   normal,
@@ -126,12 +145,13 @@ class TransactionItem extends StatelessWidget {
     if (categoryIconName == null && categoryIcon == null) return null;
 
     final tint = categoryColor ?? Theme.of(context).colorScheme.primary;
+    final iconColor = _iconForeground(context, tint);
 
     return Container(
       width: 42,
       height: 42,
       decoration: BoxDecoration(
-        color: tint.withValues(alpha: 0.15),
+        color: tint.withValues(alpha: _tintAlpha),
         borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
       ),
       alignment: Alignment.center,
@@ -139,9 +159,9 @@ class TransactionItem extends StatelessWidget {
           ? CategoryIconWidget(
               iconName: categoryIconName!,
               size: AppSpacing.iconSizeSm,
-              color: tint,
+              color: iconColor,
             )
-          : Icon(categoryIcon, size: AppSpacing.iconSizeSm, color: tint),
+          : Icon(categoryIcon, size: AppSpacing.iconSizeSm, color: iconColor),
     );
   }
 

@@ -82,8 +82,39 @@ class QuickInputReviewSheet extends HookWidget {
       }
     }
 
+    Future<void> confirmDiscard() async {
+      if (saving.value) return;
+      if (pending.value.isEmpty) {
+        Navigator.of(context).pop(false);
+        return;
+      }
+      final discard = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
+          title: Text(l10n.discardChangesTitle),
+          content: Text(l10n.quickInputDiscardPending(pending.value.length)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(l10n.keepEditing),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(l10n.discard),
+            ),
+          ],
+        ),
+      );
+      if (discard == true && context.mounted) {
+        Navigator.of(context).pop(false);
+      }
+    }
+
     return PopScope(
-      canPop: !saving.value,
+      canPop: !saving.value && pending.value.isEmpty,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) confirmDiscard();
+      },
       child: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(
@@ -196,9 +227,7 @@ class QuickInputReviewSheet extends HookWidget {
                     : Text(l10n.quickInputSaveAll),
               ),
               TextButton(
-                onPressed: saving.value
-                    ? null
-                    : () => Navigator.of(context).pop(false),
+                onPressed: saving.value ? null : confirmDiscard,
                 child: Text(l10n.close),
               ),
             ],

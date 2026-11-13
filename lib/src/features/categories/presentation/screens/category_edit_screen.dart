@@ -13,6 +13,7 @@ import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
+import 'package:flutter_money_management/src/ui/widgets/unsaved_changes_guard.dart';
 import 'package:flutter_money_management/src/utils/category_icons.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/cycle_utils.dart';
@@ -47,6 +48,19 @@ class CategoryEditScreen extends HookConsumerWidget {
     final budgetAmountController = useTextEditingController();
     final budgetPeriod = useState(budget_model.PeriodType.monthly);
     final monthStartDay = ref.watch(monthStartDayProvider);
+    final formKey = useMemoized(() => GlobalKey<FormState>());
+    final guardController = useMemoized(() => UnsavedChangesController());
+    useListenable(nameController);
+    useListenable(budgetAmountController);
+    final isDirty =
+        nameController.text.trim() != (category?.name ?? '').trim() ||
+            selectedIcon.value != (category?.iconName ?? 'shopping_cart') ||
+            selectedColor.value != (category?.colorValue ?? 0xFF9E9E9E) ||
+            selectedType.value !=
+                (category?.type ?? initialType ?? CategoryType.expense) ||
+            createBudget.value ||
+            budgetAmountController.text.isNotEmpty ||
+            budgetPeriod.value != budget_model.PeriodType.monthly;
 
     // Get custom icons from provider
     final customIcons = ref.watch(customIconsProvider);
@@ -94,14 +108,8 @@ class CategoryEditScreen extends HookConsumerWidget {
     ];
 
     Future<void> save() async {
-      if (nameController.text.isEmpty) {
-        showAppSnackBar(
-          context,
-          l10n.categoryNameRequiredError,
-          type: AppSnackBarType.error,
-        );
-        return;
-      }
+      if (isLoading.value) return;
+      if (!(formKey.currentState?.validate() ?? false)) return;
 
       isLoading.value = true;
 
@@ -179,6 +187,7 @@ class CategoryEditScreen extends HookConsumerWidget {
           ref.invalidate(categoriesByTypeForWorkspaceProvider);
         }
 
+        guardController.markSaved();
         if (context.mounted) {
           Navigator.of(context).pop(true);
           showAppSnackBar(context, l10n.success, type: AppSnackBarType.success);
@@ -213,201 +222,229 @@ class CategoryEditScreen extends HookConsumerWidget {
     final previewColor = Color(selectedColor.value);
     final previewIcon = CategoryIcons.getIcon(selectedIcon.value);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(category == null ? l10n.addCategory : l10n.editCategory),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.screenPadding),
-        child: Column(
-          children: [
-            // Live preview of the selected icon + color
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: previewColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              ),
-              child: Icon(previewIcon, size: 32, color: previewColor),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            // Category Type Selector
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(l10n.categoryType, style: sectionLabelStyle),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            SegmentedButton<CategoryType>(
-              segments: [
-                ButtonSegment(
-                  value: CategoryType.expense,
-                  label: Text(l10n.expense),
-                  icon: const Icon(Icons.arrow_upward),
+    final showBudgetAmount =
+        createBudget.value && selectedType.value == CategoryType.expense;
+
+    return UnsavedChangesGuard(
+      isDirty: isDirty,
+      controller: guardController,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(category == null ? l10n.addCategory : l10n.editCategory),
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.screenPadding),
+          child: Form(
+            key: formKey,
+            child: Column(
+              children: [
+                // Live preview of the selected icon + color
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: previewColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                  ),
+                  child: Icon(previewIcon, size: 32, color: previewColor),
                 ),
-                ButtonSegment(
-                  value: CategoryType.income,
-                  label: Text(l10n.income),
-                  icon: const Icon(Icons.arrow_downward),
+                const SizedBox(height: AppSpacing.xl),
+                // Category Type Selector
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(l10n.categoryType, style: sectionLabelStyle),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                SegmentedButton<CategoryType>(
+                  segments: [
+                    ButtonSegment(
+                      value: CategoryType.expense,
+                      label: Text(l10n.expense),
+                      icon: const Icon(Icons.arrow_upward),
+                    ),
+                    ButtonSegment(
+                      value: CategoryType.income,
+                      label: Text(l10n.income),
+                      icon: const Icon(Icons.arrow_downward),
+                    ),
+                  ],
+                  selected: {selectedType.value},
+                  onSelectionChanged: (Set<CategoryType> selection) {
+                    selectedType.value = selection.first;
+                  },
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                AppInput(
+                  label: l10n.categoryName,
+                  controller: nameController,
+                  textInputAction: showBudgetAmount
+                      ? TextInputAction.next
+                      : TextInputAction.done,
+                  onFieldSubmitted: showBudgetAmount ? null : (_) => save(),
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (value) => (value == null || value.trim().isEmpty)
+                      ? l10n.categoryNameRequiredError
+                      : null,
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(l10n.categoryIcon, style: sectionLabelStyle),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: displayIconKeys.map((iconKey) {
+                    final isSelected = selectedIcon.value == iconKey;
+                    final iconData = CategoryIcons.getIcon(iconKey);
+                    final iconColor = Color(selectedColor.value);
+                    return GestureDetector(
+                      onTap: () => selectedIcon.value = iconKey,
+                      child: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? iconColor.withValues(alpha: 0.15)
+                              : theme.colorScheme.surfaceContainerHighest,
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusCard),
+                          border: isSelected
+                              ? Border.all(color: iconColor, width: 2)
+                              : Border.all(
+                                  color: theme.colorScheme.outlineVariant,
+                                  width: 1,
+                                ),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            iconData,
+                            size: AppSpacing.iconSize,
+                            color: isSelected
+                                ? iconColor
+                                : theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Center(
+                  child: TextButton.icon(
+                    icon: Icon(showAllIcons.value
+                        ? Icons.expand_less
+                        : Icons.expand_more),
+                    label: Text(showAllIcons.value
+                        ? l10n.collapse
+                        : l10n.showMoreIcons),
+                    onPressed: () => showAllIcons.value = !showAllIcons.value,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(l10n.categoryColor, style: sectionLabelStyle),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                Wrap(
+                  spacing: AppSpacing.md,
+                  runSpacing: AppSpacing.md,
+                  children: colors.map((color) {
+                    final isSelected = selectedColor.value == color;
+                    return GestureDetector(
+                      onTap: () => selectedColor.value = color,
+                      child: Container(
+                        width: 34,
+                        height: 34,
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: isSelected
+                              ? Border.all(color: Color(color), width: 2)
+                              : null,
+                        ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Color(color),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+                AppCard(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.xs,
+                  ),
+                  child: SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(l10n.createBudgetForCategory),
+                    subtitle: Text(l10n.budgetOnlyForExpense),
+                    value: createBudget.value &&
+                        selectedType.value == CategoryType.expense,
+                    onChanged: selectedType.value == CategoryType.expense &&
+                            category == null
+                        ? (value) => createBudget.value = value
+                        : null,
+                  ),
+                ),
+                if (createBudget.value &&
+                    selectedType.value == CategoryType.expense) ...[
+                  const SizedBox(height: AppSpacing.lg),
+                  DropdownButtonFormField<budget_model.PeriodType>(
+                    initialValue: budgetPeriod.value,
+                    decoration: InputDecoration(
+                      labelText: l10n.period,
+                    ),
+                    items: [
+                      DropdownMenuItem(
+                        value: budget_model.PeriodType.monthly,
+                        child: Text(l10n.monthly),
+                      ),
+                      DropdownMenuItem(
+                        value: budget_model.PeriodType.yearly,
+                        child: Text(l10n.yearly),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        budgetPeriod.value = value;
+                      }
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+                  AppInput(
+                    label: l10n.amount,
+                    controller: budgetAmountController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      VNDInputFormatter(),
+                    ],
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => save(),
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    validator: (value) =>
+                        (value == null || value.trim().isEmpty)
+                            ? l10n.limitRequiredError
+                            : null,
+                  ),
+                ],
+                const SizedBox(height: AppSpacing.lg),
+                AppButton(
+                  text: l10n.save,
+                  onPressed: save,
+                  isLoading: isLoading.value,
+                  fullWidth: true,
                 ),
               ],
-              selected: {selectedType.value},
-              onSelectionChanged: (Set<CategoryType> selection) {
-                selectedType.value = selection.first;
-              },
             ),
-            const SizedBox(height: AppSpacing.lg),
-            AppInput(
-              label: l10n.categoryName,
-              controller: nameController,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(l10n.categoryIcon, style: sectionLabelStyle),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: AppSpacing.sm,
-              runSpacing: AppSpacing.sm,
-              children: displayIconKeys.map((iconKey) {
-                final isSelected = selectedIcon.value == iconKey;
-                final iconData = CategoryIcons.getIcon(iconKey);
-                final iconColor = Color(selectedColor.value);
-                return GestureDetector(
-                  onTap: () => selectedIcon.value = iconKey,
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? iconColor.withValues(alpha: 0.15)
-                          : theme.colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
-                      border: isSelected
-                          ? Border.all(color: iconColor, width: 2)
-                          : Border.all(
-                              color: theme.colorScheme.outlineVariant,
-                              width: 1,
-                            ),
-                    ),
-                    child: Center(
-                      child: Icon(
-                        iconData,
-                        size: AppSpacing.iconSize,
-                        color: isSelected
-                            ? iconColor
-                            : theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Center(
-              child: TextButton.icon(
-                icon: Icon(
-                    showAllIcons.value ? Icons.expand_less : Icons.expand_more),
-                label: Text(
-                    showAllIcons.value ? l10n.collapse : l10n.showMoreIcons),
-                onPressed: () => showAllIcons.value = !showAllIcons.value,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(l10n.categoryColor, style: sectionLabelStyle),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: AppSpacing.md,
-              runSpacing: AppSpacing.md,
-              children: colors.map((color) {
-                final isSelected = selectedColor.value == color;
-                return GestureDetector(
-                  onTap: () => selectedColor.value = color,
-                  child: Container(
-                    width: 34,
-                    height: 34,
-                    padding: const EdgeInsets.all(3),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: isSelected
-                          ? Border.all(color: Color(color), width: 2)
-                          : null,
-                    ),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Color(color),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            AppCard(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.xs,
-              ),
-              child: SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Create budget for this category'),
-                subtitle: const Text('Only available for expense categories'),
-                value: createBudget.value &&
-                    selectedType.value == CategoryType.expense,
-                onChanged: selectedType.value == CategoryType.expense &&
-                        category == null
-                    ? (value) => createBudget.value = value
-                    : null,
-              ),
-            ),
-            if (createBudget.value &&
-                selectedType.value == CategoryType.expense) ...[
-              const SizedBox(height: AppSpacing.lg),
-              DropdownButtonFormField<budget_model.PeriodType>(
-                initialValue: budgetPeriod.value,
-                decoration: const InputDecoration(
-                  labelText: 'Budget period',
-                ),
-                items: const [
-                  DropdownMenuItem(
-                    value: budget_model.PeriodType.monthly,
-                    child: Text('Monthly'),
-                  ),
-                  DropdownMenuItem(
-                    value: budget_model.PeriodType.yearly,
-                    child: Text('Yearly'),
-                  ),
-                ],
-                onChanged: (value) {
-                  if (value != null) {
-                    budgetPeriod.value = value;
-                  }
-                },
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              AppInput(
-                label: 'Budget amount',
-                controller: budgetAmountController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  VNDInputFormatter(),
-                ],
-              ),
-            ],
-            const SizedBox(height: AppSpacing.lg),
-            AppButton(
-              text: l10n.save,
-              onPressed: save,
-              isLoading: isLoading.value,
-              fullWidth: true,
-            ),
-          ],
+          ),
         ),
       ),
     );

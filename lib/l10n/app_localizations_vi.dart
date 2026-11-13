@@ -995,13 +995,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String get welcomeBack => 'Chào mừng trở lại';
 
   @override
-  String get signInDesc => 'Đăng nhập để đồng bộ dữ liệu của bạn';
+  String get signInDesc => 'Đăng nhập để truy cập tài khoản và dữ liệu của bạn';
 
   @override
   String get signOutTitle => 'Đăng xuất';
 
   @override
-  String get signOutConfirm => 'Bạn có chắc muốn đăng xuất?\n\nDữ liệu cục bộ của bạn sẽ được giữ lại và đồng bộ khi bạn đăng nhập lại.';
+  String get signOutConfirm => 'Bạn có chắc muốn đăng xuất?\n\nDữ liệu của bạn vẫn nằm trong tài khoản và sẽ có sẵn khi bạn đăng nhập lại.';
 
   @override
   String signOutFailed(Object error) {
@@ -1033,6 +1033,12 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get ownerRole => 'Chủ sở hữu';
+
+  @override
+  String get adminRole => 'Quản trị viên';
+
+  @override
+  String get memberRole => 'Thành viên';
 
   @override
   String roleValue(Object role) {
@@ -1418,7 +1424,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get failedToSendResetEmail => 'Gửi email đặt lại mật khẩu thất bại. Vui lòng thử lại.';
 
   @override
-  String get signInToSyncAcrossDevices => 'Đăng nhập để đồng bộ dữ liệu trên nhiều thiết bị';
+  String get signInToSyncAcrossDevices => 'Đăng nhập để truy cập dữ liệu của bạn trên mọi thiết bị';
 
   @override
   String get enterYourPassword => 'Nhập mật khẩu của bạn';
@@ -1472,7 +1478,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get createAccount => 'Tạo tài khoản';
 
   @override
-  String get createAccountToSync => 'Tạo tài khoản để đồng bộ trên nhiều thiết bị';
+  String get createAccountToSync => 'Tạo tài khoản để truy cập dữ liệu của bạn trên mọi thiết bị';
 
   @override
   String get verifyEmailBeforeSignInHint => 'Bạn cần xác minh email trước khi đăng nhập';
@@ -1933,4 +1939,56 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get deleteAccountSharedWorkspaces => 'Hãy rời các không gian chung này trước khi xóa tài khoản.';
+
+  @override
+  String get createWorkspaceTitle => 'Tạo workspace';
+
+  @override
+  String get createWorkspaceDescription => 'Workspace lưu giao dịch, ngân sách và danh mục của bạn và những người bạn chia sẻ.';
+
+  @override
+  String get workspaceNameRequired => 'Nhập tên workspace';
+
+  @override
+  String get createWorkspaceAction => 'Tạo workspace';
+
+  @override
+  String get createBudgetForCategory => 'Tạo ngân sách cho danh mục này';
+
+  @override
+  String get budgetOnlyForExpense => 'Chỉ danh mục chi tiêu mới có ngân sách';
+
+  @override
+  String get noCategoriesInFilter => 'Không có danh mục trong bộ lọc này';
+
+  @override
+  String get noCategoriesInFilterMessage => 'Hãy thử bộ lọc khác để xem các danh mục còn lại.';
+
+  @override
+  String get budgetNotFound => 'Không tìm thấy ngân sách';
+
+  @override
+  String get workspaceNameLabel => 'Tên workspace';
+
+  @override
+  String get discardChangesTitle => 'Bỏ thay đổi?';
+
+  @override
+  String get discardChangesMessage => 'Bạn có thay đổi chưa lưu. Nếu rời đi bây giờ, thay đổi sẽ bị mất.';
+
+  @override
+  String get discard => 'Bỏ';
+
+  @override
+  String get keepEditing => 'Tiếp tục chỉnh sửa';
+
+  @override
+  String quickInputDiscardPending(int count) {
+    return 'Bỏ $count mục đang chờ?';
+  }
+
+  @override
+  String recurringNextOccurrence(String date) {
+    return 'Tiếp theo: $date';
+  }
 }

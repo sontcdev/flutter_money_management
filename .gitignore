@@ -132,3 +132,15 @@ supabase/.temp/
 .env
 .env.*
 !.env.example
+
+# Documentation, except README and AI agent instructions
+/docs/**
+!/docs/**/
+*.md
+!README.md
+!AGENTS.md
+!CLAUDE.md
+!GEMINI.md
+!/.opencode/**/*.md
+!/.codex/**/*.md
+!/.claude/**/*.md

@@ -15,6 +15,7 @@ import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/theme/app_surface_tokens.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_segmented_filter.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
@@ -284,6 +285,7 @@ class ReportsScreen extends HookConsumerWidget {
               transactionsAsync.when(
                 data: (transactions) {
                   final monthlyData = _buildLastSixMonthsExpense(
+                    context,
                     transactions,
                     l10n.localeName,
                   );
@@ -1056,6 +1058,7 @@ class ReportsScreen extends HookConsumerWidget {
   }
 
   List<ChartData> _buildLastSixMonthsExpense(
+    BuildContext context,
     List<Transaction> transactions,
     String locale,
   ) {
@@ -1078,9 +1081,31 @@ class ReportsScreen extends HookConsumerWidget {
         value: total,
         color: isCurrentMonth
             ? AppColors.primary
-            : AppColors.primary.withValues(alpha: 0.35),
+            : historicalBarColor(
+                AppColors.primary,
+                Theme.of(context).cardTheme.color ??
+                    Theme.of(context).colorScheme.surface,
+                dark: Theme.of(context).brightness == Brightness.dark,
+              ),
       );
     }).toList();
+  }
+
+  /// Muted historical bar: 35% tint composited on [surface], then pushed to
+  /// at least 3:1 (graphical objects) against that surface.
+  @visibleForTesting
+  static Color historicalBarColor(
+    Color base,
+    Color surface, {
+    required bool dark,
+  }) {
+    final muted = Color.alphaBlend(base.withValues(alpha: 0.35), surface);
+    return AppSurfaceTokens.ensureContrast(
+      muted,
+      surface,
+      minRatio: 3,
+      toward: dark ? Colors.white : Colors.black,
+    );
   }
 }
 

@@ -20,18 +20,56 @@ import 'package:flutter_money_management/src/features/budgets/services/budget_se
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/theme/app_surface_tokens.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_input.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
 import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
 import 'package:flutter_money_management/src/ui/widgets/transaction_type_toggle.dart';
+import 'package:flutter_money_management/src/ui/widgets/unsaved_changes_guard.dart';
 import 'package:flutter_money_management/src/utils/app_logger.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/date_time_utils.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 import 'package:flutter_money_management/src/utils/vnd_input_formatter.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
+
+/// Normalised values of the loaded transaction, used to detect real edits.
+Color _categoryChipForeground(BuildContext context, Color categoryColor) {
+  final theme = Theme.of(context);
+  final tint = categoryColor.withValues(alpha: 0.2);
+  return AppSurfaceTokens.ensureContrastOnAll(
+    categoryColor,
+    [
+      Color.alphaBlend(tint, theme.colorScheme.surface),
+      Color.alphaBlend(tint, theme.scaffoldBackgroundColor),
+    ],
+    toward: theme.colorScheme.onSurface,
+  );
+}
+
+class _InitialValues {
+  const _InitialValues({
+    required this.amount,
+    required this.type,
+    required this.categoryId,
+    required this.walletId,
+    required this.toWalletId,
+    required this.dateTime,
+    required this.note,
+    required this.hasReceipt,
+  });
+
+  final num? amount;
+  final model.TransactionType type;
+  final String? categoryId;
+  final String? walletId;
+  final String? toWalletId;
+  final DateTime dateTime;
+  final String note;
+  final bool hasReceipt;
+}
 
 class EditTransactionScreen extends HookConsumerWidget {
   final String transactionId;
@@ -56,6 +94,11 @@ class EditTransactionScreen extends HookConsumerWidget {
     final shouldRemoveReceipt = useState(false);
     final isLoading = useState(false);
     final allowOverdraft = useState(false);
+    final initial = useState<_InitialValues?>(null);
+    final formKey = useMemoized(() => GlobalKey<FormState>());
+    final guardController = useMemoized(() => UnsavedChangesController());
+    useListenable(amountController);
+    useListenable(noteController);
     final canManageTransactionAsync =
         ref.watch(transactionCanManageProvider(transactionId));
     final receiptImageUrlAsync =
@@ -84,26 +127,27 @@ class EditTransactionScreen extends HookConsumerWidget {
 
         // Resolve the wallet ids into full wallets for the picker fields.
         final wallets = await ref.read(walletsProvider.future);
-        selectedWallet.value = wallets
-            .where((w) => w.id == transaction.walletId)
-            .firstOrNull;
-        selectedToWallet.value = wallets
-            .where((w) => w.id == transaction.toWalletId)
-            .firstOrNull;
+        selectedWallet.value =
+            wallets.where((w) => w.id == transaction.walletId).firstOrNull;
+        selectedToWallet.value =
+            wallets.where((w) => w.id == transaction.toWalletId).firstOrNull;
+        initial.value = _InitialValues(
+          amount: CurrencyFormatter.parseVND(amountController.text),
+          type: transaction.type,
+          categoryId: transaction.categoryId,
+          walletId: selectedWallet.value?.id,
+          toWalletId: selectedToWallet.value?.id,
+          dateTime: transaction.dateTime,
+          note: (transaction.note ?? '').trim(),
+          hasReceipt: attachment != null,
+        );
       });
       return null;
     }, [transactionId, attachmentRepository, repository]);
 
     Future<void> handleSubmit() async {
       if (isLoading.value) return;
-      if (amountController.text.isEmpty) {
-        showAppSnackBar(
-          context,
-          l10n.amountRequiredError,
-          type: AppSnackBarType.error,
-        );
-        return;
-      }
+      if (!(formKey.currentState?.validate() ?? true)) return;
 
       final isTransfer = selectedType.value == model.TransactionType.transfer;
 
@@ -216,6 +260,7 @@ class EditTransactionScreen extends HookConsumerWidget {
                 ? AppSnackBarType.success
                 : AppSnackBarType.info,
           );
+          guardController.markSaved();
           Navigator.of(context).pop(true);
         }
       } on BudgetExceededException catch (e) {
@@ -295,440 +340,487 @@ class EditTransactionScreen extends HookConsumerWidget {
         break;
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.editTransaction),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.screenPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Type Toggle - pill-shaped segmented control, matching the
-            // mockup's "Chi tiêu / Thu nhập" switch.
-            TransactionTypeToggle(
-              value: selectedType.value,
-              expenseLabel: l10n.expense,
-              incomeLabel: l10n.income,
-              transferLabel: l10n.transfer,
-              onChanged: (type) {
-                selectedType.value = type;
-                selectedCategoryId.value = null;
-                if (type != model.TransactionType.transfer) {
-                  selectedToWallet.value = null;
-                }
-              },
-            ),
-            const SizedBox(height: AppSpacing.sectionGap),
+    final start = initial.value;
+    final isDirty = start != null &&
+        (CurrencyFormatter.parseVND(amountController.text) != start.amount ||
+            selectedType.value != start.type ||
+            selectedCategoryId.value != start.categoryId ||
+            selectedWallet.value?.id != start.walletId ||
+            selectedToWallet.value?.id != start.toWalletId ||
+            !selectedDate.value.isAtSameMomentAs(start.dateTime) ||
+            noteController.text.trim() != start.note ||
+            localReceiptPath.value != null ||
+            shouldRemoveReceipt.value);
+    final detailsExpanded = start != null &&
+        (start.note.isNotEmpty ||
+            start.hasReceipt ||
+            localReceiptPath.value != null);
 
-            // Amount Input - Priority 1 (large centered display, matches design)
-            Column(
+    return UnsavedChangesGuard(
+      isDirty: isDirty,
+      controller: guardController,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.editTransaction),
+          centerTitle: true,
+        ),
+        body: Form(
+          key: formKey,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.screenPadding),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  l10n.amount,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.6),
-                        fontWeight: FontWeight.w600,
-                      ),
+                // Type Toggle - pill-shaped segmented control, matching the
+                // mockup's "Chi tiêu / Thu nhập" switch.
+                TransactionTypeToggle(
+                  value: selectedType.value,
+                  expenseLabel: l10n.expense,
+                  incomeLabel: l10n.income,
+                  transferLabel: l10n.transfer,
+                  onChanged: (type) {
+                    selectedType.value = type;
+                    selectedCategoryId.value = null;
+                    if (type != model.TransactionType.transfer) {
+                      selectedToWallet.value = null;
+                    }
+                  },
                 ),
-                const SizedBox(height: AppSpacing.xs),
-                IntrinsicWidth(
-                  child: TextField(
-                    controller: amountController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      VNDInputFormatter(),
-                    ],
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: amountColor,
-                        ),
-                    decoration: InputDecoration(
-                      hintText: '0',
-                      filled: false,
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      isCollapsed: true,
-                      contentPadding: EdgeInsets.zero,
-                      suffixText: CurrencyFormatter.getCurrencySymbol('VND'),
-                      suffixStyle:
-                          Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: amountColor,
-                                fontWeight: FontWeight.w700,
-                              ),
+                const SizedBox(height: AppSpacing.sectionGap),
+
+                // Amount Input - Priority 1 (large centered display, matches design)
+                // Amount Input - Priority 1
+                AppInput(
+                  label: l10n.amount,
+                  hint: '0',
+                  controller: amountController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    VNDInputFormatter(),
+                  ],
+                  textInputAction: TextInputAction.done,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  validator: (value) {
+                    if (value == null ||
+                        value.isEmpty ||
+                        CurrencyFormatter.parseVND(value) == null) {
+                      return l10n.amountRequiredError;
+                    }
+                    return null;
+                  },
+                  onFieldSubmitted: (_) => handleSubmit(),
+                  suffixIcon: Padding(
+                    padding: const EdgeInsets.only(right: AppSpacing.md),
+                    child: Center(
+                      widthFactor: 1,
+                      child: Text(
+                        CurrencyFormatter.getCurrencySymbol('VND'),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: amountColor,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                      ),
                     ),
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.lg),
+                const SizedBox(height: AppSpacing.lg),
 
-            // Wallet Selector - required for every transaction.
-            WalletField(
-              label: selectedType.value == model.TransactionType.transfer
-                  ? l10n.fromWallet
-                  : l10n.selectWallet,
-              wallet: selectedWallet.value,
-              onTap: () async {
-                final picked = await showWalletPicker(
-                  context,
-                  title: selectedType.value == model.TransactionType.transfer
+                // Wallet Selector - required for every transaction.
+                WalletField(
+                  label: selectedType.value == model.TransactionType.transfer
                       ? l10n.fromWallet
                       : l10n.selectWallet,
-                  selectedWalletId: selectedWallet.value?.id,
-                  excludeWalletId: selectedToWallet.value?.id,
-                );
-                if (picked != null) {
-                  selectedWallet.value = picked;
-                }
-              },
-            ),
-            if (selectedType.value == model.TransactionType.transfer) ...[
-              const SizedBox(height: AppSpacing.lg),
-              WalletField(
-                label: l10n.toWallet,
-                wallet: selectedToWallet.value,
-                onTap: () async {
-                  final picked = await showWalletPicker(
-                    context,
-                    title: l10n.toWallet,
-                    selectedWalletId: selectedToWallet.value?.id,
-                    excludeWalletId: selectedWallet.value?.id,
-                  );
-                  if (picked != null) {
-                    selectedToWallet.value = picked;
-                  }
-                },
-              ),
-            ],
-            const SizedBox(height: AppSpacing.lg),
+                  wallet: selectedWallet.value,
+                  onTap: () async {
+                    final picked = await showWalletPicker(
+                      context,
+                      title:
+                          selectedType.value == model.TransactionType.transfer
+                              ? l10n.fromWallet
+                              : l10n.selectWallet,
+                      selectedWalletId: selectedWallet.value?.id,
+                      excludeWalletId: selectedToWallet.value?.id,
+                    );
+                    if (picked != null) {
+                      selectedWallet.value = picked;
+                    }
+                  },
+                ),
+                if (selectedType.value == model.TransactionType.transfer) ...[
+                  const SizedBox(height: AppSpacing.lg),
+                  WalletField(
+                    label: l10n.toWallet,
+                    wallet: selectedToWallet.value,
+                    onTap: () async {
+                      final picked = await showWalletPicker(
+                        context,
+                        title: l10n.toWallet,
+                        selectedWalletId: selectedToWallet.value?.id,
+                        excludeWalletId: selectedWallet.value?.id,
+                      );
+                      if (picked != null) {
+                        selectedToWallet.value = picked;
+                      }
+                    },
+                  ),
+                ],
+                const SizedBox(height: AppSpacing.lg),
 
-            // Category Selector - Priority 2. Transfers carry no category.
-            if (selectedType.value != model.TransactionType.transfer)
-              categoriesAsync.when(
-              data: (categories) {
-                final filteredCategories = categories.where((c) {
-                  if (selectedType.value == model.TransactionType.expense) {
-                    return c.type == CategoryType.expense;
-                  } else {
-                    return c.type == CategoryType.income;
-                  }
-                }).toList();
+                // Category Selector - Priority 2. Transfers carry no category.
+                if (selectedType.value != model.TransactionType.transfer)
+                  categoriesAsync.when(
+                    data: (categories) {
+                      final filteredCategories = categories.where((c) {
+                        if (selectedType.value ==
+                            model.TransactionType.expense) {
+                          return c.type == CategoryType.expense;
+                        } else {
+                          return c.type == CategoryType.income;
+                        }
+                      }).toList();
 
-                return Column(
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  l10n.category,
+                                  style: Theme.of(context).textTheme.labelLarge,
+                                ),
+                              ),
+                              TextButton.icon(
+                                icon: const Icon(Icons.add, size: 18),
+                                label: Text(l10n.add),
+                                onPressed: () async {
+                                  final result = await Navigator.pushNamed(
+                                    context,
+                                    '/category-edit',
+                                    arguments: {
+                                      'initialType': selectedType.value ==
+                                              model.TransactionType.expense
+                                          ? CategoryType.expense
+                                          : CategoryType.income,
+                                      'workspaceId':
+                                          ref.read(activeWorkspaceIdProvider),
+                                    },
+                                  );
+                                  if (result == true) {
+                                    ref.invalidate(categoriesProvider);
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          if (filteredCategories.isEmpty)
+                            Text(l10n.noCategories)
+                          else
+                            Wrap(
+                              spacing: AppSpacing.sm,
+                              runSpacing: AppSpacing.sm,
+                              children: filteredCategories.map((category) {
+                                final isSelected =
+                                    selectedCategoryId.value == category.id;
+                                final categoryColor =
+                                    getCategoryColor(category.colorValue);
+                                final chipForeground = _categoryChipForeground(
+                                    context, categoryColor);
+                                return GestureDetector(
+                                  onTap: () {
+                                    selectedCategoryId.value = category.id;
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: AppSpacing.md,
+                                      vertical: AppSpacing.sm,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          categoryColor.withValues(alpha: 0.2),
+                                      border: Border.all(
+                                        color: categoryColor,
+                                        width: isSelected ? 3 : 1.5,
+                                      ),
+                                      borderRadius: BorderRadius.circular(
+                                          AppSpacing.radiusXl),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        CategoryIconWidget(
+                                          iconName: category.iconName,
+                                          size: 18,
+                                          color: chipForeground,
+                                        ),
+                                        const SizedBox(width: AppSpacing.xs),
+                                        Text(
+                                          category.name,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.copyWith(
+                                                fontWeight: isSelected
+                                                    ? FontWeight.w700
+                                                    : FontWeight.w600,
+                                                color: chipForeground,
+                                              ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                        ],
+                      );
+                    },
+                    loading: () => const CircularProgressIndicator(),
+                    error: (err, stack) => InlineLoadErrorState(
+                      onRetry: () => ref.invalidate(categoriesProvider),
+                    ),
+                  ),
+                if (selectedType.value != model.TransactionType.transfer)
+                  const SizedBox(height: AppSpacing.lg),
+
+                // Date Picker - Priority 3
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            l10n.category,
-                            style: Theme.of(context).textTheme.labelLarge,
-                          ),
-                        ),
-                        TextButton.icon(
-                          icon: const Icon(Icons.add, size: 18),
-                          label: Text(l10n.add),
-                          onPressed: () async {
-                            final result = await Navigator.pushNamed(
-                              context,
-                              '/category-edit',
-                              arguments: {
-                                'initialType': selectedType.value ==
-                                        model.TransactionType.expense
-                                    ? CategoryType.expense
-                                    : CategoryType.income,
-                                'workspaceId':
-                                    ref.read(activeWorkspaceIdProvider),
-                              },
-                            );
-                            if (result == true) {
-                              ref.invalidate(categoriesProvider);
-                            }
-                          },
-                        ),
-                      ],
+                    Text(
+                      l10n.date,
+                      style: Theme.of(context).textTheme.labelLarge,
                     ),
                     const SizedBox(height: AppSpacing.sm),
-                    if (filteredCategories.isEmpty)
-                      Text(l10n.noCategories)
-                    else
-                      Wrap(
-                        spacing: AppSpacing.sm,
-                        runSpacing: AppSpacing.sm,
-                        children: filteredCategories.map((category) {
-                          final isSelected =
-                              selectedCategoryId.value == category.id;
-                          final categoryColor =
-                              getCategoryColor(category.colorValue);
-                          return GestureDetector(
-                            onTap: () {
-                              selectedCategoryId.value = category.id;
+                    Row(
+                      children: [
+                        IconButton(
+                          tooltip: l10n.previousDay,
+                          icon: const Icon(Icons.chevron_left),
+                          onPressed: () {
+                            selectedDate.value = selectedDate.value
+                                .subtract(const Duration(days: 1));
+                          },
+                        ),
+                        Expanded(
+                          child: InkWell(
+                            onTap: () async {
+                              final now = DateTime.now();
+                              final picked = await showDatePicker(
+                                context: context,
+                                initialDate: selectedDate.value.isAfter(now)
+                                    ? now
+                                    : selectedDate.value,
+                                firstDate: DateTime(2000),
+                                lastDate: now,
+                              );
+                              if (picked != null) {
+                                selectedDate.value =
+                                    keepTimeOfDay(picked, selectedDate.value);
+                              }
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.md,
-                                vertical: AppSpacing.sm,
+                                horizontal: AppSpacing.lg,
+                                vertical: AppSpacing.md,
                               ),
                               decoration: BoxDecoration(
-                                color: categoryColor.withValues(alpha: 0.2),
-                                border: Border.all(
-                                  color: categoryColor,
-                                  width: isSelected ? 3 : 1.5,
-                                ),
-                                borderRadius:
-                                    BorderRadius.circular(AppSpacing.radiusXl),
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .surfaceContainerHighest,
+                                borderRadius: BorderRadius.circular(
+                                    AppSpacing.radiusCard),
                               ),
                               child: Row(
-                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  CategoryIconWidget(
-                                    iconName: category.iconName,
+                                  Icon(
+                                    Icons.calendar_today,
                                     size: 18,
-                                    color: categoryColor,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.6),
                                   ),
-                                  const SizedBox(width: AppSpacing.xs),
+                                  const SizedBox(width: AppSpacing.sm),
                                   Text(
-                                    category.name,
+                                    formatLocalizedDate(
+                                        context, selectedDate.value),
                                     style: Theme.of(context)
                                         .textTheme
-                                        .bodyMedium
-                                        ?.copyWith(
-                                          fontWeight: isSelected
-                                              ? FontWeight.w700
-                                              : FontWeight.w600,
-                                          color: categoryColor,
-                                        ),
+                                        .bodyLarge
+                                        ?.copyWith(fontWeight: FontWeight.w600),
                                   ),
                                 ],
                               ),
                             ),
-                          );
-                        }).toList(),
-                      ),
-                  ],
-                );
-              },
-                loading: () => const CircularProgressIndicator(),
-                error: (err, stack) => InlineLoadErrorState(
-                  onRetry: () => ref.invalidate(categoriesProvider),
-                ),
-              ),
-            if (selectedType.value != model.TransactionType.transfer)
-              const SizedBox(height: AppSpacing.lg),
-
-            // Date Picker - Priority 3
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.date,
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Row(
-                  children: [
-                    IconButton(
-                      tooltip: l10n.previousDay,
-                      icon: const Icon(Icons.chevron_left),
-                      onPressed: () {
-                        selectedDate.value = selectedDate.value
-                            .subtract(const Duration(days: 1));
-                      },
-                    ),
-                    Expanded(
-                      child: InkWell(
-                        onTap: () async {
-                          final now = DateTime.now();
-                          final picked = await showDatePicker(
-                            context: context,
-                            initialDate: selectedDate.value.isAfter(now)
-                                ? now
-                                : selectedDate.value,
-                            firstDate: DateTime(2000),
-                            lastDate: now,
-                          );
-                          if (picked != null) {
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: l10n.nextDay,
+                          icon: const Icon(Icons.chevron_right),
+                          onPressed: () {
                             selectedDate.value =
-                                keepTimeOfDay(picked, selectedDate.value);
-                          }
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.lg,
-                            vertical: AppSpacing.md,
+                                selectedDate.value.add(const Duration(days: 1));
+                          },
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.lg),
+
+                // Note and Receipt - Optional Details Section
+                ExpansionTile(
+                  key: ValueKey('details-$detailsExpanded'),
+                  title: Text(
+                    '${l10n.note} & ${l10n.receipt}',
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  subtitle: Text(
+                    l10n.optional,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  initiallyExpanded: detailsExpanded,
+                  children: [
+                    Padding(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          AppInput(
+                            label: l10n.note,
+                            hint: l10n.note,
+                            controller: noteController,
+                            maxLines: 2,
                           ),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerHighest,
-                            borderRadius:
-                                BorderRadius.circular(AppSpacing.radiusCard),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          const SizedBox(height: AppSpacing.lg),
+                          // Receipt Attachment - Priority 5
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(
-                                Icons.calendar_today,
-                                size: 18,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 0.6),
-                              ),
-                              const SizedBox(width: AppSpacing.sm),
                               Text(
-                                formatLocalizedDate(
-                                    context, selectedDate.value),
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge
-                                    ?.copyWith(fontWeight: FontWeight.w600),
+                                l10n.receipt,
+                                style: Theme.of(context).textTheme.labelLarge,
+                              ),
+                              const SizedBox(height: AppSpacing.sm),
+                              if (localReceiptPath.value != null)
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(
+                                      AppSpacing.radiusCard),
+                                  child: Image.file(
+                                    File(localReceiptPath.value!),
+                                    height: 180,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
+                              else if (!shouldRemoveReceipt.value &&
+                                  existingReceiptAttachment.value != null)
+                                receiptImageUrlAsync.when(
+                                  data: (imageUrl) {
+                                    if (imageUrl == null) {
+                                      return Text(l10n.attachReceipt);
+                                    }
+                                    return ClipRRect(
+                                      borderRadius: BorderRadius.circular(
+                                          AppSpacing.radiusCard),
+                                      child: Image.network(
+                                        imageUrl,
+                                        height: 180,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    );
+                                  },
+                                  loading: () => const Center(
+                                      child: CircularProgressIndicator()),
+                                  error: (error, _) => InlineLoadErrorState(
+                                    onRetry: () => ref.invalidate(
+                                      transactionReceiptImageUrlProvider(
+                                          transactionId),
+                                    ),
+                                  ),
+                                )
+                              else
+                                Text(
+                                  shouldRemoveReceipt.value
+                                      ? l10n.receiptWillBeRemovedOnSave
+                                      : l10n.attachReceipt,
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              const SizedBox(height: AppSpacing.sm),
+                              canManageTransactionAsync.when(
+                                data: (canManageTransaction) {
+                                  if (!canManageTransaction) {
+                                    return Text(
+                                      l10n.onlyCreatorCanChangeReceipt,
+                                      style:
+                                          Theme.of(context).textTheme.bodySmall,
+                                    );
+                                  }
+
+                                  return Row(
+                                    children: [
+                                      IconButton(
+                                        tooltip: l10n.attachReceipt,
+                                        icon: const Icon(Icons.camera_alt),
+                                        onPressed: pickReceipt,
+                                      ),
+                                      if (localReceiptPath.value != null ||
+                                          existingReceiptAttachment.value !=
+                                              null)
+                                        IconButton(
+                                          tooltip: l10n.removeReceipt,
+                                          icon: const Icon(Icons.clear),
+                                          onPressed: () {
+                                            localReceiptPath.value = null;
+                                            shouldRemoveReceipt.value =
+                                                existingReceiptAttachment
+                                                        .value !=
+                                                    null;
+                                            AppLogger.info(
+                                              'Receipt removed from transaction edit',
+                                              name: 'MM.UI',
+                                            );
+                                          },
+                                        ),
+                                    ],
+                                  );
+                                },
+                                loading: () => const SectionSkeleton(
+                                    height: 48, lineCount: 1),
+                                error: (_, __) => InlineLoadErrorState(
+                                  onRetry: () => ref.invalidate(
+                                    transactionCanManageProvider(transactionId),
+                                  ),
+                                ),
                               ),
                             ],
                           ),
-                        ),
+                        ],
                       ),
-                    ),
-                    IconButton(
-                      tooltip: l10n.nextDay,
-                      icon: const Icon(Icons.chevron_right),
-                      onPressed: () {
-                        selectedDate.value =
-                            selectedDate.value.add(const Duration(days: 1));
-                      },
                     ),
                   ],
                 ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.lg),
+                const SizedBox(height: AppSpacing.sectionGap),
 
-            // Note Input - Priority 4
-            AppInput(
-              label: l10n.note,
-              hint: l10n.note,
-              controller: noteController,
-              maxLines: 2,
-            ),
-            const SizedBox(height: AppSpacing.lg),
-
-            // Receipt Attachment - Priority 5
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.receipt,
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                if (localReceiptPath.value != null)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
-                    child: Image.file(
-                      File(localReceiptPath.value!),
-                      height: 180,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                  )
-                else if (!shouldRemoveReceipt.value &&
-                    existingReceiptAttachment.value != null)
-                  receiptImageUrlAsync.when(
-                    data: (imageUrl) {
-                      if (imageUrl == null) {
-                        return Text(l10n.attachReceipt);
-                      }
-                      return ClipRRect(
-                        borderRadius:
-                            BorderRadius.circular(AppSpacing.radiusCard),
-                        child: Image.network(
-                          imageUrl,
-                          height: 180,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                      );
-                    },
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (error, _) => InlineLoadErrorState(
-                      onRetry: () => ref.invalidate(
-                        transactionReceiptImageUrlProvider(transactionId),
-                      ),
-                    ),
-                  )
-                else
-                  Text(
-                    shouldRemoveReceipt.value
-                        ? l10n.receiptWillBeRemovedOnSave
-                        : l10n.attachReceipt,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                const SizedBox(height: AppSpacing.sm),
-                canManageTransactionAsync.when(
-                  data: (canManageTransaction) {
-                    if (!canManageTransaction) {
-                      return Text(
-                        l10n.onlyCreatorCanChangeReceipt,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      );
-                    }
-
-                    return Row(
-                      children: [
-                        IconButton(
-                          tooltip: l10n.attachReceipt,
-                          icon: const Icon(Icons.camera_alt),
-                          onPressed: pickReceipt,
-                        ),
-                        if (localReceiptPath.value != null ||
-                            existingReceiptAttachment.value != null)
-                          IconButton(
-                            tooltip: l10n.removeReceipt,
-                            icon: const Icon(Icons.clear),
-                            onPressed: () {
-                              localReceiptPath.value = null;
-                              shouldRemoveReceipt.value =
-                                  existingReceiptAttachment.value != null;
-                              AppLogger.info(
-                                'Receipt removed from transaction edit',
-                                name: 'MM.UI',
-                              );
-                            },
-                          ),
-                      ],
-                    );
-                  },
-                  loading: () =>
-                      const SectionSkeleton(height: 48, lineCount: 1),
-                  error: (_, __) => InlineLoadErrorState(
-                    onRetry: () => ref.invalidate(
-                      transactionCanManageProvider(transactionId),
-                    ),
+                // Submit Button
+                SizedBox(
+                  width: double.infinity,
+                  child: AppButton(
+                    text: l10n.save,
+                    onPressed: handleSubmit,
+                    isLoading: isLoading.value,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.sectionGap),
-
-            // Submit Button
-            SizedBox(
-              width: double.infinity,
-              child: AppButton(
-                text: l10n.save,
-                onPressed: handleSubmit,
-                isLoading: isLoading.value,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

@@ -4,6 +4,8 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import 'package:flutter_money_management/l10n/app_localizations.dart';
+import 'package:flutter_money_management/src/features/auth/presentation/auth_error_messages.dart';
+import 'package:flutter_money_management/src/features/auth/presentation/widgets/auth_layout.dart';
 import 'package:flutter_money_management/src/features/auth/providers/auth_providers.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
@@ -32,8 +34,11 @@ class PasswordResetCodeScreen extends HookConsumerWidget {
           email: email,
           code: codeController.text,
         );
-      } catch (_) {
-        if (context.mounted) errorMessage.value = l10n.resetCodeFailed;
+      } catch (e) {
+        if (context.mounted) {
+          errorMessage.value =
+              authErrorMessage(l10n, AuthOperation.verifyReset, e);
+        }
       } finally {
         if (context.mounted) isLoading.value = false;
       }
@@ -52,8 +57,11 @@ class PasswordResetCodeScreen extends HookConsumerWidget {
           l10n.passwordResetEmailSent,
           type: AppSnackBarType.success,
         );
-      } catch (_) {
-        if (context.mounted) errorMessage.value = l10n.failedToSendResetEmail;
+      } catch (e) {
+        if (context.mounted) {
+          errorMessage.value =
+              authErrorMessage(l10n, AuthOperation.sendReset, e);
+        }
       } finally {
         if (context.mounted) isLoading.value = false;
       }
@@ -61,55 +69,52 @@ class PasswordResetCodeScreen extends HookConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.resetCodeTitle)),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Form(
-            key: formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(l10n.resetCodeInstructions),
-                const SizedBox(height: AppSpacing.xl),
-                TextFormField(
-                  controller: codeController,
-                  decoration: InputDecoration(labelText: l10n.resetCodeLabel),
-                  keyboardType: TextInputType.number,
-                  autofillHints: const [AutofillHints.oneTimeCode],
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  enabled: !isLoading.value,
-                  textInputAction: TextInputAction.done,
-                  validator: (value) => value == null || value.length < 6
-                      ? l10n.resetCodeInvalid
-                      : null,
-                  onFieldSubmitted: (_) => verifyCode(),
-                ),
-                if (errorMessage.value != null) ...[
-                  const SizedBox(height: AppSpacing.md),
-                  Semantics(
-                    liveRegion: true,
-                    child: Text(
-                      errorMessage.value!,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
+      body: AuthLayout(
+        child: Form(
+          key: formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(l10n.resetCodeInstructions),
+              const SizedBox(height: AppSpacing.xl),
+              TextFormField(
+                controller: codeController,
+                decoration: InputDecoration(labelText: l10n.resetCodeLabel),
+                keyboardType: TextInputType.number,
+                autofillHints: const [AutofillHints.oneTimeCode],
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                enabled: !isLoading.value,
+                textInputAction: TextInputAction.done,
+                validator: (value) => value == null || value.length < 6
+                    ? l10n.resetCodeInvalid
+                    : null,
+                onFieldSubmitted: (_) => verifyCode(),
+              ),
+              if (errorMessage.value != null) ...[
+                const SizedBox(height: AppSpacing.md),
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    errorMessage.value!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
                     ),
                   ),
-                ],
-                const SizedBox(height: AppSpacing.xl),
-                AppButton.prominent(
-                  text: l10n.resetCodeVerify,
-                  isLoading: isLoading.value,
-                  fullWidth: true,
-                  onPressed: isLoading.value ? null : verifyCode,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                TextButton(
-                  onPressed: isLoading.value ? null : resendCode,
-                  child: Text(l10n.resetCodeResend),
                 ),
               ],
-            ),
+              const SizedBox(height: AppSpacing.xl),
+              AppButton.prominent(
+                text: l10n.resetCodeVerify,
+                isLoading: isLoading.value,
+                fullWidth: true,
+                onPressed: isLoading.value ? null : verifyCode,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextButton(
+                onPressed: isLoading.value ? null : resendCode,
+                child: Text(l10n.resetCodeResend),
+              ),
+            ],
           ),
         ),
       ),

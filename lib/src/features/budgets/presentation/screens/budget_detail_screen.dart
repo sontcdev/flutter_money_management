@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/budgets/models/budget.dart';
@@ -8,23 +9,66 @@ import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
+import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 
-class BudgetDetailScreen extends ConsumerWidget {
+class BudgetDetailScreen extends HookConsumerWidget {
   final String budgetId;
 
   const BudgetDetailScreen({super.key, required this.budgetId});
+
+  static const _notFoundPrefix = 'Budget not found:';
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final budgetRepo = ref.read(budgetRepositoryProvider);
     final theme = Theme.of(context);
+    final retryTick = useState(0);
+    final budgetFuture = useMemoized(
+      () => budgetRepo.getBudgetById(budgetId),
+      [budgetId, retryTick.value],
+    );
 
-    return FutureBuilder(
-      future: budgetRepo.getBudgetById(budgetId),
+    return FutureBuilder<Budget>(
+      future: budgetFuture,
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          final errorText = snapshot.error.toString();
+          final isNotFound = errorText.startsWith(_notFoundPrefix) ||
+              errorText.startsWith('Exception: $_notFoundPrefix');
+          return Scaffold(
+            appBar: AppBar(title: Text(l10n.budget)),
+            body: isNotFound
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.xl),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            l10n.budgetNotFound,
+                            style: theme.textTheme.titleMedium,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
+                          OutlinedButton(
+                            onPressed: () => Navigator.of(context).maybePop(),
+                            child: Text(l10n.back),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : LoadErrorState(
+                    title: l10n.dataLoadFailed,
+                    message: l10n.dataLoadFailedHint,
+                    retryLabel: l10n.retry,
+                    onRetry: () => retryTick.value++,
+                  ),
+          );
+        }
         if (!snapshot.hasData) {
           return Scaffold(
             appBar: AppBar(title: Text(l10n.budget)),

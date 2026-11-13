@@ -28,7 +28,7 @@ jobs:
       run: flutter gen-l10n
 
     - name: Run build_runner
-      run: flutter pub run build_runner build --delete-conflicting-outputs
+      run: dart run build_runner build --delete-conflicting-outputs
 
     - name: Analyze code
       run: flutter analyze
@@ -42,12 +42,10 @@ jobs:
         files: coverage/lcov.info
         fail_ci_if_error: false
 
-    - name: Build APK
-      run: flutter build apk --release
-
-    - name: Upload APK artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-release
-        path: build/app/outputs/flutter-apk/app-release.apk
+    # Debug build only: validates that the app compiles for Android without
+    # release signing secrets. Signed release builds (APK/AAB) are intentionally
+    # not part of this workflow and must run in a separate trusted environment.
+    # No artifact is uploaded because a debug APK is not a release artifact.
+    - name: Build debug APK (compile gate)
+      run: flutter build apk --debug
 

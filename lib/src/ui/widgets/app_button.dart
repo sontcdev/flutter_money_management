@@ -1,14 +1,39 @@
 // path: lib/src/ui/widgets/app_button.dart
 
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_surface_tokens.dart';
 
 enum AppButtonStyle {
   filled,
   outlined,
   text,
   prominent, // For primary CTAs
+}
+
+/// Spinner color for a loading (hence disabled) [AppButton].
+///
+/// Filled/prominent buttons render the Material disabled fill
+/// (onSurface @ 12%) over the surface or scaffold; outlined/text buttons have
+/// no fill and sit directly on those backgrounds. The spinner reaches 3:1
+/// against every such actual background.
+Color loadingSpinnerColor(ThemeData theme, AppButtonStyle style) {
+  final scheme = theme.colorScheme;
+  final behind = <Color>[scheme.surface, theme.scaffoldBackgroundColor];
+  final filled = style == AppButtonStyle.filled ||
+      style == AppButtonStyle.prominent;
+  final backgrounds = filled
+      ? [
+          for (final bg in behind)
+            Color.alphaBlend(scheme.onSurface.withValues(alpha: 0.12), bg),
+        ]
+      : behind;
+  return AppSurfaceTokens.ensureContrastOnAll(
+    filled ? scheme.onSurface : scheme.primary,
+    backgrounds,
+    minRatio: 3,
+    toward: scheme.onSurface,
+  );
 }
 
 class AppButton extends StatelessWidget {
@@ -114,9 +139,7 @@ class AppButton extends StatelessWidget {
         child: CircularProgressIndicator(
           strokeWidth: 2,
           valueColor: AlwaysStoppedAnimation<Color>(
-            style == AppButtonStyle.outlined || style == AppButtonStyle.text
-                ? Theme.of(context).colorScheme.primary
-                : AppColors.textLight,
+            loadingSpinnerColor(Theme.of(context), style),
           ),
         ),
       );

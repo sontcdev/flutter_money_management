@@ -3,7 +3,28 @@ import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
 import 'package:flutter_money_management/src/features/categories/models/category.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/theme/app_surface_tokens.dart';
 import 'package:flutter_money_management/src/utils/category_icons.dart';
+
+const double _tintAlpha = 0.15;
+
+Color _iconForeground(BuildContext context, Color tint) {
+  final theme = Theme.of(context);
+  return AppSurfaceTokens.ensureContrastOnAll(
+    tint,
+    [
+      for (final bg in {
+        theme.colorScheme.surface,
+        theme.scaffoldBackgroundColor
+      })
+        Color.alphaBlend(tint.withValues(alpha: _tintAlpha), bg),
+    ],
+    minRatio: 3,
+    toward: theme.colorScheme.onSurface,
+  );
+}
+
+enum _CategoryAction { edit, delete }
 
 class CategoryItem extends StatelessWidget {
   final Category category;
@@ -41,12 +62,12 @@ class CategoryItem extends StatelessWidget {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
+                color: color.withValues(alpha: _tintAlpha),
                 borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
               ),
               child: Icon(
                 iconData,
-                color: color,
+                color: _iconForeground(context, color),
                 size: AppSpacing.iconSizeSm,
               ),
             ),
@@ -59,23 +80,28 @@ class CategoryItem extends StatelessWidget {
                 ),
               ),
             ),
-            if (onEdit != null)
-              IconButton(
-                tooltip: l10n.editCategory,
-                icon: const Icon(Icons.edit_outlined),
-                iconSize: 20,
-                visualDensity: VisualDensity.compact,
-                color: theme.colorScheme.onSurfaceVariant,
-                onPressed: onEdit,
-              ),
-            if (onDelete != null)
-              IconButton(
-                tooltip: l10n.delete,
-                icon: const Icon(Icons.delete_outline),
-                iconSize: 20,
-                visualDensity: VisualDensity.compact,
-                color: theme.colorScheme.error,
-                onPressed: onDelete,
+            if (onEdit != null || onDelete != null)
+              PopupMenuButton<_CategoryAction>(
+                onSelected: (action) {
+                  switch (action) {
+                    case _CategoryAction.edit:
+                      onEdit?.call();
+                    case _CategoryAction.delete:
+                      onDelete?.call();
+                  }
+                },
+                itemBuilder: (context) => [
+                  if (onEdit != null)
+                    PopupMenuItem(
+                      value: _CategoryAction.edit,
+                      child: Text(l10n.edit),
+                    ),
+                  if (onDelete != null)
+                    PopupMenuItem(
+                      value: _CategoryAction.delete,
+                      child: Text(l10n.delete),
+                    ),
+                ],
               ),
           ],
         ),

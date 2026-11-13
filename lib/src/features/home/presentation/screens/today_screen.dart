@@ -19,6 +19,7 @@ import 'package:flutter_money_management/src/features/transactions/models/transa
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
+import 'package:flutter_money_management/src/theme/app_surface_tokens.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_avatar.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
@@ -30,6 +31,9 @@ import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
 import 'package:flutter_money_management/src/utils/category_icons.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/cycle_utils.dart';
+
+// The nav-bar FAB protrudes 20dp into the body; keep scroll content clear.
+const double _fabOverlap = 28;
 
 /// Daily home screen for new users - action-first, not analytics-first
 class TodayScreen extends ConsumerWidget {
@@ -49,8 +53,14 @@ class TodayScreen extends ConsumerWidget {
             currentUser?.email ??
             '?';
 
+    final isLight = Theme.of(context).brightness == Brightness.light;
+
     return Scaffold(
+      backgroundColor: isLight ? AppSurfaceTokens.background : null,
       appBar: AppBar(
+        backgroundColor: isLight ? AppSurfaceTokens.background : null,
+        foregroundColor: isLight ? AppSurfaceTokens.navy : null,
+        surfaceTintColor: isLight ? Colors.transparent : null,
         automaticallyImplyLeading: false,
         title: _buildGreeting(context, ref, l10n),
         actions: [
@@ -74,7 +84,10 @@ class TodayScreen extends ConsumerWidget {
             if (transactions.isEmpty) {
               return SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                padding: const EdgeInsets.only(
+                  top: AppSpacing.md,
+                  bottom: AppSpacing.md + _fabOverlap,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -86,7 +99,10 @@ class TodayScreen extends ConsumerWidget {
             }
 
             return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+              padding: const EdgeInsets.only(
+                top: AppSpacing.md,
+                bottom: AppSpacing.md + _fabOverlap,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -191,8 +207,8 @@ class TodayScreen extends ConsumerWidget {
         };
 
         return Padding(
-          padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.screenPadding),
+          padding:
+              const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -232,8 +248,8 @@ class TodayScreen extends ConsumerWidget {
                               height: 36,
                               decoration: BoxDecoration(
                                 color: tint.withValues(alpha: 0.15),
-                                borderRadius:
-                                    BorderRadius.circular(AppSpacing.radiusCard),
+                                borderRadius: BorderRadius.circular(
+                                    AppSpacing.radiusCard),
                               ),
                               alignment: Alignment.center,
                               child: category != null
@@ -272,16 +288,18 @@ class TodayScreen extends ConsumerWidget {
                         Text(
                           '${CurrencyFormatter.formatVNDFromCents(budget.consumedCents, locale: l10n.localeName)} / '
                           '${CurrencyFormatter.formatVNDFromCents(budget.limitCents, locale: l10n.localeName)}',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .onSurface
-                                    .withValues(alpha: 0.6),
-                              ),
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withValues(alpha: 0.6),
+                                  ),
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                          borderRadius:
+                              BorderRadius.circular(AppSpacing.radiusFull),
                           child: LinearProgressIndicator(
                             value: progress,
                             minHeight: 8,
@@ -358,6 +376,7 @@ class TodayScreen extends ConsumerWidget {
       title: l10n.startTracking,
       message: l10n.onboardingSubtitle,
       actionLabel: l10n.addTransaction,
+      outlinedAction: true,
       onAction: () {
         Navigator.pushNamed(context, '/add-transaction');
       },
@@ -417,11 +436,12 @@ class TodayScreen extends ConsumerWidget {
     final heroPalette = _heroPalette(context, tone);
     final gradientColors = heroPalette.gradient;
     final foreground = heroPalette.foreground;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenPadding),
       child: Container(
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
@@ -430,53 +450,87 @@ class TodayScreen extends ConsumerWidget {
           ),
           borderRadius: BorderRadius.circular(AppSpacing.radiusHero),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: [
-            Text(
-              CycleUtils.getCycleLabel(cycleRange.start, cycleRange.end),
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: foreground,
-                  ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              CurrencyFormatter.formatVNDFromCents(balance,
-                  locale: l10n.localeName),
-              style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                    color: foreground,
-                    fontWeight: FontWeight.w700,
-                  ),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildHeroMiniStat(
-                    context,
-                    foreground: foreground,
-                    icon: Icons.arrow_downward,
-                    label: l10n.income,
-                    value: CurrencyFormatter.formatVNDFromCents(totalIncome,
-                        locale: l10n.localeName),
+            if (isLight)
+              Positioned(
+                top: -28,
+                right: -28,
+                child: Container(
+                  key: const ValueKey('today-hero-mint'),
+                  width: 96,
+                  height: 96,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppSurfaceTokens.mint.withValues(alpha: 0.35),
                   ),
                 ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: _buildHeroMiniStat(
-                    context,
-                    foreground: foreground,
-                    icon: Icons.arrow_upward,
-                    label: l10n.expense,
-                    value: CurrencyFormatter.formatVNDFromCents(totalExpense,
-                        locale: l10n.localeName),
-                  ),
-                ),
-              ],
+              ),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.xl),
+              child: _buildHeroContent(context, l10n, cycleRange, balance,
+                  totalIncome, totalExpense, foreground),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildHeroContent(
+    BuildContext context,
+    AppLocalizations l10n,
+    ({DateTime start, DateTime end}) cycleRange,
+    int balance,
+    int totalIncome,
+    int totalExpense,
+    Color foreground,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          CycleUtils.getCycleLabel(cycleRange.start, cycleRange.end),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: foreground,
+              ),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        Text(
+          CurrencyFormatter.formatVNDFromCents(balance,
+              locale: l10n.localeName),
+          style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w700,
+              ),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        Row(
+          children: [
+            Expanded(
+              child: _buildHeroMiniStat(
+                context,
+                foreground: foreground,
+                icon: Icons.arrow_downward,
+                label: l10n.income,
+                value: CurrencyFormatter.formatVNDFromCents(totalIncome,
+                    locale: l10n.localeName),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: _buildHeroMiniStat(
+                context,
+                foreground: foreground,
+                icon: Icons.arrow_upward,
+                label: l10n.expense,
+                value: CurrencyFormatter.formatVNDFromCents(totalExpense,
+                    locale: l10n.localeName),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -533,6 +587,12 @@ class TodayScreen extends ConsumerWidget {
       _ => theme.colorScheme.primary,
     };
     final isDark = theme.brightness == Brightness.dark;
+    if (!isDark) {
+      return (
+        gradient: AppSurfaceTokens.heroGradient(base),
+        foreground: AppSurfaceTokens.navy,
+      );
+    }
     var foreground = isDark ? AppColors.textDark : AppColors.textLight;
     var away = isDark ? AppColors.textLight : AppColors.textDark;
     var shift = _heroContrastShift(base, foreground, away);
@@ -824,8 +884,19 @@ class _WalletBalanceCard extends StatelessWidget {
         width: 160,
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: theme.colorScheme.surfaceContainerHighest,
+          color: theme.brightness == Brightness.light
+              ? AppSurfaceTokens.card
+              : theme.colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
+          boxShadow: theme.brightness == Brightness.light
+              ? [
+                  BoxShadow(
+                    color: AppSurfaceTokens.navy.withValues(alpha: 0.06),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

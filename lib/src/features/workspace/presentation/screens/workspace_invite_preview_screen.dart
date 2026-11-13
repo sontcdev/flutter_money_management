@@ -48,7 +48,7 @@ class _WorkspaceInvitePreviewScreenState
             ),
             const SizedBox(height: 16),
             Text(
-              'Members',
+              l10n.membersSection,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
@@ -63,7 +63,7 @@ class _WorkspaceInvitePreviewScreenState
                   ),
                 ),
                 title: Text(member.displayName ?? member.email ?? l10n.unknown),
-                subtitle: Text(member.role),
+                subtitle: Text(_roleLabel(l10n, member.role)),
               ),
             ),
             const SizedBox(height: 16),
@@ -89,6 +89,19 @@ class _WorkspaceInvitePreviewScreenState
         ),
       ),
     );
+  }
+
+  String _roleLabel(AppLocalizations l10n, String role) {
+    switch (role) {
+      case 'owner':
+        return l10n.ownerRole;
+      case 'admin':
+        return l10n.adminRole;
+      case 'member':
+        return l10n.memberRole;
+      default:
+        return l10n.roleValue(role);
+    }
   }
 
   Future<void> _acceptInvite(BuildContext context) async {

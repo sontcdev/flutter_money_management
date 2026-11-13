@@ -995,13 +995,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get welcomeBack => 'おかえりなさい';
 
   @override
-  String get signInDesc => 'データを同期するにはサインインしてください';
+  String get signInDesc => 'アカウントとデータにアクセスするにはサインインしてください';
 
   @override
   String get signOutTitle => 'サインアウト';
 
   @override
-  String get signOutConfirm => 'サインアウトしてもよろしいですか？\n\nローカルデータは保持され、再度サインインしたときに同期されます。';
+  String get signOutConfirm => 'サインアウトしてもよろしいですか？\n\nデータはアカウントに保存されたままで、再度サインインすると利用できます。';
 
   @override
   String signOutFailed(Object error) {
@@ -1033,6 +1033,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get ownerRole => 'オーナー';
+
+  @override
+  String get adminRole => '管理者';
+
+  @override
+  String get memberRole => 'メンバー';
 
   @override
   String roleValue(Object role) {
@@ -1418,7 +1424,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get failedToSendResetEmail => '再設定メールの送信に失敗しました。もう一度お試しください。';
 
   @override
-  String get signInToSyncAcrossDevices => '複数の端末でデータを同期するにはサインインしてください';
+  String get signInToSyncAcrossDevices => 'どの端末でもデータにアクセスするにはサインインしてください';
 
   @override
   String get enterYourPassword => 'パスワードを入力';
@@ -1472,7 +1478,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get createAccount => 'アカウントを作成';
 
   @override
-  String get createAccountToSync => '複数の端末で同期するためにアカウントを作成してください';
+  String get createAccountToSync => 'どの端末でもデータにアクセスするためにアカウントを作成してください';
 
   @override
   String get verifyEmailBeforeSignInHint => 'サインインする前にメール認証が必要です';
@@ -1933,4 +1939,56 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get deleteAccountSharedWorkspaces => 'アカウントを削除する前に、これらの共有ワークスペースから退出してください。';
+
+  @override
+  String get createWorkspaceTitle => 'ワークスペースを作成';
+
+  @override
+  String get createWorkspaceDescription => 'ワークスペースには、あなたと共有する相手の取引、予算、カテゴリが保存されます。';
+
+  @override
+  String get workspaceNameRequired => 'ワークスペース名を入力してください';
+
+  @override
+  String get createWorkspaceAction => 'ワークスペースを作成';
+
+  @override
+  String get createBudgetForCategory => 'このカテゴリの予算を作成';
+
+  @override
+  String get budgetOnlyForExpense => '予算は支出カテゴリでのみ利用できます';
+
+  @override
+  String get noCategoriesInFilter => 'このフィルターにカテゴリはありません';
+
+  @override
+  String get noCategoriesInFilterMessage => '別のフィルターで他のカテゴリを確認してください。';
+
+  @override
+  String get budgetNotFound => '予算が見つかりません';
+
+  @override
+  String get workspaceNameLabel => 'ワークスペース名';
+
+  @override
+  String get discardChangesTitle => '変更を破棄しますか？';
+
+  @override
+  String get discardChangesMessage => '保存されていない変更があります。今退出すると失われます。';
+
+  @override
+  String get discard => '破棄';
+
+  @override
+  String get keepEditing => '編集を続ける';
+
+  @override
+  String quickInputDiscardPending(int count) {
+    return '保留中の$count件を破棄しますか？';
+  }
+
+  @override
+  String recurringNextOccurrence(String date) {
+    return '次回: $date';
+  }
 }

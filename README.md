@@ -1,6 +1,6 @@
 # Money Wise
 
-Money Wise is a Flutter personal finance app with offline-first local storage, budgeting, transaction tracking, reporting, and an in-progress Supabase-backed multi-workspace sync model.
+Money Wise is a Flutter personal finance app with budgeting, transaction tracking, reporting, and Supabase-backed cloud storage with multi-workspace support. An internet connection is required to read and write financial data; the app has no offline mode.
 
 ## Highlights
 
@@ -8,7 +8,8 @@ Money Wise is a Flutter personal finance app with offline-first local storage, b
 - Manage budgets with monthly, yearly, and custom periods.
 - Review reports through dashboard, summaries, and calendar-based views.
 - Support localized UI with `vi`, `en`, and `ja` resources.
-- Run primarily from local Drift-backed state, with cloud auth and workspace sync support layered on top.
+- Store financial data directly in Supabase, scoped by workspace. There is no local financial database and no durable offline write queue.
+- Data is refreshed from Supabase on app startup, on app resume, and on pull-to-refresh.
 
 ## Architecture
 
@@ -42,9 +43,8 @@ Shared and app-level code:
 
 - Flutter
 - Riverpod + Flutter Hooks
-- Drift for local persistence
 - Freezed + JSON Serializable for models
-- Supabase for auth and workspace/cloud sync flows
+- Supabase for auth, workspace management, and cloud storage of financial data
 - Shared Preferences for local settings
 
 ## Setup
@@ -112,7 +112,6 @@ Do not manually edit generated files such as:
 Run codegen after changing:
 
 - feature models using Freezed or JSON serialization
-- Drift schema, tables, or DAOs
 
 Preferred command:
 
@@ -249,20 +248,22 @@ Template assets remain under `templates/`.
 
 ## Sync and Workspace Notes
 
-The repo contains an offline-first sync design where local data is the primary source for UI reads, and cloud state is hydrated into the local DB.
+The app is **not offline-first**. Repositories under
+`lib/src/features/*/repositories/` read from and write to Supabase directly.
 
 Key expectations:
 
 - Supabase auth and workspace state are feature-scoped under auth/workspace modules.
-- Cloud data must be hydrated into the local database to appear in the app.
-- Sync-related work should verify both local-to-remote and remote-to-local paths.
-- `activeWorkspaceIdProvider` is required for workspace-aware sync behavior.
+- An internet connection is required. Reads and writes fail when the device is offline.
+- There is no durable offline write queue and no automatic replay of pending writes after reconnect.
+- "Sync" means refetching from Supabase: on app startup, on app resume, and on
+  pull-to-refresh (`syncCurrentWorkspaceData()` invalidates the Riverpod providers).
+- `activeWorkspaceIdProvider` is required; repositories fail without an active workspace.
 
 Known repository-specific details:
 
-- Local schema version is `6` in `lib/src/data/local/app_database.dart`.
-- `categories`, `transactions`, and `budgets` include nullable `workspace_id` in the local schema.
-- Drift date handling must remain compatible with integer-backed storage because of `build.yaml` settings.
+- There is no local financial database. The former Drift layer was removed.
+- `workspace_id` is `not null` on workspace-scoped tables (see `supabase/01_create_schema.sql`).
 
 ## Supabase Setup
 
@@ -285,14 +286,12 @@ The repository contains groundwork for a multi-user workspace model:
 - each user has a personal workspace
 - group workspaces are owner-managed
 - business tables are workspace-scoped
-- cloud sync uses UUID-based entities and soft-delete-friendly design
+- cloud data uses UUID-based entities and soft-delete-friendly design
 
-The broader roadmap includes:
+Roadmap ideas (not implemented, do not describe them as features):
 
-- auth guard routing
 - stronger workspace switching
-- migration from legacy local-only data
-- more complete sync queue processing and conflict handling
+- optional offline support with a write queue and conflict handling
 
 ## Troubleshooting
 

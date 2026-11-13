@@ -7,6 +7,7 @@ import 'package:flutter_money_management/src/features/wallets/presentation/scree
 import 'package:flutter_money_management/src/features/wallets/providers/wallet_providers.dart';
 import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/theme/app_surface_tokens.dart';
 import 'package:flutter_money_management/src/ui/widgets/empty_state.dart';
 import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/utils/category_icons.dart';
@@ -32,6 +33,24 @@ Future<Wallet?> showWalletPicker(
       excludeWalletId: excludeWalletId,
       workspaceId: workspaceId,
     ),
+  );
+}
+
+const double _walletTintAlpha = 0.15;
+
+Color _walletIconForeground(BuildContext context, Color tint) {
+  final theme = Theme.of(context);
+  return AppSurfaceTokens.ensureContrastOnAll(
+    tint,
+    [
+      for (final bg in {
+        theme.colorScheme.surface,
+        theme.scaffoldBackgroundColor
+      })
+        Color.alphaBlend(tint.withValues(alpha: _walletTintAlpha), bg),
+    ],
+    minRatio: 3,
+    toward: theme.colorScheme.onSurface,
   );
 }
 
@@ -145,7 +164,7 @@ class _WalletPickerSheet extends ConsumerWidget {
                           child: Icon(
                             CategoryIcons.getIcon(wallet.iconName),
                             size: AppSpacing.iconSizeSm,
-                            color: color,
+                            color: _walletIconForeground(context, color),
                           ),
                         ),
                         title: Text(wallet.name),

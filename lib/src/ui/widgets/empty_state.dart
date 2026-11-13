@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../theme/app_motion.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_surface_tokens.dart';
 
 enum EmptyStateType {
   firstRun, // First-run onboarding style
@@ -22,6 +23,9 @@ class EmptyState extends StatelessWidget {
   final EmptyStateType type;
   final bool compact;
 
+  /// Renders the primary action as an outlined button (de-emphasized).
+  final bool outlinedAction;
+
   const EmptyState({
     super.key,
     required this.icon,
@@ -34,6 +38,7 @@ class EmptyState extends StatelessWidget {
     this.onSecondaryAction,
     this.type = EmptyStateType.noData,
     this.compact = false,
+    this.outlinedAction = false,
   });
 
   // Convenience constructors
@@ -48,6 +53,7 @@ class EmptyState extends StatelessWidget {
     this.secondaryActionLabel,
     this.onSecondaryAction,
     this.compact = false,
+    this.outlinedAction = false,
   }) : type = EmptyStateType.firstRun;
 
   const EmptyState.noSearchResult({
@@ -61,6 +67,7 @@ class EmptyState extends StatelessWidget {
     this.secondaryActionLabel,
     this.onSecondaryAction,
     this.compact = false,
+    this.outlinedAction = false,
   }) : type = EmptyStateType.noSearchResult;
 
   const EmptyState.compact({
@@ -74,7 +81,8 @@ class EmptyState extends StatelessWidget {
     this.secondaryActionLabel,
     this.onSecondaryAction,
     this.type = EmptyStateType.noData,
-  }) : compact = true;
+  })  : compact = true,
+        outlinedAction = false;
 
   @override
   Widget build(BuildContext context) {
@@ -183,18 +191,24 @@ class EmptyState extends StatelessWidget {
   }
 
   Widget _buildIcon(BuildContext context, double size, double innerSize) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final page = theme.scaffoldBackgroundColor;
+    final tint = Color.alphaBlend(scheme.primary.withValues(alpha: 0.1), page);
+    final iconColor = AppSurfaceTokens.ensureContrast(
+      Color.alphaBlend(scheme.primary.withValues(alpha: 0.6), tint),
+      tint,
+      minRatio: 3,
+      toward: scheme.onSurface,
+    );
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+        color: scheme.primary.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
-      child: Icon(
-        icon,
-        size: innerSize,
-        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.6),
-      ),
+      child: Icon(icon, size: innerSize, color: iconColor),
     );
   }
 
@@ -212,30 +226,42 @@ class EmptyState extends StatelessWidget {
   }
 
   Widget _buildMessage(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final messageColor = AppSurfaceTokens.ensureContrastOnAll(
+      Color.alphaBlend(scheme.onSurface.withValues(alpha: 0.6),
+          theme.scaffoldBackgroundColor),
+      [theme.scaffoldBackgroundColor, scheme.surface],
+      toward: scheme.onSurface,
+    );
     return Text(
       message,
-      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color:
-                Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-          ),
+      style: theme.textTheme.bodyMedium?.copyWith(color: messageColor),
       textAlign: TextAlign.center,
     );
   }
 
   Widget _buildActions(BuildContext context) {
+    final actionPadding = EdgeInsets.symmetric(
+      horizontal: compact ? AppSpacing.lg : AppSpacing.xl,
+      vertical: compact ? AppSpacing.md : AppSpacing.lg,
+    );
     return Column(
       children: [
-        ElevatedButton.icon(
-          onPressed: onAction,
-          icon: Icon(actionIcon),
-          label: Text(actionLabel!),
-          style: ElevatedButton.styleFrom(
-            padding: EdgeInsets.symmetric(
-              horizontal: compact ? AppSpacing.lg : AppSpacing.xl,
-              vertical: compact ? AppSpacing.md : AppSpacing.lg,
-            ),
+        if (outlinedAction)
+          OutlinedButton.icon(
+            onPressed: onAction,
+            icon: Icon(actionIcon),
+            label: Text(actionLabel!),
+            style: OutlinedButton.styleFrom(padding: actionPadding),
+          )
+        else
+          ElevatedButton.icon(
+            onPressed: onAction,
+            icon: Icon(actionIcon),
+            label: Text(actionLabel!),
+            style: ElevatedButton.styleFrom(padding: actionPadding),
           ),
-        ),
         if (secondaryActionLabel != null && onSecondaryAction != null) ...[
           const SizedBox(height: AppSpacing.md),
           TextButton(

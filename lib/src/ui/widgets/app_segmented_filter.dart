@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_motion.dart';
 import '../../theme/app_spacing.dart';
+import '../../theme/app_surface_tokens.dart';
 
 /// Standardized segmented filter for consistent filtering UI
 class AppSegmentedFilter<T> extends StatelessWidget {
@@ -98,9 +99,22 @@ class _FilterButton extends StatelessWidget {
     final effectiveColor = color ?? theme.colorScheme.primary;
     final thumbColor =
         isDark ? AppColors.segmentThumbDark : theme.colorScheme.surface;
-    final selectedForeground = color != null ? effectiveColor : theme.colorScheme.onSurface;
-    final unselectedForeground = theme.colorScheme.onSurface.withValues(
-      alpha: 0.55,
+    final onSurface = theme.colorScheme.onSurface;
+    final trackColor = Color.alphaBlend(
+      onSurface.withValues(alpha: isDark ? 0.08 : 0.05),
+      theme.scaffoldBackgroundColor,
+    );
+    final selectedForeground = color != null
+        ? AppSurfaceTokens.ensureContrast(
+            effectiveColor,
+            thumbColor,
+            toward: onSurface,
+          )
+        : onSurface;
+    final unselectedForeground = AppSurfaceTokens.ensureContrast(
+      Color.alphaBlend(onSurface.withValues(alpha: 0.55), trackColor),
+      trackColor,
+      toward: onSurface,
     );
 
     return Semantics(

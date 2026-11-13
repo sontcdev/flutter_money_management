@@ -13,6 +13,7 @@ class TransactionTypeToggle extends StatelessWidget {
   final TransactionType value;
   final String expenseLabel;
   final String incomeLabel;
+
   /// Null hides the transfer segment, keeping the original two-way toggle.
   final String? transferLabel;
   final ValueChanged<TransactionType> onChanged;
@@ -34,37 +35,40 @@ class TransactionTypeToggle extends StatelessWidget {
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _Segment(
-              label: expenseLabel,
-              icon: Icons.arrow_upward,
-              color: context.semanticColors.expense,
-              selected: value == TransactionType.expense,
-              onTap: () => onChanged(TransactionType.expense),
-            ),
-          ),
-          Expanded(
-            child: _Segment(
-              label: incomeLabel,
-              icon: Icons.arrow_downward,
-              color: context.semanticColors.income,
-              selected: value == TransactionType.income,
-              onTap: () => onChanged(TransactionType.income),
-            ),
-          ),
-          if (transferLabel != null)
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             Expanded(
               child: _Segment(
-                label: transferLabel!,
-                icon: Icons.swap_horiz,
-                color: Theme.of(context).colorScheme.primary,
-                selected: value == TransactionType.transfer,
-                onTap: () => onChanged(TransactionType.transfer),
+                label: expenseLabel,
+                icon: Icons.arrow_upward,
+                color: context.semanticColors.expense,
+                selected: value == TransactionType.expense,
+                onTap: () => onChanged(TransactionType.expense),
               ),
             ),
-        ],
+            Expanded(
+              child: _Segment(
+                label: incomeLabel,
+                icon: Icons.arrow_downward,
+                color: context.semanticColors.income,
+                selected: value == TransactionType.income,
+                onTap: () => onChanged(TransactionType.income),
+              ),
+            ),
+            if (transferLabel != null)
+              Expanded(
+                child: _Segment(
+                  label: transferLabel!,
+                  icon: Icons.swap_horiz,
+                  color: Theme.of(context).colorScheme.primary,
+                  selected: value == TransactionType.transfer,
+                  onTap: () => onChanged(TransactionType.transfer),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -91,7 +95,11 @@ class _Segment extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: AppMotion.of(context, AppMotion.fast),
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(
+          vertical: AppSpacing.sm,
+          horizontal: AppSpacing.xs,
+        ),
         decoration: BoxDecoration(
           color: selected ? Theme.of(context).colorScheme.surface : null,
           borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
@@ -124,8 +132,7 @@ class _Segment extends StatelessWidget {
             Flexible(
               child: Text(
                 label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       color: selected
                           ? color

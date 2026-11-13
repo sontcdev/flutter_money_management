@@ -8,8 +8,9 @@ import 'package:flutter_money_management/src/features/transactions/presentation/
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
-import 'today_screen.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/theme/app_surface_tokens.dart';
+import 'today_screen.dart' show TodayScreen;
 
 /// Main app shell: 4 bottom-nav tabs with a brand-colored FAB embedded in
 /// the middle slot, matching the Claude Design `.navbar`/`.fab` component.
@@ -111,14 +112,23 @@ class _AppNavBar extends StatelessWidget {
         Theme.of(context).colorScheme.primary;
 
     return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.surfaceDark : AppColors.surface,
-        border: Border(
-          top: BorderSide(
-            color: isDark ? AppColors.borderDark : AppColors.border,
-          ),
-        ),
-      ),
+      decoration: isDark
+          ? const BoxDecoration(
+              color: AppColors.surfaceDark,
+              border: Border(top: BorderSide(color: AppColors.borderDark)),
+            )
+          : BoxDecoration(
+              color: Colors.white,
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(24)),
+              boxShadow: [
+                BoxShadow(
+                  color: AppSurfaceTokens.navy.withValues(alpha: 0.08),
+                  blurRadius: 16,
+                  offset: const Offset(0, -4),
+                ),
+              ],
+            ),
       child: SafeArea(
         top: false,
         child: SizedBox(
@@ -156,26 +166,49 @@ class _AppNavBar extends StatelessWidget {
 
   Widget _buildNavItem(BuildContext context, _NavItemData item) {
     final isSelected = item.tab == currentTab;
-    final color = isSelected
-        ? Theme.of(context).colorScheme.primary
-        : (context.semanticColors.textFaint);
+    final primary = Theme.of(context).colorScheme.primary;
+    final color = isDark
+        ? (isSelected ? primary : context.semanticColors.textFaint)
+        : (isSelected
+            ? AppSurfaceTokens.ensureContrast(primary, Colors.white)
+            : AppSurfaceTokens.inactive);
+
+    final icon = Icon(
+      isSelected ? item.activeIcon : item.icon,
+      color: color,
+      size: AppSpacing.iconSize,
+    );
 
     return InkWell(
       onTap: () => onTabSelected(item.tab),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            isSelected ? item.activeIcon : item.icon,
-            color: color,
-            size: AppSpacing.iconSize,
-          ),
+          if (isDark)
+            icon
+          else
+            Container(
+              key: isSelected ? const ValueKey('nav-selected-pill') : null,
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? primary.withValues(alpha: 0.12)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+              ),
+              child: icon,
+            ),
           const SizedBox(height: 2),
-          Text(
-            item.label,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: color,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              item.label,
+              maxLines: 1,
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: color,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              ),
             ),
           ),
         ],

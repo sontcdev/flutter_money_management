@@ -94,4 +94,91 @@ void main() {
     expect(find.text('Behavior'), findsOneWidget);
     expect(find.text('Housing'), findsOneWidget);
   });
+
+  group('edit screen UX', () {
+    Future<void> pumpPushed(WidgetTester tester) async {
+      final service = RecurringTransactionService(
+        _FakeRecurringGateway(),
+        _FakeTransactionGateway(),
+        () => 'workspace-1',
+        () => 'user-1',
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            categoriesProvider.overrideWith(
+              (ref) async => [
+                Category(
+                  id: 'cat-1',
+                  name: 'Housing',
+                  iconName: 'home',
+                  colorValue: Colors.blue.toARGB32(),
+                  type: CategoryType.expense,
+                  createdAt: DateTime(2026, 5, 1),
+                  updatedAt: DateTime(2026, 5, 1),
+                ),
+              ],
+            ),
+            recurringTransactionServiceProvider.overrideWithValue(service),
+          ],
+          child: MaterialApp(
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [Locale('en'), Locale('vi'), Locale('ja')],
+            home: Builder(
+              builder: (context) => Scaffold(
+                body: Center(
+                  child: TextButton(
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const RecurringTransactionEditScreen(),
+                      ),
+                    ),
+                    child: const Text('open'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('shows next occurrence line', (tester) async {
+      await pumpPushed(tester);
+      expect(find.textContaining('Next: '), findsOneWidget);
+    });
+
+    testWidgets('pristine back leaves without dialog', (tester) async {
+      await pumpPushed(tester);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.text('Discard changes?'), findsNothing);
+      expect(find.text('open'), findsOneWidget);
+    });
+
+    testWidgets('dirty back asks to discard', (tester) async {
+      await pumpPushed(tester);
+      await tester.enterText(find.byType(TextFormField).first, 'Rent');
+      await tester.pump();
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.text('Discard changes?'), findsOneWidget);
+    });
+
+    testWidgets('empty title shows inline error on save', (tester) async {
+      await pumpPushed(tester);
+      final save = find.text('Save');
+      await tester.ensureVisible(save);
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+      expect(find.text('Empty content'), findsOneWidget);
+    });
+  });
 }

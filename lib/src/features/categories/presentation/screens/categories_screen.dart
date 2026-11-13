@@ -98,8 +98,12 @@ class CategoriesScreen extends HookConsumerWidget {
                           height: MediaQuery.of(context).size.height * 0.6,
                           child: EmptyState(
                             icon: Icons.category,
-                            title: l10n.noCategories,
-                            message: l10n.createFirst,
+                            title: categories.isEmpty
+                                ? l10n.noCategories
+                                : l10n.noCategoriesInFilter,
+                            message: categories.isEmpty
+                                ? l10n.createFirst
+                                : l10n.noCategoriesInFilterMessage,
                             actionLabel:
                                 canManageContent ? l10n.addCategory : null,
                             onAction: canManageContent

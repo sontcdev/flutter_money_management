@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/theme/app_surface_tokens.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
 
@@ -31,16 +32,25 @@ class TransactionGroupHeader extends StatelessWidget {
       locale: l10n.localeName,
     );
 
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final headerFill = isHighlighted
+        ? context.semanticColors.calendarSelected.withValues(alpha: 0.5)
+        : scheme.surfaceContainerHighest.withValues(alpha: 0.3);
+    final headerBg =
+        Color.alphaBlend(headerFill, theme.scaffoldBackgroundColor);
+    Color readable(Color accent, double alpha) =>
+        AppSurfaceTokens.ensureContrast(
+          accent,
+          Color.alphaBlend(accent.withValues(alpha: alpha), headerBg),
+          toward: scheme.onSurface,
+        );
+    final incomeColor = readable(context.semanticColors.income, 0.1);
+    final expenseColor = readable(context.semanticColors.expense, 0.1);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: isHighlighted
-            ? context.semanticColors.calendarSelected.withValues(alpha: 0.5)
-            : Theme.of(context)
-                .colorScheme
-                .surfaceContainerHighest
-                .withValues(alpha: 0.3),
-      ),
+      decoration: BoxDecoration(color: headerFill),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -48,6 +58,11 @@ class TransactionGroupHeader extends StatelessWidget {
             _formatDateLabel(context, date),
             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
+                  color: AppSurfaceTokens.ensureContrast(
+                    scheme.onSurface,
+                    headerBg,
+                    toward: scheme.onSurface,
+                  ),
                 ),
           ),
           Row(
@@ -58,14 +73,13 @@ class TransactionGroupHeader extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: context.semanticColors.income.withValues(alpha: 0.1),
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.radiusCard),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
                   ),
                   child: Text(
                     '+$incomeAmount',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: context.semanticColors.income,
+                          color: incomeColor,
                         ),
                   ),
                 ),
@@ -76,16 +90,15 @@ class TransactionGroupHeader extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: context.semanticColors.expense
-                        .withValues(alpha: 0.1),
-                    borderRadius:
-                        BorderRadius.circular(AppSpacing.radiusCard),
+                    color:
+                        context.semanticColors.expense.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
                   ),
                   child: Text(
                     '-$expenseAmount',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: context.semanticColors.expense,
+                          color: expenseColor,
                         ),
                   ),
                 ),

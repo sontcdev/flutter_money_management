@@ -4,7 +4,26 @@ import 'package:flutter_money_management/src/features/reports/providers/report_p
 import 'package:flutter_money_management/src/features/transactions/models/transaction.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/theme/app_surface_tokens.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
+
+const double _categoryTintAlpha = 0.15;
+
+Color _categoryIconForeground(BuildContext context, Color tint) {
+  final theme = Theme.of(context);
+  return AppSurfaceTokens.ensureContrastOnAll(
+    tint,
+    [
+      for (final bg in {
+        theme.colorScheme.surface,
+        theme.scaffoldBackgroundColor
+      })
+        Color.alphaBlend(tint.withValues(alpha: _categoryTintAlpha), bg),
+    ],
+    minRatio: 3,
+    toward: theme.colorScheme.onSurface,
+  );
+}
 
 class TransactionListItem extends StatelessWidget {
   final TransactionWithCategory transactionWithCategory;
@@ -102,8 +121,10 @@ class TransactionListItem extends StatelessWidget {
             Icon(
               Icons.chevron_right,
               size: AppSpacing.iconSizeSm,
-              color:
-                  Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+              color: Theme.of(context)
+                  .colorScheme
+                  .onSurface
+                  .withValues(alpha: 0.3),
             ),
           ],
         ),
@@ -119,14 +140,14 @@ class TransactionListItem extends StatelessWidget {
       width: 42,
       height: 42,
       decoration: BoxDecoration(
-        color: categoryColor.withValues(alpha: 0.15),
+        color: categoryColor.withValues(alpha: _categoryTintAlpha),
         borderRadius: BorderRadius.circular(AppSpacing.radiusCard),
       ),
       alignment: Alignment.center,
       child: CategoryIconWidget(
         iconName: transactionWithCategory.categoryIconName,
         size: AppSpacing.iconSizeSm,
-        color: categoryColor,
+        color: _categoryIconForeground(context, categoryColor),
       ),
     );
   }

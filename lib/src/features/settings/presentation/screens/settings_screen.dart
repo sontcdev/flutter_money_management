@@ -16,6 +16,7 @@ import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/theme/app_colors.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/theme/app_surface_tokens.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/utils/error_report_helper.dart';
 
@@ -487,6 +488,11 @@ class SettingsScreen extends HookConsumerWidget {
             onPressed: () => Navigator.of(context).pop(true),
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.error,
+              foregroundColor: AppSurfaceTokens.ensureContrast(
+                Colors.white,
+                AppColors.error,
+                toward: Colors.black,
+              ),
             ),
             child: Text(AppLocalizations.of(context)!.signOutTitle),
           ),
@@ -538,8 +544,8 @@ class SettingsScreen extends HookConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Leave workspace'),
-        content: const Text('Are you sure you want to leave this workspace?'),
+        title: Text(AppLocalizations.of(context)!.leaveWorkspace),
+        content: Text(AppLocalizations.of(context)!.leaveWorkspaceConfirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -547,7 +553,7 @@ class SettingsScreen extends HookConsumerWidget {
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Leave'),
+            child: Text(AppLocalizations.of(context)!.leave),
           ),
         ],
       ),
@@ -927,7 +933,16 @@ class _SettingsRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
               ),
               alignment: Alignment.center,
-              child: Icon(icon, size: 18, color: Colors.white),
+              child: Icon(
+                icon,
+                size: 18,
+                color: AppSurfaceTokens.ensureContrast(
+                  Colors.white,
+                  tileColor,
+                  minRatio: 3,
+                  toward: Colors.black,
+                ),
+              ),
             ),
           if (leading != null || icon != null) const SizedBox(width: 12),
           Expanded(

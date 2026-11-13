@@ -10,6 +10,7 @@ import 'package:flutter_money_management/src/features/wallets/providers/wallet_p
 import 'package:flutter_money_management/src/providers/providers.dart';
 import 'package:flutter_money_management/src/theme/app_semantic_colors.dart';
 import 'package:flutter_money_management/src/theme/app_spacing.dart';
+import 'package:flutter_money_management/src/theme/app_surface_tokens.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_button.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_card.dart';
 import 'package:flutter_money_management/src/ui/widgets/app_snack_bar.dart';
@@ -18,6 +19,24 @@ import 'package:flutter_money_management/src/ui/widgets/load_error_state.dart';
 import 'package:flutter_money_management/src/ui/widgets/shimmer_loading.dart';
 import 'package:flutter_money_management/src/utils/currency_formatter.dart';
 import 'package:flutter_money_management/src/utils/localized_formatters.dart';
+
+const double _categoryTintAlpha = 0.15;
+
+Color _categoryIconForeground(BuildContext context, Color tint) {
+  final theme = Theme.of(context);
+  return AppSurfaceTokens.ensureContrastOnAll(
+    tint,
+    [
+      for (final bg in {
+        theme.colorScheme.surface,
+        theme.scaffoldBackgroundColor
+      })
+        Color.alphaBlend(tint.withValues(alpha: _categoryTintAlpha), bg),
+    ],
+    minRatio: 3,
+    toward: theme.colorScheme.onSurface,
+  );
+}
 
 class TransactionDetailScreen extends ConsumerWidget {
   final String transactionId;
@@ -192,7 +211,7 @@ class TransactionDetailScreen extends ConsumerWidget {
                           height: 64,
                           decoration: BoxDecoration(
                             color: getCategoryColor(category.colorValue)
-                                .withValues(alpha: 0.15),
+                                .withValues(alpha: _categoryTintAlpha),
                             borderRadius:
                                 BorderRadius.circular(AppSpacing.radiusLg),
                           ),
@@ -200,7 +219,10 @@ class TransactionDetailScreen extends ConsumerWidget {
                             child: CategoryIconWidget(
                               iconName: category.iconName,
                               size: 30,
-                              color: getCategoryColor(category.colorValue),
+                              color: _categoryIconForeground(
+                                context,
+                                getCategoryColor(category.colorValue),
+                              ),
                             ),
                           ),
                         ),
@@ -390,7 +412,8 @@ class TransactionDetailScreen extends ConsumerWidget {
                                 ),
                                 error: (error, _) => InlineLoadErrorState(
                                   onRetry: () => ref.invalidate(
-                                    transactionReceiptImageUrlProvider(transactionId),
+                                    transactionReceiptImageUrlProvider(
+                                        transactionId),
                                   ),
                                 ),
                               ),
