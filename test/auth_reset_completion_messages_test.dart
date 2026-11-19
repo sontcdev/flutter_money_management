@@ -167,7 +167,7 @@ void main() {
         const AuthException('weak raw text',
             statusCode: '422', code: 'weak_password'),
       );
-      expect(find.text(l10n.weakPassword), findsOneWidget);
+      expect(find.text(l10n.passwordMinLength), findsOneWidget);
       expect(find.textContaining('weak raw text'), findsNothing);
     });
 

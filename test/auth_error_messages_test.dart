@@ -55,11 +55,11 @@ void main() {
     test('weak password by type and code', () {
       final typed = AuthWeakPasswordException(
           message: 'x', statusCode: '422', reasons: const ['length']);
-      expect(msg(AuthOperation.signUp, typed), l10n.weakPassword);
+      expect(msg(AuthOperation.signUp, typed), l10n.passwordMinLength);
       expect(
           msg(AuthOperation.signUp,
               wrap(const AuthException('x', code: 'weak_password'))),
-          l10n.weakPassword);
+          l10n.passwordMinLength);
     });
     test('invalid email', () {
       expect(
@@ -147,7 +147,7 @@ void main() {
       expect(
           msg(AuthOperation.updatePassword,
               wrap(const AuthException('x', code: 'weak_password'))),
-          l10n.weakPassword);
+          l10n.passwordMinLength);
     });
     test('unknown', () {
       expect(msg(AuthOperation.updatePassword, Exception('x')),
