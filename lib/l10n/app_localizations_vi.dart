@@ -1412,7 +1412,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get enterPassword => 'Vui lòng nhập mật khẩu';
 
   @override
-  String get passwordMinLength => 'Mật khẩu phải có ít nhất 6 ký tự';
+  String get passwordMinLength => 'Mật khẩu phải có ít nhất 8 ký tự';
 
   @override
   String get enterEmailResetPassword => 'Vui lòng nhập email để đặt lại mật khẩu';
@@ -1508,7 +1508,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get enterUsername => 'Vui lòng nhập tên người dùng';
 
   @override
-  String get atLeastSixCharacters => 'Ít nhất 6 ký tự';
+  String get atLeastSixCharacters => 'Ít nhất 8 ký tự';
 
   @override
   String get confirmPassword => 'Xác nhận mật khẩu';

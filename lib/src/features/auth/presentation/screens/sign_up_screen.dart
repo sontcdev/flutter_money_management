@@ -52,7 +52,7 @@ class SignUpScreen extends HookConsumerWidget {
         return;
       }
 
-      if (passwordController.text.length < 6) {
+      if (passwordController.text.length < 8) {
         errorMessage.value = l10n.passwordMinLength;
         return;
       }

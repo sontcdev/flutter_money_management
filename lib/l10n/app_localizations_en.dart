@@ -1412,7 +1412,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterPassword => 'Please enter your password';
 
   @override
-  String get passwordMinLength => 'Password must be at least 6 characters';
+  String get passwordMinLength => 'Password must be at least 8 characters';
 
   @override
   String get enterEmailResetPassword => 'Please enter your email to reset password';
@@ -1508,7 +1508,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get enterUsername => 'Please enter a username';
 
   @override
-  String get atLeastSixCharacters => 'At least 6 characters';
+  String get atLeastSixCharacters => 'At least 8 characters';
 
   @override
   String get confirmPassword => 'Confirm Password';

@@ -2746,7 +2746,7 @@ abstract class AppLocalizations {
   /// No description provided for @passwordMinLength.
   ///
   /// In en, this message translates to:
-  /// **'Password must be at least 6 characters'**
+  /// **'Password must be at least 8 characters'**
   String get passwordMinLength;
 
   /// No description provided for @enterEmailResetPassword.
@@ -2938,7 +2938,7 @@ abstract class AppLocalizations {
   /// No description provided for @atLeastSixCharacters.
   ///
   /// In en, this message translates to:
-  /// **'At least 6 characters'**
+  /// **'At least 8 characters'**
   String get atLeastSixCharacters;
 
   /// No description provided for @confirmPassword.

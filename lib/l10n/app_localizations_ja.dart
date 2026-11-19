@@ -1412,7 +1412,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get enterPassword => 'パスワードを入力してください';
 
   @override
-  String get passwordMinLength => 'パスワードは6文字以上である必要があります';
+  String get passwordMinLength => 'パスワードは8文字以上である必要があります';
 
   @override
   String get enterEmailResetPassword => 'パスワード再設定のためメールを入力してください';
@@ -1508,7 +1508,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get enterUsername => 'ユーザー名を入力してください';
 
   @override
-  String get atLeastSixCharacters => '6文字以上';
+  String get atLeastSixCharacters => '8文字以上';
 
   @override
   String get confirmPassword => 'パスワード確認';
