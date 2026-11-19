@@ -346,7 +346,8 @@ class ApiQueryBuilder implements Future<dynamic> {
     final res = await _client._json('POST', '/db/$_table',
         body: {
           'op': _op,
-          if (_columns != null) 'columns': _columns,
+          if (_columns != null && _columns != '*')
+            'columns': _columns!.split(',').map((c) => c.trim()).toList(),
           if (_filters.isNotEmpty) 'filters': _filters,
           if (_order.isNotEmpty) 'order': _order,
           if (_limit != null) 'limit': _limit,
