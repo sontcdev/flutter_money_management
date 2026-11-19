@@ -73,7 +73,7 @@ String authErrorMessage(
 
   switch (operation) {
     case AuthOperation.signUp:
-      if (kind == AuthErrorKind.weakPassword) return l10n.weakPassword;
+      if (kind == AuthErrorKind.weakPassword) return l10n.passwordMinLength;
       if (kind == AuthErrorKind.invalidEmail) return l10n.enterValidEmailAddress;
       return l10n.genericTryAgainError;
     case AuthOperation.sendReset:
@@ -81,7 +81,7 @@ String authErrorMessage(
     case AuthOperation.verifyReset:
       return l10n.resetCodeFailed;
     case AuthOperation.updatePassword:
-      if (kind == AuthErrorKind.weakPassword) return l10n.weakPassword;
+      if (kind == AuthErrorKind.weakPassword) return l10n.passwordMinLength;
       return l10n.genericTryAgainError;
   }
 }

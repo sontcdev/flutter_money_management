@@ -207,7 +207,15 @@ class ApiClient {
       final decoded = jsonDecode(res.body);
       if (decoded is Map<String, dynamic>) body = decoded;
     } catch (_) {}
-    final code = body['code']?.toString();
+    var code = body['code']?.toString();
+    // A password the BE rejects (length 8-128) maps to the Supabase code.
+    final issues = body['issues'];
+    if (code == 'validation_failed' &&
+        issues is List &&
+        issues.any(
+            (i) => i is Map && (i['path'] as List?)?.first == 'password')) {
+      code = 'weak_password';
+    }
     final message = body['message']?.toString() ?? 'HTTP ${res.statusCode}';
     switch (kind) {
       case _Kind.auth:
