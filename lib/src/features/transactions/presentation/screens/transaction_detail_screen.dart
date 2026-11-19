@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_money_management/src/features/auth/providers/auth_providers.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/data/repositories/supabase_error_mapper.dart';
 import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
@@ -387,12 +388,18 @@ class TransactionDetailScreen extends ConsumerWidget {
                                           builder: (context) =>
                                               _FullScreenImage(
                                             imageUrl: imageUrl,
+                                            headers: ref
+                                                .read(supabaseClientProvider)
+                                                .authHeaders,
                                           ),
                                         ),
                                       );
                                     },
                                     child: Image.network(
                                       imageUrl,
+                                      headers: ref
+                                          .read(supabaseClientProvider)
+                                          .authHeaders,
                                       fit: BoxFit.cover,
                                       errorBuilder: (_, __, ___) =>
                                           const SizedBox(
@@ -493,8 +500,9 @@ class _DetailRow extends StatelessWidget {
 
 class _FullScreenImage extends StatelessWidget {
   final String imageUrl;
+  final Map<String, String> headers;
 
-  const _FullScreenImage({required this.imageUrl});
+  const _FullScreenImage({required this.imageUrl, required this.headers});
 
   @override
   Widget build(BuildContext context) {
@@ -506,7 +514,7 @@ class _FullScreenImage extends StatelessWidget {
       ),
       body: Center(
         child: InteractiveViewer(
-          child: Image.network(imageUrl),
+          child: Image.network(imageUrl, headers: headers),
         ),
       ),
     );

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_money_management/src/features/auth/providers/auth_providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
+import 'data/api/api_client.dart';
 import 'utils/app_logger.dart';
 import 'utils/supabase_logging_http_client.dart';
 import 'providers/providers.dart';
@@ -21,6 +22,7 @@ class AppBootstrap extends StatefulWidget {
 
 class _AppBootstrapState extends State<AppBootstrap> {
   SharedPreferences? _sharedPreferences;
+  ApiClient? _apiClient;
   ThemeMode _themeMode = ThemeMode.light; // Default light mode
 
   @override
@@ -32,35 +34,13 @@ class _AppBootstrapState extends State<AppBootstrap> {
   Future<void> _init() async {
     AppLogger.info('App bootstrap started', name: 'MM.App');
 
-    // Initialize Supabase if configured
-    if (SupabaseConfig.isConfigured) {
-      try {
-        AppLogger.info('Supabase initialization started', name: 'MM.App');
-        await Supabase.initialize(
-          url: SupabaseConfig.supabaseUrl,
-          anonKey: SupabaseConfig.supabaseAnonKey,
-          httpClient: SupabaseLoggingHttpClient(),
-          authOptions: const FlutterAuthClientOptions(
-            authFlowType: AuthFlowType.pkce,
-          ),
-          debug: true, // Enable debug logging for API calls
-        );
-        AppLogger.info('Supabase initialization succeeded', name: 'MM.App');
-      } catch (e, stackTrace) {
-        // Log error but continue - app can work in local-only mode
-        AppLogger.warn(
-          'Supabase initialization failed, continuing in local-only mode',
-          name: 'MM.App',
-          error: e,
-          stackTrace: stackTrace,
-        );
-      }
-    } else {
-      AppLogger.warn('Supabase is not configured', name: 'MM.App');
-    }
-
     final prefs = await SharedPreferences.getInstance();
     AppLogger.debug('SharedPreferences loaded', name: 'MM.App');
+    final apiClient = ApiClient(
+      baseUrl: SupabaseConfig.apiBaseUrl,
+      prefs: prefs,
+      httpClient: SupabaseLoggingHttpClient(),
+    );
 
     if (mounted) {
       // Load theme mode from preferences
@@ -68,6 +48,7 @@ class _AppBootstrapState extends State<AppBootstrap> {
 
       setState(() {
         _sharedPreferences = prefs;
+        _apiClient = apiClient;
         if (themeModeIndex != null) {
           _themeMode = ThemeMode.values[themeModeIndex];
         }
@@ -89,6 +70,7 @@ class _AppBootstrapState extends State<AppBootstrap> {
     return ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(_sharedPreferences!),
+        supabaseClientProvider.overrideWithValue(_apiClient!),
         localeProvider
             .overrideWith((ref) => LocaleNotifier(_sharedPreferences!)),
         themeModeProvider

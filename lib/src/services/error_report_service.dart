@@ -1,10 +1,10 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_money_management/src/data/api/api_client.dart';
 import 'package:flutter_money_management/src/models/error_report.dart';
 
 class ErrorReportService {
   ErrorReportService(this._supabase);
 
-  final SupabaseClient _supabase;
+  final ApiClient _supabase;
 
   /// Gửi báo cáo lỗi lên Supabase
   Future<String> submitErrorReport(ErrorReport report) async {

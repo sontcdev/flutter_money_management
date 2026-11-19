@@ -1,11 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_money_management/src/data/api/api_client.dart';
 import 'package:flutter_money_management/src/features/workspace/models/workspace_management_models.dart';
 
 class WorkspaceManagementService {
   WorkspaceManagementService(this._supabase);
 
-  final SupabaseClient _supabase;
+  final ApiClient _supabase;
 
   Future<List<WorkspaceMemberSummary>> getWorkspaceMembers(
     String workspaceId,

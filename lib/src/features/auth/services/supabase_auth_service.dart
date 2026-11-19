@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_money_management/src/data/api/api_client.dart';
 
 import 'package:flutter_money_management/src/config/supabase_config.dart';
 import 'package:flutter_money_management/src/data/repositories/supabase_error_mapper.dart';
@@ -9,7 +10,7 @@ import 'package:flutter_money_management/src/utils/app_logger.dart';
 /// Supabase cloud authentication service
 /// Handles user signup, login, logout, and session management
 class SupabaseAuthService {
-  final SupabaseClient _client;
+  final ApiClient _client;
 
   SupabaseAuthService(this._client);
 
@@ -17,17 +18,12 @@ class SupabaseAuthService {
 
   Future<void> deleteAccount() async {
     try {
-      final response = await _client.functions.invoke('delete-account');
-      if (response.data is! Map || response.data['status'] != 'deleted') {
-        throw const FunctionException(status: 500);
-      }
-    } on FunctionException catch (e) {
-      final details = e.details;
-      if (e.status == 409 &&
-          details is Map &&
-          details['code'] == 'shared_workspace_membership') {
+      await _client.deleteAccount();
+    } on ApiException catch (e) {
+      final body = e.body;
+      if (e.statusCode == 409 && body['code'] == 'account_deletion_blocked') {
         throw SharedWorkspaceMembershipException(
-          (details['workspaces'] as List<dynamic>)
+          (body['workspaces'] as List<dynamic>)
               .map((row) => AccountDeletionBlocker.fromMap(
                     Map<String, dynamic>.from(row as Map),
                   ))

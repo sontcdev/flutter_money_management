@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'package:flutter_money_management/src/data/api/api_client.dart';
 import 'package:flutter_money_management/src/features/budgets/services/budget_service.dart';
 
 class SupabaseOperationException implements Exception {
@@ -39,6 +40,15 @@ class SupabaseErrorMapper {
       );
     }
 
+    if (error is ApiException) {
+      return SupabaseOperationException(
+        error.statusCode >= 500
+            ? 'Không thể hoàn tất yêu cầu. Vui lòng thử lại sau.'
+            : error.message,
+        source: error,
+      );
+    }
+
     if (_isNetworkError(error)) {
       return SupabaseOperationException(
         'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng rồi thử lại.',
@@ -58,6 +68,7 @@ class SupabaseErrorMapper {
 
   static bool isSupabaseException(Object error) {
     return error is PostgrestException ||
+        error is ApiException ||
         error is FunctionException ||
         error is AuthException ||
         error is StorageException ||

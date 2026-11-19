@@ -1,12 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_money_management/src/data/api/api_client.dart';
 
 import 'package:flutter_money_management/src/features/notifications/models/user_notification.dart';
 
 class NotificationService {
   const NotificationService(this._supabase);
 
-  final SupabaseClient _supabase;
+  final ApiClient _supabase;
 
   Future<List<UserNotification>> getMyNotifications({
     int limit = 50,

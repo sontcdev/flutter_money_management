@@ -1,4 +1,4 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_money_management/src/data/api/api_client.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:flutter_money_management/src/features/transactions/models/transaction_attachment.dart';
@@ -10,7 +10,7 @@ class TransactionAttachmentRepository {
     this._getCurrentUserId,
   );
 
-  final SupabaseClient _supabase;
+  final ApiClient _supabase;
   final String? Function() _getActiveWorkspaceId;
   final String? Function() _getCurrentUserId;
   final _uuid = const Uuid();

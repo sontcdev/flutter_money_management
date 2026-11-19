@@ -1,14 +1,12 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter_money_management/src/config/supabase_config.dart';
+import 'package:flutter_money_management/src/data/api/api_client.dart';
 import 'package:flutter_money_management/src/features/auth/services/supabase_auth_service.dart';
 
 /// Supabase client provider
-final supabaseClientProvider = Provider<SupabaseClient>((ref) {
-  if (!SupabaseConfig.isConfigured) {
-    throw Exception('Supabase is not configured');
-  }
-  return Supabase.instance.client;
+/// API client provider. It is overridden in `app_bootstrap.dart`.
+final supabaseClientProvider = Provider<ApiClient>((ref) {
+  throw UnimplementedError('supabaseClientProvider must be overridden');
 });
 
 /// Supabase auth service provider

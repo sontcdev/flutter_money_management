@@ -1,6 +1,7 @@
 // path: lib/src/data/repositories/budget_repository.dart
 
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_money_management/src/data/api/api_client.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:flutter_money_management/src/data/repositories/supabase_error_mapper.dart';
@@ -9,7 +10,7 @@ import 'package:flutter_money_management/src/features/budgets/models/budget.dart
     as model;
 
 class BudgetRepository {
-  final SupabaseClient _supabase;
+  final ApiClient _supabase;
   final String? Function() _getActiveWorkspaceId;
   final String? Function() _getCurrentUserId;
   final _uuid = const Uuid();

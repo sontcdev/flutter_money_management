@@ -11,6 +11,9 @@
 /// For production, consider using environment variables or flutter_dotenv
 class SupabaseConfig {
   // Supabase project URL
+  /// MyMoney API. The app reads and writes data only through this API.
+  static const String apiBaseUrl = 'https://mymoney-api.memora.io.vn/v1';
+
   static const String supabaseUrl = 'https://bjfuexqvlqwsysexmljw.supabase.co';
 
   // Supabase anon key (public key, safe for client apps)

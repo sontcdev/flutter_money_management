@@ -1,6 +1,7 @@
 // path: lib/src/data/repositories/category_repository.dart
 
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_money_management/src/data/api/api_client.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:flutter_money_management/src/data/repositories/supabase_error_mapper.dart';
@@ -10,7 +11,7 @@ import 'package:flutter_money_management/src/features/categories/models/category
 import 'package:flutter_money_management/src/utils/category_color_codec.dart';
 
 class CategoryRepository {
-  final SupabaseClient _supabase;
+  final ApiClient _supabase;
   final String? Function() _getActiveWorkspaceId;
   final String? Function() _getCurrentUserId;
   final _uuid = const Uuid();

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_money_management/src/data/api/api_client.dart';
 
 import 'package:flutter_money_management/src/features/transactions/repositories/transaction_attachment_repository.dart';
 import 'package:flutter_money_management/src/features/transactions/models/transaction_attachment.dart';
@@ -14,7 +15,7 @@ class TransactionReceiptService {
 
   static const receiptsBucket = 'transaction-receipts';
 
-  final SupabaseClient _supabase;
+  final ApiClient _supabase;
   final TransactionAttachmentRepository _attachments;
   final String? Function() _getActiveWorkspaceId;
 

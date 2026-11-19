@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_money_management/src/features/auth/providers/auth_providers.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_money_management/l10n/app_localizations.dart';
 import 'package:flutter_money_management/src/features/categories/presentation/widgets/category_icon_widget.dart';
@@ -731,6 +732,9 @@ class EditTransactionScreen extends HookConsumerWidget {
                                           AppSpacing.radiusCard),
                                       child: Image.network(
                                         imageUrl,
+                                        headers: ref
+                                            .read(supabaseClientProvider)
+                                            .authHeaders,
                                         height: 180,
                                         width: double.infinity,
                                         fit: BoxFit.cover,

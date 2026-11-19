@@ -1,6 +1,7 @@
 // path: lib/src/features/wallets/repositories/wallet_repository.dart
 
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_money_management/src/data/api/api_client.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:flutter_money_management/src/data/repositories/supabase_error_mapper.dart';
@@ -20,7 +21,7 @@ class WalletInUseException implements Exception {
 }
 
 class WalletRepository {
-  final SupabaseClient _supabase;
+  final ApiClient _supabase;
   final String? Function() _getActiveWorkspaceId;
   final String? Function() _getCurrentUserId;
   final _uuid = const Uuid();
@@ -190,7 +191,8 @@ class WalletRepository {
           model.WalletTypeCodec.fromDbValue(item['wallet_type'] as String?),
       iconName: item['icon_name'] as String,
       colorValue: decodeCategoryColor(item['color_value']),
-      openingBalanceMinor: (item['opening_balance_minor'] as num?)?.toInt() ?? 0,
+      openingBalanceMinor:
+          (item['opening_balance_minor'] as num?)?.toInt() ?? 0,
       currencyCode: item['currency_code'] as String? ?? 'VND',
       isDefault: item['is_default'] as bool? ?? false,
       isArchived: item['is_archived'] as bool? ?? false,

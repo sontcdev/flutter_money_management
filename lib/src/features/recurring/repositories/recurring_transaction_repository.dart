@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_money_management/src/data/api/api_client.dart';
 
 import 'package:flutter_money_management/src/data/repositories/supabase_error_mapper.dart';
 import 'package:flutter_money_management/src/features/recurring/models/recurring_occurrence.dart';
@@ -12,7 +13,7 @@ class RecurringTransactionRepository implements RecurringTransactionsGateway {
     this._getCurrentUserId,
   );
 
-  final SupabaseClient _supabase;
+  final ApiClient _supabase;
   final String? Function() _getActiveWorkspaceId;
   final String? Function() _getCurrentUserId;
 

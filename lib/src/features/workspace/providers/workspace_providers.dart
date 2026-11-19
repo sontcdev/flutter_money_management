@@ -20,33 +20,17 @@ final workspaceListProvider = FutureProvider<List<Workspace>>((ref) async {
   try {
     AppLogger.info('Workspace fetch started', name: 'MM.Workspace');
     // Fetch workspaces where user is a member
-    final response = await supabase
-        .from('workspace_members')
-        .select('''
-          workspace_id,
-          role,
-          workspaces!inner(
-            id,
-            type,
-            name,
-            settings,
-            owner_user_id,
-            created_at,
-            updated_at
-          )
-        ''')
-        .eq('user_id', session.user.id)
-        .isFilter('workspaces.deleted_at', null);
+    final response = await supabase.getMyWorkspaces();
 
     final workspaces = <Workspace>[];
-    for (final item in response as List) {
-      final workspaceData = item['workspaces'] as Map<String, dynamic>;
+    for (final workspaceData in response) {
+      if (workspaceData['deleted_at'] != null) continue;
       workspaces.add(Workspace(
         id: workspaceData['id'] as String,
         name: workspaceData['name'] as String,
         type: workspaceData['type'] as String,
         ownerId: workspaceData['owner_user_id'] as String,
-        role: item['role'] as String,
+        role: workspaceData['role'] as String,
         description:
             (workspaceData['settings'] as Map?)?['description'] as String?,
         avatarPath:
