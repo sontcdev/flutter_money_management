@@ -1,0 +1,32 @@
+[
+  {
+    "output": "phone/01.png",
+    "source": "docs/archive/docs/acceptance-screenshots/img/01_home_vi_light.png",
+    "alt": "Thu chi mỗi ngày, rõ ràng hơn."
+  },
+  {
+    "output": "phone/02.png",
+    "source": "docs/archive/docs/acceptance-screenshots/img/73_transactions_grouped_vi_light.png",
+    "alt": "Mỗi khoản tiền, một dòng ghi chép."
+  },
+  {
+    "output": "phone/03.png",
+    "source": "docs/archive/docs/acceptance-screenshots/img/09_report_calendar_vi_light.png",
+    "alt": "Nhìn lại thu chi trên lịch."
+  },
+  {
+    "output": "phone/04.png",
+    "source": "docs/archive/docs/acceptance-screenshots/img/11_recurring_vi_light.png",
+    "alt": "Theo dõi khoản thu chi định kỳ."
+  },
+  {
+    "output": "phone/05.png",
+    "source": "docs/archive/docs/acceptance-screenshots/img/28_categories_vi_light.png",
+    "alt": "Sắp xếp chi tiêu theo danh mục."
+  },
+  {
+    "output": "phone/06.png",
+    "source": "docs/archive/docs/acceptance-screenshots/img/08_add_transaction_vi_dark.png",
+    "alt": "Ghi chép thu chi với giao diện tối."
+  }
+]

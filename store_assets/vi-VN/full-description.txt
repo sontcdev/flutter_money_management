@@ -1,0 +1,40 @@
+Money Tracker giúp bạn ghi chép thu nhập, chi tiêu và theo dõi ngân sách trong một ứng dụng. Xem lại các khoản tiền theo ngày, danh mục và ví để hiểu rõ cách bạn sử dụng tiền.
+
+GHI CHÉP THU CHI
+• Thêm khoản thu nhập, chi tiêu và chuyển tiền giữa các ví.
+• Phân loại giao dịch theo danh mục, ngày và ghi chú.
+• Đính kèm ảnh hóa đơn để lưu thông tin liên quan đến giao dịch.
+• Xem lịch sử giao dịch được nhóm theo ngày.
+
+QUẢN LÝ NHIỀU VÍ
+• Theo dõi riêng tiền mặt, tài khoản ngân hàng và các ví do bạn tạo.
+• Xem số dư của từng ví và tổng quan số tiền đang quản lý.
+• Ghi nhận giao dịch theo đúng ví để dễ đối chiếu.
+
+THEO DÕI NGÂN SÁCH
+• Tạo ngân sách theo tháng, năm hoặc khoảng thời gian tùy chọn.
+• Theo dõi số tiền đã chi và phần ngân sách còn lại.
+• Dùng danh mục để tổ chức các khoản chi theo nhu cầu của bạn.
+
+XEM BÁO CÁO VÀ LỊCH GIAO DỊCH
+• Xem tổng thu nhập, chi tiêu và số dư trong kỳ.
+• Theo dõi giao dịch trên lịch để xem lại từng ngày.
+• Xem báo cáo để nhận biết các nhóm chi tiêu của mình.
+
+QUẢN LÝ KHOẢN ĐỊNH KỲ
+• Thiết lập các khoản thu hoặc chi lặp lại như tiền nhà và chi phí sinh hoạt.
+• Theo dõi lịch đến hạn và xác nhận giao dịch khi phát sinh.
+
+KHÔNG GIAN CÁ NHÂN VÀ DÙNG CHUNG
+• Tổ chức dữ liệu theo workspace riêng.
+• Tạo không gian dùng chung để quản lý thu chi cùng gia đình hoặc nhóm.
+• Chuyển giữa các workspace để xem dữ liệu của từng không gian.
+
+TÙY CHỌN HIỂN THỊ
+• Chọn giao diện sáng hoặc tối.
+• Hỗ trợ tiếng Việt, tiếng Anh và tiếng Nhật.
+
+Money Tracker cần tài khoản và kết nối Internet để truy cập, cập nhật dữ liệu. Bạn có thể yêu cầu xóa tài khoản trong phần cài đặt của ứng dụng.
+
+Chính sách quyền riêng tư:
+https://sontcdev.github.io/flutter_money_management/

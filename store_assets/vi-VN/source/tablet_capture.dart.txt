@@ -1,0 +1,513 @@
+// EXTERNAL acceptance-screenshot harness. Not part of the app. No Supabase, no network.
+// Config file (live): /data/user/0/com.sontc.mymoney/files/emu_cfg.txt = "scenario,locale,dark(0/1),scale"
+import 'dart:ui' as ui;
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:google_fonts/src/google_fonts_base.dart' as fonts;
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_money_management/l10n/app_localizations.dart';
+import 'package:flutter_money_management/src/features/auth/providers/auth_providers.dart';
+import 'package:flutter_money_management/src/features/budgets/models/budget.dart';
+import 'package:flutter_money_management/src/features/budgets/presentation/screens/budgets_screen.dart';
+import 'package:flutter_money_management/src/features/categories/models/category.dart';
+import 'package:flutter_money_management/src/features/home/presentation/screens/home_screen.dart';
+import 'package:flutter_money_management/src/features/notifications/providers/notification_providers.dart';
+import 'package:flutter_money_management/src/features/recurring/models/recurring_occurrence.dart';
+import 'package:flutter_money_management/src/features/recurring/models/recurring_transaction.dart';
+import 'package:flutter_money_management/src/features/recurring/presentation/screens/recurring_transactions_screen.dart';
+import 'package:flutter_money_management/src/features/recurring/providers/recurring_providers.dart';
+import 'package:flutter_money_management/src/features/reports/models/report_calendar_models.dart';
+import 'package:flutter_money_management/src/features/reports/presentation/screens/report_calendar_screen.dart';
+import 'package:flutter_money_management/src/features/reports/presentation/screens/reports_screen.dart';
+import 'package:flutter_money_management/src/features/reports/providers/report_providers.dart';
+import 'package:flutter_money_management/src/features/settings/presentation/screens/settings_screen.dart';
+import 'package:flutter_money_management/src/features/transactions/models/transaction.dart'
+    as model;
+import 'package:flutter_money_management/src/features/transactions/presentation/screens/add_transaction_screen.dart';
+import 'package:flutter_money_management/src/features/wallets/models/wallet.dart';
+import 'package:flutter_money_management/src/features/wallets/providers/wallet_providers.dart';
+import 'package:flutter_money_management/src/features/workspace/models/workspace.dart';
+import 'package:flutter_money_management/src/features/workspace/providers/workspace_management_providers.dart';
+import 'package:flutter_money_management/src/features/workspace/providers/workspace_providers.dart';
+import 'package:flutter_money_management/src/i18n/locale_provider.dart';
+import 'package:flutter_money_management/src/i18n/theme_provider.dart';
+import 'package:flutter_money_management/src/providers/providers.dart';
+import 'package:flutter_money_management/src/theme/app_theme.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_money_management/src/features/auth/presentation/screens/forgot_password_screen.dart';
+import 'package:flutter_money_management/src/features/auth/presentation/screens/password_reset_code_screen.dart';
+import 'package:flutter_money_management/src/features/auth/presentation/screens/reset_password_screen.dart';
+import 'package:flutter_money_management/src/features/auth/presentation/screens/sign_in_screen.dart';
+import 'package:flutter_money_management/src/features/auth/presentation/screens/sign_up_screen.dart';
+import 'package:flutter_money_management/src/features/auth/presentation/widgets/account_deletion_dialog.dart';
+import 'package:flutter_money_management/src/features/auth/services/supabase_auth_service.dart';
+import 'package:flutter_money_management/src/features/categories/presentation/screens/categories_screen.dart';
+import 'package:flutter_money_management/src/features/categories/presentation/screens/category_edit_screen.dart';
+import 'package:flutter_money_management/src/features/categories/repositories/category_repository.dart';
+import 'package:flutter_money_management/src/features/transactions/presentation/screens/transaction_detail_screen.dart';
+import 'package:flutter_money_management/src/features/transactions/presentation/screens/transactions_screen.dart';
+import 'package:flutter_money_management/src/features/transactions/providers/transaction_providers.dart';
+import 'package:flutter_money_management/src/features/transactions/repositories/transaction_repository.dart';
+import 'package:flutter_money_management/src/features/wallets/presentation/screens/wallet_edit_screen.dart';
+import 'package:flutter_money_management/src/features/wallets/presentation/screens/wallets_screen.dart';
+import 'package:flutter_money_management/src/features/workspace/models/workspace_management_models.dart';
+import 'package:flutter_money_management/src/features/workspace/presentation/screens/workspace_management_screen.dart';
+import 'package:flutter_money_management/src/features/workspace/presentation/screens/workspace_selection_screen.dart';
+import 'package:flutter_money_management/src/services/email_persistence_service.dart';
+import 'package:flutter_money_management/src/shared/providers/app_service_providers.dart';
+import 'package:flutter_money_management/src/ui/widgets/unsaved_changes_guard.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+// Offline fakes: any unexpected call throws instead of reaching a network.
+class _FakeAuth implements SupabaseAuthService {
+  @override
+  dynamic noSuchMethod(Invocation i) => throw StateError('mock: blocked ${i.memberName}');
+}
+
+class _FakeEmail implements EmailPersistenceService {
+  @override
+  String? getSavedEmail() => null;
+  @override
+  dynamic noSuchMethod(Invocation i) => throw StateError('mock: blocked ${i.memberName}');
+}
+
+class _FakeTxRepo implements TransactionRepository {
+  _FakeTxRepo(this.tx);
+  final model.Transaction tx;
+  @override
+  Future<model.Transaction> getTransactionById(String id, {String? workspaceIdOverride}) async => tx;
+  @override
+  dynamic noSuchMethod(Invocation i) => throw StateError('mock: blocked ${i.memberName}');
+}
+
+class _FakeCatRepo implements CategoryRepository {
+  _FakeCatRepo(this.cats);
+  final List<Category> cats;
+  @override
+  Future<List<Category>> getAllCategories({String? workspaceIdOverride}) async => cats;
+  @override
+  dynamic noSuchMethod(Invocation i) => throw StateError('mock: blocked ${i.memberName}');
+}
+
+class _DialogLauncher extends StatefulWidget {
+  const _DialogLauncher({required this.builder});
+  final WidgetBuilder builder;
+  @override
+  State<_DialogLauncher> createState() => _DialogLauncherState();
+}
+
+class _DialogLauncherState extends State<_DialogLauncher> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        showDialog<Object>(
+            context: context, barrierDismissible: false, builder: widget.builder);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => const Scaffold(body: SizedBox.expand());
+}
+
+class _UnsavedLauncher extends StatefulWidget {
+  const _UnsavedLauncher();
+  @override
+  State<_UnsavedLauncher> createState() => _UnsavedLauncherState();
+}
+
+class _UnsavedLauncherState extends State<_UnsavedLauncher> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) Navigator.of(context).maybePop();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => UnsavedChangesGuard(
+      isDirty: true,
+      child: Scaffold(
+          appBar: AppBar(title: const Text('Edit')),
+          body: const Center(child: Text('Edit form (dirty)'))));
+}
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUpAll(() async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(const MethodChannel('plugins.flutter.io/path_provider'), (_) async => '/tmp');
+    final sora = await File('/tmp/store-Sora-Bold.ttf').readAsBytes();
+    fonts.httpClient = MockClient((_) async => http.Response.bytes(sora, 200));
+    GoogleFonts.sora(fontWeight: FontWeight.w700);
+    await GoogleFonts.pendingFonts();
+    final roboto = await File('/Volumes/sontc/Library/flutter/bin/cache/artifacts/material_fonts/Roboto-Regular.ttf').readAsBytes();
+    for (final family in ['Ahem', 'Roboto', '-apple-system', 'SF Pro Text']) {
+      await (FontLoader(family)..addFont(Future.value(ByteData.sublistView(roboto)))).load();
+    }
+    final icons = await File('/Volumes/sontc/Library/flutter/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf').readAsBytes();
+    await (FontLoader('MaterialIcons')..addFont(Future.value(ByteData.sublistView(icons)))).load();
+  });
+  for (final size in [7, 10]) {
+    for (final scenario in ['home', 'txlist', 'report_calendar', 'cats']) {
+      testWidgets('tablet $size $scenario', (tester) async {
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+        final logical = size == 7 ? const Size(600, 960) : const Size(800, 1280);
+        tester.view.devicePixelRatio = 2;
+        tester.view.physicalSize = logical * 2;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+        final key = GlobalKey();
+        await tester.pumpWidget(RepaintBoundary(key: key, child: _Root(cfgText: '$scenario,vi,0,1.0', prefs: prefs)));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        final boundary = key.currentContext!.findRenderObject()! as RenderRepaintBoundary;
+        await tester.runAsync(() async {
+          final image = await boundary.toImage(pixelRatio: 2);
+          final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+          expect(image.width, logical.width * 2);
+          expect(image.height, logical.height * 2);
+          await File('store_assets/vi-VN/tablet-$size/$scenario.png').writeAsBytes(bytes!.buffer.asUint8List());
+          image.dispose();
+        });
+        await tester.pumpWidget(const SizedBox.shrink());
+      });
+    }
+  }
+}
+
+class _Root extends StatelessWidget {
+  const _Root({super.key, required this.cfgText, required this.prefs});
+  final String cfgText;
+  final SharedPreferences prefs;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = cfgText.split(',');
+    final scenario = p[0];
+    final loc = p[1];
+    final dark = p[2] == '1';
+    final scale = double.parse(p[3]);
+    final now = DateTime.now();
+    final calMonth = DateTime(2026, 10);
+    final ws = Workspace(
+      id: 'workspace',
+      name: 'Gia đình',
+      type: 'shared',
+      ownerId: 'user',
+      role: 'owner',
+      memberCount: 2,
+      createdAt: now,
+      updatedAt: now,
+    );
+    Category cat(String id, String name, String icon, Color c) => Category(
+        id: id,
+        name: name,
+        iconName: icon,
+        colorValue: c.toARGB32(),
+        createdAt: now,
+        updatedAt: now);
+    final cats = [
+      cat('food', loc == 'vi' ? 'Ăn uống' : loc == 'ja' ? '食費' : 'Food and dining',
+          'restaurant', Colors.orange),
+      cat('transport', loc == 'vi' ? 'Di chuyển' : loc == 'ja' ? '交通' : 'Transport',
+          'directions_car', Colors.blue),
+      cat('rent', loc == 'vi' ? 'Tiền nhà' : loc == 'ja' ? '家賃' : 'Rent', 'home',
+          Colors.purple),
+      cat('shop', loc == 'vi' ? 'Mua sắm' : loc == 'ja' ? '買い物' : 'Shopping',
+          'shopping_bag', Colors.pink),
+    ];
+    final wallets = [
+      Wallet(
+        id: 'cash',
+        workspaceId: 'workspace',
+        name: loc == 'vi' ? 'Tiền mặt' : loc == 'ja' ? '家族みんなで使う共有の現金ウォレット' : 'Shared household cash wallet for the whole family',
+        iconName: 'wallet',
+        colorValue: Colors.green.toARGB32(),
+        createdAt: now,
+        updatedAt: now,
+      ),
+      Wallet(
+        id: 'bank',
+        workspaceId: 'workspace',
+        name: loc == 'vi' ? 'Ngân hàng' : loc == 'ja' ? '長期積立用の銀行口座' : 'Long term savings bank account',
+        iconName: 'wallet',
+        colorValue: Colors.blue.toARGB32(),
+        createdAt: now,
+        updatedAt: now,
+      ),
+    ];
+    model.Transaction tx(String id, DateTime d, int cents, String c,
+            {model.TransactionType t = model.TransactionType.expense,
+            String note = ''}) =>
+        model.Transaction(
+          id: id,
+          amountCents: cents,
+          currency: 'VND',
+          dateTime: d,
+          type: t,
+          categoryId: c,
+          walletId: 'cash',
+          note: note,
+          createdAt: d,
+          updatedAt: d,
+        );
+    final txs = <model.Transaction>[];
+    // Six months of history (current month + 5 back), populated chart.
+    const hist = [2800, 3600, 3100, 4200, 3700, 2400];
+    for (var i = 0; i < 6; i++) {
+      final m = DateTime(now.year, now.month - i, 1);
+      for (var k = 0; k < 4; k++) {
+        txs.add(tx('h$i$k', DateTime(m.year, m.month, 3 + k * 5, 12),
+            hist[i] * 100000 * (k + 1) ~/ 4, cats[k % 4].id,
+            note: 'Sample ${k + 1}'));
+      }
+      txs.add(tx('i$i', DateTime(m.year, m.month, 1, 9), 1500000000, 'rent',
+          t: model.TransactionType.income, note: 'Salary'));
+    }
+    for (var j = 0; j < 3; j++) {
+      txs.add(tx('t$j', DateTime(now.year, now.month, now.day, 8 + j),
+          (j + 1) * 4500000, cats[j].id, note: 'Today ${j + 1}'));
+    }
+    for (var j = 0; j < 2; j++) {
+      final y = now.subtract(const Duration(days: 1));
+      txs.add(tx('y$j', DateTime(y.year, y.month, y.day, 9 + j),
+          (j + 2) * 3000000, cats[j + 1].id, note: 'Yesterday ${j + 1}'));
+    }
+    final month = DateTime(now.year, now.month);
+    Budget bud(String id, String c, int limit, int used) => Budget(
+          id: id,
+          categoryId: c,
+          periodType: PeriodType.monthly,
+          periodStart: month,
+          periodEnd: DateTime(now.year, now.month + 1, 0),
+          limitCents: limit,
+          consumedCents: used,
+          allowOverdraft: false,
+          overdraftCents: 0,
+          createdAt: now,
+          updatedAt: now,
+        );
+    final budgets = [
+      bud('b1', 'food', 300000000, 180000000),
+      bud('b2', 'transport', 100000000, 95000000),
+      bud('b3', 'shop', 200000000, 60000000),
+    ];
+    final cDate = DateTime(2026, 10, 15);
+    final cTx = tx('c1', cDate, 3000000, 'food', note: 'Lunch with friends');
+    final recurring = RecurringTransaction(
+      id: 'rec-1',
+      workspaceId: 'workspace',
+      title: loc == 'vi' ? 'Tiền nhà' : 'Rent',
+      categoryId: 'rent',
+      amountCents: 100000000,
+      currency: 'VND',
+      type: RecurringTransactionType.expense,
+      frequency: RecurringFrequency.monthly,
+      mode: RecurringMode.manualConfirm,
+      intervalCount: 1,
+      startDate: DateTime(2026, 5, 1),
+      nextOccurrenceAt: DateTime(2026, 12, 1),
+      reminderDaysBefore: 3,
+      isActive: true,
+      createdByUserId: 'user',
+      updatedByUserId: 'user',
+      createdAt: now,
+      updatedAt: now,
+    );
+    final occ = RecurringOccurrence(
+      id: 'occ-1',
+      recurringTransactionId: 'rec-1',
+      workspaceId: 'workspace',
+      scheduledFor: DateTime(2026, 12, 1),
+      remindAt: DateTime(2026, 11, 28),
+      status: RecurringOccurrenceStatus.pending,
+      createdAt: now,
+      updatedAt: now,
+    );
+
+    Widget home;
+    switch (scenario) {
+      case 'txlist':
+        home = const TransactionsScreen();
+      case 'txdetail':
+        home = const TransactionDetailScreen(transactionId: 'c1');
+      case 'wallets':
+        home = const WalletsScreen();
+      case 'walletedit':
+        home = WalletEditScreen(wallet: wallets[0], workspaceId: 'workspace');
+      case 'cats':
+        home = const CategoriesScreen();
+      case 'catedit':
+        home = CategoryEditScreen(category: cats[0], workspaceId: 'workspace');
+      case 'wssel':
+        home = const WorkspaceSelectionScreen();
+      case 'wsmgmt':
+        home = const WorkspaceManagementScreen();
+      case 'signin':
+        home = const SignInScreen();
+      case 'signup':
+        home = const SignUpScreen();
+      case 'forgot':
+        home = const ForgotPasswordScreen();
+      case 'resetcode':
+        home = const PasswordResetCodeScreen(email: 'review@example.test');
+      case 'reset':
+        home = const ResetPasswordScreen();
+      case 'dlg_delete':
+        home = _DialogLauncher(
+            builder: (_) => AccountDeletionDialog(
+                onDelete: () async {}, onWebRequest: () async {}));
+      case 'dlg_unsaved':
+        home = const _UnsavedLauncher();
+      case 'settings':
+        home = const SettingsScreen();
+      case 'budgets':
+        home = const BudgetsScreen();
+      case 'add_transaction':
+        home = const AddTransactionScreen();
+      case 'report_calendar':
+        home = const ReportCalendarScreen();
+      case 'recurring':
+        home = const RecurringTransactionsScreen();
+      case 'reports':
+        home = const ReportsScreen();
+      default:
+        home = const HomeScreen();
+    }
+
+    return ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        supabaseAuthServiceProvider.overrideWithValue(_FakeAuth()),
+        emailPersistenceServiceProvider.overrideWithValue(_FakeEmail()),
+        transactionRepositoryProvider.overrideWithValue(_FakeTxRepo(cTx)),
+        categoryRepositoryProvider.overrideWithValue(_FakeCatRepo(cats)),
+        transactionCanManageProvider('c1').overrideWith((_) async => true),
+        transactionReceiptAttachmentProvider('c1').overrideWith((_) async => null),
+        transactionReceiptImageUrlProvider('c1').overrideWith((_) async => null),
+        workspaceMembersProvider.overrideWith((ref) async => [
+              WorkspaceMemberSummary(
+                  memberId: 'm1', userId: 'user', displayName: 'Review',
+                  email: 'review@example.test', avatarUrl: null, role: 'owner',
+                  membershipStatus: 'active', joinedAt: now),
+              WorkspaceMemberSummary(
+                  memberId: 'm2', userId: 'u2', displayName: 'Partner',
+                  email: 'partner@example.test', avatarUrl: null, role: 'member',
+                  membershipStatus: 'active', joinedAt: now),
+            ]),
+        workspacePendingInvitesProvider.overrideWith((ref) async => [
+              WorkspaceInviteSummary(
+                  id: 'i1', email: 'urgent@example.test', role: 'member',
+                  status: 'pending', token: 'tok1',
+                  expiresAt: now.add(const Duration(hours: 5)), createdAt: now,
+                  updatedAt: null, matchedUserId: null,
+                  matchedDisplayName: null, matchedAvatarUrl: null),
+              WorkspaceInviteSummary(
+                  id: 'i2', email: 'soon@example.test', role: 'member',
+                  status: 'pending', token: 'tok2',
+                  expiresAt: now.add(const Duration(days: 3)), createdAt: now,
+                  updatedAt: null, matchedUserId: null,
+                  matchedDisplayName: null, matchedAvatarUrl: null),
+            ]),
+        localeProvider.overrideWith((ref) {
+          final n = LocaleNotifier(prefs);
+          n.setLocale(Locale(loc));
+          return n;
+        }),
+        themeModeProvider.overrideWith((ref) {
+          final n = ThemeNotifier(prefs);
+          n.setThemeMode(dark ? ThemeMode.dark : ThemeMode.light);
+          return n;
+        }),
+        themeColorProvider.overrideWith((ref) => ThemeColorNotifier(prefs)),
+        fontScaleProvider.overrideWith((ref) => FontScaleNotifier(prefs)),
+        currentUserProvider.overrideWithValue(User(
+          id: 'user',
+          appMetadata: {},
+          userMetadata: {'display_name': 'An'},
+          aud: 'authenticated',
+          email: 'review@example.test',
+          createdAt: now.toIso8601String(),
+        )),
+        activeWorkspaceProvider.overrideWithValue(ws),
+        activeWorkspaceIdProvider.overrideWith((ref) => 'workspace'),
+        workspaceListProvider.overrideWith((ref) async => [ws]),
+        canManageWorkspaceContentProvider.overrideWith((ref) => true),
+        canLeaveWorkspaceProvider.overrideWith((ref) => true),
+        unreadNotificationCountProvider.overrideWith((ref) async => 0),
+        myNotificationsProvider.overrideWith((ref) async => []),
+        myWorkspaceInviteNotificationsProvider.overrideWith((ref) async => []),
+        recurringTransactionsProvider.overrideWith((ref) async => [recurring]),
+        upcomingRecurringOccurrencesProvider.overrideWith((ref) async => [occ]),
+        recurringNotificationsPermissionProvider.overrideWith((ref) async => true),
+        transactionsProvider.overrideWith((ref) async => scenario == 'home_empty' ? <model.Transaction>[] : txs),
+        budgetsProvider.overrideWith((ref) async => budgets),
+        budgetsWithConsumedProvider.overrideWith((ref) async => budgets),
+        categoriesProvider.overrideWith((ref) async => cats),
+        categoriesForWorkspaceProvider.overrideWith((ref, id) async => cats),
+        walletsProvider.overrideWith((ref) async => wallets),
+        walletsForWorkspaceProvider.overrideWith((ref, id) async => wallets),
+        walletBalancesProvider
+            .overrideWith((ref) async => {'cash': 1250000000, 'bank': 4800000000}),
+        selectedMonthProvider.overrideWith((ref) => calMonth),
+        calendarDataProvider.overrideWith((ref, m) async => {
+              cDate: [
+                AmountBadge(amountCents: 3000000, isIncome: false),
+                AmountBadge(amountCents: 10000000, isIncome: true),
+              ],
+              DateTime(2026, 10, 28): [
+                AmountBadge(amountCents: 4500000, isIncome: false),
+              ],
+            }),
+        monthlySummaryProvider.overrideWith((ref, m) async =>
+            {'income': 10000000, 'expense': 7500000, 'net': 2500000}),
+        transactionGroupsProvider.overrideWith((ref, m) async => [
+              TransactionGroup(
+                date: cDate,
+                totalIncome: 0,
+                totalExpense: 3000000,
+                transactions: [
+                  TransactionWithCategory(
+                    transaction: cTx,
+                    categoryName: cats[0].name,
+                    categoryIconName: 'restaurant',
+                    categoryColorValue: Colors.orange.toARGB32(),
+                  ),
+                ],
+              ),
+            ]),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        locale: Locale(loc),
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: AppLocalizations.supportedLocales,
+        theme: AppTheme.lightTheme().copyWith(textTheme: AppTheme.lightTheme().textTheme.apply(fontFamily: 'Roboto'), appBarTheme: AppTheme.lightTheme().appBarTheme.copyWith(titleTextStyle: const TextStyle(fontFamily: 'Roboto', fontSize: 22, fontWeight: FontWeight.w700, color: Color(0xFF172542)))),
+        darkTheme: AppTheme.darkTheme(),
+        themeMode: dark ? ThemeMode.dark : ThemeMode.light,
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(scale)),
+          child: child!,
+        ),
+        home: home,
+      ),
+    );
+  }
+}
